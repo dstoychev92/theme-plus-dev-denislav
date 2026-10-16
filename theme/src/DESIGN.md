@@ -30,6 +30,12 @@ give, and the reasons behind color, type, and layout choices. Name the scheme, f
 next to each decision. Keep the values in Theme Settings (`config/settings_data.json`). Grow this
 section by addition. Ask before you remove or rewrite a rule.
 
+Boom Coffee (draft, extracted from the live theme): `scheme-default` as the base, one
+`scheme-opposite` band per page, orange `scheme-footer`, blue `scheme-sub-footer`. Custom fonts
+from the store's Files: Heading Now for headings, Jost for body, EB Garamond italic as the accent.
+Headlines and buttons in capitals by setting. Signature: the "Before / with BOOM!"
+pair. The rules, the voice, and the facts are in the project's `brand/` folder.
+
 _No store decisions recorded yet. The theme defaults at the end of this file apply._
 
 ## Color

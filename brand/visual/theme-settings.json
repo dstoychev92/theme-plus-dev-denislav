@@ -1,0 +1,202 @@
+{
+  "source": "live theme #196955635995 Analog migration (Pipeline 9.0.0), settings_data.json current",
+  "note": "Extracted, not exported from a sandbox: Analog 1.1.0-beta.3 has no brand page. Values map to Analog settings with the same keys.",
+  "settings": {
+    "color_scheme_default": "scheme-default",
+    "color_scheme_success": "scheme-success",
+    "color_scheme_error": "scheme-error",
+    "color_scheme_dark": "scheme-opposite",
+    "font_family_heading": "figtree_n7",
+    "font_family_subheading": "figtree_n6",
+    "font_family_accent": "figtree_n5",
+    "font_family_body": "figtree_n4",
+    "type_preset_h1": "preset",
+    "type_uppercase_h1": true,
+    "type_preset_h2": "preset",
+    "type_font_h2": "heading",
+    "type_size_h2": 11,
+    "type_uppercase_h2": true,
+    "type_preset_h3": "preset",
+    "type_uppercase_h3": true,
+    "type_preset_h5": "preset",
+    "type_font_h5": "accent",
+    "type_uppercase_h5": true,
+    "type_preset_h6": "preset",
+    "type_font_h6": "accent",
+    "type_uppercase_h6": true,
+    "type_preset_section": "h3",
+    "type_font_section": "accent",
+    "type_size_section": 5,
+    "type_uppercase_section": true,
+    "type_preset_kicker": "custom",
+    "type_font_kicker": "accent",
+    "type_size_kicker": 3,
+    "type_uppercase_kicker": false,
+    "type_preset_button": "preset",
+    "type_font_button": "accent",
+    "type_size_button": 4,
+    "type_uppercase_button": true,
+    "font_scaling_system": "lg",
+    "font_rebalance": false,
+    "font_adjust_heading": 100,
+    "font_adjust_subheading": 100,
+    "font_adjust_accent": 100,
+    "font_adjust_body": 100,
+    "font_caps_tracking": false,
+    "font_caps_tracking_heading": 125,
+    "grid_spacing_small": 12,
+    "grid_spacing_medium": 24,
+    "grid_spacing_large": 48,
+    "grid_spacing_margin": "lg",
+    "layout_site_width": 1200,
+    "grid_spacing_gutter": "md",
+    "grid_spacing_card": "md",
+    "grid_spacing_card_custom": 2,
+    "section_rhythm_default": 70,
+    "rounding_sm": 4,
+    "button_rounding": "md",
+    "form_field_rounding": "md",
+    "element_default_rounding": "md",
+    "swatch_shape": "square",
+    "tab_style": "outline",
+    "tab_rounding": "pill",
+    "card_aspect_ratio": 1,
+    "card_badge_color_bg": "#3b2121",
+    "card_badge_color_text": "#ffffff",
+    "card_badge_rounding": "sm",
+    "decoration_type": "shape",
+    "decoration_shape": "dash",
+    "decoration_color": "content",
+    "decoration_dash_weight": 2,
+    "decoration_dash_rounded": false,
+    "decoration_width": 16,
+    "decoration_opacity": 100,
+    "social_instagram_link": "https://www.instagram.com/boom.coffee.bulgaria/",
+    "social_tiktok_link": "https://www.tiktok.com/@boom.coffee.bulgaria",
+    "social_youtube_link": "https://www.youtube.com/@boom.coffee",
+    "social_facebook_link": "https://www.facebook.com/profile.php?id=61589352057897",
+    "favicon": "shopify://shop_images/Favicon07.jpg",
+    "badge_rounding": "sm",
+    "icon_set": "modern",
+    "grid_margin_spacing": "lg",
+    "grid_gutter_spacing": "lg",
+    "font_heading_uppercase": false,
+    "font_accent_uppercase": true,
+    "font_heading_adjust": 100,
+    "font_accent_adjust": 95,
+    "type_button_uppercase": true,
+    "type_button_font": "accent_bold",
+    "color_scheme_group": {
+      "scheme-default": {
+        "settings": {
+          "color_canvas": "#f9f5f3",
+          "color_content": "#3b2121",
+          "color_muted": "#999999",
+          "color_secondary": "#10069f",
+          "color_sale": "#f86710",
+          "color_primary": "#8d5333",
+          "color_primary_contrast": "#ffffff"
+        }
+      },
+      "scheme-opposite": {
+        "settings": {
+          "color_canvas": "#3c2121",
+          "color_content": "#ffffff",
+          "color_muted": "#d8d3d3",
+          "color_secondary": "#ef3340",
+          "color_sale": "#ef3340",
+          "color_primary": "#8d5333",
+          "color_primary_contrast": "#ffffff"
+        }
+      },
+      "scheme-header": {
+        "settings": {
+          "color_canvas": "#ffffff",
+          "color_content": "#3c2121",
+          "color_muted": "#999999",
+          "color_secondary": "#ff4300",
+          "color_sale": "#ef3340",
+          "color_primary": "#8d5333",
+          "color_primary_contrast": "#ffffff"
+        }
+      },
+      "scheme-footer": {
+        "settings": {
+          "color_canvas": "#f86710",
+          "color_content": "#ffffff",
+          "color_muted": "#7d7d7d",
+          "color_secondary": "#ffffff",
+          "color_sale": "#af1b1b",
+          "color_primary": "#ff4300",
+          "color_primary_contrast": "#dfdfdf"
+        }
+      },
+      "scheme-sub-footer": {
+        "settings": {
+          "color_canvas": "#0f0693",
+          "color_content": "#ffffff",
+          "color_muted": "#7d7d7d",
+          "color_secondary": "#567e73",
+          "color_sale": "#af1b1b",
+          "color_primary": "#ff4300",
+          "color_primary_contrast": "#dfdfdf"
+        }
+      },
+      "scheme-success": {
+        "settings": {
+          "color_canvas": "#ef3340",
+          "color_content": "#ffffff",
+          "color_muted": "#7d7d7d",
+          "color_secondary": "#3c2121",
+          "color_sale": "#af1b1b",
+          "color_primary": "#3c2121",
+          "color_primary_contrast": "#ffffff"
+        }
+      },
+      "scheme-error": {
+        "settings": {
+          "color_canvas": "#fff6e3",
+          "color_content": "#3c2121",
+          "color_muted": "#999999",
+          "color_secondary": "#ef3340",
+          "color_sale": "#ef3340",
+          "color_primary": "#ff4300",
+          "color_primary_contrast": "#ffffff"
+        }
+      },
+      "scheme-370497a0-5005-4960-878b-3d6c11f86cb4": {
+        "settings": {
+          "color_canvas": "#f4e8f5",
+          "color_content": "#3b2121",
+          "color_muted": "#999999",
+          "color_secondary": "#ef3340",
+          "color_sale": "#ef3340",
+          "color_primary": "#0f0693",
+          "color_primary_contrast": "#ffffff"
+        }
+      },
+      "scheme-a9a101d0-ac54-4c80-b716-d21cedb7121c": {
+        "settings": {
+          "color_canvas": "#ffffff",
+          "color_content": "#3b2121",
+          "color_muted": "#999999",
+          "color_secondary": "#10069f",
+          "color_sale": "#ef3340",
+          "color_primary": "#8d5333",
+          "color_primary_contrast": "#ffffff"
+        }
+      },
+      "scheme-54e7eb22-17a8-4f9e-9ed9-81e410b4a36a": {
+        "settings": {
+          "color_canvas": "#f9f5f3",
+          "color_content": "#3b2121",
+          "color_muted": "#999999",
+          "color_secondary": "#10069f",
+          "color_sale": "#10069f",
+          "color_primary": "#8d5333",
+          "color_primary_contrast": "#ffffff"
+        }
+      }
+    }
+  }
+}

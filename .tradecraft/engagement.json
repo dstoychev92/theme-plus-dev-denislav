@@ -1,0 +1,400 @@
+{
+  "schemaVersion": 1,
+  "store": "theme-plus-dev-denislav.myshopify.com",
+  "stage": "build",
+  "reviewPage": null,
+  "decisions": {
+    "E3": {
+      "value": "Agent runs local commands; developer commits and pushes",
+      "by": "default",
+      "at": "2026-10-16T15:24:14.056Z",
+      "evidence": "Skill default"
+    },
+    "E1": {
+      "value": "move",
+      "by": "developer",
+      "at": "2026-10-16T15:25:24.010Z",
+      "evidence": "Developer chose: Move to Analog"
+    },
+    "E2": {
+      "value": "analog",
+      "by": "developer",
+      "at": "2026-10-16T15:25:24.039Z",
+      "evidence": "Developer chose: Move to Analog"
+    },
+    "P2": {
+      "value": "Boom Coffee's customers; this dev store is the test store",
+      "by": "developer",
+      "at": "2026-10-16T15:53:10.969Z",
+      "evidence": "Developer chose: Yes, Boom Coffee is the client"
+    },
+    "P1": {
+      "value": "Buying a Boom functional coffee (protein or adaptogenic Brain Coffee), including the bundle builder",
+      "by": "guess",
+      "at": "2026-10-16T15:53:11.008Z",
+      "evidence": "Homepage CTAs 'ПОРЪЧАЙ ПРОТЕИНОВО КАФЕ' / 'ПОРЪЧАЙ АДАПТОГЕННО КАФЕ'; custom product.brain-coffee and product.bundle-builder templates; -15% sitewide banner"
+    },
+    "P3": {
+      "value": "No apps to carry: no app blocks, embeds, or script tags. Custom code acts as the apps: bundle builder, upsell, gift sync, UGC video slider, locations map. Rebuild each in Analog",
+      "by": "guess",
+      "at": "2026-10-16T15:53:11.048Z",
+      "evidence": "discover: apps [], scriptTagHosts []; compare: custom.boom-bundle-builder/upsell/gift-sync/ugc-slider/locations-map assets"
+    },
+    "B1": {
+      "value": "Extract the existing Boom Coffee brand",
+      "by": "guess",
+      "at": "2026-10-16T15:53:11.086Z",
+      "evidence": "Move, not a redesign; live theme has a full Boom brand (Figtree, uppercase headings, 'BEYOND COFFEE')"
+    },
+    "B2": {
+      "value": "The website and its product pages; social on Instagram, TikTok and YouTube",
+      "by": "guess",
+      "at": "2026-10-16T15:55:54.515Z",
+      "evidence": "Live theme copy and social links in Theme Settings; no other source read yet"
+    },
+    "B3": {
+      "value": "The extracted Boom Coffee brand, unchanged",
+      "by": "guess",
+      "at": "2026-10-16T15:55:54.552Z",
+      "evidence": "brand/ folder from live settings; no sandbox in Analog 1.1.0-beta.3, so no directions yet"
+    },
+    "B4": {
+      "value": "Keep the store's claims with their EFSA or study evidence; no cure claims, no 'completely safe'; fix the 4 conflicts in brand/facts.md",
+      "by": "guess",
+      "at": "2026-10-16T15:55:54.589Z",
+      "evidence": "brand/facts.md"
+    },
+    "P4": {
+      "value": "Keep live behavior: upsell popup stays off; add BG/GR/RO markets to the test store for checks; keep live values where facts conflict",
+      "by": "guess",
+      "at": "2026-10-16T16:00:04.890Z",
+      "evidence": "splice todo.md open questions q1–q3"
+    }
+  },
+  "questions": {
+    "q1": {
+      "decision": "E1",
+      "to": "developer",
+      "text": "Where should the work land? Move to Analog (recommended: live theme is Pipeline 9.0.0 named 'Analog migration'), or keep Pipeline and update to the newest release.",
+      "askedAt": "2026-10-16T15:24:20.399Z",
+      "answeredAt": "2026-10-16T15:25:24.011Z"
+    },
+    "q2": {
+      "decision": "P2",
+      "to": "developer",
+      "text": "Is this store a test copy of Boom Coffee? The live theme has Boom Coffee content and templates. This store has 6 products and only a Canada market. I recommend that we treat Boom Coffee as the client and use this store as the test store.",
+      "askedAt": "2026-10-16T15:51:39.194Z",
+      "answeredAt": "2026-10-16T15:53:10.970Z"
+    }
+  },
+  "facts": {
+    "readAt": "2026-10-16T15:23:53.769Z",
+    "store": "theme-plus-dev-denislav.myshopify.com",
+    "missing": [],
+    "themeCount": 9,
+    "themes": [
+      {
+        "id": 196955635995,
+        "name": "Analog migration",
+        "role": "live",
+        "connected": false
+      },
+      {
+        "id": 183363698971,
+        "name": "Horizon",
+        "role": "unpublished",
+        "connected": false
+      },
+      {
+        "id": 183365107995,
+        "name": "pipeline-9-0-0",
+        "role": "unpublished",
+        "connected": false
+      },
+      {
+        "id": 186841071899,
+        "name": "denislav-analog",
+        "role": "unpublished",
+        "connected": false
+      },
+      {
+        "id": 196270063899,
+        "name": "analog-1-1-0-beta-1",
+        "role": "unpublished",
+        "connected": false
+      },
+      {
+        "id": 196945379611,
+        "name": "analog-1-1-0-beta-3",
+        "role": "unpublished",
+        "connected": false
+      },
+      {
+        "id": 196952129819,
+        "name": "Preview · main",
+        "role": "unpublished",
+        "connected": false
+      },
+      {
+        "id": 196954161435,
+        "name": "boom-coffee-main",
+        "role": "unpublished",
+        "connected": false
+      },
+      {
+        "id": 196954980635,
+        "name": "theme-export-boom-coffee-com-boom-coffee-main",
+        "role": "unpublished",
+        "connected": false
+      }
+    ],
+    "forms": [],
+    "liveTheme": {
+      "id": 196955635995,
+      "name": "Analog migration",
+      "theme": "Pipeline",
+      "version": "9.0.0",
+      "connected": false
+    },
+    "apps": [],
+    "templates": [
+      "404.json",
+      "article.json",
+      "article.recipe.json",
+      "blog.json",
+      "cart.json",
+      "collection.aksesoari.json",
+      "collection.brain-coffee.json",
+      "collection.json",
+      "index.context.romania.json",
+      "index.json",
+      "list-collections.json",
+      "page.about.json",
+      "page.affiliate.json",
+      "page.bundle-builder.json",
+      "page.contact.json",
+      "page.faq.json",
+      "page.how-to-brew.json",
+      "page.json",
+      "page.lookbook.json",
+      "page.magazinna-mreja.json",
+      "page.science-2.json",
+      "page.science.json",
+      "page.story.json",
+      "page.styleguide.json",
+      "page.team.json",
+      "password.json",
+      "product.brain-coffee.context.romania.json",
+      "product.brain-coffee.json",
+      "product.bundle-builder.context.romania.json",
+      "product.bundle-builder.json",
+      "product.context.romania.json",
+      "product.json",
+      "product.misc.json",
+      "search.json"
+    ],
+    "homepage": [
+      {
+        "id": "section_banner_zWmtbc",
+        "type": "section-banner",
+        "disabled": false
+      },
+      {
+        "id": "section_custom_hCDdic",
+        "type": "section-custom",
+        "disabled": true
+      },
+      {
+        "id": "section_marquee_pfqMMV",
+        "type": "section-marquee",
+        "disabled": false
+      },
+      {
+        "id": "section_custom_AVgQ4f",
+        "type": "section-custom",
+        "disabled": false
+      },
+      {
+        "id": "section_tabs_nGNYKN",
+        "type": "section-tabs",
+        "disabled": false
+      },
+      {
+        "id": "section_custom_YF9bHR",
+        "type": "section-custom",
+        "disabled": false
+      },
+      {
+        "id": "section_marquee_Qtp3K6",
+        "type": "section-marquee",
+        "disabled": false
+      },
+      {
+        "id": "section_custom_zcLreV",
+        "type": "section-custom",
+        "disabled": false
+      },
+      {
+        "id": "section_custom_7TfV9p",
+        "type": "section-custom",
+        "disabled": false
+      },
+      {
+        "id": "section_card_slider_tabs_7AedQG",
+        "type": "section-card-slider-tabs",
+        "disabled": false
+      },
+      {
+        "id": "section_custom_7RQz6e",
+        "type": "section-custom",
+        "disabled": false
+      },
+      {
+        "id": "section_ugc_video_slider_KqcgPF",
+        "type": "section-ugc-video-slider",
+        "disabled": false
+      },
+      {
+        "id": "section_custom_ACNGmz",
+        "type": "section-custom",
+        "disabled": false
+      },
+      {
+        "id": "section_form_AKrGdW",
+        "type": "section-form",
+        "disabled": true
+      },
+      {
+        "id": "boom_scroll_glass_XCAUqP",
+        "type": "boom-scroll-glass",
+        "disabled": true
+      }
+    ],
+    "design": {
+      "color_scheme_default": "scheme-default",
+      "color_scheme_success": "scheme-success",
+      "color_scheme_error": "scheme-error",
+      "color_scheme_dark": "scheme-opposite",
+      "font_family_heading": "figtree_n7",
+      "font_family_subheading": "figtree_n6",
+      "font_family_accent": "figtree_n5",
+      "font_family_body": "figtree_n4",
+      "type_preset_h1": "preset",
+      "type_uppercase_h1": true,
+      "type_preset_h2": "preset",
+      "type_font_h2": "heading",
+      "type_size_h2": 11,
+      "type_uppercase_h2": true,
+      "type_preset_h3": "preset",
+      "type_uppercase_h3": true,
+      "type_preset_h5": "preset",
+      "type_font_h5": "accent",
+      "type_uppercase_h5": true,
+      "type_preset_h6": "preset",
+      "type_font_h6": "accent",
+      "type_uppercase_h6": true,
+      "type_preset_section": "h3",
+      "type_font_section": "accent",
+      "type_size_section": 5,
+      "type_uppercase_section": true,
+      "type_preset_kicker": "custom",
+      "type_font_kicker": "accent",
+      "type_size_kicker": 3,
+      "type_uppercase_kicker": false,
+      "type_preset_button": "preset",
+      "type_font_button": "accent",
+      "type_size_button": 4,
+      "type_uppercase_button": true,
+      "font_scaling_system": "lg",
+      "font_rebalance": false,
+      "font_adjust_heading": 100,
+      "font_adjust_subheading": 100,
+      "font_adjust_accent": 100,
+      "font_adjust_body": 100
+    },
+    "shop": {
+      "name": "theme-plus-dev-denislav",
+      "myshopifyDomain": "theme-plus-dev-denislav.myshopify.com",
+      "primaryDomain": {
+        "host": "theme-plus-dev-denislav.myshopify.com",
+        "url": "https://theme-plus-dev-denislav.myshopify.com"
+      },
+      "plan": {
+        "publicDisplayName": "Development",
+        "shopifyPlus": false,
+        "partnerDevelopment": true
+      },
+      "currencyCode": "CAD",
+      "ianaTimezone": "America/New_York",
+      "customerAccountsV2": {
+        "customerAccountsVersion": "NEW_CUSTOMER_ACCOUNTS"
+      },
+      "shopPolicies": [
+        {
+          "type": "PRIVACY_POLICY",
+          "title": "Privacy policy"
+        }
+      ]
+    },
+    "locales": [
+      "en (primary)"
+    ],
+    "passwordProtected": true,
+    "markets": [
+      "ca"
+    ],
+    "counts": {
+      "products": 6,
+      "collections": 1,
+      "pages": 1,
+      "redirects": 0
+    },
+    "menus": [
+      "main-menu",
+      "footer",
+      "customer-account-main-menu"
+    ],
+    "productOptions": [
+      "Color",
+      "Size",
+      "Packaging",
+      "Combined listing option name",
+      "Material"
+    ],
+    "templateSuffixes": [
+      "contact"
+    ],
+    "metafields": [],
+    "metaobjects": [],
+    "pages": [
+      "contact"
+    ],
+    "scriptTagHosts": []
+  },
+  "plan": {
+    "file": "PLAN.md",
+    "approvedAt": null
+  },
+  "history": [
+    {
+      "at": "2026-10-16T15:23:47.151Z",
+      "event": "init"
+    },
+    {
+      "at": "2026-10-16T15:25:28.861Z",
+      "event": "stage setup"
+    },
+    {
+      "at": "2026-10-16T15:51:10.119Z",
+      "event": "stage plan"
+    },
+    {
+      "at": "2026-10-16T15:53:28.577Z",
+      "event": "stage brand"
+    },
+    {
+      "at": "2026-10-16T15:55:54.625Z",
+      "event": "stage build"
+    }
+  ]
+}
