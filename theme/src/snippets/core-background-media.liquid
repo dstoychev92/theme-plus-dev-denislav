@@ -1,27 +1,30 @@
 {% doc %}
-  - Renders a background image or video, whichever media_type names
+  - Renders background image or video, by media_type
 
-  @param {number} [aspect_ratio] - aspect ratio
-  @param {string} [aspect_ratio_mobile] - aspect ratio on mobile
+  With show_image_on_mobile, attributes go to both the mobile image and the video. The video
+  wrapper gets data-video, or data-video-desktop when show_image_on_mobile is on.
+
+  @param {number} [aspect_ratio] - image aspect ratio, ignored for video
+  @param {number} [aspect_ratio_mobile] - mobile image aspect ratio
   @param {string} [attributes]
   @param {string} [class] - The classes
   @param {string} [fetchpriority]
-  @param {string} [height] - CSS height
-  @param {string} [height_mobile] - CSS height on mobile
-  @param {string} [id_prefix] - prefix for the element ids
-  @param {image} [image]
-  @param {string} [image_mobile] - image below the md breakpoint
+  @param {string} [height] - 'image' sizes the media from the aspect ratio, any other value fills the parent, defaults to s.height
+  @param {string} [height_mobile] - 'image' sizes the media from the aspect ratio below md, defaults to s.height_mobile
+  @param {string} [id_prefix] - prefix for the media IDs
+  @param {image} [image] - defaults to s.image
+  @param {image} [image_mobile] - image below the md breakpoint, defaults to s.image_mobile
   @param {string} [loading]
-  @param {string} [media_type] - 'image' or 'video'
-  @param {string} [placeholder] - Shopify placeholder name
-  @param {string} [preload]
+  @param {string} [media_type] - 'image' or 'video', defaults to s.media_type, then 'image'
+  @param {string} [placeholder] - placeholder_svg_tag name
+  @param {boolean} [preload]
   @param {object} [s] - settings object
-  @param {number} [set_height] - applies the height
-  @param {string} [set_height_mobile] - applies the mobile height
-  @param {boolean} [show_image_on_mobile] - uses the image instead of the video on mobile
+  @param {boolean} [set_height] - applies height, defaults to s.set_height, then true
+  @param {boolean} [set_height_mobile] - applies height_mobile, defaults to s.set_height_mobile, then true
+  @param {boolean} [show_image_on_mobile] - renders image_mobile below md instead of the video, defaults to s.show_image_on_mobile
   @param {string} [sizes]
-  @param {video} [video]
-  @param {string} [widths] - widths for the srcset
+  @param {video} [video] - defaults to s.video_bg
+  @param {string} [widths]
 {% enddoc %}
 
 {% liquid

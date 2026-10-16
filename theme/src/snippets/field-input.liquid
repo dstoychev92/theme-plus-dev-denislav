@@ -1,28 +1,28 @@
 {% doc %}
-  - Renders a labelled text input
+  - Renders labeled text input
 
   @param {string} [autocomplete]
-  @param {string} [button] - content after the input
+  @param {string} [button] - button after the input, replaces end_accessory
   @param {string} [class] - The classes
   @param {boolean} [disabled]
   @param {string} [end_accessory] - content after the input
-  @param {string} [end_icon] - icon after the input
-  @param {string} [error_message] - error text, which marks the field invalid
+  @param {string} [end_icon] - icon name after the input
+  @param {string} [error_message] - error text, which marks the input invalid
   @param {string} [error_message_attributes] - attributes for the error message
   @param {string} [form] - id of the form it belongs to
   @param {boolean} [hide_label] - keeps the label for screen readers only
-  @param {string} [icon] - icon before the input
+  @param {string} [icon] - icon name before the input, unless start_icon is set
   @param {string} [id] - element id, defaults to the name handleized
   @param {string} [input_attributes] - attributes for the input
   @param {string} [input_class] - classes for the input
   @param {string} label
   @param {string} [label_class] - classes for the label
-  @param {string} [name]
-  @param {string} [placeholder]
-  @param {string} [size] - 'sm', 'md' or 'lg'
+  @param {string} name
+  @param {string} [placeholder] - shown only while the input has focus
+  @param {string} [size] - 'xs', 'sm', 'md', 'lg' or 'xl', defaults to 'md'
   @param {string} [start_accessory] - content before the input
-  @param {string} [start_icon] - icon before the input
-  @param {string} [style] - inline styles
+  @param {string} [start_icon] - icon name before the input
+  @param {string} [style] - inline styles for the input
   @param {string} [success_message] - message shown after a successful post
   @param {string} [type] - input type, defaults to 'text'
   @param {string} [value]

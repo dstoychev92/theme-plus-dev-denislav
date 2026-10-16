@@ -1,5 +1,13 @@
 <!-- blocks/_form-contact.liquid -->
 
+{% doc %}
+  - Renders contact form holding field blocks and submit button
+
+  Child blocks render inside the form tag, where the form object and its server-side errors
+  exist. Errors show only in the core-form-status summary because theme blocks cannot read the
+  form object.
+{% enddoc %}
+
 {% liquid
   assign form_id = 'form-' | append: block.id
   assign form_class = 'flex flex-col w-full'

@@ -1,23 +1,23 @@
 {% doc %}
-  - Renders one product option value as a swatch link
+  - Renders one product option value as swatch link
 
-  Resolves native and manual color-pattern swatches, while callers retain
-  control of availability and navigation policy.
+  Falls back to the shopify--color-pattern metaobject matching the value name when value.swatch
+  is empty.
 
-  @param {boolean} available
-  @param {boolean} selected
-  @param {product_option_value} value
-  @param {string} url
   @param {string} [attributes]
-  @param {string} [class]
-  @param {number} [custom_size]
-  @param {string} [focus_key]
-  @param {string} [label]
-  @param {string} [selection_id]
-  @param {string} [size]
+  @param {boolean} available
+  @param {string} [class] - The classes
+  @param {number} [custom_size] - swatch size in pixels
+  @param [focus_key] - defaults to selection_id
+  @param {string} [label] - defaults to value.name
+  @param {boolean} selected
+  @param {number} [selection_id] - defaults to value.id
+  @param {string} [size] - 'xs' to 'xl'
   @param {string} [swatch_attributes]
   @param {string} [swatch_class]
   @param {string} [title]
+  @param {string} url
+  @param {product_option_value} value
 {% enddoc %}
 
 {% liquid

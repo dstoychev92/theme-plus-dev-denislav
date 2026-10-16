@@ -1,12 +1,14 @@
 {% doc %}
-  - Renders a dropdown panel under a header link
+  - Renders dropdown panel under header link
+
+  The panel opens only from the desktop nav, since Alpine skips it on a phone.
 
   @param {string} [animation_setting_class] - classes carrying the open animation
   @param {string} [attributes]
   @param {string} [bg_class] - classes for the panel background
   @param {string} [class] - The classes
   @param {link} link
-  @param {string} [menu_id] - id linking the panel to its trigger
+  @param {string} menu_id - id linking the panel to its trigger
   @param {object} [s] - settings object
   @param {string} [style] - inline styles
   @param {string} [target_device] - 'mobile' or 'desktop', defaults to s.target_device

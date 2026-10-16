@@ -1,24 +1,24 @@
 {% doc %}
-  - Renders a background video
+  - Renders autoplaying background video
 
-  @param {number} [aspect_ratio] - aspect ratio
+  @param {number} [aspect_ratio] - defaults to s.aspect_ratio, then video.aspect_ratio
   @param {string} [attributes]
   @param {block} [block]
   @param {string} [class] - The classes
-  @param {string} [height] - CSS height
-  @param {string} [height_mobile] - CSS height on mobile
-  @param {string} [id]
-  @param {string} [id_prefix] - prefix for the element ids
-  @param {boolean} [preload]
+  @param {string} [height] - 'image' sizes the wrapper from the aspect ratio when set_height is on, defaults to s.height
+  @param {string} [height_mobile] - 'image' sizes the wrapper from the aspect ratio below md, defaults to s.height_mobile
+  @param {string} [id] - defaults to id_prefix with '-video'
+  @param {string} [id_prefix] - prefix for the video ID, defaults to block.id, then section.id
+  @param {boolean} [preload] - defaults to true in the first section
   @param {object} [s] - settings object
   @param {section} [section]
-  @param {number} [set_height] - applies the height
-  @param {boolean} [set_height_mobile] - applies the mobile height
+  @param {boolean} [set_height] - applies height
+  @param {boolean} [set_height_mobile] - applies height_mobile, defaults to s.set_height_mobile, then true
   @param {string} [style] - inline styles
-  @param {video} [video]
+  @param {video} [video] - defaults to s.video_bg
   @param {string} [video_class] - classes for the video element
-  @param {string} [video_wrapper_class] - classes for the wrapper
-  @param {string} [width] - CSS width
+  @param {string} [video_wrapper_class] - classes for the core-video wrapper
+  @param {number} [width] - video width in pixels
 {% enddoc %}
 
 {% liquid

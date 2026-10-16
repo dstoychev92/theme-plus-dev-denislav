@@ -1,5 +1,12 @@
 <!-- blocks/_form-radio-group.liquid -->
 
+{% doc %}
+  - Renders contact form radio group holding _form-radio blocks
+
+  Sits inside _form-contact. Posts as contact[<block id>], and each _form-radio reads that id
+  off the front of its own id.
+{% enddoc %}
+
 <div
   class="flex flex-col w-full vars-control-{{ block.settings.sizing }}"
   style="{% render 'props-style-gap', s: block.settings %}"

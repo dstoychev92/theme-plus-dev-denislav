@@ -1,18 +1,20 @@
 {% doc %}
-  - Renders the search form and its predictive results panel
+  - Renders search flyout with form, suggestions, and predictive results
+
+  Render it inside an x-popover root that holds the trigger button.
 
   @param {string} [attributes]
   @param {string} [class] - The classes
-  @param {color_scheme} [color_scheme] - colour scheme for the panel
+  @param {color_scheme} [color_scheme] - color scheme for the panel
   @param {string} [form_class] - classes for the form
-  @param {string} [icon_size] - search icon size
+  @param {string} [icon_size] - 'xs' to 'xl', defaults to 'lg'
   @param {string} [input_class] - classes for the input
-  @param {string} [label] - accessible name for the input
-  @param {string} [menu_id] - id linking the panel to its trigger
-  @param {boolean} [scroll_lock] - locks page scrolling while the panel is open
-  @param {string} [search_form_id] - id for the form
+  @param {string} [label] - defaults to 'search.title'
+  @param {string} [menu_id] - defaults to 'predictive-search-flyout'
+  @param {boolean} [scroll_lock] - false skips locking page scroll while the panel is open
+  @param {string} [search_form_id] - id for the form, defaults to section.id with '-search-flyout-form'
   @param {section} [section]
-  @param {string} [submit_button_attributes] - attributes for the submit button
+  @param {string} [submit_button_attributes] - attributes for the view all results button
 {% enddoc %}
 
 {% liquid

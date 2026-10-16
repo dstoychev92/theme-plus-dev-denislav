@@ -1,5 +1,8 @@
 {% doc %}
-  - Renders product breadcrumbs from the section settings
+  - Renders product breadcrumbs or placeholder text in the editor
+
+  Reads closest.product and section.settings.product_breadcrumbs_list. Wraps the output in
+  product-block with section.settings.target_device_breadcrumbs.
 
   @param {string} [attributes]
   @param {string} [class] - The classes

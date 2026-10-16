@@ -1,18 +1,18 @@
 {% doc %}
-  - Renders a tooltip around a trigger
+  - Renders tooltip around trigger
 
   @param {string} [class] - The classes
   @param {string} content
-  @param {string} [float_options] - options passed to the float plugin
-  @param {number} [max_width] - tooltip max width
-  @param {number} [offset] - gap from the trigger in pixels
-  @param {string} [position] - placement relative to the trigger
-  @param {boolean} [show_arrow] - renders the pointer arrow
-  @param {string} [size] - tooltip size
+  @param {string} [float_options] - float options for the panel
+  @param {string} [max_width] - CSS max-width, defaults to '300px'
+  @param {number} [offset] - gap from trigger in pixels, defaults to 5
+  @param {string} [position] - float placement, defaults to 'bottom'
+  @param {boolean} [show_arrow] - renders pointer arrow, defaults to true
+  @param {string} [size] - 'sm' or 'lg', defaults to 'sm'
   @param {string} [style] - inline styles
-  @param {string} [tooltip_class] - classes for the tooltip
-  @param {string} [tooltip_options] - options passed to the tooltip plugin
-  @param {string} trigger - the rendered trigger
+  @param {string} [tooltip_class] - classes for the panel
+  @param {string} [tooltip_options] - x-popup expression, a boolean or { isOpen }
+  @param {string} trigger - rendered trigger
 {% enddoc %}
 
 {%- liquid

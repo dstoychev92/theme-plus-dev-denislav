@@ -1,15 +1,17 @@
 {% doc %}
-  - Renders one header row, with its background and sticky behaviour
+  - Renders one header row with its background and sticky behavior
+
+  Defines the x-data that header-link reads for the nav underline.
 
   @param {string} [attributes]
-  @param {string} [background] - rendered background markup
-  @param {object} [background_color] - background color object
+  @param {string} [background] - 'transparent', 'canvas', 'tint', or 'custom', defaults to s.background then 'canvas'
+  @param {color} [background_color] - color behind a 'custom' background, defaults to s.background_color
   @param {string} [class] - The classes
-  @param {color_scheme} [color_scheme]
+  @param {color_scheme} [color_scheme] - defaults to s.color_scheme
   @param {string} content
-  @param {number} [content_width] - content width in pixels
+  @param {string} [content_width] - 'full' or 'page', defaults to s.content_width
   @param {string} [inner_class] - classes for the inner row
-  @param {number} [padding_y] - vertical padding in pixels
+  @param {number} [padding_y] - vertical padding in pixels, defaults to s.padding_y then 0
   @param {object} [s] - settings object
   @param {string} [style] - inline styles
   @param {string} [tag] - defaults to 'div'

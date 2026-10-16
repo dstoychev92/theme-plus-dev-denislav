@@ -1,12 +1,12 @@
 {% doc %}
-  - Renders a tabbed card slider section
+  - Renders tabbed card slider section from title row, header area, and tab panels
 
   @param {string} [attributes]
   @param {string} [class] - The classes
   @param {string} [header_area_content] - content in the header area
   @param {object} [s] - settings object
   @param {string} [style] - inline styles
-  @param {number} [tab_count] - number of tabs
+  @param {number} [tab_count] - adds the rows layout class, 1 for title only, more for title and tabs. Omit it when the caller sets the layout class itself
   @param {string} tab_panels - rendered tab panels
   @param {string} [title_row_content] - content in the title row
 {% enddoc %}

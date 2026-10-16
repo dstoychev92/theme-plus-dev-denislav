@@ -1,27 +1,29 @@
 {% doc %}
+  - Renders image tile wrapped in a link for grid layouts
+
   Tiles are images wrapped in a link that are designed to be used in a grid like layout. They are "strechy" and will
   adjust to their container size by default but also having a minimum aspect ratio i.e. they never get super short and
   skinny.
 
-  @param {string} [aria_label] - Names the tile's link on its own, instead of every text block inside it
+  @param {string} [aria_label] - names the tile's link on its own, instead of every text block inside it
   @param {string} [attributes]
   @param {string} [banner_class]
-  @param {string} [class]
+  @param {string} [class] - The classes
   @param {string} [content]
   @param {string} [content_class]
   @param {string} [controls]
-  @param {string} [href]
-  @param {string} [id]
+  @param {string} [href] - defaults to s.href
+  @param {string} [id] - prefix for the tile and banner ids, prints an error when blank
   @param {image} [image]
-  @param {string} [rounding_radius]
-  @param {number} [rounding_radius_custom]
+  @param {string} [rounding_radius] - 'none', 'xs', 'sm', 'md', 'lg' or 'custom', defaults to s.rounding_radius, then 'none'
+  @param {number} [rounding_radius_custom] - radius in pixels when rounding_radius is 'custom', defaults to s.rounding_radius_custom, then 0
   @param {object} [s] - settings object
-  @param {boolean} [set_aspect_ratio]
-  @param {boolean} [set_border]
-  @param {boolean} [set_rounding]
-  @param {string} [sizes]
-  @param {string} [style]
-  @param {string} [widths]
+  @param {boolean} [set_aspect_ratio] - true applies s.aspect_ratio as the minimum aspect ratio, defaults to s.set_aspect_ratio
+  @param {boolean} [set_border] - defaults to s.set_border
+  @param {boolean} [set_rounding] - defaults to s.set_rounding
+  @param {string} [sizes] - defaults to image-grid-sizes
+  @param {string} [style] - inline styles
+  @param {string} [widths] - defaults to image-grid-widths
 {% enddoc %}
 {% liquid
   assign set_aspect_ratio = set_aspect_ratio | default: s.set_aspect_ratio | default: false, allow_false: true

@@ -1,5 +1,11 @@
 <!-- blocks/_footer-link-list.liquid -->
 
+{% doc %}
+  - Renders top-level links of a menu as a list
+
+  Sits inside _footer-column. Nested menu items do not render.
+{% enddoc %}
+
 {% assign linklist = linklists[block.settings.linklist] %}
 {% if linklist != blank and linklist.links.size > 0 %}
   <ul class="flex flex-col gap-r4" {{ block.shopify_attributes }}>

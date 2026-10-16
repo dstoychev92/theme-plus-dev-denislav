@@ -1,7 +1,9 @@
 {% doc %}
-  - Renders the suggested search terms
+  - Renders suggested search term links
 
-  @param {object} [search_terms] - terms to suggest
+  Render it inside a search form whose input carries x-ref searchInput.
+
+  @param {object} [search_terms] - terms to suggest, an array of strings
 {% enddoc %}
 
 {% if search_terms.size > 0 %}

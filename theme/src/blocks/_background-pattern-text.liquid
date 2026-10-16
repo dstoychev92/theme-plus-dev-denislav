@@ -1,5 +1,11 @@
 <!-- blocks/_background-pattern-text.liquid -->
 
+{% doc %}
+  - Renders text repeated as an outlined pattern across a background layer
+
+  Sits inside _background or _section-background. Every nth repetition fills with the text color when highlight is on.
+{% enddoc %}
+
 {% liquid
   assign text_color = block.settings.text_color
   assign text_size = block.settings.text_size

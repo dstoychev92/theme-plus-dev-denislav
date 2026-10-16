@@ -1,5 +1,9 @@
 <!-- blocks/_marquee.liquid -->
 
+{% doc %}
+  - Renders scrolling marquee holding other blocks
+{% enddoc %}
+
 {%- liquid
   if block.settings.set_alignment
     assign effective_alignment = block.settings.block_alignment

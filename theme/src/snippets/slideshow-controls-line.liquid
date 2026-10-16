@@ -1,11 +1,11 @@
 {% doc %}
-  One segment of the "lines" pagination.
+  - Renders one segment of the lines pagination
 
   @param {boolean} [active] - marks this segment filled on the first paint, before Alpine takes over
-  @param {string} index - JavaScript expression for this segment's slide index: a literal number when the slides were counted in Liquid, or the `x-for` variable when the count only exists at runtime
+  @param index - JavaScript expression for this segment's slide index: a literal number when the slides were counted in Liquid, or the x-for variable when the count only exists at runtime
   @param {string} indicator_color - classes for the filled part of the segment
   @param {string} indicator_track - classes for the segment's track
-  @param {string} [label] - accessible label, when the index is a literal number. Blank binds it from `index`
+  @param {number} [label] - accessible label, when the index is a literal number. Blank binds it from index
 {% enddoc %}
 <button
   class="relative rounded-sm w-r9 h-r1 hit-area-y-r5"

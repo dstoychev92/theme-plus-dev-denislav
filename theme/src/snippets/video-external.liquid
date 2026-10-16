@@ -1,15 +1,15 @@
 {% doc %}
-  - Renders a YouTube or Vimeo player, or Shopify placeholder
+  - Renders YouTube or Vimeo player, or Shopify placeholder
 
-  @param {number} [aspect_ratio] - CSS ratio
+  @param {number} [aspect_ratio] - CSS ratio, defaults to 16 / 9
   @param {string} [attributes]
-  @param {string} [autoplay]
+  @param {boolean} [autoplay]
   @param {string} [class] - The classes
   @param {boolean} [lazy] - waits for loadPlayer()
-  @param {string} [loop]
+  @param {boolean} [loop]
   @param {string} [on_init] - Alpine expression for x-init
   @param {string} [on_load_video] - Alpine expression run once the player loads
-  @param {boolean} [placeholder] - Shopify placeholder name, or false for none
+  @param [placeholder] - Shopify placeholder name, or false for none, defaults to 'image'
   @param {string} [video_id] - YouTube or Vimeo ID, not the URL
   @param {string} [video_type] - 'youtube' or 'vimeo'
 {% enddoc %}

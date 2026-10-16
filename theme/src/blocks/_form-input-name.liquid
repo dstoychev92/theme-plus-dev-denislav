@@ -1,5 +1,12 @@
 <!-- blocks/_form-input-name.liquid -->
 
+{% doc %}
+  - Renders contact form name input
+
+  Sits inside _form-contact. The label handle is the contact[] key so the merchant's
+  notification email stays readable, and a cleared label falls back to the block id.
+{% enddoc %}
+
 {% liquid
   # The label doubles as the wire key so the merchant's notification email
   # stays readable. A cleared label must not produce contact[].

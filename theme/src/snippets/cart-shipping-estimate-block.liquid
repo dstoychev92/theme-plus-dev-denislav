@@ -1,12 +1,12 @@
 {% doc %}
-  - Renders shipping estimate form and its result
+  - Renders shipping estimate form and rate results
 
-  @param {boolean} [accordion] - wraps the form in an accordion
+  @param {boolean} [accordion] - wraps the form in an accordion, defaults to block.settings.accordion, then false
   @param {string} [attributes]
   @param {block} [block]
   @param {string} [class] - The classes
-  @param {string} [id]
-  @param {number} [index] - position among the cart blocks
+  @param {string} [id] - prefix for the field IDs, defaults to 'shipping'
+  @param {number} [index] - unused
 {% enddoc %}
 
 {% liquid

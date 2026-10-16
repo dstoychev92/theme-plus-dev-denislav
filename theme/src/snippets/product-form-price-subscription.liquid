@@ -1,11 +1,13 @@
 {% doc %}
-  - Renders the product form price for a selling plan
+  - Renders selling plan price with compare-at, discount, and unit price
 
-  @param {boolean} [has_subscription_discount] - the plan carries a discount
+  Prints nothing unless the plan lowers the variant price.
+
+  @param {boolean} [has_subscription_discount] - plan carries a discount
   @param {product} product
   @param {object} [s] - settings object
-  @param {object} [selected_selling_plan] - the chosen selling plan
-  @param {variant} [variant] - price source, defaults to the selected or first available variant
+  @param {selling_plan} [selected_selling_plan]
+  @param {variant} [variant] - price source, defaults to product.selected_or_first_available_variant
 {% enddoc %}
 
 {%- liquid

@@ -1,18 +1,18 @@
 {% doc %}
-  - Renders a popover and the button that opens it
+  - Renders popover panel and its trigger button
 
   @param {string} [attributes]
-  @param {string} button - the rendered trigger
+  @param {string} button - rendered trigger markup
   @param {string} [class] - The classes
   @param {string} content
-  @param {string} [float_options] - options passed to the float plugin
-  @param {string} [max_width] - popover max width
-  @param {number} [offset] - gap from the trigger in pixels
+  @param {string} [float_options] - options expression for x-popup:popup
+  @param {string} [max_width] - CSS max-width, defaults to '300px'
+  @param {number} [offset] - gap from the trigger in pixels, defaults to 5
   @param {string} [popover_class] - classes for the popover
-  @param {string} [popover_options] - options passed to the popover plugin
-  @param {string} [position] - placement relative to the trigger
-  @param {boolean} [show_arrow] - renders the pointer arrow
-  @param [size] - popover size
+  @param {string} [popover_options] - options expression for x-popup
+  @param {string} [position] - x-popup placement such as 'bottom' or 'bottom-start', defaults to 'bottom'
+  @param {boolean} [show_arrow] - renders the pointer arrow, defaults to true
+  @param [size] - 'sm' or 'lg' padding and text size, or false for none, defaults to 'sm'
   @param {string} [style] - inline styles
 {% enddoc %}
 

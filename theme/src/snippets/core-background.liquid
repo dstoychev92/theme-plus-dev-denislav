@@ -2,29 +2,30 @@
 
 
 {% doc %}
-  A container for "background" content like images, videos, and other media that is meant to be displayed behind the
-  content of a section.
+  - Renders background container with overlay and optional parallax
+
+  Adds core-background-overlay from s in front of content.
 
   @param {string} [attributes]
   @param {block} [block]
-  @param {string} [class]
+  @param {string} [class] - The classes
   @param {string} content
-  @param {string} [custom_height_percentage]
-  @param {string} [custom_height_percentage_mobile]
+  @param {number} [custom_height_percentage]
+  @param {number} [custom_height_percentage_mobile]
   @param {number} [custom_height_px]
-  @param {string} [custom_height_px_mobile]
+  @param {number} [custom_height_px_mobile]
   @param {string} [custom_height_type]
   @param {string} [custom_height_type_mobile]
   @param {string} [height]
   @param {string} [height_mobile]
-  @param {string} [id]
-  @param {string} [id_prefix]
-  @param {number} [parallax]
+  @param {string} [id] - defaults to id_prefix with '-background'
+  @param {string} [id_prefix] - defaults to block.id, then section.id
+  @param [parallax] - percent, defaults to s.parallax when s.set_parallax is on, then settings.parallax
   @param {object} [s] - settings object
   @param {section} [section]
   @param {boolean} [set_height]
   @param {boolean} [set_height_mobile]
-  @param {string} [style]
+  @param {string} [style] - inline styles
 {% enddoc %}
 {% liquid
   if parallax == blank

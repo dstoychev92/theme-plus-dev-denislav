@@ -11,10 +11,10 @@
       "evidence": "keep the live theme"
     },
     "E2": {
-      "value": "denislav-analog (Analog, newest release)",
+      "value": "denislav-analog on Analog 1.1.0-beta.3 (clean release code, live content)",
       "by": "developer",
-      "at": "2026-10-16T11:23:04.685Z",
-      "evidence": "keep the live theme"
+      "at": "2026-10-16T12:50:06.429Z",
+      "evidence": "yes: make the theme code the clean 1.1.0-beta.3 release; the scale-bar block is dropped"
     },
     "E3": {
       "value": "agent runs local commands; developer commits and pushes",

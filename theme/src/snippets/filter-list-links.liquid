@@ -1,10 +1,10 @@
 {% doc %}
-  - Renders a collection menu as filter links
+  - Renders collection menu as filter links
 
   A Show all link that would reveal a single item is dropped, and that item shows instead.
 
-  @param {string} [expanded] - opens the list on load
-  @param {string} [filter_menu] - menu of collections to link
+  @param {boolean} [expanded] - opens the list on load
+  @param {object} [filter_menu] - collections to link, such as a collection_list setting
   @param {string} [label] - list heading
   @param {number} [visible_limit] - items shown before the Show all button, defaults to 6
 {% enddoc %}

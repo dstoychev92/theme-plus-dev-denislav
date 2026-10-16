@@ -1,13 +1,13 @@
 {% doc %}
-  - Renders a gap, and an optional divider line, between toolbar items
+  - Renders gap, with optional divider line, between toolbar items
 
   @param {string} [attributes]
   @param {string} [class] - The classes
   @param {object} [s] - settings object
-  @param {boolean} [show_line] - renders the divider line
-  @param {boolean} [spacer_end] - adds the gap after the item
-  @param {boolean} [spacer_start] - adds the gap before the item
-  @param {number} [spacer_x] - gap width in pixels
+  @param {boolean} [show_line] - renders the divider line, defaults to s.show_line then false
+  @param {number} [spacer_end] - end gap in pixels when spacer_x is not set, defaults to s.spacer_end
+  @param {number} [spacer_start] - start gap in pixels when spacer_x is not set, defaults to s.spacer_start
+  @param {number} [spacer_x] - total gap in pixels, split evenly on both sides, defaults to s.spacer_x
   @param {string} [style] - inline styles
 {% enddoc %}
 

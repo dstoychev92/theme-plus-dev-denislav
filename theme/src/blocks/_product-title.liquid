@@ -1,5 +1,11 @@
 <!-- blocks/_product-title.liquid -->
 
+{% doc %}
+  - Renders product title heading
+
+  Reads closest.product. The title links to the product page unless section.settings.enable_history marks the main product section.
+{% enddoc %}
+
 {% liquid
   assign product = closest.product
 

@@ -2,10 +2,10 @@
   - Renders color overlay over background media
 
   @param {string} [class] - The classes
-  @param {string} [overlay_color] - CSS color, defaults to var(--canvas)
-  @param {number} [overlay_opacity]
+  @param {string} [overlay_color] - CSS color, defaults to s.overlay_color, then var(--canvas)
+  @param {number} [overlay_opacity] - percent, defaults to s.overlay_opacity, then 0. 0 prints nothing
   @param {object} [s] - settings object
-  @param {string} [set_overlay] - false prints nothing, defaults to true
+  @param {boolean} [set_overlay] - false prints nothing, defaults to s.set_overlay, then true
   @param {string} [style] - inline styles
 {% enddoc %}
 

@@ -1,5 +1,11 @@
 <!-- blocks/_form-select-item.liquid -->
 
+{% doc %}
+  - Renders one option in contact form select
+
+  Private, only offered by _form-select. The option value is the label handle.
+{% enddoc %}
+
 {% liquid
   assign label = block.settings.label
   assign label_handle = label | handleize

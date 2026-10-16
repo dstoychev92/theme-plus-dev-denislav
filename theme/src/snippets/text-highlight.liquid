@@ -1,14 +1,14 @@
 {% doc %}
   - Renders highlighted text
 
-  @param {boolean} [animate] - animates the highlight in
-  @param {string} [appearance] - highlight style
+  @param {boolean} [animate] - false skips the wipe-in animation, defaults to true
+  @param {string} [appearance] - 'full', 'partial' or 'underline', defaults to s.highlight_appearance, then 'full'
   @param {string} [attributes]
   @param {string} [class] - The classes
-  @param {string} [color] - highlight colour
+  @param {string} [color] - highlight color, defaults to s.highlight_color, then 'transparent'
   @param {object} [s] - settings object
   @param {string} [style] - inline styles
-  @param {string} [text] - the text to highlight
+  @param {string} text
 {% enddoc %}
 
 {% liquid

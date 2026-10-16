@@ -1,5 +1,11 @@
 <!-- blocks/_pair-video.liquid -->
 
+{% doc %}
+  - Renders pair column with uploaded or external video
+
+  Private, only offered by section-pair. Preloads the video when the section is first on the page.
+{% enddoc %}
+
 {% liquid
   assign video_source = block.settings.video_source
   assign video = block.settings.video

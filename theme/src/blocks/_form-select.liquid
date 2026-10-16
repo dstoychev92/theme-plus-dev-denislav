@@ -1,5 +1,12 @@
 <!-- blocks/_form-select.liquid -->
 
+{% doc %}
+  - Renders contact form select holding _form-select-item blocks
+
+  Sits inside _form-contact. The label handle is the contact[] key, so a cleared label falls
+  back to the block id.
+{% enddoc %}
+
 {% liquid
   # A cleared label must not produce contact[]
   assign label = block.settings.label

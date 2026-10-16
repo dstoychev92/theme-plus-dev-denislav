@@ -1,34 +1,34 @@
 {% doc %}
-  - Renders a section wrapper around already-rendered content
+  - Renders section wrapper with content column around rendered content
 
-  A thin pass-through to core-section-wrapper, with the content column built for you.
+  Renders content through core-section-content, then core-section-wrapper.
 
   @param {string} [attributes]
-  @param {string} [background] - rendered background markup
-  @param {string} [background_color] - CSS background color
+  @param {string} [background] - 'transparent', 'canvas', 'tint', or 'custom', defaults to s.background
+  @param {string} [background_color] - CSS color when background is 'custom', defaults to s.background_color
   @param {string} [class] - The classes
-  @param {color_scheme} [color_scheme]
+  @param {color_scheme} [color_scheme] - defaults to s.color_scheme
   @param {boolean} [contain_controls_rhythm] - the contain setting drives padding and rhythm
   @param {boolean} [contain_disables_transparent_header] - containing the section turns off header transparency
   @param {string} content
-  @param {string} [content_align] - horizontal alignment
-  @param {string} [content_padding] - content padding step
-  @param {number} [content_width] - content width in pixels
-  @param {number} [content_width_custom] - custom content width as a percentage
-  @param {number} [content_width_custom_mobile] - custom content width on mobile
-  @param {string} [inner_attributes] - attributes for the inner column
-  @param {string} [inner_class] - classes for the inner column
-  @param {string} [inner_col_class] - classes for the content column
-  @param {string} [inner_style] - inline styles for the inner column
-  @param {boolean} [lazy_alpine] - starts Alpine only when the section reaches the viewport
+  @param {string} [content_align] - horizontal alignment, defaults to s.content_align
+  @param {string} [content_padding] - 'sm', 'md', 'lg', or 'custom', defaults to s.content_padding
+  @param {string} [content_width] - 'page', 'full', or 'custom', defaults to s.content_width
+  @param {number} [content_width_custom] - percent of the site width when content_width is 'custom', defaults to s.content_width_custom, then 100
+  @param {number} [content_width_custom_mobile] - percent on mobile when content_width is 'custom', defaults to s.content_width_custom_mobile, then 100
+  @param {string} [inner_attributes] - attributes for the content column
+  @param {string} [inner_class] - classes for the content column
+  @param {string} [inner_col_class] - replaces col-section-content on the content column
+  @param {string} [inner_style] - inline styles for the content column
+  @param {boolean} [lazy_alpine] - false removes data-lazy-alpine
   @param {boolean} [padding] - false removes the section padding
   @param {boolean} [photoswipe] - false leaves the section out of the lightbox
   @param {object} [s] - settings object
-  @param {number} [section_width] - section width in pixels
+  @param {string} [section_width] - 'page' or 'full', defaults to s.section_width
   @param {string} [style] - inline styles
-  @param {string} [tag] - defaults to 'div'
-  @param {string} [target_device] - limits the section to one device
-  @param {string} [text_class] - classes for the text colour
+  @param {string} [tag] - defaults to 'section-wrapper'
+  @param {string} [target_device] - 'mobile' or 'desktop' hides the section on the other device, defaults to s.target_device
+  @param {string} [text_class] - classes for the text color, defaults to 'text-content'
 {% enddoc %}
 
 {% capture section_content %}

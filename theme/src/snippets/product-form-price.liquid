@@ -1,9 +1,9 @@
 {% doc %}
-  - Renders the product form price, with compare-at and discount
+  - Renders product price with compare-at, discount, and unit price, or unavailable text
 
   @param {product} product
   @param {object} [s] - settings object
-  @param {variant} [variant] - price source, defaults to the selected or first available variant
+  @param {variant} [variant] - price source, defaults to product.selected_or_first_available_variant
 {% enddoc %}
 
 {%- liquid

@@ -1,22 +1,22 @@
 {% doc %}
-  Render a radio button with a label
+  - Renders radio button with label
 
   @param {string} [attributes]
   @param {boolean} [checked]
-  @param {string} [class]
+  @param {string} [class] - The classes
   @param {boolean} [disabled]
-  @param {string} [error_message]
-  @param {string} [form]
-  @param {string} [id] - The id of the radio button
-  @param {string} [input_attributes]
-  @param {string} [input_class]
-  @param {string} label - The label of the radio button
-  @param {string} [label_class]
-  @param {string} name - The name of the radio button
-  @param {boolean} [reversed]
-  @param [size]
-  @param {string} [success_message]
-  @param {string} [value] - The value of the radio button
+  @param {string} [error_message] - error text shown below, with id plus '-error' as its id
+  @param {string} [form] - id of the form it belongs to
+  @param {string} [id] - defaults to name handleized
+  @param {string} [input_attributes] - attributes for the input
+  @param {string} [input_class] - classes for the input
+  @param {string} label
+  @param {string} [label_class] - classes for the label
+  @param {string} name
+  @param {boolean} [reversed] - puts the label before the button
+  @param [size] - 'sm', 'md' or 'lg', false or omitted leaves sizing to a wrapper
+  @param {string} [success_message] - message shown after a successful post
+  @param {string} [value]
 {% enddoc %}
 {% liquid
   assign id = id | default: name | handleize

@@ -1,9 +1,12 @@
 {% doc %}
   - Renders one blog tag as a filter link
 
+  Builds the link from request.path and blog.url. A tag already in the path links to the path
+  without it.
+
   @param {string} [attributes]
   @param {string} [class] - The classes
-  @param {boolean} [current] - marks the tag as the current page
+  @param {boolean} [current] - adds aria-current and the primary button color
   @param {string} tag
 {% enddoc %}
 

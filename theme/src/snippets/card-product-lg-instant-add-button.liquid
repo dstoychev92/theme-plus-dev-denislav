@@ -1,19 +1,20 @@
 {% doc %}
-  - Renders the add-to-cart button on a product card
+  - Renders add-to-cart submit button on a product card
 
-  Adds the variant straight to the cart, with no quick view and no inline size buttons.
+  Submits variant.id to the surrounding product form. A sold-out product renders a Sold out link
+  to the product page. Reads $productForm and $sectionApi, so render it inside x-product-form.
 
-  @param {string} [appearance] - button appearance
-  @param {string} [aria_label] - accessible name for the button
+  @param {string} [appearance] - button appearance, defaults to 'blur'
+  @param {string} [aria_label] - defaults to the button text
   @param {string} [class] - The classes
-  @param {string} [color] - button color
+  @param {string} [color] - button color, defaults to 'content'
   @param {string} [form_id] - id of the form the button submits
-  @param {boolean} [icon_swap] - swaps the label for an icon
+  @param {boolean} [icon_swap] - shows the cart icon in place of the label on touch devices
   @param {string} [label_class] - classes for the label
-  @param {product} [product]
+  @param {product} product
   @param {string} [size] - defaults to 'lg'
   @param {string} [type_resize] - type resize step
-  @param {variant} [variant] - variant added, defaults to the selected or first available one
+  @param {variant} [variant] - variant added, defaults to selected or first available variant
 {% enddoc %}
 
 {% liquid

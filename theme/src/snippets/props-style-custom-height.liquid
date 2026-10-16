@@ -1,17 +1,17 @@
 {% doc %}
-  - Prints the custom height variables
+  - Prints custom height variables
 
-  @param {string} [custom_height_percentage] - height as a percentage of the viewport
-  @param {string} [custom_height_percentage_mobile] - height as a percentage of the viewport on mobile
+  @param {number} [custom_height_percentage] - height as a percentage of the viewport
+  @param {number} [custom_height_percentage_mobile] - height as a percentage of the viewport on mobile
   @param {number} [custom_height_px] - height in pixels
-  @param {string} [custom_height_px_mobile] - height in pixels on mobile
+  @param {number} [custom_height_px_mobile] - height in pixels on mobile
   @param {string} [custom_height_type] - 'percentage' or 'px'
   @param {string} [custom_height_type_mobile] - 'percentage' or 'px'
-  @param {string} [height] - 'custom', 'image' or 'content'
-  @param {string} [height_mobile] - 'custom', 'image' or 'content'
+  @param {string} [height] - 'custom', 'image', 'content', or suffix for --height-* such as 'screen-one-half'
+  @param {string} [height_mobile] - 'custom', 'image', 'content', or suffix for --height-* such as 'screen-one-half'
   @param {object} [s] - settings object
-  @param {boolean} [set_height] - false prints nothing, defaults to true
-  @param {boolean} [set_height_mobile] - false ignores the mobile height
+  @param {boolean} [set_height] - false skips the desktop variables, defaults to s.set_height, then true
+  @param {boolean} [set_height_mobile] - true prints the mobile variables, defaults to s.set_height_mobile
 {% enddoc %}
 
 {%- liquid

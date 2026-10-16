@@ -1,18 +1,21 @@
 {% doc %}
-  - Renders the desktop product gallery
+  - Renders desktop product gallery as showcase slideshow or stacked grid
+
+  Hidden below the md breakpoint. One media item forces the stack layout with the single style.
+  Reads section.id for the product select event.
 
   @param {number} [aspect_ratio] - media aspect ratio
   @param {string} [attributes]
   @param {string} [class] - The classes
-  @param {number} [featured_media_id] - id of the media to open on
-  @param {number} [featured_media_index] - position of the featured media
-  @param {boolean} [has_option_media_list] - the gallery is filtered by the selected option
-  @param {string} [id]
-  @param {string} [media_attributes] - attributes for each media item
+  @param {number} [featured_media_id] - id of the media shown first
+  @param {number} [featured_media_index] - 0-based slide index to open on, defaults to 0
+  @param {boolean} [has_option_media_list] - marks the first item featured, for option media lists
+  @param {string} [id] - defaults to 'product-media-desktop'
+  @param {string} [media_attributes] - attributes for the media wrapper
   @param {string} [media_class] - classes for each media item
-  @param {object} product_media - the media to render, already ordered
+  @param {object} product_media - media to render, already ordered
   @param {object} [s] - settings object
-  @param {boolean} [scroll_to_variant_image] - scrolls to the variant image when the selection changes
+  @param {boolean} [scroll_to_variant_image] - scrolls to the variant image on selection, stack layout only
   @param {section} [section]
 {% enddoc %}
 

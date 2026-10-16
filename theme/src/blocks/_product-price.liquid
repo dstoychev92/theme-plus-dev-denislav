@@ -1,5 +1,11 @@
 <!-- blocks/_product-price.liquid -->
 
+{% doc %}
+  - Renders product price with sale and subscription lines
+
+  Reads closest.product. A subscription discount with no regular sale hides the main price line and shows only the subscription line.
+{% enddoc %}
+
 {%- liquid
   assign product = closest.product
   assign current_variant = product.selected_or_first_available_variant

@@ -1,5 +1,12 @@
 <!-- blocks/_callout.liquid -->
 
+{% doc %}
+  - Renders icon or number callout with title and text
+
+  Carries its own layout, type, and color settings. Inside _callout-group it renders as is, so
+  the group's settings do not apply to it.
+{% enddoc %}
+
 {%- liquid
   assign media_type = block.settings.media_type
 

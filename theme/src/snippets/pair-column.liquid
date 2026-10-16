@@ -1,42 +1,45 @@
 {% doc %}
-  - Renders one column of a pair section, with its own frame settings
+  - Renders pair section column with its frame settings
 
-  @param {string} [align_self] - vertical alignment within the row
+  Section height mode takes the height from section.settings and always applies it. Column
+  height mode reads s and set_height.
+
+  @param {string} [align_self] - 'start', 'center', or 'end', defaults to section.settings.align_self
   @param {number} [aspect_ratio] - column ratio for the 'image' height, from the caller's media
   @param {string} [attributes]
-  @param {string} [background] - rendered background markup
+  @param {string} [background] - 'canvas', 'tint', 'transparent', or 'custom', defaults to s.background
   @param {block} [block]
-  @param {string} [border_color] - CSS color
-  @param {number} [border_width] - border width in pixels
+  @param {string} [border_color] - CSS color, defaults to s.border_color then '#ffffff00'
+  @param {number} [border_width] - border width in pixels, defaults to s.border_width then 0
   @param {string} [class] - The classes
-  @param {string} [color_scheme] - colour scheme for the column
-  @param {string} [content]
-  @param {string} [custom_height_percentage] - height as a percentage of the viewport
-  @param {string} [custom_height_percentage_mobile] - height as a percentage of the viewport on mobile
+  @param {color_scheme} [color_scheme] - defaults to s.color_scheme
+  @param {string} content
+  @param {number} [custom_height_percentage] - height as a percentage of the viewport
+  @param {number} [custom_height_percentage_mobile] - height as a percentage of the viewport on mobile
   @param {number} [custom_height_px] - height in pixels
-  @param {string} [custom_height_px_mobile] - height in pixels on mobile
+  @param {number} [custom_height_px_mobile] - height in pixels on mobile
   @param {string} [custom_height_type] - 'percentage' or 'px'
   @param {string} [custom_height_type_mobile] - 'percentage' or 'px'
-  @param {boolean} [enable_gap] - applies the gap
-  @param {boolean} [enable_spacing] - applies the padding
-  @param {boolean} [enable_sticky] - sticks the column while the other scrolls
-  @param {boolean} [gap] - gap step
-  @param {string} [gap_custom] - gap in pixels when gap is 'custom'
-  @param {string} [height] - height step
-  @param {string} [height_mobile] - height step on mobile
-  @param {boolean} [is_media_block] - the column holds the media, which changes its defaults
-  @param {string} [padding_custom_horizontal] - horizontal padding in pixels
-  @param {string} [padding_custom_vertical] - vertical padding in pixels
-  @param {string} [padding_horizontal] - horizontal padding step
-  @param {string} [padding_vertical] - vertical padding step
-  @param {string} [rounding_radius] - radius step
-  @param {number} [rounding_radius_custom] - radius in pixels
+  @param {boolean} [enable_gap] - applies the gap, defaults to s.set_gap
+  @param {boolean} [enable_spacing] - applies the padding, defaults to s.set_spacing
+  @param {boolean} [enable_sticky] - sticks the column while the other scrolls, defaults to section.settings.enable_sticky
+  @param {string} [gap] - gap step, defaults to s.gap
+  @param {number} [gap_custom] - gap in pixels when gap is 'custom', defaults to s.gap_custom
+  @param {string} [height] - height step, defaults to s.height in column height mode, otherwise section.settings.height
+  @param {string} [height_mobile] - height step on mobile, defaults to s.height_mobile
+  @param {boolean} [is_media_block] - the column holds media, so it counts as a surface for rounding and borders
+  @param {number} [padding_custom_horizontal] - horizontal padding in pixels, defaults to s.padding_custom_horizontal
+  @param {number} [padding_custom_vertical] - vertical padding in pixels, defaults to s.padding_custom_vertical
+  @param {string} [padding_horizontal] - horizontal padding step, defaults to s.padding_horizontal
+  @param {string} [padding_vertical] - vertical padding step, defaults to s.padding_vertical
+  @param {string} [rounding_radius] - 'none', 'sm', 'md', 'lg', or 'custom', defaults to s.rounding_radius then 'none'
+  @param {number} [rounding_radius_custom] - radius in pixels when rounding_radius is 'custom', defaults to s.rounding_radius_custom then 0
   @param {object} [s] - settings object
   @param {section} [section]
-  @param {boolean} [set_border] - draws the border
-  @param {boolean} [set_color_scheme] - applies the colour scheme
-  @param {boolean} [set_height] - applies the height
-  @param {boolean} [set_rounding] - rounds the corners
+  @param {boolean} [set_border] - draws the border, defaults to s.set_border then false
+  @param {boolean} [set_color_scheme] - applies the color scheme, defaults to s.set_color_scheme then true
+  @param {boolean} [set_height] - applies the height in column height mode, defaults to s.set_height then true
+  @param {boolean} [set_rounding] - rounds the corners, defaults to s.set_rounding then false. Needs a surface, or a color scheme with a transparent background
   @param {string} [style] - inline styles
 {% enddoc %}
 

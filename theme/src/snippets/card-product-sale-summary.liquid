@@ -1,14 +1,14 @@
 {% doc %}
-  - Prints the sale badge text for a product or variant
+  - Prints sale badge text for a product or variant
 
   Prints a custom label, an "X% off" or an "$X off" depending on the sale_type setting, and
-  nothing at all when there is no sale. It summarises a product or a color, which can hold
-  variants at different prices, so it falls back to the label when the discount is unreliable.
+  nothing at all when there is no sale. It summarizes a product or a color, which can hold
+  variants at different prices, so it falls back to the label when product.price_varies is true.
   The caller styles it.
 
-  @param {product} [product]
-  @param {string} [sale_type] - which of the three forms to print
-  @param {variant} [variant] - price source, defaults to the product
+  @param {product} [product] - defaults to variant.product
+  @param {string} [sale_type] - 'percentage', 'dollar', or 'label', defaults to settings.card_badge_sale_type
+  @param {variant} [variant] - price source, defaults to selected or first available variant
 {% enddoc %}
 
 {%- liquid

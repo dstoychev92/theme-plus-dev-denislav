@@ -1,11 +1,13 @@
 {% doc %}
-  - Renders the tab list for a tab group
+  - Renders tab list with scroll buttons for x-tabs
 
-  @param {string} [appearance] - tab style, defaults to s.tab_style then the theme setting
+  Place it inside an x-tabs root. core-tabs does this for theme blocks.
+
+  @param {string} [appearance]
   @param {string} [attributes]
   @param {string} [class] - The classes
   @param {object} [s] - settings object
-  @param {string} [style] - inline styles
+  @param {string} [style] - inline styles, applied only when s.set_gap_tab_x is true
   @param {string} tabs - rendered tab buttons
 {% enddoc %}
 

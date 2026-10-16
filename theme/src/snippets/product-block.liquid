@@ -1,5 +1,7 @@
 {% doc %}
-  - Renders a wrapper around one product page block
+  - Renders wrapper for one product page block
+
+  Adds the hidden attribute when content is blank.
 
   @param {string} [attributes]
   @param {string} [class] - The classes
@@ -7,7 +9,7 @@
   @param {object} [s] - settings object
   @param {string} [style] - inline styles
   @param {string} [tag] - defaults to 'div'
-  @param {string} [target_device] - 'mobile', 'desktop' or 'both', defaults to s.target_device
+  @param {string} [target_device] - 'mobile', 'desktop' or 'both', defaults to s.target_device then 'both'
 {% enddoc %}
 
 {%- liquid

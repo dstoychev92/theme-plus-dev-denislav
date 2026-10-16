@@ -3,57 +3,60 @@
 
 
 {% doc %}
-  Renders a button with the given settings.
+  - Renders button, link, or labeled input with color, appearance, and size variables
 
-  @param {string} [appearance] - The appearance of the button.
+  content replaces the start icon, label, and end icon. Tag 'input' renders a visually hidden
+  input with a label that holds the content.
+
+  @param {string} [appearance] - 'fill', 'stroke', 'soft', 'bare', or 'none', defaults to s.appearance, then 'fill'
   @param {string} [aria_label]
   @param {string} [attributes]
   @param {boolean} [checked]
-  @param {string} [class]
-  @param {string} [color] - The color of the button.
-  @param {string} [color_custom]
-  @param {string} [content] - The content to render. This can be text, icons, or a combination of both.
-  @param {string} [custom_gradient_from]
-  @param {string} [custom_gradient_to]
+  @param {string} [class] - The classes
+  @param {string} [color] - vars-btn-* suffix such as 'primary' or 'content', or 'custom' or 'custom_gradient', defaults to s.color, then 'primary'
+  @param {string} [color_custom] - CSS color when color is 'custom', defaults to s.color_custom
+  @param {string} [content] - rendered markup
+  @param {string} [custom_gradient_from] - defaults to s.custom_gradient_from
+  @param {string} [custom_gradient_to] - defaults to s.custom_gradient_to
   @param {boolean} [disabled]
-  @param {boolean} [end_icon]
-  @param {string} [end_icon_class]
+  @param {string} [end_icon] - core-icon name after the label
+  @param {string} [end_icon_class] - classes for the end icon
   @param {string} [form]
-  @param {string} [height]
-  @param {boolean} [hide_label_on_mobile] - Hide the label on mobile so only the icons show. It stays in the accessible name, so pair it with a start_icon or end_icon.
-  @param {string} [hover_effect]
-  @param {string} [href] - The href of the button.
-  @param {string} [icon]
-  @param {string} [icon_size]
+  @param {string} [height] - vars-btn-height-* suffix, replaced by sizing when set_width is on
+  @param {boolean} [hide_label_on_mobile] - hides the label on mobile so only the icons show. It stays in the accessible name, so pair it with a start_icon or end_icon
+  @param {string} [hover_effect] - 'glow' or false, defaults to 'glow'
+  @param {string} [href] - defaults to s.href
+  @param {string} [icon] - start_icon fallback
+  @param {string} [icon_size] - core-icon size for both icons
   @param {string} [id]
-  @param {string} [label] - The label to render. This should be text
-  @param {string} [label_attributes]
-  @param {string} [label_class]
-  @param {string} [label_style]
+  @param {string} [label] - defaults to s.text
+  @param {string} [label_attributes] - attributes for the label span
+  @param {string} [label_class] - classes for the label span
+  @param {string} [label_style] - inline styles for the label span
   @param {string} [name]
-  @param {boolean} [new_window] - Whether to open the button in a new window.
+  @param {boolean} [new_window] - opens href in a new tab, defaults to s.open_in_new_window
   @param {string} [role]
-  @param [rounding]
+  @param [rounding] - vars-btn-rounding-* suffix, defaults to s.rounding_style when s.set_rounding is on
   @param {object} [s] - settings object
-  @param {boolean} [set_width]
-  @param {string} [settings_suffix]
-  @param {boolean} [sizing]
-  @param {string} [start_icon]
-  @param {string} [start_icon_class]
-  @param {string} [tag]
-  @param {string} [text_color]
+  @param {boolean} [set_width] - applies width_unit, width_px, and width_percent, defaults to s.set_width, then false
+  @param {string} [settings_suffix] - suffix picking a settings group for props-class-type-preset
+  @param {string} [sizing] - vars-btn-* size suffix such as 'sm', defaults to s.sizing, then 'md'
+  @param {string} [start_icon] - core-icon name before the label, defaults to icon
+  @param {string} [start_icon_class] - classes for the start icon
+  @param {string} [tag] - 'button', 'a', or 'input', defaults to 'button'
+  @param {string} [text_color] - defaults to s.text_color
   @param {string} [title]
-  @param {string} [type] - The type of button to render.
+  @param {string} [type] - type attribute for 'button' and 'input', defaults to 'button'
   @param {string} [type_font]
   @param {string} [type_preset]
   @param {string} [type_resize]
   @param {string} [type_size]
-  @param {string} [type_uppercase]
+  @param {boolean} [type_uppercase]
   @param {string} [value]
-  @param {number} [width_percent]
-  @param {number} [width_px]
-  @param {string} [width_unit]
-  @param {boolean} [wrap]
+  @param {number} [width_percent] - min-width percent when width_unit is 'percent', defaults to s.width_percent
+  @param {number} [width_px] - min-width in pixels when width_unit is 'pixel', defaults to s.width_px
+  @param {string} [width_unit] - 'pixel' or 'percent', defaults to s.width_unit
+  @param {boolean} [wrap] - lets the label wrap, defaults to false
 {% enddoc %}
 {% liquid
   assign type = type | default: 'button'

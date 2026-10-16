@@ -1,18 +1,18 @@
 {% doc %}
-  - Renders a play button that opens a video
+  - Renders play button that opens video in a modal dialog
 
   @param {string} [attributes]
   @param {string} [class] - The classes
-  @param {string} [color] - button colour
-  @param {string} [icon] - icon name
-  @param {string} [id] - id for the elements
+  @param {string} [color] - suffix for vars-btn-*, defaults to s.color
+  @param {string} [icon] - fill icon name, defaults to 'fill-social-youtube' for a YouTube link, otherwise 'fill-play-circle'
+  @param {string} [id] - suffix for the drop-shadow filter id, defaults to 'video-button'
   @param {object} [s] - settings object
-  @param {string} [size] - button size
-  @param {string} [size_custom] - button size in pixels
-  @param {video} [video] - Shopify video object
-  @param {string} [video_id] - YouTube or Vimeo id
-  @param {object} [video_link] - link to the video
-  @param {string} [video_source] - video source URL
+  @param {string} [size] - suffix for --row-*, or 'custom', defaults to s.sizing
+  @param {number} [size_custom] - button height in pixels when size is 'custom', defaults to s.sizing_custom
+  @param {video} [video] - Shopify video object, defaults to s.video
+  @param {string} [video_id] - id prefix passed to core-video for an uploaded video
+  @param {object} [video_link] - video_url setting object, defaults to s.video_link
+  @param {string} [video_source] - 'uploaded' or 'external_video', defaults to s.video_source
 {% enddoc %}
 
 {% liquid

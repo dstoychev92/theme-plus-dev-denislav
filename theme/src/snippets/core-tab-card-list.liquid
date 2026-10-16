@@ -1,10 +1,13 @@
 {% doc %}
   - Renders one tab panel holding a card list
 
+  The first block in section.blocks starts selected. The tab button sits in a data-tab-template
+  template for the tab list to adopt.
+
   @param {string} [attributes]
   @param {block} [block]
-  @param {number} [columns_lg] - desktop column count
-  @param {number} [columns_md] - tablet column count
+  @param {number} [columns_lg] - desktop column count, defaults to s.columns_lg
+  @param {number} [columns_md] - tablet column count, defaults to s.columns_md
   @param {string} [list_attributes] - attributes for the card list
   @param {string} list_items - rendered card markup
   @param {object} [s] - settings object

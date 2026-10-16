@@ -1,5 +1,11 @@
 <!-- blocks/theme-image.liquid -->
 
+{% doc %}
+  - Renders image with optional link or zoom
+
+  With image_size_mode 'full' and height 'full', the image is absolutely positioned and fills the parent without defining its height.
+{% enddoc %}
+
 {% liquid
   assign set_rounding = block.settings.set_rounding
   assign rounding_radius = block.settings.rounding_radius

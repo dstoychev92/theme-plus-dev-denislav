@@ -1,5 +1,11 @@
 <!-- blocks/_product-quantity.liquid -->
 
+{% doc %}
+  - Renders product form quantity stepper
+
+  Reads closest.product. The input joins the form buttons block through product_form_id and starts at the variant minimum quantity.
+{% enddoc %}
+
 {% liquid
   assign product = closest.product
 

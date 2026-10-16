@@ -1,5 +1,12 @@
 <!-- blocks/_inline-spacer.liquid -->
 
+{% doc %}
+  - Renders inline gap or line break
+
+  Sits in an inline text flow such as theme-group-text or section-text-spotlight. Break to new
+  line turns the gap vertical.
+{% enddoc %}
+
 {% liquid
   assign break_newline = block.settings.break_newline | default: false
   assign spacer_padding = block.settings.spacer_padding | default: 0

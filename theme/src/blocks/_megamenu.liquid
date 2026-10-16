@@ -1,5 +1,11 @@
 <!-- blocks/_megamenu.liquid -->
 
+{% doc %}
+  - Renders megamenu panel for one parent link
+
+  Sits inside header-menu. Matches block.settings.title to a link title in section.settings.linklist. In the editor an unmatched title shows a placeholder panel.
+{% enddoc %}
+
 {% liquid
   assign title = block.settings.title
   assign menu_id = title | downcase | strip_html | escape_once | handleize

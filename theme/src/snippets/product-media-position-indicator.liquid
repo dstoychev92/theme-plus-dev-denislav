@@ -1,9 +1,11 @@
 {% doc %}
-  - Renders the position dots over the product gallery
+  - Renders position dots for the mobile gallery scroll list
+
+  Reads $scrollList.centeredIndex and $overflow from the enclosing scopes.
 
   @param {string} [attributes]
   @param {string} [class] - The classes
-  @param {object} product_media - the media to render, already ordered
+  @param {object} product_media - one dot per item
   @param {string} [style] - inline styles
 {% enddoc %}
 

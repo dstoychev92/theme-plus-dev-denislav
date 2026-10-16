@@ -1,19 +1,21 @@
 {% doc %}
   - Renders one tab button
 
-  @param {string} [appearance] - tab style
+  Render it inside an x-tabs root.
+
+  @param {string} [appearance] - 'outline' or 'underline', defaults to s.tab_style, then settings.tab_style
   @param {string} [attributes]
   @param {string} [class] - The classes
-  @param {string} [color] - stain color
-  @param {string} [form] - id of the form it belongs to
-  @param {string} [href] - target when the tab is a link
+  @param {string} [color] - unused
+  @param {string} [form] - ID of the form it belongs to
+  @param {string} [href] - target when tag is 'a'
   @param {string} [id]
   @param {string} label
   @param {object} [s] - settings object
   @param {boolean} [selected] - marks it the open tab
   @param {string} [style] - inline styles
-  @param {string} [tag] - 'button' by default, or 'a' when href is set
-  @param {string} [type] - button type
+  @param {string} [tag] - 'button' or 'a', defaults to 'button'
+  @param {string} [type] - type attribute for 'button', defaults to 'button'
 {% enddoc %}
 
 {% liquid

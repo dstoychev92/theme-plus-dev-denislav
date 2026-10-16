@@ -1,17 +1,17 @@
 {% doc %}
-  - Renders the shared accessible link around a swatch
+  - Renders link around swatch
 
-  Selection behavior is provided by x-selection-group through the emitted data attributes.
+  An enclosing x-selection-group matches data-selection-id against its data-selected-id and writes data-selected.
 
+  @param {string} [attributes]
+  @param {string} [class] - The classes
   @param {string} content - rendered swatch markup
+  @param {string} [focus_key] - data-preserve-focus-key value
   @param {string} label - accessible name
   @param {boolean} selected
+  @param {string} [selection_id] - data-selection-id value
+  @param {string} [title] - defaults to label
   @param {string} url
-  @param {string} [attributes]
-  @param {string} [class]
-  @param {string} [focus_key]
-  @param {string} [selection_id]
-  @param {string} [title]
 {% enddoc %}
 
 <a

@@ -4,23 +4,23 @@
   Title renders as plain text. Use details for markup.
 
   @param {string} [aria_label] - card link label, defaults to title
-  @param {number} [aspect_ratio]
+  @param {number} [aspect_ratio] - defaults to 1, at least 0.7
   @param {string} [attributes]
   @param {string} [button] - content after details
   @param {string} [class] - The classes
-  @param {string} [cover]
+  @param {boolean} [cover] - passed to core-image as cover
   @param {string} [details] - content below title
-  @param {boolean} [icon] - icon shown without image or media
+  @param {string} [icon] - icon shown without image or media
   @param {image} [image]
   @param {string} [link_attributes] - attributes for card links
   @param {boolean} [loader] - renders loading state
-  @param {media} [media] - media used instead of image
+  @param [media] - media markup used instead of image, false hides the media box
   @param {string} [media_size_class] - classes sizing the media, defaults to 'aspect-[--aspect-ratio] w-r12'
   @param {string} [media_tag] - 'div' by default, or 'a' when url is set
   @param {string} [style] - inline styles
-  @param {boolean} [title] - plain-text title
+  @param {string} [title] - plain-text title
   @param {string} [title_tag] - 'div' by default, or 'a' when url is set
-  @param {boolean} [url] - card URL, turns title and media into links
+  @param [url] - card URL, turns title and media into links
 {% enddoc %}
 
 {% liquid
@@ -100,7 +100,7 @@
         %}
       {% elsif icon %}
         <div class="flex size-full flex-none flex-center bg-content-mix-5">
-          {% render 'core-icon', icon: icon %}
+          {% render 'core-icon', icon: icon, size: 'md' %}
         </div>
       {% else %}
         {% render 'image-filler', size_class: 'size-full' %}

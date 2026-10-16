@@ -1,27 +1,27 @@
 {% doc %}
-  - Renders a video player, or Shopify placeholder artwork
+  - Renders video player or Shopify placeholder
 
-  @param {number} [aspect_ratio] - CSS ratio, defaults to the video's own then 16 / 9
+  @param [aspect_ratio] - CSS aspect-ratio, defaults to video.aspect_ratio, then '16 / 9'
   @param {string} [attributes]
-  @param {boolean} [autoplay] - plays it muted on load
+  @param {boolean} [autoplay] - plays muted, looped, and inline on load with no play button, defaults to false
   @param {string} [class] - The classes
-  @param {boolean} [controls] - renders the native controls
-  @param {string} [cover] - crops the video to fill
-  @param {string} [height] - CSS height
-  @param {string} [id] - id prefix for the elements
-  @param {boolean} [is_product_video] - marks it as product media, which changes the zoom wiring
+  @param {boolean} [controls] - native controls, defaults to true, or false when autoplay or show_custom_controls is set
+  @param {boolean} [cover] - crops poster image to fill, defaults to true
+  @param {string} [height] - height attribute for the video element
+  @param {string} [id] - id prefix for the container and video
+  @param {boolean} [is_product_video] - fires enter and leave intersects only when the whole video is in view
   @param {boolean} [loop]
   @param {boolean} [muted]
-  @param {string} [on_load_video] - Alpine expression run once the video loads
-  @param [placeholder] - Shopify placeholder name, or false for none
+  @param {string} [on_load_video] - Alpine expression for @theme:video:init
+  @param [placeholder] - placeholder_svg_tag name, or false for none, defaults to 'image'
   @param {string} [play_button_class] - classes for the play button
   @param {boolean} [preload]
-  @param {boolean} [show_custom_controls] - renders the theme's own controls
+  @param {boolean} [show_custom_controls] - turns native controls off by default, for controls the caller renders
   @param {string} [style] - inline styles
-  @param {boolean} [video] - the video object
+  @param {video} [video]
   @param {string} [video_class] - classes for the video element
-  @param {string} [video_container_id] - id for the container, built from id when absent
-  @param {string} [width] - CSS width
+  @param {string} [video_container_id] - aria-controls target for the play button, defaults to id plus '-video-container'
+  @param {string} [width] - width attribute for the video element
 {% enddoc %}
 
 {% assign placeholder = placeholder | default: 'image', allow_false: true %}

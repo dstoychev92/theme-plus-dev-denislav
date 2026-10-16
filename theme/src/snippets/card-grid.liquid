@@ -1,13 +1,15 @@
 {% doc %}
   - Renders cards in a responsive grid
 
+  An omitted column count inherits its --card-grid-cols-* variable from an ancestor.
+
   @param {string} [attributes]
   @param {string} [class] - The classes
-  @param {string} [columns_lg] - column count, defaults to the section setting
-  @param {string} [columns_md] - column count, defaults to the section setting
-  @param {string} [columns_sm] - column count, defaults to the section setting
+  @param {number} [columns_lg] - column count, sets --card-grid-cols-lg
+  @param {number} [columns_md] - column count, sets --card-grid-cols-md
+  @param {number} [columns_sm] - column count, sets --card-grid-cols-sm
   @param {string} items - rendered card markup
-  @param {section} [section]
+  @param {section} [section] - section.settings.mobile_dense_card_grid tightens the mobile grid
   @param {string} [style] - inline styles
 {% enddoc %}
 

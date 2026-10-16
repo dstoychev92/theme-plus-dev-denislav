@@ -1,5 +1,11 @@
 <!-- blocks/_cards-collections.liquid -->
 
+{% doc %}
+  - Renders one collection card for each chosen collection
+
+  An empty list renders placeholder cards in the editor and in placeholder mode.
+{% enddoc %}
+
 {% liquid
   assign collections = block.settings.collections
 

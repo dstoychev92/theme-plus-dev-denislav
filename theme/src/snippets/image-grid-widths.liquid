@@ -1,13 +1,15 @@
 {% doc %}
-  - Prints the widths for an image in a section grid
+  - Prints srcset widths for an image in a section grid
 
-  @param {number} [columns_lg] - desktop column count, defaults to the section setting
-  @param {number} [columns_md] - tablet column count, defaults to the section setting
-  @param {number} [columns_sm] - mobile column count, defaults to the section setting
+  Starts from 240, 490, and 832, then adds grid item widths at least 100 pixels apart.
+
+  @param {number} [columns_lg] - desktop column count, defaults to section.settings.columns_lg then 2
+  @param {number} [columns_md] - tablet column count, defaults to section.settings.columns_md then 2
+  @param {number} [columns_sm] - mobile column count, defaults to section.settings.columns_sm, or columns_sm_custom when that is 'custom', then columns_sm_grid, then settings.slider_columns_mobile
   @param {section} [section]
-  @param {string} [section_img_columns_lg] - columns the image spans on desktop
-  @param {string} [section_img_columns_md] - columns the image spans on tablet
-  @param {string} [section_img_columns_sm] - columns the image spans on mobile
+  @param {number} [section_img_columns_lg] - columns the image spans on desktop, defaults to section.settings.img_columns_lg then 1.0
+  @param {number} [section_img_columns_md] - columns the image spans on tablet, defaults to section.settings.img_columns_md then section_img_columns_lg
+  @param {number} [section_img_columns_sm] - columns the image spans on mobile, defaults to section.settings.img_columns_sm then 1.0
 {% enddoc %}
 
 {% liquid

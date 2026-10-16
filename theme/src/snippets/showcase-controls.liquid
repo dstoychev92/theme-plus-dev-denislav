@@ -1,10 +1,12 @@
 {% doc %}
-  - Renders slider arrows and pagination
+  - Renders slider arrows and dots, lines, or counter pagination
 
-  @param {string} [background_style] - control style, defaults to the theme setting
+  Reads $carousel and $overflow from an enclosing x-carousel and x-overflow scope.
+
+  @param {string} [background_style] - 'bare', 'fill', 'stroke' or 'soft', defaults to settings.slider_control_style when set, then 'bare'
   @param {string} [class] - The classes
-  @param {boolean} [hide_arrows] - renders pagination only
-  @param {string} [pagination_style]
+  @param {boolean} [hide_arrows] - true renders pagination only, defaults to false
+  @param {string} [pagination_style] - 'dots', 'lines' or 'counter', defaults to settings.carousel_pagination_style
 {% enddoc %}
 
 {% liquid

@@ -1,5 +1,11 @@
 <!-- blocks/_product-pickup.liquid -->
 
+{% doc %}
+  - Renders local pickup availability for selected variant
+
+  Reads closest.product. Renders nothing until one pickup location has the variant in stock. The location name opens the pickup drawer.
+{% enddoc %}
+
 {% liquid
   assign product = closest.product
 

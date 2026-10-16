@@ -1,9 +1,11 @@
 {% doc %}
-  - Adds the responsive first image of a card selection to its preload data
+  - Prints data-preload-image attributes for a card selection image
 
-  @param {image} image
-  @param {string} [image_sizes]
-  @param {string} [image_widths]
+  Prints nothing for a blank image.
+
+  @param {image} [image]
+  @param {string} [image_sizes] - defaults to image-grid-sizes
+  @param {string} [image_widths] - defaults to image-grid-widths
 {% enddoc %}
 
 {% if image != blank %}

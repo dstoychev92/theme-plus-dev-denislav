@@ -1,16 +1,17 @@
 {% doc %}
-  - Renders a tab group from theme blocks
+  - Renders tab group from theme blocks
 
-  Each tab button is pulled out of its panel block and rendered in the tab list, because theme
-  blocks cannot be read from Liquid before they render.
+  Each panel block renders its own tab button as a data-tab-template, and the tab list clones
+  it with x-clone, because Liquid cannot read a theme block before it renders. With
+  section.settings.enable_ensemble the root becomes x-ensemble:tabs.
 
   @param {string} [attributes]
-  @param {object} [blocks] - the panel blocks
+  @param {object} [blocks] - panel theme blocks
   @param {object} [s] - settings object
   @param {section} [section]
-  @param {boolean} [section_tabs] - the tabs belong to the section, not a block
-  @param {string} [tab_panels] - rendered panels
-  @param {object} [tabs] - rendered tab buttons
+  @param {boolean} [section_tabs] - true uses x-section-tabs in place of x-tabs
+  @param {string} [tab_panels] - rendered panels placed before the block panels
+  @param {string} [tabs] - rendered tab buttons placed before the cloned ones
 {% enddoc %}
 
 {% liquid

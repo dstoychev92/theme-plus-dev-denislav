@@ -1,16 +1,19 @@
 {% doc %}
-  - Renders the product gallery thumbnails
+  - Renders scrollable product gallery thumbnails with prev and next buttons
 
-  @param {string} [alignment] - alignment along the gallery
+  Reads and sets currentSlideIndex on the enclosing gallery scope. Reads
+  section.settings.contain_section and block.settings.contain_media_mobile for the rounding.
+
+  @param {string} [alignment] - 'top' or 'bottom', vertical orientation only
   @param {number} [aspect_ratio] - thumbnail aspect ratio, defaults to 1
   @param {string} [attributes]
   @param {block} [block]
   @param {string} [class] - The classes
-  @param {number} [featured_media_id] - id of the media to open on
-  @param {string} [id]
+  @param {number} [featured_media_id] - id of the thumbnail marked current before Alpine starts
+  @param {string} [id] - gallery id, resolved through $id for aria-controls
   @param {number} [image_size] - thumbnail size in pixels, defaults to 50
   @param {string} [orientation] - 'horizontal' or 'vertical', defaults to 'horizontal'
-  @param {object} product_media - the media to render, already ordered
+  @param {object} product_media - media to render, already ordered
   @param {section} [section]
   @param {number} [thumbnail_spacing] - gap in pixels, defaults to 3
 {% enddoc %}

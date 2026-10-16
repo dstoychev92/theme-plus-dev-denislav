@@ -1,5 +1,11 @@
 <!-- blocks/_footer-follow-on-shop.liquid -->
 
+{% doc %}
+  - Renders Follow on Shop button
+
+  Sits inside _footer-column. Renders nothing when shop.features.follow_on_shop? is false.
+{% enddoc %}
+
 {%- if shop.features.follow_on_shop? -%}
   {% capture style %}
     {% case block.settings.sizing %}
@@ -15,7 +21,7 @@
       --scale: 0.65;
     {% endcase %}
   {% endcapture %}
-  <div class="grayscale origin-left" style="{{- style -}} scale: var(--scale);">
+  <div class="grayscale origin-left" style="{{- style -}} scale: var(--scale);" {{ block.shopify_attributes }}>
     {{ shop | login_button: action: 'follow' }}
   </div>
 {%- endif -%}

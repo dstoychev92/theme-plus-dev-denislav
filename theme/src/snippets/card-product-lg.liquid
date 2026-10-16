@@ -1,11 +1,11 @@
 {% doc %}
-  - Renders a large, Section API-updatable product card
+  - Renders large product card that updates through Section API
 
-  @param {string} [appearance]
-  @param {boolean} [api_response] - marks markup rendered as a Section API response
-  @param {number} [aspect_ratio]
+  @param {boolean} [api_response] - true for Section API response markup, which loads the first image eagerly
+  @param {string} [appearance] - suffix for vars-card-lg-appearance-*
+  @param {number} [aspect_ratio] - defaults to settings.card_aspect_ratio, ignored when settings.product_card_image_fit is 'uneven'
   @param {string} [attributes]
-  @param {string} [class] - additional classes for the card
+  @param {string} [class] - The classes
   @param {string} [image_fetchpriority]
   @param {string} [image_loading]
   @param {string} [image_sizes]

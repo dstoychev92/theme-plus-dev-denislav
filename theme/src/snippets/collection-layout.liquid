@@ -1,27 +1,29 @@
 {% doc %}
-  - Renders the collection grid with its toolbar and filters
+  - Renders collection toolbar, filter sidebar, filter drawer, and results content
+
+  Filters stay off when the section has no filter menu and the collection has no filters.
 
   @param {number} [all_products_count] - number of products before filtering
   @param {string} [class] - The classes
-  @param {collection} [collection]
-  @param {number} [columns_lg] - column count, defaults to the section setting
-  @param {number} [columns_md] - column count, defaults to the section setting
-  @param {number} [columns_sm] - column count, defaults to the section setting
+  @param collection - collection or search object
+  @param {number} [columns_lg] - column count, defaults to section.settings.columns_lg
+  @param {number} [columns_md] - column count, defaults to section.settings.columns_md
+  @param {number} [columns_sm] - column count, defaults to section.settings.columns_sm
   @param {string} content
-  @param {boolean} [enable_filters] - renders the filters
-  @param {boolean} [enable_layout_buttons] - renders the column switcher
-  @param {boolean} [enable_sorting] - renders the sort select
-  @param {string} [filter_mode] - filter layout
-  @param {string} [filter_url] - URL the filter form posts to
-  @param {object} [filters]
-  @param {string} [form] - id of the filter form
-  @param {number} [limit] - products a page holds
+  @param {boolean} [enable_filters] - renders the filters, defaults to section.settings.enable_filters, then true
+  @param {boolean} [enable_layout_buttons] - renders the column selects, defaults to section.settings.enable_layout_buttons, then true
+  @param {boolean} [enable_sorting] - renders the sort select, defaults to section.settings.enable_sorting, then true
+  @param {string} [filter_mode] - 'sidebar' or 'drawer', defaults to section.settings.filter_mode, then 'sidebar'
+  @param {string} [filter_url] - filter form action URL, defaults to collection.url
+  @param {object} [filters] - defaults to collection.filters
+  @param {string} [form] - ID of the form the filter inputs belong to
+  @param {number} [limit] - unused
   @param {object} [paginate]
   @param {number} [products_count] - number of products matching the filters
   @param {string} [q] - search query carried through the form
   @param {section} [section]
-  @param {boolean} [show_products_count] - renders the product count
-  @param {boolean} [sidebar_open] - the sidebar starts open
+  @param {boolean} [show_products_count] - renders the product count, defaults to section.settings.show_products_count, then true
+  @param {boolean} [sidebar_open] - sidebar starts open, defaults to section.settings.filter_sidebar_open_by_default, then true
 {% enddoc %}
 
 {%- liquid

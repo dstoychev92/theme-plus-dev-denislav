@@ -1,25 +1,28 @@
 {% doc %}
   - Renders product card at the requested size
 
+  Size 'lg' renders card-product-lg. The view event attributes are added for a product outside
+  an API response.
+
   @param {boolean} [api_response] - marks markup rendered as a Section API response
-  @param {string} [appearance] - suffix for vars-card-lg-appearance-*
-  @param {number} [aspect_ratio]
+  @param {string} [appearance] - suffix for vars-card-lg-appearance-*, size 'lg' only
+  @param {number} [aspect_ratio] - defaults to settings.card_aspect_ratio
   @param {string} [attributes]
-  @param {block} [block]
-  @param {boolean} [button] - renders the add-to-cart or quick-view control
+  @param {block} [block] - scopes the product form id, pass it when the caller holds a section-local block
+  @param {boolean} [button] - renders the add-to-cart or Quick View button, size 'md' only
   @param {string} [class] - The classes
   @param {string} [image_fetchpriority]
   @param {string} [image_loading]
   @param {string} [image_sizes]
   @param {string} [image_widths]
-  @param {boolean} [loader] - renders loading state
-  @param {boolean} [placeholder]
-  @param {number} [placeholder_image_index] - placeholder artwork number
-  @param {boolean} [product]
+  @param {boolean} [loader] - true disables placeholder
+  @param {boolean} [placeholder] - placeholder card, design mode or settings.placeholder_mode only
+  @param {number} [placeholder_image_index] - placeholder artwork number, defaults to 1
+  @param {product} [product]
   @param {section} [section]
   @param {string} [size] - 'xs', 'sm', 'md' or 'lg', selecting the card-layout snippet
-  @param {boolean} [url] - card URL, defaults to the product URL
-  @param {string} [view_context] - standard_event_data context, 'collection' by default
+  @param [url] - card URL, defaults to product.url, false removes the link
+  @param {string} [view_context] - standard_event_data context, defaults to 'collection'
 {% enddoc %}
 
 {%- liquid

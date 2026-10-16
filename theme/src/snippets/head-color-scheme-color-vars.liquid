@@ -1,10 +1,10 @@
 {% doc %}
-  - Prints the oklch and fallback variables for one scheme color
+  - Prints oklch and fallback variables for one scheme color
 
-  @param {color} color - the color
-  @param {string} color_name - name used in the variable, such as canvas
+  @param {color} color
+  @param {string} color_name - name used in the variable, such as 'canvas'
   @param {color} [contrast_color] - color that reads against it
-  @param {string} [scheme_id] - id prefix for the variables
+  @param {string} scheme_id - id prefix for the variables
 {% enddoc %}
 
 --{{ scheme_id }}-{{ color_name }}-oklch: {{ color.oklch }};

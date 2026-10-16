@@ -1,15 +1,17 @@
 {% doc %}
-  - Renders callout with title, body text and optional media
+  - Renders callout with title, body text, and optional media
+
+  s.layout picks the arrangement. An unknown value prints nothing.
 
   @param {string} [attributes]
   @param {string} [body_text]
-  @param {string} [callout_color_class] - classes for the color layer
-  @param {string} [callout_color_style] - inline styles for the color layer
+  @param {string} [callout_color_class] - classes for the media wrapper
+  @param {string} [callout_color_style] - inline styles for the media wrapper
   @param {string} [class] - The classes
-  @param {boolean} [color_enabled] - false drops the color layer, defaults to true
-  @param {media} [media]
-  @param {number} [media_px] - media size in pixels
-  @param {string} [media_type]
+  @param {boolean} [color_enabled] - false ignores the s color settings, defaults to true
+  @param {string} [media] - rendered media markup
+  @param {number} [media_px] - media width in pixels before the r multiplier for icons and side layouts, defaults to 32
+  @param {string} [media_type] - 'icon' sizes the media wrapper to media_px
   @param {object} [s] - settings object
   @param {string} [title_text]
 {% enddoc %}

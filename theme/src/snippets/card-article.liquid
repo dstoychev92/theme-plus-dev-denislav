@@ -1,22 +1,24 @@
 {% doc %}
   - Renders article card at the requested size
 
+  The show_* and image_* parameters apply at size 'lg' only.
+
   @param {article} [article]
-  @param {number} [aspect_ratio]
+  @param {number} [aspect_ratio] - defaults to settings.card_aspect_ratio
   @param {string} [attributes]
   @param {string} [class] - The classes
-  @param {string} [icon] - icon shown without image
+  @param {string} [icon] - icon shown without image, defaults to 'fill-article' at size 'xs'
   @param {string} [image_fetchpriority]
   @param {string} [image_loading]
-  @param {boolean} [loader] - renders loading state
-  @param {boolean} [placeholder]
+  @param {boolean} [loader] - true disables placeholder
+  @param {boolean} [placeholder] - placeholder card, design mode or settings.placeholder_mode only
   @param {boolean} [show_author]
   @param {boolean} [show_date]
   @param {boolean} [show_link]
   @param {boolean} [show_preview]
   @param {boolean} [show_tags]
   @param {string} [size] - 'xs', 'sm', 'md' or 'lg', selecting the card-layout snippet
-  @param {boolean} [url] - card URL, defaults to the article URL
+  @param [url] - card URL, defaults to article.url, false removes the link
 {% enddoc %}
 
 {%- liquid

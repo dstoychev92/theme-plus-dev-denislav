@@ -7,17 +7,17 @@
   @param {string} [attributes]
   @param {string} [class] - The classes
   @param {boolean} [enable_animations] - entrance animation when timer enters view
-  @param {string} [end_date] - YYYY-MM-DD for one-time schedule
-  @param {string} [end_message]
-  @param {string} [end_time] - HH:MM in 12-hour time
-  @param {string} [hide_on_complete] - hides one-time timer at completion
-  @param {string} [period] - 'am' or 'pm'
-  @param {number} [repeat_day] - weekly day, where 0 is Sunday
-  @param {string} [repeat_frequency] - 'daily' or 'weekly'
+  @param {string} [end_date] - YYYY-MM-DD for one-time schedule, defaults to s.end_date
+  @param {string} [end_message] - defaults to s.end_message
+  @param {string} [end_time] - HH:MM in 12-hour time, defaults to s.end_time, then '11:59'
+  @param {boolean} [hide_on_complete] - hides one-time timer at completion, defaults to s.hide_on_complete
+  @param {string} [period] - 'am' or 'pm', defaults to s.period, then 'pm'
+  @param {string} [repeat_day] - weekly day from '0' for Sunday to '6', defaults to s.repeat_day, then '1'
+  @param {string} [repeat_frequency] - 'daily' or 'weekly', defaults to s.repeat_frequency, then 'weekly'
   @param {object} [s] - settings object
-  @param {string} [schedule] - 'once' or 'repeat'
+  @param {string} [schedule] - 'once' or 'repeat', defaults to s.schedule, then 'repeat'
   @param {string} [time_class] - classes for time
-  @param {string} [word_length] - 'letter', 'short' or 'full'
+  @param {string} [word_length] - 'letter', 'short' or 'full', defaults to s.word_length
 {% enddoc %}
 
 {%- liquid

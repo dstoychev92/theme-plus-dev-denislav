@@ -1,5 +1,11 @@
 <!-- blocks/_toolbar-announcement.liquid -->
 
+{% doc %}
+  - Renders announcement text in the header toolbar
+
+  Private, only offered by header-toolbar. Text style comes from section.settings.
+{% enddoc %}
+
 {% render 'core-inline-richtext',
   s: section.settings,
   text: block.settings.announcement_text,

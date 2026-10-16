@@ -1,15 +1,15 @@
 {% doc %}
-  - Renders one drawer menu item and its submenu trigger
+  - Renders drawer menu item as plain link, inline disclosure, or submenu overlay trigger
 
   index keeps two links with the same title from sharing a submenu id.
 
-  @param {boolean} [expand_dropdowns] - opens every submenu instead of nesting them
-  @param {boolean} [index] - position among the links, appended to the submenu id
+  @param {boolean} [expand_dropdowns] - starts the disclosure submenu expanded
+  @param {number} [index] - position among the links, appended to the submenu id
   @param {string} [item_class] - classes for the list item
   @param {string} [item_style] - inline styles for the list item
-  @param {link} [link]
+  @param {link} link
   @param {section} [section]
-  @param {string} [submenu_placeholder] - renders a placeholder submenu in the theme editor
+  @param {boolean} [submenu_placeholder] - uses 'placeholder' as the submenu id in the theme editor
 {% enddoc %}
 
 {% liquid

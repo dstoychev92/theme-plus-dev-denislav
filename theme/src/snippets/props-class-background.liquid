@@ -1,12 +1,12 @@
 {% doc %}
   - Prints color scheme and background classes
 
-  @param {string} [background] - 'canvas', 'tint', 'transparent' or 'custom'
+  @param {string} [background] - 'canvas', 'tint', 'transparent' or 'custom', defaults to s.background
   @param {boolean} [background_blur] - blurs what sits behind a custom background
-  @param {string} [background_custom] - CSS color
+  @param {string} [background_custom] - read but unused, props-style-background prints it
   @param {color_scheme} [color_scheme]
   @param {object} [s] - settings object
-  @param {boolean} [set_color_scheme] - false prints nothing, defaults to true
+  @param {boolean} [set_color_scheme] - false prints nothing, defaults to s.set_color_scheme then true
 {% enddoc %}
 
 {% liquid

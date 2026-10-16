@@ -1,29 +1,31 @@
 {% doc %}
-  - Renders a decorative shape, line or image behind content
+  - Renders decorative shape, line, or image
+
+  s defaults to the global settings object.
 
   @param {string} [attributes]
   @param {string} [class] - The classes
-  @param {string} [decoration_color] - shape color
-  @param {string} [decoration_color_custom] - CSS color for a custom shape color
-  @param {boolean} [decoration_dash_rounded] - rounds the dash ends
-  @param {number} [decoration_dash_weight] - dash thickness in pixels
-  @param {string} [decoration_image] - image used as the decoration
-  @param {number} [decoration_opacity] - shape opacity
-  @param {string} [decoration_outline_color] - outline color
-  @param {string} [decoration_position] - where the decoration sits
-  @param {string} [decoration_shape] - shape name
-  @param {string} [decoration_type] - 'shape', 'line' or 'image'
-  @param {number} [decoration_width] - shape width
-  @param {string} [line_color] - line color
-  @param {string} [line_color_custom] - CSS color for a custom line color
-  @param {string} [line_direction] - line direction
-  @param {number} [line_opacity] - line opacity
-  @param {number} [line_percent] - line length as a percentage
-  @param {number} [line_px] - line length in pixels
-  @param {string} [line_thickness] - line thickness
-  @param {string} [line_unit] - 'percent' or 'px'
+  @param {string} [decoration_color] - color token such as 'content', or 'custom', defaults to s.decoration_color, then 'content'
+  @param {string} [decoration_color_custom] - CSS color when decoration_color is 'custom', defaults to s.decoration_color_custom, then '#00000036'
+  @param {boolean} [decoration_dash_rounded] - rounds the dash ends, defaults to s.decoration_dash_rounded, then false
+  @param {number} [decoration_dash_weight] - dash thickness in pixels, defaults to s.decoration_dash_weight, then 3
+  @param {image} [decoration_image] - defaults to s.decoration_image
+  @param {number} [decoration_opacity] - shape opacity percent, defaults to s.decoration_opacity, then 50
+  @param {string} [decoration_outline_color] - CSS color, defaults to s.decoration_outline_color, then '#00000080'
+  @param {string} [decoration_position] - unused
+  @param {string} [decoration_shape] - shape name such as 'line-dash', 'fill-circle', or 'line-squiggle', defaults to s.decoration_shape, then 'line-dash'
+  @param {string} [decoration_type] - 'shape', 'line', 'image', or 'none', defaults to s.decoration_type, then 'none'
+  @param {number} [decoration_width] - shape width in pixels, defaults to s.decoration_width, then 6
+  @param {string} [line_color] - color token or 'custom', defaults to s.line_color, then 'content'
+  @param {string} [line_color_custom] - CSS color when line_color is 'custom', defaults to s.line_color_custom, then '#00000036'
+  @param {string} [line_direction] - 'horizontal' or 'vertical', defaults to s.line_direction, then 'horizontal'
+  @param {number} [line_opacity] - percent, defaults to s.line_opacity, then 30
+  @param {number} [line_percent] - line length percent when line_unit is 'percent', defaults to s.line_percent, then 100
+  @param {number} [line_px] - line length in pixels when line_unit is 'pixel', defaults to s.line_px, then 100
+  @param {number} [line_thickness] - line thickness in pixels, defaults to s.line_thickness, then 1
+  @param {string} [line_unit] - 'pixel' or 'percent', defaults to s.line_unit, then 'percent'
   @param {object} [s] - settings object
-  @param {string} [set_decoration_outline] - draws the outline
+  @param {boolean} [set_decoration_outline] - outlines a fill shape, defaults to s.set_decoration_outline, then false
   @param {string} [style] - inline styles
 {% enddoc %}
 

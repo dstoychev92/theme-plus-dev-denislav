@@ -1,5 +1,5 @@
 {% doc %}
-  - Renders the import map and the theme script tags
+  - Renders import map, theme script tags, and window.theme globals
 
   The import map has to come before every other script import or none of them resolve.
 {% enddoc %}
@@ -142,7 +142,7 @@
       productRecommendations: '{{ routes.product_recommendations_url }}',
     },
     currency: {
-      {% comment %} theme.currency enables assembly-ui to match liquid formatting in javascript {% endcomment %}
+      {% comment %} theme.currency enables tradecraft-ui to match liquid formatting in javascript {% endcomment %}
       locale:  '{{ request.locale.iso_code | append: '-' | append: localization.country.iso_code }}',
       currencyCode: '{{ cart.currency.iso_code }}',
       legacyFormat: {{ shop.money_format | json }},

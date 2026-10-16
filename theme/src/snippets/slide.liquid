@@ -1,13 +1,15 @@
 {% doc %}
   - Renders one slideshow slide
 
+  Reads $slideshow from an enclosing x-slideshow scope, and section.settings for the content and background wrappers.
+
   @param {string} [attributes]
   @param {string} [background] - rendered background markup
   @param {string} [background_class] - classes for the background
   @param {string} [class] - The classes
   @param {string} content
   @param {section} [section]
-  @param {boolean} [visible] - marks it the slide on screen
+  @param {boolean} [visible] - true omits x-cloak for the slide on screen at first paint
 {% enddoc %}
 
 {% capture class %}

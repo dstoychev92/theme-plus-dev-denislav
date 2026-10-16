@@ -1,5 +1,12 @@
 <!-- blocks/_card-custom-overlay.liquid -->
 
+{% doc %}
+  - Renders custom card content over the media
+
+  Static child of _card-custom, placed with id 'overlay', holding other blocks. Renders nothing
+  when empty.
+{% enddoc %}
+
 {% capture blocks %}
   {% content_for 'blocks' %}
 {% endcapture %}

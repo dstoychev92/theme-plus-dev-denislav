@@ -1,13 +1,13 @@
 {% doc %}
-  - Prints position variables for a floating element
+  - Prints position and rotation variables and z-index rule for a floating element
 
-  @param {string} [left] - percentage from the left
-  @param {string} [left_mobile] - percentage from the left on mobile
-  @param {number} [rotation] - rotation in degrees
+  @param {number} [left] - percentage from the left
+  @param {number} [left_mobile] - percentage from the left on mobile
+  @param {number} [rotation] - rotation as a percentage of a half turn, defaults to 0
   @param {object} [s] - settings object
-  @param {string} [set_position_mobile] - false ignores the mobile position
-  @param {string} [top] - percentage from the top
-  @param {string} [top_mobile] - percentage from the top on mobile
+  @param {boolean} [set_position_mobile] - false ignores the mobile position, defaults to s.set_position_mobile, then true
+  @param {number} [top] - percentage from the top
+  @param {number} [top_mobile] - percentage from the top on mobile
   @param {number} [z_index]
 {% enddoc %}
 

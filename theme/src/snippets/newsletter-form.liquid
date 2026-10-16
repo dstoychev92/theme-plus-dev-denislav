@@ -1,13 +1,16 @@
 {% doc %}
-  - Renders the newsletter signup form
+  - Renders newsletter signup form
 
-  @param {string} [appearance] - form appearance
+  Pass a unique id when a page holds more than one form, since the success message shows only
+  for the submitted id.
+
+  @param {string} [appearance] - 'line' or 'box', defaults to s.newsletter_appearance then 'line'
   @param {string} [attributes]
   @param {string} [class] - The classes
-  @param {string} [id] - id for the form
+  @param {string} [id] - id for the form, defaults to 'newsletter-form'
   @param {object} [s] - settings object
-  @param {boolean} [show_captcha_terms] - adds the reCAPTCHA notice
-  @param {string} [success_message] - message shown after a successful signup
+  @param {boolean} [show_captcha_terms] - adds the reCAPTCHA notice, defaults to s.show_captcha_terms
+  @param {string} [success_message] - message shown after a successful signup, defaults to s.success_message then 'homepage.newsletter_form.success_message'
 {% enddoc %}
 
 {%- liquid

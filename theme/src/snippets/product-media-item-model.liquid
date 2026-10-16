@@ -1,12 +1,15 @@
 {% doc %}
-  - Renders a product 3D model
+  - Renders product 3D model with its poster image and play button
+
+  Reads $slide in the showcase layout and $scrollList on mobile to pause the model when it
+  leaves the current slide.
 
   @param {number} [aspect_ratio] - media aspect ratio
   @param {string} [attributes]
   @param {string} [class] - The classes
-  @param {string} [layout_desktop] - desktop layout, defaults to s.layout_desktop
+  @param {string} [layout_desktop] - 'showcase' or 'stack', defaults to s.layout_desktop then 'stack'
   @param {string} [loading]
-  @param {media} [media] - product media of type 'model'
+  @param {media} media - product media of type 'model'
   @param {boolean} [preload]
   @param {object} [s] - settings object
   @param {section} [section]

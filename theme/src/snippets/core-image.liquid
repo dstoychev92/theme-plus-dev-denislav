@@ -6,17 +6,17 @@
   @param {string} [alt] - image.alt, then alt_default, then empty for decorative image
   @param {string} [alt_default] - fallback alt text
   @param {boolean} [aria_hidden]
-  @param {number} [aspect_ratio] - image ratio, then 1.7
-  @param {string} [aspect_ratio_mobile]
+  @param {number} [aspect_ratio] - defaults to image.aspect_ratio, then 1.7
+  @param {number} [aspect_ratio_mobile] - applies when image_mobile is set
   @param {string} [class] - The classes
   @param {boolean} [cover] - crops to fill, defaults to true. Add a fill-size class
   @param {string} [crop] - Shopify crop position
   @param {string} [fetchpriority]
   @param {string} [id]
   @param {image} [image]
-  @param {object} [image_mobile] - image below md breakpoint
+  @param {image} [image_mobile] - image below the md breakpoint
   @param {string} [loading]
-  @param {string} [mobile_widths] - comma-separated mobile srcset widths
+  @param {string} [mobile_widths] - comma-separated mobile srcset widths, defaults to '416, 600, 800, 1200, 1600'
   @param [placeholder] - placeholder_svg_tag name, or false. Only drawn in placeholder mode or the theme editor
   @param {boolean} [preload] - uses eager loading and high fetch priority
   @param {string} [sizes]

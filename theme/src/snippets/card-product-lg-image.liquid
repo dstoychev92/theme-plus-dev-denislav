@@ -5,12 +5,12 @@
   @param {string} [class] - The classes
   @param {string} [fetchpriority]
   @param {image} image
-  @param {string} [image_class] - classes for the image
-  @param {string} [image_sizes] - sizes hint for the image
-  @param {string} [image_widths] - widths for the image srcset
-  @param {string} [loading]
-  @param {boolean} [placeholder] - renders placeholder artwork without an image, defaults to true
-  @param {product} [product]
+  @param {string} [image_class] - classes for loading placeholder
+  @param {string} [image_sizes] - defaults to image-grid-sizes
+  @param {string} [image_widths] - defaults to image-grid-widths
+  @param {string} [loading] - 'lazy' adds the loading placeholder
+  @param {boolean} [placeholder] - renders the loading placeholder under a lazy image, defaults to true
+  @param {product} [product] - product.title is the fallback alt text
 {% enddoc %}
 
 {%- liquid

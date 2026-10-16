@@ -1,10 +1,12 @@
 {% doc %}
   - Renders filter and sort drawer
 
-  @param {string} [base_id] - prefix for element ids, defaults to 'filter'
-  @param {string} [button_attributes] - attributes for the button that opens the drawer
-  @param {string} [collection_form_id] - id of the collection form
-  @param {string} [default_sort_by] - collection's default sort key
+  Place it inside an element with x-dialog.
+
+  @param {string} [base_id]
+  @param {string} [button_attributes] - attributes for the clear all and show results buttons
+  @param {string} [collection_form_id] - replaced by 'filter-drawer' before use
+  @param {string} [default_sort_by] - collection's default sort key, defaults to collection.default_sort_by
   @param {string} filter_url - URL the filter form posts to
   @param {object} filters
   @param {string} form - id of the form the inputs belong to

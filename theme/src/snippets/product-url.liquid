@@ -1,12 +1,12 @@
 {% doc %}
   - Builds product URL for variants, combined listings, and selling plans
 
-  @param {boolean} [base_url] - URL replacing variant or product URL for combined listings
-  @param {string} [option_position] - 1-based option position for value_id
-  @param {product} [product]
-  @param {boolean} [selling_plan] - selected plan, or false. A required product falls back to its first available plan
-  @param {string} [value_id] - option value inserted at option_position
-  @param {variant} [variant] - variant URL, or an option_values query when there is no variant
+  @param {string} [base_url] - replaces the variant or product URL, for combined listings
+  @param {number} [option_position] - 1-based option position for value_id
+  @param {product} product
+  @param [selling_plan] - selling plan for the query, or false to omit it, defaults to product.selected_selling_plan. A product that requires a plan falls back to its first plan
+  @param {number} [value_id] - option value id placed at option_position in the option_values query
+  @param [variant] - variant for the URL, or false for an option_values query on product.url
 {% enddoc %}
 
 {%- liquid

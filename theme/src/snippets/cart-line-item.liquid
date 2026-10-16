@@ -1,12 +1,12 @@
 {% doc %}
   - Renders one cart line item
 
-  @param {string} [form_id] - id of the cart form, defaults to cart-<section id>
-  @param {number} [index] - position in the list, used for image loading priority
-  @param {line_item} [line_item]
+  @param {string} [form_id] - cart form id prefixing the quantity input id, defaults to 'cart'
+  @param {number} [index] - position in the list, scopes the quantity input id
+  @param {line_item} line_item
   @param {string} [quantity_size] - stepper size, defaults to 'md'
   @param {boolean} [show_disclosures] - renders the product's cart disclosures, defaults to true
-  @param {boolean} [show_quantity_selector] - renders the quantity stepper
+  @param {boolean} [show_quantity_selector] - renders the quantity stepper, defaults to false
 {% enddoc %}
 
 {% assign show_quantity_selector = show_quantity_selector | default: false %}

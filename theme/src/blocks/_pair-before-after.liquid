@@ -1,5 +1,11 @@
 <!-- blocks/_pair-before-after.liquid -->
 
+{% doc %}
+  - Renders pair column with before and after image comparison
+
+  Private, only offered by section-pair. Reads section.settings.height_mode to pick the block height or the section height.
+{% enddoc %}
+
 {% capture attributes %}
   data-test-id="pair-before-after"
   {{ block.shopify_attributes }}

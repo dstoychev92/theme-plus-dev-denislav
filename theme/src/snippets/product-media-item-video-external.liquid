@@ -1,10 +1,13 @@
 {% doc %}
-  - Renders a product YouTube or Vimeo video
+  - Renders product YouTube or Vimeo video
+
+  Reads $slide in the showcase layout and $scrollList on mobile to pause the video when it
+  leaves the current slide.
 
   @param {number} [aspect_ratio] - media aspect ratio
   @param {string} [attributes]
-  @param {string} [layout_desktop] - desktop layout, defaults to s.layout_desktop then 'stack'
-  @param {media} [media] - product media of type 'external_video'
+  @param {string} [layout_desktop] - 'showcase' or 'stack', defaults to s.layout_desktop then 'stack'
+  @param {media} media - product media of type 'external_video'
   @param {object} [s] - settings object
 {% enddoc %}
 

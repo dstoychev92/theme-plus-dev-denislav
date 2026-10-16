@@ -1,23 +1,25 @@
 {% doc %}
-  - Renders one product media item, picking the snippet for its type
+  - Renders one product media item as image, video, external video, or model
 
-  The featured media loads eagerly at high priority, everything else lazily.
+  On the product template the featured media is preloaded and every item loads eagerly.
+  Elsewhere images load lazily. Reads section.settings.contain_section and
+  block.settings.contain_media_mobile for the rounding.
 
   @param {number} [aspect_ratio] - media aspect ratio
   @param {string} [attributes]
   @param {block} [block]
   @param {string} [class] - The classes
   @param {string} [id]
-  @param {string} [image_sizes] - sizes hint for the image
+  @param {string} [image_sizes] - sizes attribute for the image
   @param {string} [image_widths] - widths for the image srcset
-  @param {boolean} [is_featured_media] - loads it eagerly at high fetch priority
-  @param {string} [item_class] - classes for the item wrapper
-  @param {string} [layout] - desktop layout the item sits in
-  @param {media} [media]
-  @param {object} [product_media] - the media to render, already ordered
+  @param {boolean} [is_featured_media] - sets fetchpriority high and preloads on the product template
+  @param {string} [item_class] - classes passed to the media snippet as class
+  @param {string} [layout] - 'showcase' or 'stack', left empty by the mobile gallery. 'stack' keeps the zoom link focusable
+  @param {media} media
+  @param {object} [product_media] - full media list, read for its count
   @param {object} [s] - settings object
   @param {section} [section]
-  @param {string} [stack_style] - stack layout variant
+  @param {string} [stack_style] - 'single', 'columns' or 'mosaic'
 {% enddoc %}
 
 {% liquid

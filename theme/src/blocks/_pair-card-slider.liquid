@@ -1,5 +1,11 @@
 <!-- blocks/_pair-card-slider.liquid -->
 
+{% doc %}
+  - Renders pair column with card carousel and overflow arrows
+
+  Private, only offered by section-pair. The title is the static _section-title block with id card-slider-title.
+{% enddoc %}
+
 {% liquid
   # Desktop (always slider)
   assign columns_lg = block.settings.columns_lg | default: block.settings.columns_lg

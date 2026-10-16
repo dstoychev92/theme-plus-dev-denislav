@@ -1,5 +1,11 @@
 <!-- blocks/_card-slider.liquid -->
 
+{% doc %}
+  - Renders card carousel with fractional visible columns
+
+  Only offered by header-drawer. Shows one column when the track holds a single card.
+{% enddoc %}
+
 {% liquid
   assign columns_lg = block.settings.columns_lg
   assign columns_sm = block.settings.columns_sm

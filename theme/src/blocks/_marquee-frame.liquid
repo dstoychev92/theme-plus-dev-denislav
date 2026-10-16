@@ -1,14 +1,10 @@
 <!-- blocks/_marquee-frame.liquid -->
 
-{%- comment -%}
-  Fixed-width wrapper for arbitrary theme-* content inside a marquee.
-  Reuses the `w-layout` + `cq-width` pattern from layout.css so descendants
-  can adapt via `@container width (max-width: Xpx)` queries.
+{% doc %}
+  - Renders fixed-width frame holding other blocks inside a marquee
 
-  `width_px` is the base (desktop). Tablet and mobile overrides are opt-in;
-  when off, both fall back to the base so the frame stays one size across
-  breakpoints.
-{%- endcomment -%}
+  Sits inside _marquee. Tablet and mobile widths fall back to width_px unless set_width_tablet or set_width_mobile is on. Descendants can adapt with @container width queries, as in layout.css.
+{% enddoc %}
 
 {%- liquid
   assign width_desktop = block.settings.width_px

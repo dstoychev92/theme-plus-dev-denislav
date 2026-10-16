@@ -8,11 +8,11 @@
   @param {boolean} [available] - false uses unavailable mask, defaults to true
   @param {string} [class] - The classes
   @param {string} [color] - CSS color. Near-black and near-white values adjust for visibility
-  @param {string} [custom_size] - pixel size overriding size
+  @param {number} [custom_size] - size in pixels, overrides size
   @param {image} [image] - image used instead of color
-  @param {boolean} [selected] - uses selected mask
-  @param {string} [shape] - settings.swatch_shape, then 'circle'
-  @param [size] - 'xs' to 'xl', defaults to 'xs'
+  @param {boolean} [selected] - true uses selected mask, defaults to false
+  @param {string} [shape] - 'circle' or 'square', defaults to settings.swatch_shape, then 'circle'
+  @param [size] - 'xs', 'sm', 'md', 'lg' or 'xl', or false to skip --swatch-size, defaults to 'xs'
   @param {string} [svg_attributes] - attributes for SVG element
 {% enddoc %}
 

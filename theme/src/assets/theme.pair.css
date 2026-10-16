@@ -345,6 +345,13 @@ pair-column:has(.card-list-mobile-layout-slider) {
     border-bottom-left-radius: 0 !important;
   }
   .pair-section-gapless {
+    /* Run the second surface 1px under the first, since a shared edge at a half pixel shows the section background as a hairline. The first column stacks above */
+  }
+  .pair-section-gapless > pair-column.pair-column-surface:not(.pair-column-yields-to-surface) + pair-column.pair-column-surface:not(.pair-column-yields-to-surface) {
+    width: calc(100% + 1px);
+    margin-inline-start: -1px;
+  }
+  .pair-section-gapless {
     /* Avoid a doubled border where two solid bordered columns touch. */
   }
   .pair-section-gapless:has(> pair-column.pair-column-1.pair-column-border.pair-column-surface:not(.pair-column-yields-to-surface)):has(> pair-column.pair-column-2.pair-column-border.pair-column-surface:not(.pair-column-yields-to-surface)) > pair-column.pair-column-1.pair-column-border {

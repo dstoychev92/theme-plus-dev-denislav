@@ -1,5 +1,11 @@
 <!-- blocks/_background-collage-image.liquid -->
 
+{% doc %}
+  - Renders positioned image or video with optional clip mask and parallax
+
+  Sits inside _background or _section-background.
+{% enddoc %}
+
 {% liquid
   if block.settings.set_parallax
     assign parallax = block.settings.parallax | default: 0

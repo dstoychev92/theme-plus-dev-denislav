@@ -1,18 +1,20 @@
 {% doc %}
-  - Renders a native dialog element
+  - Renders dialog element for x-dialog
 
-  @param {string} [animation] - entry animation name
+  Place it inside an element with x-dialog.
+
+  @param {string} [animation] - 'from-bottom', 'from-left', 'from-right', or 'auto' to follow position, defaults to 'from-bottom'
   @param {string} [attributes]
   @param {string} content
   @param {string} [content_class] - classes for the content
   @param {string} [content_style] - inline styles for the content
   @param {string} [dialog_class] - classes for the dialog
-  @param {string} [label] - accessible name for the dialog
-  @param {boolean} [modal] - opens it modally, with a backdrop and a close button
-  @param {string} [modal_backdrop_bg_class] - classes for the backdrop
-  @param {string} [modal_bg_class] - classes for the modal background
+  @param {string} [label] - aria-label text
+  @param {boolean} [modal] - adds scroll lock, backdrop, and close button, defaults to false
+  @param {string} [modal_backdrop_bg_class] - classes for the backdrop, defaults to 'backdrop:bg-canvas/80'
+  @param {string} [modal_bg_class]
   @param {boolean} [open] - opens it on load
-  @param {string} [position] - where the dialog sits
+  @param {string} [position] - vertical then horizontal, such as 'top left', defaults to 'center center'
   @param {boolean} [scrollable] - lets the content scroll
 {% enddoc %}
 

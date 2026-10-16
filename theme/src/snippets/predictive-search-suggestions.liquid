@@ -1,8 +1,8 @@
 {% doc %}
-  Renders predictive search suggestions including:
-  - Suggested search terms from settings
-  - Empty state collection products
-  This snippet renders suggestions directly in the predictive search flyout.
+  - Renders suggested search terms and empty state collection products in columns
+
+  Reads settings.search_suggested_searches and settings.search_empty_state_collection. Prints
+  nothing when both are blank. Sits inside an x-predictive-search scope.
 
   @param {string} [heading_class]
   @param {string} [item_class]

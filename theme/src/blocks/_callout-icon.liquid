@@ -1,5 +1,12 @@
 <!-- blocks/_callout-icon.liquid -->
 
+{% doc %}
+  - Renders icon callout parts for _callout-group
+
+  Private, only offered by _callout-group. Wraps the icon, title, and body in c4ll0u7x text
+  markers so the group can split them and lay them out.
+{% enddoc %}
+
 {%- liquid
   assign icon_set = block.settings.icon_set
 -%}

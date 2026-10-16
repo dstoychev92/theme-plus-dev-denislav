@@ -1,5 +1,13 @@
 <!-- blocks/_callout-number.liquid -->
 
+{% doc %}
+  - Renders number callout parts for _callout-group
+
+  Private, only offered by _callout-group. Wraps the number, title, and body in c4ll0u7x text
+  markers so the group can split them, and prints the c4ll0u7x7yp3xnumb3r marker so the group
+  applies its number type style. Only the first run of digits animates.
+{% enddoc %}
+
 {%- liquid
   assign show_discount = block.settings.show_discount
   assign number_text = block.settings.number_value | default: ''

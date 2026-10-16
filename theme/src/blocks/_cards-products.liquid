@@ -1,5 +1,11 @@
 <!-- blocks/_cards-products.liquid -->
 
+{% doc %}
+  - Renders product cards from product list or collection
+
+  card_limit applies only to the collection source.
+{% enddoc %}
+
 {% liquid
   case block.settings.source
     when 'collection'

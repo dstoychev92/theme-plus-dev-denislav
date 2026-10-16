@@ -1,12 +1,10 @@
 <!-- blocks/_marquee-gallery-image.liquid -->
 
-{%- comment -%}
-  Data-only child of _marquee-gallery. Emits the image (rendered at a generous
-  default width) and an optional href, wrapped in leetspeak markers so the
-  parent gallery can splice the rendering into its own dimensional frame.
-  See _callout-group.liquid for the same pattern. Grep g4lleryx to find every
-  related marker.
-{%- endcomment -%}
+{% doc %}
+  - Prints gallery image, link, and new-tab flag between g4lleryx markers
+
+  Sits inside _marquee-gallery, which splices the output into its own sized cell. _callout-group uses the same marker pattern. Grep g4lleryx to find every related marker.
+{% enddoc %}
 
 g4lleryx574r7xm3d14
 {%- render 'core-image', image: block.settings.image, width: 400, placeholder: 'logo' -%}

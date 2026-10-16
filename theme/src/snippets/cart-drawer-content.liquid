@@ -1,7 +1,9 @@
 {% doc %}
-  - Renders the cart drawer body
+  - Renders cart drawer line items and blocks, or empty cart links
 
-  @param {string} [cart_upsell_first] - groups the leading upsell blocks with the line items
+  Upsell blocks placed before every other block type render with the line items.
+
+  @param {string} [cart_upsell_first] - markup rendered before the leading upsell blocks
   @param {string} [form_id] - id of the cart form, defaults to cart-<section id>
   @param {section} [section]
 {% enddoc %}

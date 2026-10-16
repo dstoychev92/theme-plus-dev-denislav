@@ -1,5 +1,13 @@
 <!-- blocks/_callout-group.liquid -->
 
+{% doc %}
+  - Renders callout grid holding _callout-icon, _callout-number, and _callout blocks
+
+  Splits each _callout-icon and _callout-number child on the c4ll0u7x text markers the child
+  prints, then renders the parts through core-callout with this block's settings. A _callout
+  child prints no markers and renders as is. Search c4ll0u7x to find every marker.
+{% enddoc %}
+
 {%- liquid
   # Media width (px value for icon children)
   assign media_px = 32

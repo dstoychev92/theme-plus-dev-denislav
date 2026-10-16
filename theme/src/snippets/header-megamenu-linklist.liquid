@@ -1,10 +1,12 @@
 {% doc %}
-  - Renders a menu level inside a megamenu
+  - Renders megamenu links from parent_link or linklist, as one list or one column per link
+
+  s.image renders above the links, full width when the list has more than one level.
 
   @param {string} [attributes]
   @param {string} [class] - The classes
   @param {linklist} [linklist] - menu to render when there is no parent_link
-  @param {object} [parent_link] - link whose children are rendered
+  @param {link} [parent_link] - link whose children are rendered
   @param {object} [s] - settings object
   @param {section} [section]
   @param {string} [style] - inline styles

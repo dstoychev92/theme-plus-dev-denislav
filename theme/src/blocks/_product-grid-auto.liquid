@@ -1,6 +1,8 @@
 <!-- blocks/_product-grid-auto.liquid -->
 
-{% liquid
+{% doc %}
+  - Renders auto grid holding product blocks
+{% enddoc %}{% liquid
   assign columns = block.settings.columns
   assign min_col_width = block.settings.min_col_width
   assign fill_order = 'row'
@@ -354,9 +356,6 @@
 		},
 		{
 			"type": "theme-richtext"
-		},
-		{
-			"type": "theme-scale-bar"
 		},
 		{
 			"type": "theme-video-button"

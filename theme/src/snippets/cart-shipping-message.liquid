@@ -1,5 +1,5 @@
 {% doc %}
-  - Renders progress to the free shipping threshold
+  - Renders free shipping progress or success message with optional bar
 
   Prints nothing without a free shipping limit and s.free_shipping_progress_message.
 
@@ -12,7 +12,7 @@
   @param {string} [attributes]
   @param {string} [class] - The classes
   @param {object} [s] - settings object
-  @param {boolean} [show_line] - renders the progress bar
+  @param {boolean} [show_line] - renders the progress bar, defaults to false
 {% enddoc %}
 
 {% capture free_shipping %}{% render 'cart-free-shipping-limit', s: s %}{% endcapture %}

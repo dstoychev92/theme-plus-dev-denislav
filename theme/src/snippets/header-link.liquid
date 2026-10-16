@@ -1,19 +1,22 @@
 {% doc %}
-  - Renders a header link with an optional icon
+  - Renders header link with optional icon and label
+
+  Reads underlinedEl, initialUnderlinedEl, hasInteractedWithNav, and setUnderlinedEl from the
+  header-section x-data.
 
   @param {boolean} [active] - marks the link as the current page
   @param {string} [aria_label]
   @param {string} [attributes]
   @param {string} [class] - The classes
   @param {string} [color] - stain color, defaults to s.color then 'content'
-  @param {string} [href]
-  @param {boolean} [icon] - icon name, or markup
+  @param {string} [href] - defaults to s.href, applied only when tag is 'a'
+  @param {string} [icon] - icon name, such as 'stroke-header-search'
   @param {string} [icon_indicator] - markup layered over the icon, such as the cart count
   @param {string} [icon_type_class] - classes for the icon
-  @param {string} [label]
+  @param {string} [label] - defaults to s.label
   @param {string} [label_attributes] - attributes for the label
   @param {string} [label_class] - classes for the label
-  @param {string} [label_style] - 'icon', 'label' or 'both'
+  @param {string} [label_style] - 'icon', 'text', or 'both', defaults to s.label_style then 'both'. Without an icon 'both' becomes 'text'
   @param {object} [s] - settings object
   @param {section} [section]
   @param {string} [tag] - defaults to 'a'

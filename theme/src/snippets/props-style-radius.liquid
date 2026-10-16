@@ -2,8 +2,8 @@
   - Prints corner radius variable and border-radius rule
 
   @param {boolean} [apply] - false prints the variable without the border-radius rule
-  @param {boolean} [rounding_radius] - 'none', 'xs', 'sm', 'md', 'lg' or 'custom'
-  @param {string} [rounding_radius_custom] - radius in pixels when rounding_radius is 'custom'
+  @param {string} [rounding_radius] - 'none', 'xs', 'sm', 'md', 'lg' or 'custom', defaults to s.rounding_radius, then 'custom'
+  @param {number} [rounding_radius_custom] - radius in pixels when rounding_radius is 'custom', defaults to s.rounding_radius_custom, then 0
   @param {object} [s] - settings object
   @param {boolean} [vars] - false skips the --layout-radius variable
 {% enddoc %}

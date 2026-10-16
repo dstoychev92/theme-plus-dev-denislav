@@ -1,17 +1,17 @@
 {% doc %}
   - Renders collection card at the requested size
 
-  @param {string} [appearance] - suffix for vars-card-lg-appearance-*
-  @param {number} [aspect_ratio]
+  @param {string} [appearance] - suffix for vars-card-lg-appearance-*, size 'lg' only
+  @param {number} [aspect_ratio] - defaults to settings.card_aspect_ratio
   @param {string} [attributes]
   @param {string} [class] - The classes
   @param {collection} [collection]
-  @param {image} [image]
-  @param {boolean} [loader] - renders loading state
-  @param {boolean} [placeholder]
-  @param {number} [placeholder_image_index] - placeholder artwork number
+  @param {image} [image] - defaults to collection.image, then the first product's preview image
+  @param {boolean} [loader] - true disables placeholder
+  @param {boolean} [placeholder] - placeholder card, design mode or settings.placeholder_mode only
+  @param {number} [placeholder_image_index] - placeholder artwork number, defaults to 1
   @param {string} [size] - 'xs', 'sm', 'md' or 'lg', selecting the card-layout snippet
-  @param {boolean} [url] - card URL, defaults to the collection URL
+  @param [url] - card URL, defaults to collection.url, false removes the link
 {% enddoc %}
 
 {%- liquid

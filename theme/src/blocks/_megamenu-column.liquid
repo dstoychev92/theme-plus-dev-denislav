@@ -1,5 +1,11 @@
 <!-- blocks/_megamenu-column.liquid -->
 
+{% doc %}
+  - Renders megamenu column of tiles or cards
+
+  Sits inside _megamenu. One child takes the column span itself. More children share a nested card-grid.
+{% enddoc %}
+
 {% liquid
   assign col_span_lg = block.settings.col_span_lg
   assign col_span_md = block.settings.col_span_md

@@ -1,5 +1,11 @@
 <!-- blocks/_pair-card-grid.liquid -->
 
+{% doc %}
+  - Renders pair column with card grid, or slider on mobile
+
+  Private, only offered by section-pair. The title is the static _section-title block with id card-grid-title.
+{% enddoc %}
+
 {% liquid
   # Desktop (always grid)
   assign columns_lg = block.settings.columns_lg | default: 2

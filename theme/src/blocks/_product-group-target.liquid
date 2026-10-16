@@ -1,5 +1,11 @@
 <!-- blocks/_product-group-target.liquid -->
 
+{% doc %}
+  - Renders product blocks limited to mobile or desktop screens
+
+  The wrapper hides when it holds no blocks.
+{% enddoc %}
+
 
 
 {% assign target_device = block.settings.target_device | default: 'both' %}
@@ -97,9 +103,6 @@
 		},
 		{
 			"type": "theme-richtext"
-		},
-		{
-			"type": "theme-scale-bar"
 		},
 		{
 			"type": "theme-video-button"

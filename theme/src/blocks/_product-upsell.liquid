@@ -1,5 +1,11 @@
 <!-- blocks/_product-upsell.liquid -->
 
+{% doc %}
+  - Renders upsell products with one-click add to cart
+
+  Reads closest.product. An empty product list falls back to the paired upsell metafield when include_metafield_upsells is on. The live store renders nothing without upsells, and the editor shows placeholder slots.
+{% enddoc %}
+
 {% liquid
   assign product = closest.product
   assign upsell_list = block.settings.product_list

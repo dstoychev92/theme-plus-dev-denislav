@@ -1,14 +1,17 @@
 {% doc %}
-  - Renders one product option as a row of buttons or swatches
+  - Renders one product option as text buttons or swatches
+
+  Reads block.settings for the gap. Writes hoverValue into the enclosing Alpine scope, which
+  the caller defines. Needs an x-section-api scope for the option links.
 
   @param {block} [block]
   @param {string} [class] - The classes
-  @param {boolean} [history] - updates the URL as the option changes
+  @param {boolean} [history] - replaces the browser URL on selection
   @param {boolean} [is_swatch_option] - renders swatches instead of text buttons
-  @param {object} option - the product option
-  @param {string} option_size - button size
+  @param {product_option} option
+  @param {string} option_size - suffix for --row-*, 'xs' to 'xl'
   @param {product} product
-  @param {string} [swatch_size] - swatch size
+  @param {string} [swatch_size] - 'xs' to 'xl'
 {% enddoc %}
 
 {% liquid

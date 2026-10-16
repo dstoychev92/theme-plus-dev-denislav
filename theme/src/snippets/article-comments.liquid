@@ -1,8 +1,9 @@
 {% doc %}
-  - Renders the article comment list and its form
+  - Renders article comment list and comment form
 
   @param {article} [article]
-  @param {comment} [comment]
+  @param {comment} [comment] - comment.status 'unapproved' picks the moderated success message
+  @param {section} [section] - section whose id scopes the pagination navigate event
 {% enddoc %}
 
 <div>

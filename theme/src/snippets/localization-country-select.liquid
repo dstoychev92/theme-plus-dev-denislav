@@ -1,27 +1,29 @@
 {% doc %}
-  - Renders the country and currency picker
+  - Renders country select with flags and currencies
+
+  Changing the value submits the closest form.
 
   @param {string} [button_class] - classes for the button that opens the list
   @param {string} [button_style] - inline styles for the button
   @param {string} [class] - The classes
-  @param {string} [country_display_style] - how each country is labelled
-  @param {string} [currency_display_style] - how each currency is labelled
+  @param {string} [country_display_style] - 'flag_name', 'flag_symbol', 'flag', or 'symbol', otherwise the country name
+  @param {string} [currency_display_style] - 'long' for code and symbol, 'none' to hide, otherwise the symbol
   @param {boolean} [disabled]
   @param {string} [edge_padding] - padding kept between the popup and the viewport edge
   @param {string} [end_icon] - icon after the label
-  @param {number} [flag_size] - flag size in pixels
+  @param {number} [flag_size] - flag size in pixels, defaults to 16
   @param {boolean} [flip] - lets the popup flip to the other side
-  @param {boolean} [id] - id for the select
-  @param {string} [lazy] - waits for interaction before starting the select up
+  @param {string} [id] - defaults to section.id with '-localization-country-select'
+  @param [lazy] - data-lazy-alpine-on value, defaults to 'interact'. false starts the select immediately
   @param {boolean} [match] - matches the popup width to the button
-  @param {string} [offset] - gap from the button in pixels
+  @param {string} [offset] - gap from the button, such as '5px', defaults to '0px'
   @param {string} [option_class] - classes for each option
   @param {string} [option_group_label_class] - classes for the group headings
   @param {string} [placement] - popup placement
   @param {string} [popup_class] - classes for the popup
   @param {string} [popup_list_class] - classes for the option list
   @param {section} [section]
-  @param {boolean} [show_popular_options] - lists the popular countries first
+  @param [show_popular_options] - groups popular countries first, 'bottom' puts them last, false skips the groups, defaults to true
   @param [size] - control size
   @param {string} [start_icon] - icon before the label
 {% enddoc %}

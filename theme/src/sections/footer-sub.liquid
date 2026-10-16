@@ -24,14 +24,24 @@
           {% render 'core-link', href: link.url, text: link.title, appearance: 'clean', type_preset: 'apply' %}
         {% endfor %}
 
-        {% assign powered_by_href = powered_by_link | split: 'href="' | last | split: '"' | first %}
-        {% assign powered_by_temp = powered_by_link | split: '>' %}
-        {% assign powered_by_text = powered_by_temp[1] | split: '<' | first %}
+        {% comment %} A store with POS gets two links: `<a …>POS</a> and <a …>Ecommerce by Shopify</a>` {% endcomment %}
+        {% assign powered_by_parts = powered_by_link | split: '</a>' %}
         {% capture powered_by_link %}
-          {% comment %} new_window carries target="_blank", rel="noopener" and the screen-reader
-            "opens in a new tab" note together — the rel on its own was under a parameter name
-            core-link does not have, so it never reached the markup {% endcomment %}
-          {% render 'core-link', href: powered_by_href, text: powered_by_text, appearance: 'clean', type_preset: 'apply', new_window: true %}
+          {%- for part in powered_by_parts -%}
+            {%- unless part contains 'href="' -%}
+              {{- part -}}
+              {%- continue -%}
+            {%- endunless -%}
+            {%- assign part_start = part | slice: 0, 2 -%}
+            {%- if part_start != '<a' -%}
+              {{- part | split: '<a' | first -}}
+            {%- endif -%}
+            {%- assign powered_by_href = part | split: 'href="' | last | split: '"' | first -%}
+            {%- assign powered_by_text = part | split: '>' | last -%}
+            {% comment %} new_window carries target="_blank", rel="noopener" and the screen-reader
+              "opens in a new tab" note together {% endcomment %}
+            {%- render 'core-link', href: powered_by_href, text: powered_by_text, appearance: 'clean', type_preset: 'apply', new_window: true -%}
+          {%- endfor -%}
         {% endcapture %}
 
         <!-- Remove the following line to delete Powered by Shopify from your footer -->

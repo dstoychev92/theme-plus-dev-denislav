@@ -1,14 +1,15 @@
 {% doc %}
-  - Renders the unit price for a variant
+  - Renders unit price for a variant
 
-  Prints nothing when the variant carries no unit price.
+  Prints nothing when the variant carries no unit price. product.selected_selling_plan reduces
+  the unit price by its discount unless ignore_selling_plan is true.
 
   @param {string} [attributes]
   @param {string} [class] - The classes
-  @param {boolean} [ignore_selling_plan] - uses the variant price instead of the selling plan price
-  @param {product} [product]
+  @param {boolean} [ignore_selling_plan] - skips the selling plan discount, defaults to false
+  @param {product} [product] - selling plan source
   @param {string} [style] - inline styles
-  @param {variant} [variant] - price source
+  @param {variant} variant - price source
 {% enddoc %}
 
 {%- assign unit_price = variant.unit_price -%}
