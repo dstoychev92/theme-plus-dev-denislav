@@ -1,0 +1,298 @@
+<!-- blocks/_footer-column.liquid -->
+
+
+
+{% liquid
+  if settings.show_tag_settings and section.settings.set_heading_tag
+    assign tag = section.settings.heading_tag | default: 'h2'
+  else
+    # Make an educated guess at the correct tag semantics based on the type preset
+    assign tag = section.settings.type_preset | default: 'p'
+    assign tag = tag | replace: 'kicker', 'h3' | replace: 'micro', 'p' | replace: 'section', 'h2' | replace: 'custom', 'p'
+    if tag != 'p' and tag != 'h2' and tag != 'h3' and tag != 'h4' and tag != 'h5' and tag != 'h6'
+      assign tag = 'p'
+    endif
+  endif
+%}
+
+
+{% liquid
+  assign enable_accordion = block.settings.enable_accordion
+  assign expanded = block.settings.expand_mobile
+  assign button_style = settings.accordion_button_style
+%}
+
+{% capture blocks %}
+  {% content_for 'blocks' %}
+{% endcapture %}
+
+{% if section.settings.custom_col_span %}
+  {% capture col_style %}
+    --col-span-desktop: {{ block.settings.col_span_lg }};
+    --col-span-tablet: {{ block.settings.col_span_md }};
+  {% endcapture %}
+  {% capture col_class %}
+    md:col-span-[--col-span-tablet]
+    lg:col-span-[--col-span-desktop]
+  {% endcapture %}
+{% endif %}
+
+{% capture title_class %}
+  text-start text-{{ section.settings.color | default: 'content' }}
+{% endcapture %}
+
+{% if section.settings.color == 'custom' %}
+  {% capture title_style %}
+    --color-custom-text: {{ section.settings.color_custom }}
+  {% endcapture %}
+{% endif %}
+
+{% if enable_accordion %}
+  {% capture class %}
+    group/accordion w-full cq-width
+
+    {% unless block.settings.show_top_border %}
+      {% # Compensate for footer grid gap %}
+      max-md:-mt-r8
+    {% endunless %}
+
+    {{ col_class }}
+  {% endcapture %}
+
+  {% capture icon_class %}
+    shrink-0 ms-auto
+    group-[&:not([data-has-icon])]/accordions:hidden
+    md:hidden
+  {% endcapture %}
+
+  {% capture chevron_icon_class %}
+    transition-transform {% if expanded %}-rotate-180{% endif %}
+    {{ icon_class }}
+  {% endcapture %}
+
+  {% capture chevron_icon_attributes %}
+    :class="{ '-rotate-180': $disclosure.isExpanded }"
+  {% endcapture %}
+
+  <div
+    x-disclosure="{{ expanded }}"
+    class="{{ class }}"
+    {% if col_style %}
+      style="{{ col_style }}"
+    {% endif %}
+
+    {% if request.design_mode %}
+      @shopify:block:select="$disclosure.expand()"
+      {% unless expanded %}
+        @shopify:block:deselect="$disclosure.collapse()"
+      {% endunless %}
+    {% endif %}
+
+    role="group"
+    {{ block.shopify_attributes }}
+  >
+    {% if block.settings.show_top_border %}
+      <svg role="presentation" class="w-full h-px md:hidden">
+        <rect width="100%" height="1" class="fill-line-subtle"></rect>
+      </svg>
+    {% endif %}
+
+    {% comment %} The toggle only works below md where the panel collapses, so on md and up the title renders as plain text instead of a dead button {% endcomment %}
+    <button
+      class="
+        md:hidden
+        flex items-center justify-between gap-x-r6 w-full
+        text-start whitespace-normal transition-opacity duration-200
+        {% # Same as the footer grid gap %}
+        py-r8
+
+        text-{{ section.settings.color | default: 'content' }}
+      "
+      {% if section.settings.color == 'custom' %}
+        style="--color-custom-text: {{ section.settings.color_custom }}"
+      {% endif %}
+
+      x-disclosure:button
+    >
+      {% if block.settings.title != blank %}
+        {% render 'core-text-preset', s: section.settings, text: block.settings.title, tag: tag %}
+      {% else %}
+        {% comment %} With no title the icon is the only content, and icons are aria-hidden {% endcomment %}
+        <span class="sr-only" x-show="!$disclosure.isExpanded">{{ 'other.accessibility.expand' | t }}</span>
+        <span class="sr-only" x-show="$disclosure.isExpanded" x-cloak>{{ 'other.accessibility.collapse' | t }}</span>
+      {% endif %}
+
+      {% if button_style == 'chevron' %}
+        {% render 'core-icon',
+          icon: 'stroke-chevron-down',
+          size: 'sm',
+          attributes: chevron_icon_attributes,
+          class: chevron_icon_class
+        %}
+      {% elsif button_style == 'plus-minus' %}
+        {% render 'core-icon',
+          icon: 'stroke-bare-plus',
+          class: icon_class,
+          attributes: 'x-show="!$disclosure.isExpanded"'
+        %}
+        {% render 'core-icon',
+          icon: 'stroke-bare-minus',
+          class: icon_class,
+          attributes: 'x-show="$disclosure.isExpanded" x-cloak'
+        %}
+      {% endif %}
+    </button>
+
+    {% if block.settings.title != blank %}
+      <div
+        class="
+          max-md:hidden pb-r8 w-full
+          text-{{ section.settings.color | default: 'content' }}
+        "
+        {% if section.settings.color == 'custom' %}
+          style="--color-custom-text: {{ section.settings.color_custom }}"
+        {% endif %}
+      >
+        {% render 'core-text-preset', s: section.settings, text: block.settings.title, tag: tag %}
+      </div>
+    {% endif %}
+
+    <div
+      x-collapse.duration.200ms
+      class="
+        !ease-in-out w-full nojs:!block
+        md:!block md:!h-auto md:!overflow-visible
+      "
+      {% unless expanded %}
+        x-cloak
+      {% endunless %}
+      x-disclosure:panel
+    >
+      {% if blocks != blank %}
+        <div class="pb-r8 vars-content-align-start text-content-align items-content-align text-content flex flex-col gap-layout md:pb-0">
+          {{ blocks }}
+        </div>
+      {% endif %}
+    </div>
+
+    <svg role="presentation" class="w-full h-px md:hidden">
+      <rect width="100%" height="1" class="fill-line-subtle"></rect>
+    </svg>
+  </div>
+{% else %}
+  {% capture class %}
+    flex flex-col gap-r8 w-full cq-width {{ col_class }}
+  {% endcapture %}
+
+  <div
+    class="{{ class }}"
+    {% if col_style %}
+      style="{{ col_style }}"
+    {% endif %}
+    {{ block.shopify_attributes }}
+  >
+    {% if block.settings.title != blank %}
+      {% render 'core-text-preset',
+        s: section.settings,
+        text: block.settings.title,
+        tag: tag,
+        class: title_class,
+        style: title_style
+      %}
+    {% endif %}
+
+    {% if blocks != blank %}
+      <div class="vars-content-align-start text-start text-content flex flex-col gap-layout">
+        {{ blocks }}
+      </div>
+    {% endif %}
+  </div>
+{% endif %}
+
+{% schema %}
+{
+	"name": "Footer column",
+	"tag": null,
+	"settings": [
+		{
+			"type": "text",
+			"id": "title",
+			"label": "Title",
+			"default": "Help"
+		},
+		{
+			"type": "header",
+			"content": "Mobile accordion"
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_accordion",
+			"label": "Enable mobile accordion",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "expand_mobile",
+			"label": "Expand initially",
+			"default": false,
+			"visible_if": "{{ block.settings.enable_accordion == true }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_top_border",
+			"label": "Show top border",
+			"default": false,
+			"visible_if": "{{ block.settings.enable_accordion == true }}"
+		},
+		{
+			"type": "header",
+			"content": "Columns",
+			"visible_if": "{{ section.settings.custom_col_span == true }}"
+		},
+		{
+			"type": "range",
+			"id": "col_span_lg",
+			"label": "Desktop",
+			"min": 1,
+			"max": 6,
+			"step": 1,
+			"default": 1,
+			"visible_if": "{{ section.settings.custom_col_span == true }}"
+		},
+		{
+			"type": "range",
+			"id": "col_span_md",
+			"label": "Tablet",
+			"min": 1,
+			"max": 6,
+			"step": 1,
+			"default": 1,
+			"visible_if": "{{ section.settings.custom_col_span == true }}"
+		}
+	],
+	"blocks": [
+		{
+			"type": "@app"
+		},
+		{
+			"type": "@theme"
+		},
+		{
+			"type": "_footer-link-list"
+		},
+		{
+			"type": "_footer-follow-on-shop"
+		}
+	],
+	"presets": [
+		{
+			"name": "Footer column",
+			"blocks": [
+				{
+					"type": "_footer-link-list"
+				}
+			]
+		}
+	]
+}
+{% endschema %}

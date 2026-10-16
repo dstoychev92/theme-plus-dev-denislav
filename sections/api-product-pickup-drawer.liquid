@@ -1,0 +1,108 @@
+<!-- sections/api-product-pickup-drawer.liquid -->
+
+{% # Section for updating the content of the product pickup drawer %}
+
+{% liquid
+  assign current_variant = product.selected_or_first_available_variant
+  assign pickup_availabilities = current_variant.store_availabilities | where: 'pick_up_enabled', true
+%}
+
+{% comment %} Animate the header {% endcomment %}
+{% capture header_animations %}
+  [--enter-header-duration:400ms]
+  [--enter-header-delay:200ms]
+  animate-delay-[--enter-header-delay] animate-in fade-in animate-opacity-duration-[--enter-header-duration]
+{% endcapture %}
+
+{% comment %} Animate list items so they fade in one-by-one {% endcomment %}
+{% capture list_item_animations %}
+  [--enter-list-duration:300ms]
+  animate-delay-[--enter-list-delay] animate-in fade-in animate-opacity-duration-[--enter-list-duration]
+{% endcapture %}
+
+<div
+  x-show="!shouldShowLoading"
+  x-cloak
+  data-content
+>
+  {% comment %} Drawer content {% endcomment %}
+  <div class="flex flex-col gap-y-r8 p-r6">
+    <div class="flex flex-row gap-x-r5 {{ header_animations }}">
+      <div class="overflow-clip rounded-sm">
+        {% render 'core-image',
+          image: product.featured_image,
+          width: 94,
+          aspect_ratio: 1.0,
+          class: '[&_img]:brightness-[--photo-correction]'
+        %}
+      </div>
+      <div class="flex flex-col py-r2">
+        <h2 class="text-r4 font-bold">
+          <a href="{{ current_variant.product.url }}">
+            {{ current_variant.product.title }}
+          </a>
+        </h2>
+        {%- unless current_variant.product.has_only_default_variant -%}
+          <p class="text-r2 text-muted">
+            {%- for product_option in current_variant.product.options_with_values -%}
+              {{ product_option.name | escape_once }}:&nbsp;
+
+              {%- for value in product_option.values -%}
+                {%- if product_option.selected_value == value -%}
+                  <span>{{ value | escape_once }}</span>
+                {%- endif -%}
+              {%- endfor -%}
+              {%- unless forloop.last -%}&nbsp;|&nbsp;{%- endunless -%}
+            {%- endfor -%}
+          </p>
+        {%- endunless -%}
+      </div>
+    </div>
+
+    {% comment %} Locations {% endcomment %}
+    <div class="flex flex-col divide-y divide-line-bold text-r3">
+      {%- for availability in pickup_availabilities -%}
+        {% liquid
+          assign address = availability.location.address
+
+          if availability.available
+            assign icon = 'fill-location-check'
+            assign availability_schema_class = 'vars-scheme-success'
+            capture availability_label_content
+              echo 'product.pickup_availability.pickup_available' | t
+              echo ', '
+              echo availability.pick_up_time | downcase
+            endcapture
+          else
+            assign icon = 'fill-location-x'
+            assign availability_schema_class = 'vars-scheme-error'
+            assign availability_label_content = 'product.pickup_availability.pickup_unavailable' | t
+          endif
+        %}
+
+        <article
+          class="py-r8 {{ list_item_animations }}"
+          style="--enter-list-delay:{{ 100 | times: forloop.index | plus: 100 }}ms"
+        >
+          <p class="mb-r3 flex items-center gap-r4 text-r5 font-bold">
+            <span class="flex shrink-0 flex-center rounded-full p-r3 bg-content/5 text-content {{ availability_schema_class }}">
+              {%- render 'core-icon', icon: icon, width: 'var(--r6)' -%}
+            </span>
+
+            {{ availability.location.name | escape_once }}
+          </p>
+
+          <p class="mb-r4">{{ availability_label_content }}</p>
+
+          <address class="not-italic">
+            {{ address | format_address }}
+
+            {%- if address.phone.size > 0 -%}
+              <p>{{ address.phone }}</p>
+            {%- endif -%}
+          </address>
+        </article>
+      {%- endfor -%}
+    </div>
+  </div>
+</div>

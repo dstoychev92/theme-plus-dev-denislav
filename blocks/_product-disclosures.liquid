@@ -1,0 +1,381 @@
+<!-- blocks/_product-disclosures.liquid -->
+
+{% liquid
+  assign product = closest.product
+  assign disclosures = product.metafields.shopify.disclosure.value
+
+  assign enable_placeholder = false
+  if settings.placeholder_mode or request.design_mode or request.visual_preview_mode
+    assign enable_placeholder = true
+  endif
+
+  assign id_base = section.id | append: '-' | append: block.id | append: '-disclosure-'
+%}
+
+{% capture items %}
+  {% if disclosures != blank %}
+    {% for disclosure in disclosures %}
+      {% comment %} Merchants scope each disclosure to surfaces in the admin; the other surface values are 'cart' and 'checkout' {% endcomment %}
+      {% unless disclosure.display_preferences.value.surfaces contains 'product_page' %}
+        {% continue %}
+      {% endunless %}
+
+      {% liquid
+        assign item_expanded = false
+        if block.settings.expand and forloop.first
+          assign item_expanded = true
+        endif
+
+        assign symbol = nil
+        if block.settings.show_symbol
+          assign symbol = disclosure.symbol.value
+        endif
+
+        assign item_id = id_base | append: forloop.index0
+        assign title = disclosure.title.value
+      %}
+
+      {% capture item_content %}
+        <div class="prose type-resize-all-{{ block.settings.richtext_size }}">
+          {{ disclosure.content | metafield_tag }}
+        </div>
+      {% endcapture %}
+
+      {% render 'product-disclosure-item',
+        content: item_content,
+        expanded: item_expanded,
+        id: item_id,
+        s: block.settings,
+        symbol: symbol,
+        title: title
+      %}
+    {% endfor %}
+  {% elsif enable_placeholder %}
+    {% assign placeholder_title = 'product.placeholder.disclosure_title' | t %}
+    {% capture placeholder_content %}
+      <div class="prose type-resize-all-{{ block.settings.richtext_size }}">
+        <p>{{ 'product.placeholder.disclosure_content' | t }}</p>
+      </div>
+    {% endcapture %}
+
+    {% for placeholder_index in (1..2) %}
+      {% liquid
+        assign item_expanded = false
+        if block.settings.expand and forloop.first
+          assign item_expanded = true
+        endif
+
+        assign item_id = id_base | append: 'placeholder-' | append: forloop.index0
+      %}
+
+      {% render 'product-disclosure-item',
+        content: placeholder_content,
+        expanded: item_expanded,
+        id: item_id,
+        s: block.settings,
+        title: placeholder_title
+      %}
+    {% endfor %}
+  {% endif %}
+{% endcapture %}
+{% comment %} Strip so an empty capture stays blank for the product-block hidden check {% endcomment %}
+{% assign items = items | strip %}
+
+{% capture class %}
+  group/accordions flex flex-col w-full
+  {% if block.settings.show_top_border %}
+    border-t border-t-line-subtle
+  {% endif %}
+{% endcapture %}
+
+{% capture attributes %}
+  {% comment %}
+    Use the section- variant so expanded state survives theme editor section
+    morphing — bare x-disclosure-group keeps its state in component-local
+    x-data, which gets destroyed on morph.
+  {% endcomment %}
+  {% if block.settings.multiple %}
+    x-section-disclosure-group.multiple
+  {% else %}
+    x-section-disclosure-group
+  {% endif %}
+  data-test-id="product-disclosures"
+  {% if block.settings.show_number %}
+    data-has-counter
+  {% endif %}
+  {% if block.settings.show_open_close_icon %}
+    data-has-icon
+  {% endif %}
+  {% if block.settings.enable_muted_title %}
+    data-muted-title
+  {% endif %}
+  {{ block.shopify_attributes }}
+{% endcapture %}
+
+{% comment %} Pass the reset through the style parameter, since product-block always emits a style attribute and the browser drops a second one from attributes {% endcomment %}
+{% capture style %}
+  {% if block.settings.show_number %}
+    counter-reset: accordion-group
+  {% endif %}
+{% endcapture %}
+
+{% render 'product-block',
+  s: block.settings,
+  content: items,
+  class: class,
+  style: style,
+  attributes: attributes
+%}
+
+{% schema %}
+{
+	"name": "Product disclosures",
+	"tag": null,
+	"settings": [
+		{
+			"type": "paragraph",
+			"content": "Shows the disclosures added to a product in the Shopify admin. Only disclosures set to display on the product page appear."
+		},
+		{
+			"type": "paragraph",
+			"content": "A product without disclosures hides this block on the live store and shows placeholders in the theme editor."
+		},
+		{
+			"type": "checkbox",
+			"id": "show_symbol",
+			"label": "Show symbol",
+			"default": true,
+			"info": "Show the disclosure symbol before the title"
+		},
+		{
+			"type": "checkbox",
+			"id": "expand",
+			"label": "Expand first disclosure",
+			"default": false
+		},
+		{
+			"type": "checkbox",
+			"id": "multiple",
+			"label": "Allow multiple items to be expanded at once",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "show_top_border",
+			"label": "Show top border",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "show_number",
+			"label": "Show number",
+			"default": false,
+			"info": "Show a number before the title"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_open_close_icon",
+			"label": "Show open/close icon",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_muted_title",
+			"label": "Enable muted title",
+			"default": true,
+			"info": "Greys out the title when collapsed"
+		},
+		{
+			"type": "header",
+			"content": "Title"
+		},
+		{
+			"type": "select",
+			"id": "type_preset",
+			"label": "Style",
+			"default": "accordion",
+			"options": [
+				{
+					"group": "Headings",
+					"value": "h1",
+					"label": "Heading 1"
+				},
+				{
+					"group": "Headings",
+					"value": "h2",
+					"label": "Heading 2"
+				},
+				{
+					"group": "Headings",
+					"value": "h3",
+					"label": "Heading 3"
+				},
+				{
+					"group": "Headings",
+					"value": "h4",
+					"label": "Heading 4"
+				},
+				{
+					"group": "Headings",
+					"value": "h5",
+					"label": "Heading 5"
+				},
+				{
+					"group": "Headings",
+					"value": "h6",
+					"label": "Heading 6"
+				},
+				{
+					"group": "Content",
+					"value": "section",
+					"label": "Section title"
+				},
+				{
+					"group": "Content",
+					"value": "p",
+					"label": "Paragraph"
+				},
+				{
+					"group": "Content",
+					"value": "kicker",
+					"label": "Kicker"
+				},
+				{
+					"group": "Content",
+					"value": "micro",
+					"label": "Micro"
+				},
+				{
+					"group": "Elements",
+					"value": "btn",
+					"label": "Button"
+				},
+				{
+					"group": "Elements",
+					"value": "accordion",
+					"label": "Accordion"
+				},
+				{
+					"group": "Elements",
+					"value": "tab",
+					"label": "Tab"
+				},
+				{
+					"group": "Custom",
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_resize",
+			"label": "Text size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset != 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_font",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 4,
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "header",
+			"content": "Content"
+		},
+		{
+			"type": "select",
+			"id": "richtext_size",
+			"label": "Text size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			]
+		},
+	],
+	"presets": [
+		{
+			"name": "Product disclosures",
+			"category": "Additional product info"
+		}
+	]
+}
+{% endschema %}

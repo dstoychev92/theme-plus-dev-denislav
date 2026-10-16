@@ -1,0 +1,1090 @@
+<!-- sections/cart-drawer-classic.liquid -->
+
+{% comment %}
+  Drawer that displays cart contents and allows users to modify quantities, apply discounts, and proceed to checkout.
+  Integrates with global drawer state via $store.drawer and opens via various cart-related events throughout the theme.
+
+  Uses x-section-api to dynamically load cart content when the drawer opens. Content only renders when called via Section Rendering API (section.index != null), with a smart exception for the theme editor which always renders content immediately.
+
+  Implements real-time updates when cart items change, with smooth animations for adding/removing items.
+  Maintains cart state persistence and handles edge cases like out-of-stock items and variant changes.
+{% endcomment %}
+
+{% liquid
+  assign should_render_content = false
+
+  assign form_id = 'cart-drawer-' | append: section.id
+
+  if section.index == null or request.design_mode
+    assign is_rendered_by_api_or_theme_editor = true
+  endif
+
+  # Improve initial page load time by not rendering the cart content until the cart
+  # requests the content via section rendering API after load. If we are in the theme editor
+  # just load the content immediately to prevent weird theme editor bugs
+  if is_rendered_by_api_or_theme_editor
+    assign should_render_content = true
+  endif
+
+  assign title = 'cart.title' | t
+%}
+
+{% capture cart_drawer_title %}
+  <div
+    class="flex flex-row items-center gap-x-r3"
+    x-data="{
+      get isLoading() {
+        return $sectionApi.state === 'loading'
+      }
+    }"
+  >
+    {{ 'cart.title' | t }}
+    <div
+      x-transition.opacity
+      x-show="isLoading"
+    >
+      {% render 'spinner', class: 'flex-none' %}
+    </div>
+  </div>
+{% endcapture %}
+
+{% capture cart_drawer_content %}
+  {% comment %}
+    shopify:cart:view fires once the drawer's contents have loaded, not when it
+    opens - an app-driven add opens the drawer before the new cart arrives, and
+    announcing at open time would report the cart as it was.
+  {% endcomment %}
+  <div
+    x-view-event.manual
+    data-view-event-payload="{{ cart | standard_event_data: 'view' | escape }}"
+    hidden
+  ></div>
+  <div
+    class="
+      absolute inset-0 z-90 flex flex-col flex-center bg-canvas
+      gap-y-r3
+    "
+    x-show="$sectionApi.state === 'error'"
+  >
+    <div class="text-content vars-scheme-error flex flex-col items-center gap-y-r2">
+      <strong class="text-r3 flex-row-center gap-x-r2">{% render 'core-icon', icon: 'fill-circle-alert' %}{{ 'cart.loading_error' | t }}</strong>
+    </div>
+    {% assign button_label = 'other.refresh' | t %}
+    {% render 'core-link', color: 'content', attributes: '@click="$sectionApi.update()"', text: button_label, appearance: 'icon', icon: 'fill-reset', tag: 'button' %}
+  </div>
+
+  {% comment %}
+   Cart drawer content (e.g. line items, checkout buttons, etc) is rendered via the section rendering API
+   after the page has initially loaded in order to speed up initial page load time
+  {% endcomment %}
+  {% if should_render_content %}
+    {% render 'cart-drawer-content', form_id: form_id %}
+  {% endif %}
+{% endcapture %}
+
+{% capture under_header %}
+  {% if section.settings.set_free_shipping_message %}
+    {% if cart.item_count > 0 %}
+      {% render 'cart-shipping-message', show_line: true, s: section.settings %}
+    {% endif %}
+  {% endif %}
+{% endcapture %}
+
+{%- capture checkbox -%}
+  {% render 'cart-checkbox', form_id: form_id %}
+{%- endcapture -%}
+
+{% capture checkout_label %}
+  {{ 'cart.check_out_button' | t }}
+{% endcapture %}
+
+{% capture checkout_button %}
+  {% render 'core-button',
+    label: checkout_label,
+    type: 'submit',
+    name: 'checkout',
+    form: form_id,
+    appearance: section.settings.appearance_checkout_button,
+    color: section.settings.color_checkout_button,
+    color_custom: section.settings.color_custom_checkout_button,
+    text_color: section.settings.text_color_checkout_button,
+    custom_gradient_from: section.settings.custom_gradient_from_checkout_button,
+    custom_gradient_to: section.settings.custom_gradient_to_checkout_button,
+    type_preset: section.settings.type_preset_checkout_button,
+    type_resize: section.settings.type_resize_checkout_button,
+    type_size: section.settings.type_size_checkout_button,
+    type_font: section.settings.type_font_checkout_button,
+    type_uppercase: section.settings.type_uppercase_checkout_button,
+    height: 'lg',
+    class: 'group-has-[:invalid]:opacity-50'
+  %}
+{% endcapture %}
+
+{% capture footer %}
+  {% if cart.item_count > 0 %}
+    {% comment %} Bottom sticky content {% endcomment %}
+    <div class="group z-20 flex flex-col w-full">
+      {% if checkbox != blank %}
+        <div class="pb-[--drawer-padding] flex flex-col items-stretch gap-r4">
+          {{ checkbox }}
+        </div>
+      {% endif %}
+
+      {{ checkout_button }}
+
+      {% comment %} The "Below" position renders inside this sticky footer, so the buttons stay on screen on mobile {% endcomment %}
+      {% if section.settings.show_additional_buttons and section.settings.additional_button_position == 'below' %}
+        {% render 'cart-additional-buttons-block', class: 'pt-r4 empty:hidden' %}
+      {% endif %}
+    </div>
+  {% endif %}
+{% endcapture %}
+
+<div
+  class="relative vars-{{ section.settings.color_scheme.id }}"
+  x-data="
+    {
+      get isCartOpen() {
+        return $store.drawer.isOpen && $store.drawer.type === 'cart'
+      }
+    }
+  "
+
+  x-dialog.modal="
+    {
+      get isOpen() {
+        return isCartOpen
+      },
+      set isOpen(value) {
+        if (value) {
+          $dispatch('theme:cart-drawer:open')
+        } else {
+          $dispatch('theme:cart-drawer:close')
+        }
+      }
+    }
+  "
+
+  data-morph-update="children"
+
+  x-init="
+    {% if request.design_mode %}
+      if (!$dialog.isOpen) {
+        {% comment %} Load cart when alpine initially loads in an idle callback. Dont do it if the drawer state is open to avoid multiple reloads in theme editor since it re-mounts the section when updating {% endcomment %}
+        setTimeout(() => {
+          $sectionApi.update({ waitForIdle: true, batch: true, cachePolicy: 'network-only' })
+        }, 500);
+      }
+    {% else %}
+      {% comment %} The drawer body is not rendered with the page, and nothing initial loads it either — the watcher below fetches the cart the first time the drawer opens, so browsing never pays for a cart nobody looks at. {% endcomment %}
+    {% endif %}
+
+    {% comment %} Reload cart drawer once it's open to ensure the latest cart data is displayed {% endcomment %}
+    $watch('$dialog.isOpen', async (isDrawerOpen) => {
+      if (isDrawerOpen) {
+        await $dialog.waitForAnimations()
+        await $sectionApi.update({ waitForIdle: true, cachePolicy: 'network-only' })
+        {% comment %} Announce the view now the contents are the real cart {% endcomment %}
+        $viewEvent.dispatch()
+      }
+    })
+  "
+
+  {% comment %} Update this section when the cart API is called {% endcomment %}
+  x-cart-api-section
+
+  {% if request.design_mode %}
+    @shopify:section:select.window="
+      if ($isSelectedSection) {
+        $dispatch('theme:cart-drawer:open');
+      } else {
+        $dispatch('theme:cart-drawer:close');
+      }
+    "
+  {% endif %}
+>
+  {% render 'drawer',
+    side: 'right',
+    aria_label: title,
+    title: cart_drawer_title,
+    under_header: under_header,
+    content: cart_drawer_content,
+    footer: footer
+  %}
+</div>
+
+{% schema %}
+{
+	"name": "Cart drawer",
+	"class": "section-cart-drawer",
+	"settings": [
+		{
+			"type": "color_scheme",
+			"id": "color_scheme",
+			"label": "Color scheme"
+		},
+		{
+			"type": "header",
+			"content": "Empty cart"
+		},
+		{
+			"type": "link_list",
+			"id": "empty_cart_buttons",
+			"label": "Empty cart links",
+			"info": "Defaults to a list of all collections"
+		},
+		{
+			"type": "header",
+			"content": "Free shipping message"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_free_shipping_message",
+			"label": "Show free shipping message",
+			"default": true
+		},
+		{
+			"type": "text",
+			"id": "free_shipping_limit",
+			"label": "Minimum spend for free shipping",
+			"default": "100",
+			"info": "Enter a round number in your store currency without symbols or letters. Analog automatically converts it for buyers using another currency. [Learn more](https://groupthought.com/link/analog/v1/docs/free-shipping)",
+			"visible_if": "{{ section.settings.set_free_shipping_message == true }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_shipping_limit_conversion",
+			"label": "Convert metafield limit",
+			"info": "Turn on only when this market's metafield uses your store currency. Analog converts it for the buyer. Select a market from the editor menu before changing this setting. [Learn more](https://groupthought.com/link/analog/v1/docs/free-shipping)",
+			"default": false,
+			"visible_if": "{{ section.settings.set_free_shipping_message == true and settings.metafield_free_shipping_limit != blank }}"
+		},
+		{
+			"type": "inline_richtext",
+			"id": "free_shipping_progress_message",
+			"label": "Progress message",
+			"info": "Use ||amount|| to display progress towards free shipping",
+			"default": "You are ||amount|| away from free shipping.",
+			"visible_if": "{{ section.settings.set_free_shipping_message == true }}"
+		},
+		{
+			"type": "inline_richtext",
+			"id": "free_shipping_success_message",
+			"label": "Success message",
+			"info": "Shown when threshold is met",
+			"default": "Congratulations! Your order qualifies for free shipping",
+			"visible_if": "{{ section.settings.set_free_shipping_message == true }}"
+		},
+		{
+			"type": "header",
+			"content": "Cart items"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_quantity_selector",
+			"label": "Show quantity selector",
+			"default": true
+		},
+		{
+			"type": "select",
+			"id": "quantity_sizing",
+			"label": "Quantity size",
+			"default": "md",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				}
+			],
+			"visible_if": "{{ section.settings.show_quantity_selector == true }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_disclosures",
+			"label": "Show product disclosures",
+			"info": "Show disclosures set to display in the cart under each item",
+			"default": true
+		},
+		{
+			"type": "header",
+			"content": "Checkbox"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_checkbox",
+			"label": "Show checkbox",
+			"default": false
+		},
+		{
+			"type": "richtext",
+			"id": "checkbox_label",
+			"label": "Label",
+			"default": "<p>I agree to terms and conditions</p>",
+			"visible_if": "{{ section.settings.show_checkbox == true }}"
+		},
+		{
+			"type": "select",
+			"id": "richtext_size_checkbox",
+			"label": "Text size",
+			"default": "md",
+			"visible_if": "{{ section.settings.show_checkbox == true }}",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			]
+		},
+		{
+			"type": "checkbox",
+			"id": "checkbox_required",
+			"label": "Required",
+			"default": false,
+			"visible_if": "{{ section.settings.show_checkbox == true }}"
+		},
+		{
+			"type": "header",
+			"content": "Checkout button"
+		},
+		{
+			"type": "select",
+			"id": "appearance_checkout_button",
+			"label": "Style",
+			"default": "fill",
+			"options": [
+				{
+					"value": "fill",
+					"label": "Fill"
+				},
+				{
+					"value": "stroke",
+					"label": "Stroke"
+				},
+				{
+					"value": "soft",
+					"label": "Soft"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "color_checkout_button",
+			"label": "Color",
+			"default": "primary",
+			"options": [
+				{
+					"value": "content",
+					"label": "Text default"
+				},
+				{
+					"value": "primary",
+					"label": "Primary accent"
+				},
+				{
+					"value": "secondary",
+					"label": "Link accent"
+				},
+				{
+					"value": "sale",
+					"label": "Sale"
+				},
+				{
+					"value": "canvas",
+					"label": "Background default"
+				},
+				{
+					"value": "black",
+					"label": "Black"
+				},
+				{
+					"value": "white",
+					"label": "White"
+				},
+				{
+					"value": "custom",
+					"label": "Custom"
+				},
+				{
+					"value": "custom_gradient",
+					"label": "Custom gradient"
+				}
+			]
+		},
+		{
+			"type": "color",
+			"id": "color_custom_checkout_button",
+			"alpha": true,
+			"default": "#000000",
+			"visible_if": "{{ section.settings.color_checkout_button == 'custom' }}",
+			"label": "Custom color"
+		},
+		{
+			"type": "color",
+			"id": "custom_gradient_from_checkout_button",
+			"alpha": true,
+			"default": "#009C9C",
+			"visible_if": "{{ section.settings.color_checkout_button == 'custom_gradient' and section.settings.appearance_checkout_button == 'fill' }}",
+			"label": "Gradient color 1"
+		},
+		{
+			"type": "color",
+			"id": "custom_gradient_to_checkout_button",
+			"alpha": true,
+			"default": "#6600D9",
+			"visible_if": "{{ section.settings.color_checkout_button == 'custom_gradient' and section.settings.appearance_checkout_button == 'fill' }}",
+			"label": "Gradient color 2"
+		},
+		{
+			"type": "color",
+			"id": "text_color_checkout_button",
+			"label": "Text color",
+			"default": "#FFFFFF",
+			"visible_if": "{{ section.settings.appearance_checkout_button == 'fill' and section.settings.color_checkout_button == 'custom' or section.settings.color_checkout_button == 'custom_gradient' }}"
+		},
+		{
+			"type": "paragraph",
+			"content": "Custom gradients only apply to fill buttons",
+			"visible_if": "{{ section.settings.color_checkout_button == 'custom_gradient' and section.settings.appearance_checkout_button != 'fill' }}"
+		},
+		{
+			"type": "header",
+			"content": "Text style",
+			"visible_if": "{{ section.settings.type_preset_checkout_button == 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_preset_checkout_button",
+			"label": "Text style",
+			"default": "btn",
+			"options": [
+				{
+					"group": "Headings",
+					"value": "h1",
+					"label": "Heading 1"
+				},
+				{
+					"group": "Headings",
+					"value": "h2",
+					"label": "Heading 2"
+				},
+				{
+					"group": "Headings",
+					"value": "h3",
+					"label": "Heading 3"
+				},
+				{
+					"group": "Headings",
+					"value": "h4",
+					"label": "Heading 4"
+				},
+				{
+					"group": "Headings",
+					"value": "h5",
+					"label": "Heading 5"
+				},
+				{
+					"group": "Headings",
+					"value": "h6",
+					"label": "Heading 6"
+				},
+				{
+					"group": "Content",
+					"value": "section",
+					"label": "Section title"
+				},
+				{
+					"group": "Content",
+					"value": "p",
+					"label": "Paragraph"
+				},
+				{
+					"group": "Content",
+					"value": "kicker",
+					"label": "Kicker"
+				},
+				{
+					"group": "Content",
+					"value": "micro",
+					"label": "Micro"
+				},
+				{
+					"group": "Elements",
+					"value": "btn",
+					"label": "Button"
+				},
+				{
+					"group": "Elements",
+					"value": "accordion",
+					"label": "Accordion"
+				},
+				{
+					"group": "Elements",
+					"value": "tab",
+					"label": "Tab"
+				},
+				{
+					"group": "Custom",
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_resize_checkout_button",
+			"label": "Text size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			],
+			"visible_if": "{{ section.settings.type_preset_checkout_button != 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_font_checkout_button",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ section.settings.type_preset_checkout_button == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size_checkout_button",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 4,
+			"visible_if": "{{ section.settings.type_preset_checkout_button == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase_checkout_button",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ section.settings.type_preset_checkout_button == 'custom' }}"
+		},
+		{
+			"type": "header",
+			"content": "Accelerated checkout buttons"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_additional_buttons",
+			"label": "Show buttons",
+			"info": "Show Shop Pay, Apple Pay, Google Pay and other express checkout buttons. [Learn more](https://help.shopify.com/manual/online-store/dynamic-checkout)",
+			"default": true
+		},
+		{
+			"type": "select",
+			"id": "additional_button_position",
+			"label": "Group with",
+			"default": "below",
+			"options": [
+				{
+					"value": "above",
+					"label": "Blocks"
+				},
+				{
+					"value": "below",
+					"label": "Checkout"
+				}
+			],
+			"visible_if": "{{ section.settings.show_additional_buttons == true }}"
+		},
+		{
+			"type": "paragraph",
+			"content": "The buttons show below the checkout button and stay on screen while the cart scrolls.",
+			"visible_if": "{{ section.settings.show_additional_buttons == true and section.settings.additional_button_position == 'below' }}"
+		},
+		{
+			"type": "paragraph",
+			"content": "The buttons show after the last block and scroll with the cart contents.",
+			"visible_if": "{{ section.settings.show_additional_buttons == true and section.settings.additional_button_position == 'above' }}"
+		}
+	],
+	"blocks": [
+		{
+			"type": "@app"
+		},
+		{
+			"type": "message_custom",
+			"name": "Custom message",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "inline_richtext",
+					"id": "cart_custom_message_text",
+					"label": "Message text",
+					"default": "Use code <strong>TENOFF</strong> at checkout for 10% off"
+				}
+			]
+		},
+		{
+			"type": "cart_upsell",
+			"name": "Cart upsell",
+			"settings": [
+				{
+					"type": "paragraph",
+					"content": "Products are removed from the upsell list once added to the cart."
+				},
+				{
+					"type": "text",
+					"id": "title",
+					"label": "Label",
+					"default": "Top picks"
+				},
+				{
+					"type": "product_list",
+					"id": "product_list",
+					"label": "Products",
+					"info": "Choose the products shown by this block. [Learn more](https://groupthought.com/link/analog/v1/docs/upsell-products)"
+				},
+				{
+					"type": "range",
+					"id": "limit",
+					"label": "Product limit",
+					"min": 0,
+					"max": 5,
+					"step": 1,
+					"default": 1
+				},
+				{
+					"type": "checkbox",
+					"id": "include_line_item_upsells",
+					"label": "Prioritize paired upsells",
+					"default": false,
+					"info": "Show paired upsells for products in the cart before 'Products'. [Learn more](https://groupthought.com/link/analog/v1/docs/upsell-products)",
+					"visible_if": "{{ settings.metafield_upsell_list != blank }}"
+				},
+				{
+					"type": "checkbox",
+					"id": "prioritize_shipping_upsell",
+					"label": "Promote a shipping upsell product",
+					"default": false,
+					"info": "If free shipping limit is not yet met, promote the cheapest upsell product that will bring the total price to the free shipping threshold to the first position in the upsell list."
+				}
+			]
+		},
+		{
+			"type": "shipping_estimate",
+			"name": "Shipping estimate",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "paragraph",
+					"content": "Customers enter their location and receive a price estimate in the cart."
+				},
+				{
+					"type": "header",
+					"content": "Submit button"
+				},
+				{
+					"type": "select",
+					"id": "appearance",
+					"label": "Style",
+					"default": "stroke",
+					"options": [
+						{
+							"value": "fill",
+							"label": "Fill"
+						},
+						{
+							"value": "stroke",
+							"label": "Stroke"
+						},
+						{
+							"value": "soft",
+							"label": "Soft"
+						}
+					]
+				},
+				{
+					"type": "select",
+					"id": "sizing",
+					"label": "Padding",
+					"default": "md",
+					"options": [
+						{
+							"value": "xs",
+							"label": "XS"
+						},
+						{
+							"value": "sm",
+							"label": "S"
+						},
+						{
+							"value": "md",
+							"label": "M"
+						},
+						{
+							"value": "lg",
+							"label": "L"
+						},
+						{
+							"value": "xl",
+							"label": "XL"
+						}
+					]
+				},
+				{
+					"type": "select",
+					"id": "color",
+					"label": "Color",
+					"default": "content",
+					"options": [
+						{
+							"value": "content",
+							"label": "Text default"
+						},
+						{
+							"value": "primary",
+							"label": "Primary accent"
+						},
+						{
+							"value": "secondary",
+							"label": "Link accent"
+						},
+						{
+							"value": "sale",
+							"label": "Sale"
+						},
+						{
+							"value": "canvas",
+							"label": "Background default"
+						},
+						{
+							"value": "black",
+							"label": "Black"
+						},
+						{
+							"value": "white",
+							"label": "White"
+						}
+					]
+				},
+				{
+					"type": "header",
+					"content": "Text style",
+					"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+				},
+				{
+					"type": "select",
+					"id": "type_preset",
+					"label": "Text style",
+					"default": "btn",
+					"options": [
+						{
+							"group": "Headings",
+							"value": "h1",
+							"label": "Heading 1"
+						},
+						{
+							"group": "Headings",
+							"value": "h2",
+							"label": "Heading 2"
+						},
+						{
+							"group": "Headings",
+							"value": "h3",
+							"label": "Heading 3"
+						},
+						{
+							"group": "Headings",
+							"value": "h4",
+							"label": "Heading 4"
+						},
+						{
+							"group": "Headings",
+							"value": "h5",
+							"label": "Heading 5"
+						},
+						{
+							"group": "Headings",
+							"value": "h6",
+							"label": "Heading 6"
+						},
+						{
+							"group": "Content",
+							"value": "section",
+							"label": "Section title"
+						},
+						{
+							"group": "Content",
+							"value": "p",
+							"label": "Paragraph"
+						},
+						{
+							"group": "Content",
+							"value": "kicker",
+							"label": "Kicker"
+						},
+						{
+							"group": "Content",
+							"value": "micro",
+							"label": "Micro"
+						},
+						{
+							"group": "Elements",
+							"value": "btn",
+							"label": "Button"
+						},
+						{
+							"group": "Elements",
+							"value": "accordion",
+							"label": "Accordion"
+						},
+						{
+							"group": "Elements",
+							"value": "tab",
+							"label": "Tab"
+						},
+						{
+							"group": "Custom",
+							"value": "custom",
+							"label": "Custom"
+						}
+					]
+				},
+				{
+					"type": "select",
+					"id": "type_resize",
+					"label": "Text size",
+					"default": "md",
+					"options": [
+						{
+							"value": "xs",
+							"label": "XS"
+						},
+						{
+							"value": "sm",
+							"label": "S"
+						},
+						{
+							"value": "md",
+							"label": "M"
+						},
+						{
+							"value": "lg",
+							"label": "L"
+						},
+						{
+							"value": "xl",
+							"label": "XL"
+						}
+					],
+					"visible_if": "{{ block.settings.type_preset != 'custom' }}"
+				},
+				{
+					"type": "select",
+					"id": "type_font",
+					"label": "Font",
+					"default": "body",
+					"options": [
+						{
+							"value": "heading",
+							"label": "Heading"
+						},
+						{
+							"value": "subheading",
+							"label": "Subheading"
+						},
+						{
+							"value": "accent",
+							"label": "Accent"
+						},
+						{
+							"value": "body",
+							"label": "Body"
+						}
+					],
+					"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+				},
+				{
+					"type": "range",
+					"id": "type_size",
+					"label": "Size",
+					"min": 1,
+					"max": 15,
+					"step": 1,
+					"default": 4,
+					"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+				},
+				{
+					"type": "checkbox",
+					"id": "type_uppercase",
+					"label": "Uppercase",
+					"default": false,
+					"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+				},
+			]
+		},
+		{
+			"type": "customer_notes",
+			"name": "Customer notes",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "text",
+					"id": "title",
+					"label": "Title",
+					"default": "Special instructions for seller",
+					"info": "Collect information from your customers"
+				},
+				{
+					"type": "text",
+					"id": "label",
+					"label": "Textarea label",
+					"default": "Instructions"
+				}
+			]
+		},
+		{
+			"type": "cart_review",
+			"name": "Cart review",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "checkbox",
+					"id": "accordion",
+					"label": "Show in an accordion",
+					"default": true
+				},
+				{
+					"type": "checkbox",
+					"id": "show_cart_review",
+					"label": "Show cart review",
+					"info": "Show a summary of the total price and discounts.",
+					"default": true
+				},
+				{
+					"type": "checkbox",
+					"id": "show_tax_message",
+					"label": "Show shipping and taxes message",
+					"info": "Let your customers know if shipping and taxes are calculated at checkout",
+					"default": true
+				}
+			]
+		},
+		{
+			"type": "payment_icons",
+			"name": "Payment icons",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "paragraph",
+					"content": "Show icons for the payment methods you accept."
+				},
+				{
+					"type": "text",
+					"id": "label",
+					"label": "Label",
+					"default": "We accept"
+				}
+			]
+		},
+		{
+			"type": "liquid_code",
+			"name": "Custom liquid",
+			"settings": [
+				{
+					"type": "liquid",
+					"id": "code",
+					"label": "Code",
+					"default": "<div class='prose' style='text-align: center; padding: 90px 0;'><h2>Custom HTML for {{ shop.name }}</h2><p>Add your custom HTML here.</p></div>",
+					"info": "Accepts HTML and Liquid code"
+				},
+				{
+					"type": "select",
+					"id": "output",
+					"label": "Output",
+					"default": "wrapped",
+					"options": [
+						{
+							"value": "raw",
+							"label": "Raw"
+						},
+						{
+							"value": "wrapped",
+							"label": "Wrapped"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"content": "Theme editor will not highlight or scroll to selected block when output is set to raw",
+					"visible_if": "{{ block.settings.output == 'raw' }}"
+				},
+				{
+					"type": "checkbox",
+					"id": "prevent_dynamic_updates",
+					"label": "Prevent dynamic updates",
+					"default": false,
+					"info": "Prevent this block from updating dynamically with cart and product form changes.",
+					"visible_if": "{{ block.settings.output == 'wrapped' }}"
+				},
+			]
+		}
+	]
+}
+{% endschema %}

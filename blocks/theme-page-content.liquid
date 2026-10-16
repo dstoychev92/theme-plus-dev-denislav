@@ -1,0 +1,157 @@
+<!-- blocks/theme-page-content.liquid -->
+
+{% liquid
+  assign page = block.settings.page
+  assign limit_width = block.settings.limit_width
+  assign max_width = block.settings.max_width
+  assign size = block.settings.richtext_size | default: 'md'
+%}
+
+{% capture style %}
+  {% if limit_width %}
+    {% render 'props-style-max-width', max_width: max_width %}
+  {% endif %}
+
+  {% if block.settings.set_color and block.settings.color == 'custom' %}
+    --color-custom-text: {{ block.settings.color_custom }};
+  {% endif %}
+{% endcapture %}
+
+{% capture class %}
+  w-full prose type-resize-all-{{ size }}
+  {% if block.settings.set_color %}
+    text-{{ block.settings.color | default: 'content' }}
+  {% else %}
+    text-default
+  {% endif %}
+  {% comment %} Disable entrance animations in visual preview mode to prevent "No preview available" error {% endcomment %}
+  {% unless request.visual_preview_mode %}
+    entrance-item entrance-standard
+  {% endunless %}
+{% endcapture %}
+
+{% if page != blank %}
+  <div class="{{ class }}" style="{{ style }}" {{ block.shopify_attributes }}>
+    {{ page.content }}
+  </div>
+{% else %}
+  {% comment %} Empty wrapper keeps the block selectable in the editor when no page is picked. {% endcomment %}
+  <div {{ block.shopify_attributes }}></div>
+{% endif %}
+
+{% schema %}
+{
+	"name": "Page content",
+	"tag": null,
+	"settings": [
+		{
+			"type": "page",
+			"id": "page",
+			"label": "Page",
+			"info": "Render tables or legacy app content from a page."
+		},
+		{
+			"type": "select",
+			"id": "richtext_size",
+			"label": "Text size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			]
+		},
+		{
+			"type": "checkbox",
+			"id": "limit_width",
+			"label": "Limit width",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "max_width",
+			"label": "Limit",
+			"unit": "px",
+			"min": 100,
+			"max": 1100,
+			"step": 10,
+			"default": 500,
+			"visible_if": "{{ block.settings.limit_width == true }}"
+		},
+		{
+			"type": "header",
+			"content": "Color"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_color",
+			"label": "Set color",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "color",
+			"label": "Color",
+			"default": "content",
+			"visible_if": "{{ block.settings.set_color == true  }}",
+			"options": [
+				{
+					"value": "content",
+					"label": "Text default"
+				},
+				{
+					"value": "muted",
+					"label": "Text muted"
+				},
+				{
+					"value": "primary",
+					"label": "Primary accent"
+				},
+				{
+					"value": "secondary",
+					"label": "Link accent"
+				},
+				{
+					"value": "sale",
+					"label": "Sale"
+				},
+				{
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "color",
+			"id": "color_custom",
+			"alpha": true,
+			"default": "#000000",
+			"visible_if": "{{ block.settings.color == 'custom' and block.settings.set_color == true  }}",
+			"label": "Custom color"
+		},
+	],
+	"presets": [
+		{
+			"name": "Page content",
+			"category": "Content"
+		}
+	]
+}
+{% endschema %}

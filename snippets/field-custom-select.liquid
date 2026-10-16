@@ -1,0 +1,98 @@
+{% doc %}
+  - Renders a labelled custom select
+
+  The field draws the floating label, so the button carries no text placeholder — one would
+  double the accessible name.
+
+  @param {string} [attributes]
+  @param {string} [button_class] - classes for the button that opens the list
+  @param {string} [class] - The classes
+  @param {boolean} [disabled]
+  @param {string} [edge_padding] - padding kept between the popup and the viewport edge
+  @param {string} [error_message] - error text, which marks the field invalid
+  @param {string} [flip] - lets the popup flip to the other side
+  @param {boolean} [hide_label] - keeps the label for screen readers only
+  @param {string} [id] - element id, defaults to the name handleized
+  @param {boolean} [initial_display] - text shown before a choice is made
+  @param {string} label
+  @param {string} [label_class] - classes for the label
+  @param {string} name
+  @param {string} options - the rendered option markup
+  @param {string} [placement] - popup placement
+  @param {string} [size] - 'sm', 'md' or 'lg'
+  @param {string} [success_message] - message shown after a successful post
+  @param {number} [value]
+{% enddoc %}
+
+{% liquid
+  assign id = id | default: name | handleize
+
+  # The field renders the visible floating label, so the button needs no text
+  # placeholder — it would double the accessible name
+  assign initial_display = initial_display | default: false, allow_false: true
+%}
+
+{% capture field_class %}
+  {{ class }}
+
+  {% comment %} Hide the label when the field is not focused / doesnt have a selected option {% endcomment %}
+  has-[[aria-selected='true'][aria-disabled='true']]:[--field-active:0]
+{% endcapture %}
+
+{% capture button_class %}
+  h-control ps-[--input-padding-s] pe-[--input-padding-e] py-[--input-padding-y]
+
+  text-[color:var(--input-text-color)] text-size-input leading-control
+  bg-transparent
+
+  {% comment %} Turn off default keyboard focus style since field should handle that {% endcomment %}
+  keyboard-focus:!outline-none
+
+  {{ button_class }}
+{% endcapture %}
+
+{% capture button_content_class %}
+  {% comment %} Hide button content (i.e. placeholder label) when the field is not focused / doesnt have a selected option because field snippet has it's own placeholder label {% endcomment %}
+  group-has-[[aria-selected='true'][aria-disabled='true']]/field:opacity-0
+{% endcapture %}
+
+{% capture select %}
+  {% render 'custom-select',
+    id: id,
+    name: name,
+    size: size,
+    options: options,
+    label: label,
+    value: value,
+    error_message: error_message,
+    initial_display: initial_display,
+    attributes: attributes,
+    disabled: disabled,
+    class: class,
+    button_class: button_class,
+    button_content_class: button_content_class,
+    placement: placement,
+    flip: flip,
+    edge_padding: edge_padding,
+    popup_class: '![--close-scale-x:100%]'
+  %}
+{% endcapture %}
+
+{% comment %}
+  We need rewrite the overwrite the padding on the right so the label doesn't overlap with the icon when text is too long.
+  The calculation consists of "input padding" + "gap size" + "icon size"
+{% endcomment %}
+{% assign placeholder_class = 'h-control !pe-[calc(var(--input-padding-e)+theme(space.r4)+var(--icon-size))]' %}
+
+{% render 'field',
+  label: label,
+  id: id,
+  class: field_class,
+  label_class: label_class,
+  placeholder_class: placeholder_class,
+  input: select,
+  size: size,
+  error_message: error_message,
+  success_message: success_message,
+  hide_label: hide_label
+%}

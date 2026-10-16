@@ -1,0 +1,113 @@
+{% doc %}
+  - Renders availability facet as segmented Show and Hide control
+
+  Show submits an empty value, which filtering ignores, so one of the two is always
+  selected. filter.liquid uses this instead of the list when labels are short enough.
+
+  @param {string} [base_id] - prefix for radio ids, defaults to 'filter'
+  @param {filter} filter
+  @param {string} [form] - id of form the radios belong to
+  @param {string} label
+{% enddoc %}
+
+{% liquid
+  assign base_id = base_id | default: 'filter'
+
+  # The in-stock value (1) is the only submittable state — "Hide out of stock"
+  for filter_value in filter.values
+    assign value_string = filter_value.value | append: ''
+    if value_string == '1'
+      assign hide_value = filter_value
+    endif
+  endfor
+
+  assign hide_disabled = false
+  if hide_value.count == 0 and hide_value.active == false
+    assign hide_disabled = true
+  endif
+
+  assign show_label = 'collection.filters.show' | t
+  assign hide_label = 'collection.filters.hide' | t
+
+  assign segment_class = 'relative flex flex-center px-r4 py-r2 select-none rounded-btn keyboard-active:has-[:focus]:ring-2 keyboard-active:has-[:focus]:ring-focus-outline nojs:has-[:checked]:bg-canvas'
+  assign segment_bg_class = 'absolute inset-0 bg-canvas ring-1 ring-content/10 rounded-btn'
+%}
+
+<div
+  class="flex-row-center justify-between gap-r5 h-row-md"
+  {% comment %} Force Alpine.morph to replace the control with the one from the server so it has the right checked state... {% endcomment %}
+  key="{{ filter.param_name }}-{{ hide_value.active }}"
+  x-data="{ hideOutOfStock: {% if hide_value.active %}true{% else %}false{% endif %} }"
+  {% comment %} Rapid toggling can untether the optimistic pill from the real radio state — after every section render, re-sync from the server-driven checked property {% endcomment %}
+  x-effect="if ($sectionApi.state === 'idle' && $refs.hideRadio) hideOutOfStock = $refs.hideRadio.checked"
+>
+  <h3 class="min-w-0">
+    {% render 'core-text-preset', text: label, default_type_preset: 'accordion', class: 'truncate' %}
+  </h3>
+
+  {% comment %} x-shared-layout slides the pill between segments optimistically; the section-rendering response then morphs in the confirmed state {% endcomment %}
+  <div
+    x-shared-layout
+    class="grid grid-cols-2 flex-none gap-r1 p-r1 rounded-btn bg-content-mix-10"
+  >
+    <label class="{{ segment_class }} cursor-pointer">
+      <input
+        type="radio"
+        class="sr-only"
+        id="{{ base_id }}-{{ filter.label | handle }}-show"
+        name="{{ hide_value.param_name }}"
+        {% comment %} Empty value is ignored by filtering — selecting Show restores the unfiltered default {% endcomment %}
+        value=""
+        aria-label="{{ label | escape_once }}: {{ show_label | escape_once }}"
+        data-morph-form-state="server"
+        @change="hideOutOfStock = false"
+        {% unless hide_value.active %}
+          checked
+        {% endunless %}
+        {% if form %}
+          form="{{ form }}"
+        {% endif %}
+      >
+      {% comment %} data-morph-update="none": the pill's visibility is runtime state owned by x-shared-layout — a morph re-applying the server's hidden/display attributes strands it {% endcomment %}
+      <span
+        class="{{ segment_bg_class }}"
+        hidden
+        x-show="!hideOutOfStock"
+        x-shared-layout:element="segment-bg"
+        data-morph-update="none"
+      ></span>
+      <span class="relative type-micro whitespace-nowrap">{{ show_label }}</span>
+    </label>
+
+    <label class="{{ segment_class }} {% if hide_disabled %}opacity-50 cursor-default{% else %}cursor-pointer{% endif %}">
+      <input
+        type="radio"
+        class="sr-only"
+        id="{{ base_id }}-{{ filter.label | handle }}-hide"
+        name="{{ hide_value.param_name }}"
+        value="{{ hide_value.value }}"
+        aria-label="{{ label | escape_once }}: {{ hide_label | escape_once }}"
+        x-ref="hideRadio"
+        data-morph-form-state="server"
+        @change="hideOutOfStock = true"
+        {% if hide_value.active %}
+          checked
+        {% endif %}
+        {% if hide_disabled %}
+          disabled
+        {% endif %}
+        {% if form %}
+          form="{{ form }}"
+        {% endif %}
+      >
+      <span
+        class="{{ segment_bg_class }}"
+        hidden
+        x-show="hideOutOfStock"
+        x-shared-layout:element="segment-bg"
+        data-morph-update="none"
+      ></span>
+      <span class="relative type-micro whitespace-nowrap">{{ hide_label }}</span>
+    </label>
+  </div>
+</div>

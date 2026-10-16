@@ -1,0 +1,144 @@
+<!-- snippets/core-banner.liquid -->
+
+{% doc %}
+  Renders a banner component with a background (image/video) and overlaid content.
+  This snippet follows the s pattern: most parameters can be provided either directly
+  or via the s object. Direct parameters take precedence over s values.
+
+  @param {string} [aria_label]
+  @param {number} [aspect_ratio]
+  @param {string} [attributes]
+  @param {string} [background]
+  @param {string} [background_attributes]
+  @param {string} [background_class]
+  @param {boolean} [background_image]
+  @param {block} [block]
+  @param {string} [class]
+  @param {color_scheme} [color_scheme]
+  @param {string} [content]
+  @param {string} [content_class]
+  @param {string} [controls]
+  @param {string} [height]
+  @param {string} [height_mobile]
+  @param {string} [href]
+  @param {string} [id]
+  @param {string} [id_prefix]
+  @param {image} [image]
+  @param {string} [image_mobile]
+  @param {string} [media_type]
+  @param {boolean} [new_window]
+  @param {boolean} [padding]
+  @param {string} [parallax]
+  @param {string} [placeholder]
+  @param {object} [s] - settings object
+  @param {section} [section]
+  @param {boolean} [set_height]
+  @param {boolean} [set_height_mobile]
+  @param {string} [sizes]
+  @param {string} [style]
+  @param {string} [text]
+  @param {string} [widths]
+{% enddoc %}
+{% liquid
+  assign color_scheme = color_scheme | default: s.color_scheme
+  assign set_height = set_height | default: s.set_height, allow_false: true | default: true, allow_false: true
+  assign set_height_mobile = set_height_mobile | default: s.set_height_mobile, allow_false: true | default: true, allow_false: true
+  assign height_mobile = height_mobile | default: s.height_mobile | default: false
+  assign href = href | default: s.href
+  assign new_window = new_window | default: s.open_in_new_window | default: null
+
+  assign alignment = s.content_align | default: s.alignment
+
+  assign image = image | default: s.image
+  assign video = s.video_bg
+  assign media_type = media_type | default: s.media_type | default: 'image'
+
+  if id == blank
+    assign id = id_prefix | default: block.id | default: section.id
+  endif
+  assign id = id | append: '-banner'
+%}
+
+<div
+  class="
+    group/banner
+    grid-stack reverse-z-stack
+    relative size-full overflow-hidden text-content-align
+
+    {% if alignment %}vars-content-align-{{ alignment }}{% endif %}
+    items-content-align
+
+    {% if color_scheme %}vars-{{ color_scheme }}{% endif %}
+
+    {{ class }}
+  "
+  id="{{ id }}"
+  style="{{ style }}"
+  {{ attributes }}
+>
+  {% if content %}
+    {{ content }}
+  {% else %}
+    {% render 'core-placement-grid',
+      id_prefix: id,
+      class: content_class,
+      padding: padding,
+      content: text,
+      controls: controls,
+      s: s
+    %}
+  {% endif %}
+
+  {% if href != blank %}
+    <a
+      x-link-area:anchor
+      {% comment %} aria-labelledby wins over aria-label, so a caller that names the link
+        explicitly gets that name only — naming it after the whole banner reads every text
+        block in the tile as one run-on link name, and names it nothing at all when the
+        merchant removes them {% endcomment %}
+      {% if aria_label != blank %}
+        aria-label="{{ aria_label }}"
+      {% else %}
+        aria-labelledby="{{ id }}"
+      {% endif %}
+      href="{{ href }}"
+      class="z-0 absolute inset-0"
+      {% if new_window %}
+        target="_blank"
+      {% endif %}
+    ></a>
+  {% endif %}
+
+  {% if background %}
+    {{ background }}
+  {% elsif background_image %}
+    {% render 'core-background',
+      id_prefix: id,
+      class: background_class,
+      content: background_image,
+      s: s,
+      set_height: set_height,
+      height: height,
+      set_height_mobile: set_height_mobile,
+      height_mobile: height_mobile,
+      parallax: parallax,
+      attributes: background_attributes
+    %}
+  {% else %}
+    {% capture background_media %}
+      {% render 'core-background-media', id_prefix: id, image: image, image_mobile: image_mobile, aspect_ratio: aspect_ratio, video: video, s: s, placeholder: placeholder, set_height: set_height, height: height, set_height_mobile: set_height_mobile, height_mobile: height_mobile, sizes: sizes, widths: widths %}
+    {% endcapture %}
+    {% render 'core-background',
+      id_prefix: id,
+      class: background_class,
+      content: background_media,
+      s: s,
+      set_height: set_height,
+      height: height,
+      set_height_mobile: set_height_mobile,
+      height_mobile: height_mobile,
+      parallax: parallax,
+      attributes: background_attributes
+    %}
+  {% endif %}
+</div>

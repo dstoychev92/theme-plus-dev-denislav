@@ -1,0 +1,805 @@
+<!-- sections/section-text-spotlight.liquid -->
+
+{% comment %}
+  Section: Spotlight Text
+  Large animated text with scroll-driven stagger effects. Text words animate in
+  individually as the user scrolls — dramatic for brand statements, editorial
+  intros, or manifesto-style content.
+
+  Accepts _spotlight-text blocks (the animated text) plus theme-decoration,
+  theme-icon, _inline-spacer, and _inline-image for embellishment.
+
+  Scroll animation can trigger on enter, exit, or both. When height is set to
+  "screen", enable_sticky pins the text in the viewport during the scroll
+  animation. Optional background media (image or video) with overlay for
+  cinematic effects.
+
+  Typography uses the preset+custom pattern. Content width constrains how wide
+  the text block can be within the section.
+{% endcomment %}
+
+{% liquid
+  assign height = section.settings.height
+
+  assign enable_sticky = false
+
+  if height == 'screen' and section.settings.enable_sticky
+    assign enable_sticky = true
+  endif
+
+  assign set_background_media = section.settings.set_background_media
+
+  if set_background_media == true
+    assign padding = false
+  endif
+%}
+{% capture text %}
+  <div
+    {% if section.settings.enable_scroll_animation %}
+      data-lazy-alpine
+      data-lazy-alpine-module="@theme/scroll-stagger"
+      x-scroll-stagger="
+        {
+          selector: '[data-scroll-stagger-item]',
+
+          {% comment %} Start each word animation when the previous word is this percentage of the way through its animation {% endcomment %}
+          stagger: 0.1,
+
+          target: $sectionEl.querySelector('section-content'),
+
+          {% if section.settings.height == 'screen' and section.settings.enable_sticky %}
+            scrollOffset: ['25% 100%', '50% 0%'],
+          {% else %}
+            {% comment %}
+            Start the enter stagger animations when the container is 25% visible at the bottom of the
+            viewport and stop when the bottom of the container is 50% of the way through the viewport.
+            Start the leave stagger animations when the top of the container
+            meets the top of the viewport and end when the container is 75% out of view
+            {% endcomment %}
+            scrollOffset: ['25% 100%', '50% 50%', '0% 0%', '75% 0%'],
+          {% endif %}
+        }
+      "
+      {% if section.settings.scroll_animation_mode == 'enter' or section.settings.scroll_animation_mode == 'both' %}
+      x-scroll-stagger:enter="{
+        opacity: [0.1, 1.0]
+      }"
+      {% endif %}
+      {% if section.settings.scroll_animation_mode == 'exit' or section.settings.scroll_animation_mode == 'both' %}
+      x-scroll-stagger:leave="{
+        opacity: [1.0, 0.1]
+      }"
+      {% endif %}
+    {% endif %}
+    class="
+      text-content
+      {% render 'props-class-type-preset', s: section.settings %}
+      {% comment %} Make sure line-height is enough so the full-background highlight won't overlap the text on the previous/next row {% endcomment %}
+      [--leading:1.4]
+
+      overflow-hidden
+      *:auto-stagger-animations-[--entrance-animation-stagger]
+    "
+    style="
+      --entrance-animation-stagger: 150ms;
+    "
+  >
+    {% content_for 'blocks' %}
+  </div>
+{% endcapture %}
+
+{% capture placement_class %}
+  {% if enable_sticky %}
+    {% render 'props-class-custom-height', s: section.settings, mode: 'height' %}
+    sticky top-0
+  {% endif %}
+{% endcapture %}
+
+{% capture placement_style %}
+  {% if enable_sticky %}
+    {% render 'props-style-custom-height', s: section.settings %}
+  {% endif %}
+{% endcapture %}
+
+{% capture placement %}
+  {% render 'core-placement-grid', s: section.settings, content: text, class: placement_class, style: placement_style %}
+{% endcapture %}
+
+{% capture class %}
+  {% if enable_sticky %}
+    h-[200svh]
+  {% else %}
+    {% render 'props-class-custom-height', s: section.settings %}
+  {% endif %}
+{% endcapture %}
+
+{% capture style %}
+  {% if enable_sticky == false %}
+    {% render 'props-style-custom-height', s: section.settings %}
+  {% endif %}
+{% endcapture %}
+
+{% capture blocks %}
+  {% render 'core-section-content', content: placement, s: section.settings %}
+
+  {% if set_background_media == true %}
+    {% capture background_media %}
+      {% render 'core-background-media', s: section.settings %}
+    {% endcapture %}
+
+    {% capture background %}
+      {% render 'core-background', content: background_media, s: section.settings %}
+    {% endcapture %}
+
+    {% render 'core-section-background', content: background, s: section.settings %}
+  {% endif %}
+{% endcapture %}
+
+{% render 'core-section-wrapper',
+  s: section.settings,
+  padding: padding,
+  content: blocks,
+  class: class,
+  style: style,
+  photoswipe: false
+%}
+
+{% schema %}
+{
+	"name": "Spotlight text",
+	"class": "section-text-spotlight",
+	"tag": "section",
+	"settings": [
+		{
+			"type": "header",
+			"content": "Text"
+		},
+		{
+			"type": "select",
+			"id": "type_preset",
+			"label": "Style",
+			"default": "h1",
+			"options": [
+				{
+					"group": "Headings",
+					"value": "h1",
+					"label": "Heading 1"
+				},
+				{
+					"group": "Headings",
+					"value": "h2",
+					"label": "Heading 2"
+				},
+				{
+					"group": "Headings",
+					"value": "h3",
+					"label": "Heading 3"
+				},
+				{
+					"group": "Headings",
+					"value": "h4",
+					"label": "Heading 4"
+				},
+				{
+					"group": "Headings",
+					"value": "h5",
+					"label": "Heading 5"
+				},
+				{
+					"group": "Headings",
+					"value": "h6",
+					"label": "Heading 6"
+				},
+				{
+					"group": "Content",
+					"value": "section",
+					"label": "Section title"
+				},
+				{
+					"group": "Content",
+					"value": "p",
+					"label": "Paragraph"
+				},
+				{
+					"group": "Content",
+					"value": "kicker",
+					"label": "Kicker"
+				},
+				{
+					"group": "Content",
+					"value": "micro",
+					"label": "Micro"
+				},
+				{
+					"group": "Elements",
+					"value": "btn",
+					"label": "Button"
+				},
+				{
+					"group": "Elements",
+					"value": "accordion",
+					"label": "Accordion"
+				},
+				{
+					"group": "Elements",
+					"value": "tab",
+					"label": "Tab"
+				},
+				{
+					"group": "Custom",
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_resize",
+			"label": "Text size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			],
+			"visible_if": "{{ section.settings.type_preset != 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_font",
+			"label": "Font",
+			"default": "heading",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ section.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 8,
+			"visible_if": "{{ section.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ section.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "text_alignment",
+			"id": "horizontal_placement",
+			"label": "Alignment",
+			"default": "center"
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "content_width",
+			"label": "Content width",
+			"default": "page",
+			"options": [
+				{
+					"value": "full",
+					"label": "Full"
+				},
+				{
+					"value": "page",
+					"label": "Page"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "content_width_custom",
+			"label": "Desktop width",
+			"visible_if": "{{ section.settings.content_width == 'custom'  }}",
+			"min": 25,
+			"max": 100,
+			"step": 5,
+			"default": 65,
+			"unit": "%"
+		},
+		{
+			"type": "range",
+			"id": "content_width_custom_mobile",
+			"label": "Mobile width",
+			"visible_if": "{{ section.settings.content_width == 'custom'   }}",
+			"min": 25,
+			"max": 100,
+			"step": 5,
+			"default": 100,
+			"unit": "%"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_rhythm",
+			"label": "Custom rhythm",
+			"default": false,
+			"visible_if": "{{ section.settings.set_background_media == false }}"
+		},
+		{
+			"type": "range",
+			"id": "section_padding_top",
+			"label": "Spacing top",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 40,
+			"visible_if": "{{ section.settings.set_rhythm == true  and section.settings.set_background_media == false }}"
+		},
+		{
+			"type": "range",
+			"id": "section_padding_bottom",
+			"label": "Spacing bottom",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 40,
+			"visible_if": "{{ section.settings.set_rhythm == true  and section.settings.set_background_media == false }}"
+		},
+		{
+			"type": "select",
+			"id": "height",
+			"label": "Height",
+			"default": "content",
+			"options": [
+				{
+					"value": "content",
+					"label": "Content height"
+				},
+				{
+					"value": "screen",
+					"label": "Full screen height"
+				},
+				{
+					"value": "screen-five-sixths",
+					"label": "Five sixths screen"
+				},
+				{
+					"value": "screen-three-quarters",
+					"label": "Three quarters screen"
+				},
+				{
+					"value": "screen-one-half",
+					"label": "One half screen"
+				},
+				{
+					"value": "screen-one-third",
+					"label": "One third screen"
+				},
+				{
+					"value": "screen-one-quarter",
+					"label": "One quarter screen"
+				},
+				{
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "custom_height_type",
+			"label": "Height type",
+			"default": "percentage",
+			"options": [
+				{
+					"value": "percentage",
+					"label": "%"
+				},
+				{
+					"value": "px",
+					"label": "px"
+				}
+			],
+			"visible_if": "{{ section.settings.height == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "custom_height_percentage",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"unit": "%",
+			"label": "Custom height",
+			"default": 33,
+			"visible_if": "{{ section.settings.height == 'custom' and section.settings.custom_height_type == 'percentage' }}",
+			"info": "Percentage of screen height"
+		},
+		{
+			"type": "range",
+			"id": "custom_height_px",
+			"min": 0,
+			"max": 1000,
+			"step": 50,
+			"unit": "px",
+			"label": "Custom height",
+			"default": 350,
+			"visible_if": "{{ section.settings.height == 'custom' and section.settings.custom_height_type == 'px' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_height_mobile",
+			"label": "Set mobile height",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "height_mobile",
+			"label": "Mobile height",
+			"default": "screen-one-half",
+			"visible_if": "{{ section.settings.set_height_mobile == true }}",
+			"options": [
+				{
+					"value": "screen",
+					"label": "Full screen height"
+				},
+				{
+					"value": "screen-five-sixths",
+					"label": "Five sixths screen"
+				},
+				{
+					"value": "screen-three-quarters",
+					"label": "Three quarters screen"
+				},
+				{
+					"value": "screen-one-half",
+					"label": "One half screen"
+				},
+				{
+					"value": "screen-one-third",
+					"label": "One third screen"
+				},
+				{
+					"value": "screen-one-quarter",
+					"label": "One quarter screen"
+				},
+				{
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "custom_height_type_mobile",
+			"label": "Mobile height type",
+			"default": "percentage",
+			"options": [
+				{
+					"value": "percentage",
+					"label": "%"
+				},
+				{
+					"value": "px",
+					"label": "px"
+				}
+			],
+			"visible_if": "{{ section.settings.set_height_mobile == true and section.settings.height_mobile == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "custom_height_percentage_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"unit": "%",
+			"label": "Mobile custom height",
+			"default": 33,
+			"visible_if": "{{ section.settings.set_height_mobile == true and section.settings.height_mobile == 'custom' and section.settings.custom_height_type_mobile == 'percentage' }}"
+		},
+		{
+			"type": "range",
+			"id": "custom_height_px_mobile",
+			"min": 0,
+			"max": 1000,
+			"step": 50,
+			"unit": "px",
+			"label": "Mobile custom height",
+			"default": 350,
+			"visible_if": "{{ section.settings.set_height_mobile == true and section.settings.height_mobile == 'custom' and section.settings.custom_height_type_mobile == 'px' }}"
+		},
+		{
+			"type": "color_scheme",
+			"id": "color_scheme",
+			"label": "Color scheme"
+		},
+		{
+			"type": "select",
+			"id": "background",
+			"label": "Background",
+			"default": "canvas",
+			"options": [
+				{
+					"value": "canvas",
+					"label": "Default"
+				},
+				{
+					"value": "tint",
+					"label": "Tint"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background color",
+			"default": "#f2f2f2",
+			"alpha": false,
+			"visible_if": "{{ section.settings.background == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_sticky",
+			"label": "Enable sticky",
+			"default": false,
+			"visible_if": "{{ section.settings.height == 'screen' }}"
+		},
+		{
+			"type": "header",
+			"content": "Background media"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_background_media",
+			"label": "Set background media",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "media_type",
+			"label": "Type",
+			"options": [
+				{
+					"value": "image",
+					"label": "Image"
+				},
+				{
+					"value": "video",
+					"label": "Video"
+				}
+			],
+			"default": "image",
+			"visible_if": "{{ section.settings.set_background_media == true }}"
+		},
+		{
+			"type": "image_picker",
+			"id": "image",
+			"label": "Image",
+			"visible_if": "{{ section.settings.set_background_media == true and section.settings.media_type == 'image' }}"
+		},
+		{
+			"type": "video",
+			"id": "video_bg",
+			"label": "Video",
+			"visible_if": "{{ section.settings.set_background_media == true and section.settings.media_type == 'video' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_image_on_mobile",
+			"label": "Show image on mobile",
+			"default": false,
+			"visible_if": "{{ section.settings.set_background_media == true and section.settings.image != blank and section.settings.media_type == 'video' }}"
+		},
+		{
+			"type": "image_picker",
+			"id": "image_mobile",
+			"label": "Image mobile",
+			"visible_if": "{{ section.settings.set_background_media == true and section.settings.image != blank and section.settings.media_type == 'image' or section.settings.show_image_on_mobile == true }}"
+		},
+		{
+			"type": "range",
+			"id": "overlay_opacity",
+			"label": "Overlay opacity",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"visible_if": "{{ section.settings.set_background_media == true }}",
+			"default": 8
+		},
+		{
+			"type": "color",
+			"id": "overlay_color",
+			"label": "Overlay color",
+			"visible_if": "{{ section.settings.set_background_media == true }}",
+			"default": "#000000"
+		},
+		{
+			"type": "header",
+			"content": "Animation"
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_scroll_animation",
+			"label": "Enable scroll animation",
+			"default": true
+		},
+		{
+			"type": "select",
+			"id": "scroll_animation_mode",
+			"label": "Animate on",
+			"options": [
+				{
+					"value": "both",
+					"label": "Enter and exit"
+				},
+				{
+					"value": "enter",
+					"label": "Enter"
+				},
+				{
+					"value": "exit",
+					"label": "Exit"
+				}
+			],
+			"default": "both",
+			"visible_if": "{{ section.settings.enable_scroll_animation == true }}"
+		},
+		{
+			"type": "paragraph",
+			"content": "Text will fade in and out as section enters and leaves the screen. Disable if text is visible when page loads.",
+			"visible_if": "{{ section.settings.enable_scroll_animation == true and section.settings.scroll_animation_mode == 'both' }}"
+		},
+		{
+			"type": "paragraph",
+			"content": "Text will fade in as section enters the screen. Disable if text is visible when page loads.",
+			"visible_if": "{{ section.settings.enable_scroll_animation == true and section.settings.scroll_animation_mode == 'enter' }}"
+		},
+		{
+			"type": "paragraph",
+			"content": "Text will fade out as section leaves the screen. Disable if text is visible when page loads.",
+			"visible_if": "{{ section.settings.enable_scroll_animation == true and section.settings.scroll_animation_mode == 'exit' }}"
+		},
+		{
+			"type": "header",
+			"content": "Target device",
+			"visible_if": "{{ settings.show_target_device_settings == true }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_target_device",
+			"label": "Set target device",
+			"visible_if": "{{ settings.show_target_device_settings == true }}",
+			"default": false
+		},
+		{
+			"type": "select",
+			"label": "Show on",
+			"id": "target_device",
+			"default": "desktop",
+			"visible_if": "{{ settings.show_target_device_settings == true and section.settings.set_target_device == true }}",
+			"options": [
+				{
+					"value": "mobile",
+					"label": "Mobile"
+				},
+				{
+					"value": "desktop",
+					"label": "Desktop"
+				}
+			]
+		},
+	],
+	"blocks": [
+		{
+			"type": "_spotlight-text",
+		},
+		{
+			"type": "theme-decoration",
+		},
+		{
+			"type": "theme-icon",
+		},
+		{
+			"type": "_inline-spacer",
+		},
+		{
+			"type": "_inline-image",
+		}
+	],
+	"presets": [
+		{
+			"name": "Spotlight text",
+			"category": "Full width",
+			"settings": {
+				"content_width": "custom",
+				"content_width_custom": 65
+			},
+			"blocks": [
+				{
+					"type": "_spotlight-text",
+					"settings": {
+						"text": "<em><strong>Grab</strong></em> your customer's <em><strong>attention</strong></em> with <em><strong>spotlight text</strong></em>"
+					}
+				},
+			]
+		},
+		{
+			"name": "Spotlight and photos",
+			"category": "Try: Tell your story",
+			"settings": {
+				"content_width": "custom",
+				"content_width_custom": 65
+			},
+			"blocks": [
+				{
+					"type": "_spotlight-text",
+					"settings": {
+						"text": "Designed with <em>intention</em>, made with <em>care</em>."
+					}
+				},
+				{
+					"type": "_inline-image"
+				},
+				{
+					"type": "_spotlight-text",
+					"settings": {
+						"text": "Every piece <em>earns its place</em> in your everyday."
+					}
+				},
+				{
+					"type": "_inline-image"
+				}
+			]
+		}
+	],
+	"disabled_on": {
+		"groups": [
+			"header",
+			"custom.overlays",
+			"custom.drawers"
+		]
+	}
+}
+{% endschema %}

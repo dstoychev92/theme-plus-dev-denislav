@@ -1,0 +1,106 @@
+{% doc %}
+  - Renders a background image or video, whichever media_type names
+
+  @param {number} [aspect_ratio] - aspect ratio
+  @param {string} [aspect_ratio_mobile] - aspect ratio on mobile
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {string} [fetchpriority]
+  @param {string} [height] - CSS height
+  @param {string} [height_mobile] - CSS height on mobile
+  @param {string} [id_prefix] - prefix for the element ids
+  @param {image} [image]
+  @param {string} [image_mobile] - image below the md breakpoint
+  @param {string} [loading]
+  @param {string} [media_type] - 'image' or 'video'
+  @param {string} [placeholder] - Shopify placeholder name
+  @param {string} [preload]
+  @param {object} [s] - settings object
+  @param {number} [set_height] - applies the height
+  @param {string} [set_height_mobile] - applies the mobile height
+  @param {boolean} [show_image_on_mobile] - uses the image instead of the video on mobile
+  @param {string} [sizes]
+  @param {video} [video]
+  @param {string} [widths] - widths for the srcset
+{% enddoc %}
+
+{% liquid
+  assign height = height | default: s.height, allow_false: true
+  assign set_height = set_height | default: s.set_height, allow_false: true | default: true, allow_false: true
+  assign height_mobile = height_mobile | default: s.height_mobile, allow_false: true
+  assign set_height_mobile = set_height_mobile | default: s.set_height_mobile, allow_false: true | default: true, allow_false: true
+  assign image = image | default: s.image
+  assign image_mobile = image_mobile | default: s.image_mobile
+  assign media_type = media_type | default: s.media_type | default: 'image'
+  assign show_image_on_mobile = show_image_on_mobile | default: s.show_image_on_mobile
+%}
+
+{% case media_type %}
+  {% when 'image' %}
+    {% render 'core-background-image',
+      s: s,
+      id_prefix: id_prefix,
+      image: image,
+      image_mobile: image_mobile,
+      placeholder: placeholder,
+      aspect_ratio: aspect_ratio,
+      aspect_ratio_mobile: aspect_ratio_mobile,
+      height: height,
+      set_height: set_height,
+      height_mobile: height_mobile,
+      set_height_mobile: set_height_mobile,
+      preload: preload,
+      loading: loading,
+      fetchpriority: fetchpriority,
+      class: class,
+      attributes: attributes,
+      sizes: sizes,
+      widths: widths
+    %}
+
+  {% when 'video' %}
+    {% if show_image_on_mobile == true %}
+      {% assign video_class = class | append: ' max-md:hidden' %}
+      {% assign class = class | append: ' md:hidden' %}
+      {% render 'core-background-image',
+        s: s,
+        id_prefix: id_prefix,
+        image: false,
+        image_mobile: image_mobile,
+        placeholder: placeholder,
+        aspect_ratio_mobile: aspect_ratio_mobile,
+        sizes: sizes,
+        widths: widths,
+        height: height,
+        set_height: set_height,
+        height_mobile: height_mobile,
+        set_height_mobile: set_height_mobile,
+        preload: preload,
+        loading: loading,
+        fetchpriority: fetchpriority,
+        class: class,
+        attributes: attributes
+      %}
+    {% endif %}
+
+    {% liquid
+      if show_image_on_mobile
+        assign video_attributes = attributes | append: ' data-video-desktop'
+      else
+        assign video_attributes = attributes | append: ' data-video'
+      endif
+    %}
+
+    {% render 'core-background-video',
+      id_prefix: id_prefix,
+      s: s,
+      video: video,
+      height: height,
+      set_height: set_height,
+      height_mobile: height_mobile,
+      set_height_mobile: set_height_mobile,
+      preload: preload,
+      class: video_class,
+      attributes: video_attributes
+    %}
+{% endcase %}

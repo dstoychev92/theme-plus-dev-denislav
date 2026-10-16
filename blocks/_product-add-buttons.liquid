@@ -1,0 +1,606 @@
+<!-- blocks/_product-add-buttons.liquid -->
+
+{% liquid
+  assign product = closest.product
+
+  if product == blank and request.visual_preview_mode
+    assign product = collections.all.products.first
+  endif
+
+  assign current_variant = product.selected_or_first_available_variant
+  assign price = current_variant.price
+  assign add_to_cart_button_class = 'w-full relative'
+  assign add_to_cart_button_label_class = 'w-full leading-[--leading-block] whitespace-normal'
+
+  # Select current selling plan if it's specified in the URL
+  assign selected_selling_plan = product.selected_selling_plan
+  if product.requires_selling_plan and selected_selling_plan == blank
+    # Fallback to the first available selling plan
+    assign selected_selling_plan = product.selected_or_first_available_selling_plan_allocation.selling_plan | default: product.selling_plan_groups[0].selling_plans[0]
+  endif
+
+  # Subscription price
+  if selected_selling_plan
+    assign price_adjustment = selected_selling_plan.price_adjustments[0]
+    case price_adjustment.value_type
+      when 'percentage'
+        assign plan_discount_amount = price | times: price_adjustment.value | divided_by: 100
+      when 'fixed_amount'
+        assign plan_discount_amount = price_adjustment.value
+      when 'price'
+        assign plan_discount_amount = 0
+        assign price = price_adjustment.value
+    endcase
+    assign price = price | minus: plan_discount_amount
+  endif
+
+  assign button_text = 'product.add_to_cart' | t
+%}
+
+{% comment %}
+  This assumes that products are unique within the current section
+  Several blocks (add buttons, quantity, subscription) each compute this id on
+  their own and rely on getting the same value, since their inputs join the
+  form through the form="" attribute. That is why the id can only use shared
+  context: one product form per product per section. A second "Form buttons"
+  block for the same product in one section duplicates the form id and leaves
+  quantity/subscription inputs ambiguously bound — unsupported.
+{% endcomment %}
+{% assign product_form_id = 'product-form-' | append: product.handle | append: '-' | append: section.id %}
+
+{% capture alert %}
+  {% capture alert_attributes %}
+    :hidden="$productForm.state !== 'error'"
+    x-show="$productForm.state === 'error'"
+    x-cloak
+    x-transition.duration.900ms
+    aria-label="{{ "product.error_adding_to_cart" | t }}"
+    {% comment %} Reset error state when variant/sibling is changed {% endcomment %}
+    @shopify:product:select.window="if ($productForm.state === 'error' && $event.detail.sectionId === '{{ section.id }}' && $event.detail.productId === {{ product.id }}) $productForm.reset()"
+    @theme:sibling:change.window="if ($productForm.state === 'error' && $event.detail.sectionId === '{{ section.id }}' && $event.detail.productId === {{ product.id }}) $productForm.reset()"
+  {% endcapture %}
+  {% capture alert_icon %}
+    {% render 'core-icon', icon: 'fill-circle-alert' %}
+  {% endcapture %}
+  {% capture alert_content %}
+    {% assign default_error_message = "product.error_adding_to_cart" | t %}
+    {% comment %}
+      Fallback text rides a data attribute since an apostrophe in the translation (French "l'ajout")
+      would end the string and break the whole expression. Escaping does not help — the browser decodes
+      the entity before Alpine parses the attribute.
+    {% endcomment %}
+    <p
+      data-default-error="{{ default_error_message | escape_once }}"
+      x-html="$productForm.errorDescription || $productForm.errorMessage || $el.dataset.defaultError"
+    ></p>
+  {% endcapture %}
+  {% render 'alert',
+    icon: alert_icon,
+    content: alert_content,
+    type: 'error',
+    attributes: alert_attributes,
+    class: 'rounded-sm'
+  %}
+{% endcapture %}
+
+{% assign add_to_cart_button_label = 'product.add_to_cart' | t %}
+
+{% comment %} Available {% endcomment %}
+{% if current_variant.available == true %}
+  {% assign add_to_cart_button_label = null %}
+  {% liquid
+    # Pre-order button text
+    if settings.metafield_preorder != blank
+      assign preorder_metafield_namespace = settings.metafield_preorder | split: '.' | first
+      assign preorder_metafield_key = settings.metafield_preorder | split: '.' | last
+      assign preorder_metafield = product.metafields[preorder_metafield_namespace][preorder_metafield_key]
+      if preorder_metafield.value == true
+        assign button_text = 'product.pre_order.add_button' | t
+      endif
+    endif
+  %}
+
+  {% capture add_to_cart_button_content %}
+    <span
+      aria-hidden="true"
+      class="absolute z-10 inset-0 flex flex-center transition-[opacity,transform]"
+      x-cloak
+      x-show="$productForm.state === 'pending'"
+      x-transition:enter="delay-100"
+      x-transition:enter-start="opacity-0 scale-0"
+      x-transition:enter-end="opacity-100 scale-100"
+      x-transition:leave-start="opacity-100 scale-100"
+      x-transition:leave-end="opacity-0 scale-0"
+    >
+      {% render 'spinner' %}
+    </span>
+    <span
+      aria-hidden="true"
+      class="absolute z-10 inset-0 flex flex-center transition-[opacity,transform]"
+      x-cloak
+      x-show="$productForm.state === 'success'"
+      x-transition:enter="delay-100"
+      x-transition:enter-start="opacity-0 scale-90"
+      x-transition:enter-end="opacity-100 scale-100"
+      x-transition:leave-start="opacity-100 scale-100"
+      x-transition:leave-end="opacity-0 scale-90"
+    >
+      {% render 'core-icon', icon: 'stroke-bare-check', size: 'lg' %} {{- "product.added_to_cart" | t -}}
+    </span>
+    <span
+      class="relative flex flex-row flex-center gap-x-r3 group-has-[:invalid]/product-form:animate-wiggle transition-[opacity,transform]"
+      :class="{
+        'opacity-0 scale-95': $productForm.state === 'pending' || $productForm.state === 'success',
+      }"
+    >
+      <span aria-hidden="true" class="absolute inset-0 flex flex-center h-full pointer-events-none hover-effect-text-highlight">
+        {{ button_text }}
+      </span>
+      {{ button_text }}
+    </span>
+  {% endcapture %}
+{% endif %}
+
+{% comment %} Sold out {% endcomment %}
+{% if current_variant.available == false %}
+  {% assign add_to_cart_button_content = null %}
+  {% assign add_to_cart_button_label = 'product.sold_out' | t %}
+  {% assign add_to_cart_button_class = add_to_cart_button_class | append: ' opacity-50' %}
+  {% capture add_to_cart_button_attributes %}
+    {% comment %} Disable button if product is sold out {% endcomment %}
+    {% # A backtick or a ${ in the translation breaks the template literal %}
+    data-validity-message="{{ 'product.sold_out_error_message' | t | escape_once }}"
+    @click="$el.setCustomValidity($el.dataset.validityMessage)"
+  {% endcapture %}
+{% endif %}
+
+{% comment %} Unavailable {% endcomment %}
+{% if current_variant == null %}
+  {% assign add_to_cart_button_content = null %}
+  {% assign add_to_cart_button_label = 'product.unavailable' | t %}
+  {% assign add_to_cart_button_class = add_to_cart_button_class | append: ' opacity-50' %}
+  {% capture add_to_cart_button_attributes %}
+    {% comment %} Disable button if product is unavailable {% endcomment %}
+    {% # A backtick or a ${ in the translation breaks the template literal %}
+    data-validity-message="{{ 'product.unavailable_error_message' | t | escape_once }}"
+    @click="$el.setCustomValidity($el.dataset.validityMessage)"
+  {% endcapture %}
+{% endif %}
+
+{% capture add_to_cart_button_attributes %}
+  {{ add_to_cart_button_attributes }}
+  key="{{ current_variant.id }}"
+
+  {% comment %} We dont want users clicking the button while the section is loading since that might add the previous variant to the cart not the new one{% endcomment %}
+  :disabled="$sectionApi.state === 'loading'"
+{% endcapture %}
+
+{% capture add_to_cart_button %}
+  {% render 'core-button',
+    type: 'submit',
+    content: add_to_cart_button_content,
+    label: add_to_cart_button_label,
+    s: block.settings,
+    class: add_to_cart_button_class,
+    attributes: add_to_cart_button_attributes,
+    label_class: add_to_cart_button_label_class
+  %}
+{% endcapture %}
+
+{% capture content %}
+  <product-add-buttons
+    class="
+      flex flex-col gap-y-r5 w-full
+      vars-btn-{{ block.settings.sizing }}
+      {% if block.settings.color != 'custom' and block.settings.color != 'custom_gradient' %}
+        vars-btn-{{ block.settings.color }}
+      {% endif %}
+    "
+  >
+    {% if product != blank %}
+      {{ alert }}
+
+      {% comment %}
+        Preserve this form during the enclosing product-details morph so app-injected inputs and runtime state
+        survive. The regions policy keeps that enclosing region eligible, then updates the nested theme-owned
+        fields separately.
+      {% endcomment %}
+      {% form 'product', product, id: product_form_id, data-morph-update: 'regions', class: 'shopify-product-form flex flex-col gap-y-sm group/product-form' %}
+        <div
+          class="{% if request.visual_preview_mode %}block{% else %}contents{% endif %}"
+          data-render-region='{{ block.id }}-product-form'
+        >
+          {% if block.settings.enable_gift_card_recipient and product.gift_card? %}
+            {% render 'product-gift-card-recipient', product: product %}
+          {% endif %}
+
+          {% comment %} The input with name="id" indicates the variant to add to cart {% endcomment %}
+          <input type="hidden" name="id" key="{{ product.id }}-{{ current_variant.id }}" value="{{ current_variant.id }}">
+
+          {% render 'product-preorder-properties', product: product %}
+          {% render 'product-line-item-properties', product: product %}
+
+          {{ add_to_cart_button }}
+        </div>
+
+        {% if block.settings.enable_payment_button and current_variant.available == true %}
+          <div
+            class="
+              {% render 'props-class-type-preset', s: block.settings %}
+              vars-btn-fill
+              {% if block.settings.color_payment_button != 'custom' and block.settings.color_payment_button != 'custom_gradient' %}
+                vars-btn-{{ block.settings.color_payment_button }}
+              {% endif %}
+            "
+            style="
+              {% render 'props-style-button-color',
+                color: block.settings.color_payment_button,
+                color_custom: block.settings.color_custom_payment_button,
+                appearance: 'fill'
+              %}
+            "
+          >
+            {{ form | payment_button }}
+          </div>
+
+          {% comment %} Shop pay split payment terms {% endcomment %}
+          <div class="shop-pay-terms prose text-r3 empty:hidden">{{- form | payment_terms -}}</div>
+        {% endif %}
+      {% endform %}
+    {% elsif settings.placeholder_mode or request.design_mode %}
+      <div class="flex flex-col gap-y-r3">
+        {{ add_to_cart_button }}
+      </div>
+    {% endif %}
+  </product-add-buttons>
+{% endcapture %}
+
+{% render 'product-block', s: block.settings, content: content, attributes: block.shopify_attributes, class: 'w-full' %}
+
+{% schema %}
+{
+	"name": "Form buttons",
+	"tag": null,
+	"settings": [
+		{
+			"type": "header",
+			"content": "Add to cart button"
+		},
+		{
+			"type": "select",
+			"id": "appearance",
+			"label": "Style",
+			"default": "fill",
+			"options": [
+				{
+					"value": "fill",
+					"label": "Fill"
+				},
+				{
+					"value": "stroke",
+					"label": "Stroke"
+				},
+				{
+					"value": "soft",
+					"label": "Soft"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "sizing",
+			"label": "Height",
+			"default": "xl",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "color",
+			"label": "Color",
+			"default": "content",
+			"options": [
+				{
+					"value": "content",
+					"label": "Text default"
+				},
+				{
+					"value": "primary",
+					"label": "Primary accent"
+				},
+				{
+					"value": "secondary",
+					"label": "Link accent"
+				},
+				{
+					"value": "sale",
+					"label": "Sale"
+				},
+				{
+					"value": "custom",
+					"label": "Custom"
+				},
+				{
+					"value": "custom_gradient",
+					"label": "Custom gradient"
+				}
+			]
+		},
+		{
+			"type": "color",
+			"id": "color_custom",
+			"alpha": true,
+			"default": "#000000",
+			"visible_if": "{{ block.settings.color == 'custom' }}",
+			"label": "Custom color"
+		},
+		{
+			"type": "color",
+			"id": "custom_gradient_from",
+			"alpha": true,
+			"default": "#009C9C",
+			"visible_if": "{{ block.settings.color == 'custom_gradient' and block.settings.appearance == 'fill' }}",
+			"label": "Gradient color 1"
+		},
+		{
+			"type": "color",
+			"id": "custom_gradient_to",
+			"alpha": true,
+			"default": "#6600D9",
+			"visible_if": "{{ block.settings.color == 'custom_gradient' and block.settings.appearance == 'fill' }}",
+			"label": "Gradient color 2"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "Text color",
+			"default": "#FFFFFF",
+			"visible_if": "{{ block.settings.appearance == 'fill' and block.settings.color == 'custom' or block.settings.color == 'custom_gradient' }}"
+		},
+		{
+			"type": "paragraph",
+			"content": "Custom gradients only apply to fill buttons",
+			"visible_if": "{{ block.settings.color == 'custom_gradient' and block.settings.appearance != 'fill' }}"
+		},
+		{
+			"type": "header",
+			"content": "Text style",
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_preset",
+			"label": "Text style",
+			"default": "btn",
+			"options": [
+				{
+					"group": "Headings",
+					"value": "h1",
+					"label": "Heading 1"
+				},
+				{
+					"group": "Headings",
+					"value": "h2",
+					"label": "Heading 2"
+				},
+				{
+					"group": "Headings",
+					"value": "h3",
+					"label": "Heading 3"
+				},
+				{
+					"group": "Headings",
+					"value": "h4",
+					"label": "Heading 4"
+				},
+				{
+					"group": "Headings",
+					"value": "h5",
+					"label": "Heading 5"
+				},
+				{
+					"group": "Headings",
+					"value": "h6",
+					"label": "Heading 6"
+				},
+				{
+					"group": "Content",
+					"value": "section",
+					"label": "Section title"
+				},
+				{
+					"group": "Content",
+					"value": "p",
+					"label": "Paragraph"
+				},
+				{
+					"group": "Content",
+					"value": "kicker",
+					"label": "Kicker"
+				},
+				{
+					"group": "Content",
+					"value": "micro",
+					"label": "Micro"
+				},
+				{
+					"group": "Elements",
+					"value": "btn",
+					"label": "Button"
+				},
+				{
+					"group": "Elements",
+					"value": "accordion",
+					"label": "Accordion"
+				},
+				{
+					"group": "Elements",
+					"value": "tab",
+					"label": "Tab"
+				},
+				{
+					"group": "Custom",
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_resize",
+			"label": "Text size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset != 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_font",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 4,
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "header",
+			"content": "Dynamic checkout"
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_payment_button",
+			"label": "Show dynamic checkout button",
+			"info": "Lets customers check out directly using a familiar payment method. [Learn More](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+			"default": true
+		},
+		{
+			"type": "select",
+			"id": "color_payment_button",
+			"label": "Color",
+			"default": "content",
+			"visible_if": "{{ block.settings.enable_payment_button == true }}",
+			"options": [
+				{
+					"value": "content",
+					"label": "Text default"
+				},
+				{
+					"value": "primary",
+					"label": "Primary accent"
+				},
+				{
+					"value": "secondary",
+					"label": "Link accent"
+				},
+				{
+					"value": "sale",
+					"label": "Sale"
+				},
+				{
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "color",
+			"id": "color_custom_payment_button",
+			"alpha": true,
+			"default": "#000000",
+			"visible_if": "{{ block.settings.color_payment_button == 'custom' and block.settings.enable_payment_button == true }}",
+			"label": "Custom color"
+		},
+		{
+			"type": "header",
+			"content": "Gift cards",
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_gift_card_recipient",
+			"label": "Enable \"send as a gift\" option",
+			"default": true,
+			"info": "Gift card products can be sent directly to a recipient along with a personal message."
+		},
+	],
+	"presets": [
+		{
+			"name": "Form buttons",
+			"category": "Add to cart"
+		}
+	]
+}
+{% endschema %}

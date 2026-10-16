@@ -1,0 +1,153 @@
+<!-- sections/_blocks.liquid -->
+
+{% comment %}
+  Wrapper section for AI-generated theme blocks (e.g. via Sidekick).
+  Shopify automatically wraps generated blocks in this section — it cannot
+  be added manually by merchants. Must accept @theme and @app block types,
+  include presets, use {% content_for 'blocks' %}, and omit `templates`.
+  https://shopify.dev/docs/storefronts/themes/architecture/blocks/ai-generated-theme-blocks
+{% endcomment %}
+
+{% capture blocks %}
+  {% content_for 'blocks' %}
+{% endcapture %}
+
+{% capture style %}
+  --section-content-col-start: section-start;
+  --section-content-col-end: section-end;
+{% endcapture %}
+
+{% capture wrapped_blocks %}
+  <div
+    class="
+      flex flex-col h-full
+    "
+  >
+    {{ blocks }}
+  </div>
+{% endcapture %}
+
+{% render 'core-section', s: section.settings, content: wrapped_blocks, style: style %}
+
+{% schema %}
+{
+	"name": "Blocks",
+	"class": "section-blocks",
+	"tag": "section",
+	"settings": [
+		{
+			"type": "header",
+			"content": "Section layout"
+		},
+		{
+			"type": "checkbox",
+			"id": "contain_section",
+			"label": "Contain section",
+			"default": true
+		},
+		{
+			"type": "select",
+			"id": "section_width",
+			"label": "Width",
+			"visible_if": "{{ section.settings.contain_section }}",
+			"default": "page",
+			"options": [
+				{
+					"value": "full",
+					"label": "Full"
+				},
+				{
+					"value": "page",
+					"label": "Page"
+				}
+			]
+		},
+		{
+			"type": "checkbox",
+			"id": "set_rhythm",
+			"label": "Custom rhythm",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "section_padding_top",
+			"label": "Spacing top",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 40,
+			"visible_if": "{{ section.settings.set_rhythm == true  }}"
+		},
+		{
+			"type": "range",
+			"id": "section_padding_bottom",
+			"label": "Spacing bottom",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 40,
+			"visible_if": "{{ section.settings.set_rhythm == true  }}"
+		},
+		{
+			"type": "header",
+			"content": "Appearance"
+		},
+		{
+			"type": "color_scheme",
+			"id": "color_scheme",
+			"label": "Color scheme"
+		},
+		{
+			"type": "select",
+			"id": "background",
+			"label": "Background",
+			"default": "canvas",
+			"options": [
+				{
+					"value": "canvas",
+					"label": "Default"
+				},
+				{
+					"value": "tint",
+					"label": "Tint"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background color",
+			"default": "#f2f2f2",
+			"alpha": false,
+			"visible_if": "{{ section.settings.background == 'custom' }}"
+		},
+	],
+	"blocks": [
+		{
+			"type": "@theme",
+		},
+		{
+			"type": "@app",
+		}
+	],
+	"presets": [
+		{
+			"name": "Custom",
+			"category": "Utility"
+		}
+	],
+	"disabled_on": {
+		"groups": [
+			"header",
+			"custom.overlays",
+			"custom.drawers"
+		]
+	}
+}
+{% endschema %}

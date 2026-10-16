@@ -1,0 +1,217 @@
+{% doc %}
+  - Renders product card at the requested size
+
+  @param {boolean} [api_response] - marks markup rendered as a Section API response
+  @param {string} [appearance] - suffix for vars-card-lg-appearance-*
+  @param {number} [aspect_ratio]
+  @param {string} [attributes]
+  @param {block} [block]
+  @param {boolean} [button] - renders the add-to-cart or quick-view control
+  @param {string} [class] - The classes
+  @param {string} [image_fetchpriority]
+  @param {string} [image_loading]
+  @param {string} [image_sizes]
+  @param {string} [image_widths]
+  @param {boolean} [loader] - renders loading state
+  @param {boolean} [placeholder]
+  @param {number} [placeholder_image_index] - placeholder artwork number
+  @param {boolean} [product]
+  @param {section} [section]
+  @param {string} [size] - 'xs', 'sm', 'md' or 'lg', selecting the card-layout snippet
+  @param {boolean} [url] - card URL, defaults to the product URL
+  @param {string} [view_context] - standard_event_data context, 'collection' by default
+{% enddoc %}
+
+{%- liquid
+  # A boolean, string or array answers no id, and the product form dies on one — drop it here
+  if product != blank and product.id == blank
+    assign product = null
+  endif
+
+  # Safety measure to only show placeholder when on request.design_mode
+  assign enable_placeholder_product = false
+  if settings.placeholder_mode or request.design_mode
+    assign enable_placeholder_product = true
+  endif
+
+  assign url = url | default: product.url, allow_false: true | default: false, allow_false: true
+  assign button = button | default: false
+  assign image = product.featured_media.preview_image
+  assign title = product.title | strip_html
+  assign aspect_ratio = aspect_ratio | default: settings.card_aspect_ratio
+
+  capture product_price
+    render 'card-price', product: product
+  endcapture
+
+  # When price is 0, show "0" on "lg' cards, otherwise - show "Free"
+  if product.price == 0 and product.price_varies == false and size != 'lg'
+    assign product_price = 'other.free' | t
+  endif
+
+  # Disable placeholder when we need to show the loader - for example, when we are ajaxing the products
+  if loader == true
+    assign placeholder = false
+  endif
+  # Disable placeholder outside of design mode
+  if enable_placeholder_product == false
+    assign placeholder = false
+  endif
+  # Hide filler when not on design mode and image is null
+  if enable_placeholder_product == false and image == null
+    assign media = false
+  endif
+
+  # In case we're on the product page where `product` will be the PAGE product, not the passed in param
+  if enable_placeholder_product == true and placeholder == true
+    assign product = null
+  endif
+
+  assign cover = false
+
+  case settings.product_card_image_fit
+    when 'scale'
+      assign cover = false
+    when 'crop'
+      assign cover = true
+    when 'uneven'
+      assign cover = true
+  endcase
+-%}
+
+{% if placeholder %}
+  {% liquid
+    # Use 'product' SVG placeholder
+    assign placeholder_image_type = 'product'
+    assign placeholder_image_index = placeholder_image_index | strip | default: 1
+    assign placeholder_image = placeholder_image_type | append: '-' | append: placeholder_image_index
+    capture media
+      render 'core-image', placeholder: placeholder_image, aspect_ratio: aspect_ratio, class: 'h-full'
+    endcapture
+  %}
+
+  {% if size == 'lg' %}
+    {% capture content %}
+      {% comment %} Use custom 'content' to handle both 'left' and 'center' alignments of the product-card {% endcomment %}
+      <div class="flex justify-between gap-x-r4 text-r4 items-start text-start">
+        <span class="line-clamp-2 font-bold">{{ 'homepage.placeholder.product_card_title' | t }}</span>
+        <span>{{ 'homepage.placeholder.product_card_price' | t }}</span>
+      </div>
+    {% endcapture %}
+  {% else %}
+    {% liquid
+      assign title = 'homepage.placeholder.product_card_title' | t
+      assign product_price = 'homepage.placeholder.product_card_price' | t
+      assign image = null
+      assign url = '#'
+    %}
+
+    {% if button %}
+      {% assign button_text = 'product.add_to_cart' | t %}
+      {% capture product_button %}
+        {% render 'core-button',
+          type: 'submit',
+          label: button_text,
+          aria_label: button_text,
+          sizing: 'sm',
+          type_resize: 'sm',
+          color: 'primary',
+          appearance: 'soft'
+        %}
+      {% endcapture %}
+    {% endif %}
+  {% endif %}
+{% endif %}
+
+{% unless placeholder %}
+  {% if size == 'md' %}
+    {% if button %}
+      {% liquid
+        assign variant = product.selected_or_first_available_variant
+        assign is_instant_add_allowed = false
+
+        if product.variants.size == 1 or settings.enable_quickview == false
+          assign is_instant_add_allowed = true
+        elsif settings.enable_quickview
+          assign is_instant_add_allowed = false
+        endif
+
+        assign show_button = true
+
+        if product.selling_plan_groups.size > 0
+          # The plan is chosen in the quickview, so never add directly
+          assign is_instant_add_allowed = false
+
+          # With quickview disabled we don't force the drawer on merchants who
+          # opted out of it — render no button and let the card link carry the
+          # customer to the product page, where the plan selector lives
+          unless settings.enable_quickview
+            assign show_button = false
+          endunless
+        endif
+      %}
+      {% if show_button %}
+        {% capture product_button %}
+          {% comment %} Shopify's default form id (product_form_<product.id>) duplicates when the same product renders in more than one card on a page — e.g. in two tabs of one section — so scope it by section and block {% endcomment %}
+          {% capture product_form_id %}product-form-card-{{ product.id }}-{{ section.id }}-{{ block.id }}{% endcapture %}
+          {% form 'product', product, id: product_form_id, x-product-form: '' %}
+            <input
+              type="hidden"
+              name="quantity"
+              value="{% if variant.quantity_rule.min %}{{ variant.quantity_rule.min }}{% else %}1{% endif %}"
+            >
+
+            {% if is_instant_add_allowed %}
+              {% render 'card-product-lg-instant-add-button', product: product, variant: variant, size: 'sm', type_resize: 'sm', color: 'primary', appearance: 'soft', icon_swap: false %}
+            {% else %}
+              {% render 'card-product-lg-quick-view-button', product: product, variant: variant, size: 'sm', type_resize: 'sm', color: 'primary', appearance: 'soft', icon_swap: false %}
+            {% endif %}
+
+            {% render 'product-preorder-properties', product: product %}
+            {% render 'product-line-item-properties', product: product %}
+          {% endform %}
+        {% endcapture %}
+      {% endif %}
+    {% endif %}
+  {% endif %}
+{% endunless %}
+
+{% capture class %}
+  {% comment %} Darken photo {% endcomment %}
+  [&_img]:brightness-[--photo-correction]
+  {% comment %} Photo background {% endcomment %}
+  [&_img]:bg-[--photo-background]
+
+  {{ class }}
+{% endcapture %}
+
+{% liquid
+  # Where this card renders, for the shopify:product:view standard event
+  assign view_context = view_context | default: 'collection'
+%}
+{% if product != blank and api_response != true %}
+  {% capture attributes %}
+    {{ attributes }}
+    x-view-event.intersect
+    data-view-event-payload="{{ product | standard_event_data: 'view', context: view_context | escape }}"
+  {% endcapture %}
+{% endif %}
+
+{%- liquid
+  if product or placeholder
+    case size
+      when 'xs'
+        render 'card-layout-xs', url: url, image: image, title: title, class: class, attributes: attributes, details: product_price, media: media
+      when 'sm'
+        render 'card-layout-sm', url: url, image: image, title: title, class: class, attributes: attributes, details: product_price, media: media, aspect_ratio: aspect_ratio, cover: cover
+      when 'md'
+        render 'card-layout-md', url: url, image: image, title: title, class: class, attributes: attributes, details: product_price, media: media, aspect_ratio: aspect_ratio, cover: cover, button: product_button
+      when 'lg'
+        if product != blank
+          render 'card-product-lg', product: product, api_response: api_response, class: class, image_loading: image_loading, image_fetchpriority: image_fetchpriority, attributes: attributes, appearance: appearance, aspect_ratio: aspect_ratio, image_widths: image_widths, image_sizes: image_sizes
+        elsif placeholder
+          render 'card-layout-lg', media: media, content: content, class: class, image_loading: image_loading, image_fetchpriority: image_fetchpriority, attributes: attributes, appearance: appearance, aspect_ratio: aspect_ratio, image_sizes: image_sizes, image_widths: image_widths
+        endif
+    endcase
+  endif
+-%}

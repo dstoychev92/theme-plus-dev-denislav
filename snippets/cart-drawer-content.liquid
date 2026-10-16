@@ -1,0 +1,138 @@
+{% doc %}
+  - Renders the cart drawer body
+
+  @param {string} [cart_upsell_first] - groups the leading upsell blocks with the line items
+  @param {string} [form_id] - id of the cart form, defaults to cart-<section id>
+  @param {section} [section]
+{% enddoc %}
+
+{% capture aria_alert %}
+  <div class="sr-only" role="alert">
+    {{ "cart.item_count_long" | t: count: cart.item_count }}
+    -
+    {% render 'money', price: cart.total_price, show_currency: true, hide_trailing_zeros: false %}
+  </div>
+{% endcapture %}
+
+{% capture cart_items %}
+  {% render 'cart-list', form_id: form_id, show_quantity_selector: section.settings.show_quantity_selector, show_disclosures: section.settings.show_disclosures, quantity_size: section.settings.quantity_sizing %}
+{% endcapture %}
+
+{% capture reorderable_blocks %}
+  {% assign upsell_streak = true %}
+  {% for block in section.blocks %}
+
+    {% comment %} Upsell blocks that appear before any other block type are grouped with line items {% endcomment %}
+    {% if block.type != 'cart_upsell' %}
+      {% assign upsell_streak = false %}
+    {% endif %}
+
+    {% case block.type -%}
+      {% when 'cart_upsell' %}
+        {% comment %} We need to do this capture to prevent an empty <div> from rendering when there are no upsells {% endcomment %}
+        {%- capture cart_upsell -%}
+          {% render 'cart-upsell-block', block: block, attributes: block.shopify_attributes %}
+        {%- endcapture -%}
+
+        {% if cart_upsell != blank and upsell_streak == true %}
+          {% capture cart_upsell_first %}
+            {{ cart_upsell_first }}
+            {{ cart_upsell }}
+          {% endcapture %}
+        {% elsif cart_upsell != blank %}
+          <div class="px-[--drawer-padding] pt-r7 pb-r6">
+            {{ cart_upsell }}
+          </div>
+        {% endif %}
+
+      {% when 'customer_notes' %}
+        {% render 'cart-customer-notes-block', block: block, accordion: true, attributes: block.shopify_attributes %}
+
+      {% when 'cart_review' %}
+        {% render 'cart-review-block', block: block, attributes: block.shopify_attributes %}
+
+      {% when 'payment_icons' %}
+        {% render 'cart-payment-icons-block', block: block, class: 'p-[--drawer-padding] bg-content-mix-5', attributes: block.shopify_attributes %}
+
+      {% when 'shipping_estimate' %}
+        {% render 'cart-shipping-estimate-block', block: block, accordion: true, id: form_id, attributes: block.shopify_attributes %}
+
+      {% when 'message_custom' %}
+        {% render 'cart-message-custom-block', block: block, class: 'p-[--drawer-padding]', attributes: block.shopify_attributes %}
+
+      {% when 'liquid_code' %}
+        {% render 'liquid-code-block', block: block, attributes: block.shopify_attributes %}
+
+      {% when '@app' %}
+        {% render block %}
+
+    {% endcase %}
+  {% endfor %}
+{% endcapture %}
+
+{% comment %} Cart with items {% endcomment %}
+{% if cart.item_count > 0 %}
+  {{ cart_items }}
+  {% if cart_upsell_first != blank %}
+    <div class="px-[--drawer-padding] py-r8 flex flex-col gap-r8">
+      {{ cart_upsell_first }}
+    </div>
+  {% endif %}
+
+  <div
+    class="mt-auto border-t border-t-line-subtle divide-y divide-line-subtle"
+    x-disclosure-group
+  >
+    {{ reorderable_blocks }}
+  </div>
+
+  {% comment %} The "Above" position renders at the end of the scroll area, so the buttons sit above the sticky footer and scroll with the content {% endcomment %}
+  {% if section.settings.show_additional_buttons and section.settings.additional_button_position == 'above' %}
+    {% render 'cart-additional-buttons-block', class: 'p-[--drawer-padding] bg-content-mix-5 empty:hidden' %}
+  {% endif %}
+{% endif %}
+
+{% comment %} Empty Cart {% endcomment %}
+{% if cart.item_count == 0 %}
+  <div class="animate-in fade-in relative px-[--drawer-padding] py-r13 flex flex-1 flex-center bg-primary text-center">
+    <h3 class="type-h3 text-primary-contrast">{{ 'cart.no_items_in_cart' | t }}</h3>
+  </div>
+
+  <div class="animate-in fade-in px-[--drawer-padding] py-r13 text-r5 text-center overflow-y-auto">
+    <p class="mb-r5">{{ 'cart.no_items_links_title' | t }}</p>
+
+    <ul class="flex flex-col gap-y-r7 p-r8 md:p-r9 md:gap-y-r8">
+      {% if section.settings.empty_cart_buttons != blank and section.settings.empty_cart_buttons.links.size > 0 %}
+        {% for link in section.settings.empty_cart_buttons.links %}
+          <li>
+            {% render 'core-button',
+              label: link.title,
+              tag: 'a',
+              href: link.url,
+              appearance: 'stroke',
+              color: 'content',
+              sizing: 'md',
+              class: 'w-full [--control-padding:theme(space.r5)]'
+            %}
+          </li>
+        {% endfor %}
+      {% else %}
+        {% for collection in collections limit: 5 %}
+          <li>
+            {% render 'core-button',
+              label: collection.title,
+              tag: 'a',
+              href: collection.url,
+              appearance: 'stroke',
+              color: 'content',
+              sizing: 'md',
+              class: 'w-full [--control-padding:theme(space.r5)]'
+            %}
+          </li>
+        {% endfor %}
+      {% endif %}
+    </ul>
+  </div>
+{% endif %}
+
+{{ aria_alert }}

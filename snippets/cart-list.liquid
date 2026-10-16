@@ -1,0 +1,35 @@
+{% doc %}
+  - Renders the cart form and its line items
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {string} [form_id] - id of the cart form, defaults to cart-<section id>
+  @param {string} [quantity_size] - stepper size, defaults to 'md'
+  @param {section} [section]
+  @param {boolean} [show_disclosures] - renders each product's cart disclosures, defaults to true
+  @param {boolean} [show_quantity_selector] - renders the quantity stepper
+{% enddoc %}
+
+{% liquid
+  if form_id == null
+    assign form_id = 'cart-' | append: section.id
+  endif
+%}
+
+{% form 'cart', cart, id: form_id %}
+  <ul
+    class="{{ class }} group/items empty:hidden"
+    {{ attributes }}
+  >
+    {% for line_item in cart.items %}
+      {% render 'cart-line-item',
+        show_quantity_selector: show_quantity_selector,
+        show_disclosures: show_disclosures,
+        quantity_size: quantity_size,
+        index: forloop.index0,
+        line_item: line_item,
+        form_id: form_id
+      %}
+    {% endfor %}
+  </ul>
+{% endform %}

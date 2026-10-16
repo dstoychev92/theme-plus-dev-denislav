@@ -1,0 +1,82 @@
+<!-- blocks/_card-custom-overlay.liquid -->
+
+{% capture blocks %}
+  {% content_for 'blocks' %}
+{% endcapture %}
+
+{% if blocks != blank %}
+  {% capture placement %}
+    {% render 'core-placement-grid',
+      content: blocks,
+      s: block.settings
+    %}
+  {% endcapture %}
+
+  <div
+    class="pointer-events-auto size-full {% if block.settings.color_scheme %}vars-{{ block.settings.color_scheme }}{% endif %}"
+    {{ block.shopify_attributes }}
+  >
+    {{ placement }}
+  </div>
+{% endif %}
+
+{% schema %}
+{
+	"name": "Over image",
+	"tag": null,
+	"settings": [
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "vertical_placement",
+			"label": "Placement",
+			"default": "middle",
+			"options": [
+				{
+					"value": "full",
+					"label": "↕"
+				},
+				{
+					"value": "top",
+					"label": "⤒"
+				},
+				{
+					"value": "middle",
+					"label": "—"
+				},
+				{
+					"value": "bottom",
+					"label": "⤓"
+				}
+			]
+		},
+		{
+			"type": "text_alignment",
+			"id": "horizontal_placement",
+			"label": "Alignment",
+			"default": "center"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color_scheme",
+			"id": "color_scheme",
+			"label": "Color scheme",
+			"default": "scheme-opposite"
+		},
+	],
+	"blocks": [
+		{
+			"type": "@theme"
+		},
+		{
+			"type": "@app"
+		}
+	]
+}
+{% endschema %}

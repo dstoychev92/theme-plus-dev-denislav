@@ -1,0 +1,82 @@
+{% doc %}
+  - Renders blurred 2px image while full image loads
+
+  Keep it below the full image so the full image stays visible if JavaScript loads slowly or
+  fails.
+
+  @param {number} [aspect_ratio]
+  @param {string} [attributes]
+  @param {boolean} [auto_show] - false disables automatic show and hide behavior
+  @param {string} [class] - passed to core-image as placeholder_image_class
+  @param {string} [cover]
+  @param {image} [image]
+  @param {string} [image_mobile]
+  @param {string} [image_style] - inline styles for placeholder image
+  @param {number} [placeholder_width] - tiny image width in pixels, defaults to 2
+  @param {boolean} [preload]
+  @param {boolean} [target_image] - Alpine expression when image is not next sibling
+  @param {string} [wrapper_class] - classes for the wrapper
+
+  @example
+  <div class="relative size-[20px]">
+    {% render 'core-image', image: my_image, class: 'relative z-10' %}
+    {% render 'image-loading-placeholder',
+      image: my_image,
+      wrapper_class: 'absolute inset-0 size-full z-0'
+    %}
+  </div>
+{% enddoc %}
+
+{% liquid
+  assign placeholder_width = placeholder_width | default: 2
+
+  # Pass auto_show: false to control when the placeholder is shown manually
+  if auto_show != false
+    assign auto_show = true
+  endif
+
+  if target_image == null
+    assign target_image = false
+  endif
+%}
+
+{% if image %}
+  <div
+    class="
+      overflow-hidden
+      {{ wrapper_class }}
+    "
+    data-test-id="image-loading-placeholder"
+
+    {% if auto_show %}
+      {% if target_image %}
+        x-img-loading-placeholder="{{ target_image }}"
+      {% else %}
+        x-img-loading-placeholder
+      {% endif %}
+    {% endif %}
+    {{ attributes }}
+  >
+    {% capture placeholder_image_class %}
+      size-full z-0
+      {{ class }}
+    {% endcapture %}
+
+    <div class="inset-0 z-20 absolute backdrop-blur-md"></div>
+
+    {% render 'core-image',
+      image: image,
+      cover: cover,
+      aspect_ratio: aspect_ratio,
+      class: placeholder_image_class,
+      image_mobile: image_mobile,
+      preload: preload,
+      fetchpriority: 'high',
+      style: image_style,
+      width: placeholder_width,
+      aria_hidden: true,
+      alt: 'Placeholder',
+      alt_default: 'Placeholder'
+    %}
+  </div>
+{% endif %}

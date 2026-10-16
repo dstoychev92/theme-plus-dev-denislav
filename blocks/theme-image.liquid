@@ -1,0 +1,355 @@
+<!-- blocks/theme-image.liquid -->
+
+{% liquid
+  assign set_rounding = block.settings.set_rounding
+  assign rounding_radius = block.settings.rounding_radius
+  assign rounding_radius_custom = block.settings.rounding_radius_custom
+  assign image_cover = true
+  assign image_id = block.id | append: '-image'
+
+  # Width × Height sizing matrix
+  #
+  # Width and height are independent settings in the schema but interact in rendering:
+  #
+  #   full + full    — Absolute-positioned image fills parent container (grid cell, banner, etc.)
+  #                    without expanding it. Crops via object-cover. No srcset cap so images scale up.
+  #   full + ratio   — Full-width image at a forced aspect ratio. Crops via object-cover.
+  #   full + natural — Full-width image at its natural aspect ratio. No cropping (object-contain).
+  #   custom + full  — Fixed pixel width, stretches to fill parent height. Crops via object-cover.
+  #   custom + ratio — Fixed pixel width at a forced aspect ratio. Crops via object-cover.
+  #   custom + natural — Fixed pixel width at natural dimensions. No cropping (object-contain).
+  #
+  # The key distinction for full+full: the image is absolutely positioned so it doesn't
+  # define its container's height — it fills whatever space other content or grid tracks provide.
+  # All other combos keep the image in normal flow.
+
+  assign height_mode = block.settings.height | default: 'natural'
+  assign width_mode = block.settings.image_size_mode | default: 'custom'
+
+  case width_mode
+    when 'full'
+      case height_mode
+        when 'full'
+          assign class = 'w-full h-full aspect-[var(--image-min-aspect-ratio)]'
+          assign image_class = 'absolute inset-0 size-full !aspect-auto'
+          assign link_class = 'relative block size-full'
+        when 'ratio'
+          assign class = 'w-full'
+          assign image_class = 'w-full'
+          assign aspect_ratio = block.settings.aspect_ratio
+        when 'natural'
+          assign class = 'w-full'
+          assign image_class = 'w-full'
+          assign image_cover = false
+      endcase
+
+    when 'custom'
+      assign image_width = block.settings.image.width | default: block.settings.image_max_limit | at_most: block.settings.image_max_limit
+      if block.settings.image.src contains '.svg'
+        assign image_width = block.settings.image_max_limit
+      endif
+
+      case height_mode
+        when 'full'
+          assign class = 'flex justify-content-align h-full'
+          assign image_class = 'h-full !aspect-auto'
+        when 'ratio'
+          assign class = 'flex justify-content-align items-content-gravity'
+          assign aspect_ratio = block.settings.aspect_ratio
+        when 'natural'
+          assign class = 'flex justify-content-align items-content-gravity'
+          assign image_cover = false
+      endcase
+  endcase
+
+  if section.index0 == 0
+    assign preload_image = true
+  endif
+
+  if block.settings.click_action == 'link' and block.settings.href != blank
+    assign has_link = true
+  endif
+
+  if block.settings.click_action == 'zoom' and block.settings.image != blank
+    assign has_zoom = true
+  endif
+
+  assign has_hover_action = false
+  if block.settings.click_action == 'link' or block.settings.click_action == 'zoom'
+    assign has_hover_action = true
+  endif
+%}
+
+{% capture image_class %}
+  {{ image_class }}
+
+  {% if has_hover_action %}
+    {% case block.settings.hover_effect %}
+      {% when 'expand' %}
+        group-hover:scale-105 ease-out transition-transform duration-1500
+      {% when 'fade' %}
+        group-hover:opacity-70 ease-out transition-opacity duration-500
+    {% endcase %}
+  {% endif %}
+{% endcapture %}
+
+<div
+  {{ block.shopify_attributes }}
+  class="
+    keyboard-active:has-[:focus]:ring-focus-outline
+    keyboard-active:has-[:focus]:ring-2
+    group entrance-item entrance-standard overflow-hidden vars-scheme-dark relative
+    {{ class }}
+  "
+  style="
+    {% if set_rounding %}
+      {% render 'props-style-radius', rounding_radius: rounding_radius, rounding_radius_custom: rounding_radius_custom %}
+    {% else %}
+      border-radius: var(--radius-card);
+    {% endif %}
+  "
+  {%- if has_zoom -%}
+    data-photoswipe-media="{{ block.id }}"
+  {%- endif -%}
+>
+  {% capture image %}
+    {%- render 'core-image',
+      image: block.settings.image,
+      id: image_id,
+      width: image_width,
+      class: image_class,
+      preload: preload_image,
+      aspect_ratio: aspect_ratio,
+      cover: image_cover
+    -%}
+  {% endcapture %}
+
+  {%- if has_link -%}
+    <a
+      href="{{ block.settings.href }}"
+      class="{{ link_class }}"
+      {% if block.settings.open_in_new_window %}
+        target="_blank"
+        rel="noopener"
+      {% endif %}
+    >
+      {{ image }}
+
+      {% if block.settings.open_in_new_window %}
+        <span class="sr-only">, {{ 'other.accessibility.opens_in_new_tab' | t }}</span>
+      {% endif %}
+    </a>
+  {%- elsif has_zoom -%}
+    <a
+      href="{{ block.settings.image | image_url }}"
+      class="cursor-zoom-in {{ link_class }}"
+      :role="'button'"
+      aria-label="{{ 'product.gallery.zoom_title' | t }}"
+      x-photoswipe:button="{{ block.id }}"
+      aria-controls="photoswipe"
+      target="_blank"
+    >
+      {{ image }}
+    </a>
+
+    <span
+      style="--offset: max(var(--layout-radius,0px),var(--r4))"
+      class="
+        flex flex-center gap-r2 w-row-xs h-row-xs rounded-full
+        vars-scheme-light bg-canvas text-content outline outline-1 outline-black/5 shadow
+        absolute bottom-[--offset] left-[--offset]
+        pointer-events-none
+      "
+    >
+      {% render 'core-icon', icon: 'fill-corners-out', size: 'sm' %}
+    </span>
+  {%- else -%}
+    {{ image }}
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+	"name": "Image",
+	"tag": null,
+	"settings": [
+		{
+			"type": "image_picker",
+			"id": "image",
+			"label": "Image"
+		},
+		{
+			"type": "select",
+			"id": "click_action",
+			"label": "Click action",
+			"default": "none",
+			"options": [
+				{
+					"value": "none",
+					"label": "None"
+				},
+				{
+					"value": "link",
+					"label": "Link"
+				},
+				{
+					"value": "zoom",
+					"label": "Zoom"
+				}
+			],
+		},
+		{
+			"type": "url",
+			"id": "href",
+			"visible_if": "{{ block.settings.click_action == 'link' }}",
+			"label": "Link"
+		},
+		{
+			"type": "checkbox",
+			"id": "open_in_new_window",
+			"label": "Open link in new window",
+			"visible_if": "{{ block.settings.click_action == 'link' }}",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "hover_effect",
+			"label": "Hover effect",
+			"default": "expand",
+			"options": [
+				{
+					"value": "fade",
+					"label": "Fade"
+				},
+				{
+					"value": "expand",
+					"label": "Expand"
+				},
+				{
+					"value": "none",
+					"label": "None"
+				}
+			],
+			"visible_if": "{{ block.settings.click_action == 'link' or block.settings.click_action == 'zoom' }}"
+		},
+		{
+			"type": "header",
+			"content": "Size"
+		},
+		{
+			"type": "select",
+			"id": "image_size_mode",
+			"label": "Width",
+			"default": "custom",
+			"options": [
+				{
+					"value": "full",
+					"label": "Full"
+				},
+				{
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "image_max_limit",
+			"min": 10,
+			"max": 1000,
+			"step": 10,
+			"unit": "px",
+			"label": "Custom width",
+			"default": 120,
+			"visible_if": "{{ block.settings.image_size_mode == 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "height",
+			"label": "Height",
+			"default": "natural",
+			"options": [
+				{
+					"value": "natural",
+					"label": "Natural"
+				},
+				{
+					"value": "ratio",
+					"label": "Ratio"
+				},
+				{
+					"value": "full",
+					"label": "Cover"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "aspect_ratio",
+			"min": 0.5,
+			"max": 5,
+			"step": 0.1,
+			"unit": ":1",
+			"label": "Aspect ratio",
+			"default": 1,
+			"visible_if": "{{ block.settings.height == 'ratio' }}"
+		},
+		{
+			"type": "header",
+			"content": "Rounding"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_rounding",
+			"label": "Set rounding",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "rounding_radius",
+			"label": "Radius",
+			"default": "sm",
+			"options": [
+				{
+					"value": "none",
+					"label": "0"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			],
+			"visible_if": "{{ block.settings.set_rounding  }}"
+		},
+		{
+			"type": "range",
+			"id": "rounding_radius_custom",
+			"label": "Radius",
+			"unit": "px",
+			"min": 0,
+			"max": 50,
+			"step": 1,
+			"default": 20,
+			"visible_if": "{{ block.settings.set_rounding and block.settings.rounding_radius == 'custom'  }}"
+		},
+	],
+	"presets": [
+		{
+			"name": "Image",
+			"category": "Basic",
+		}
+	]
+}
+{% endschema %}

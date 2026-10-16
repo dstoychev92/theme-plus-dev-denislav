@@ -1,0 +1,362 @@
+<!-- sections/section-video.liquid -->
+
+{% comment %}
+  Section: Video
+  Dedicated video section where video is the primary content (not a background).
+  Supports uploaded Shopify videos or external YouTube/Vimeo embeds.
+
+  video_source controls the source: "uploaded" uses Shopify's video picker,
+  "external_video" uses a YouTube/Vimeo URL. Autoplay and loop are optional.
+
+  Unlike section-banner with media_type: "video" (where video is a background
+  behind content), this section gives the video full focus with proper player
+  controls. No content overlay blocks — just the video.
+
+  Color scheme defaults to "scheme-opposite". Supports transparent header.
+{% endcomment %}
+
+{% liquid
+  assign video_source = section.settings.video_source
+  assign video = section.settings.video
+  assign video_link = section.settings.video_link
+  assign autoplay = section.settings.autoplay
+  assign loop = section.settings.loop
+  assign show_custom_controls = section.settings.custom_controls
+
+  if section.index0 == 0
+    assign preload = true
+  endif
+%}
+
+{% capture video_content %}
+  {% case video_source %}
+    {% when 'uploaded' %}
+      {% render 'core-video',
+        video: video,
+        id: section.id,
+        preload: preload,
+        autoplay: autoplay,
+        loop: loop,
+        show_custom_controls: show_custom_controls
+      %}
+
+    {% when 'external_video' %}
+      {% render 'video-external', video_type: video_link.type, video_id: video_link.id, autoplay: autoplay, loop: loop %}
+  {% endcase %}
+{% endcapture %}
+
+{% capture blocks %}
+  {% render 'core-section-background', content: video_content, s: section.settings %}
+{% endcapture %}
+
+{% capture class %}
+  relative entrance-container
+{% endcapture %}
+
+{% render 'core-section-wrapper',
+  s: section.settings,
+  content: blocks,
+  contain_controls_rhythm: true,
+  contain_disables_transparent_header: true,
+  contain_controls_background: true,
+  photoswipe: false,
+  class: class
+%}
+
+{% schema %}
+{
+	"name": "Video",
+	"class": "section-video",
+	"tag": "section",
+	"settings": [
+		{
+			"type": "select",
+			"id": "video_source",
+			"label": "Type",
+			"default": "uploaded",
+			"options": [
+				{
+					"value": "uploaded",
+					"label": "Uploaded"
+				},
+				{
+					"value": "external_video",
+					"label": "External URL"
+				}
+			]
+		},
+		{
+			"type": "video",
+			"id": "video",
+			"label": "Video",
+			"visible_if": "{{ section.settings.video_source == 'uploaded' }}"
+		},
+		{
+			"type": "video_url",
+			"id": "video_link",
+			"label": "Video URL",
+			"accept": [
+				"youtube",
+				"vimeo"
+			],
+			"info": "Streaming video source from YouTube or Vimeo.",
+			"default": "https://www.youtube.com/watch?v=_9VUPq3SxOc",
+			"visible_if": "{{ section.settings.video_source == 'external_video' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "autoplay",
+			"label": "Autoplay",
+			"default": false
+		},
+		{
+			"type": "checkbox",
+			"id": "loop",
+			"label": "Loop",
+			"default": false
+		},
+		{
+			"type": "header",
+			"content": "Section layout"
+		},
+		{
+			"type": "checkbox",
+			"id": "contain_section",
+			"label": "Contain section",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "section_width",
+			"label": "Width",
+			"visible_if": "{{ section.settings.contain_section }}",
+			"default": "full",
+			"options": [
+				{
+					"value": "full",
+					"label": "Full"
+				},
+				{
+					"value": "page",
+					"label": "Page"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "section_padding_top",
+			"label": "Spacing top",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 40,
+			"visible_if": "{{ section.settings.contain_section }}"
+		},
+		{
+			"type": "range",
+			"id": "section_padding_bottom",
+			"label": "Spacing bottom",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 40,
+			"visible_if": "{{ section.settings.contain_section }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_rounding",
+			"label": "Set rounding",
+			"default": false,
+			"visible_if": "{{ section.settings.contain_section }}"
+		},
+		{
+			"type": "select",
+			"id": "rounding_radius",
+			"label": "Radius",
+			"default": "lg",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			],
+			"visible_if": "{{ section.settings.contain_section and section.settings.set_rounding }}"
+		},
+		{
+			"type": "range",
+			"id": "rounding_radius_custom",
+			"label": "Radius",
+			"unit": "px",
+			"min": 0,
+			"max": 50,
+			"step": 1,
+			"default": 20,
+			"visible_if": "{{ section.settings.contain_section and section.settings.set_rounding and section.settings.rounding_radius == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_border",
+			"label": "Set border",
+			"default": false,
+			"visible_if": "{{ section.settings.contain_section }}"
+		},
+		{
+			"type": "range",
+			"id": "border_width",
+			"label": "Thickness",
+			"unit": "px",
+			"min": 0,
+			"max": 10,
+			"step": 1,
+			"default": 1,
+			"visible_if": "{{ section.settings.contain_section and section.settings.set_border }}"
+		},
+		{
+			"type": "color",
+			"id": "border_color",
+			"label": "Color",
+			"alpha": true,
+			"default": "#000000",
+			"visible_if": "{{ section.settings.contain_section and section.settings.set_border }}"
+		},
+		{
+			"type": "header",
+			"content": "Appearance"
+		},
+		{
+			"type": "color_scheme",
+			"id": "color_scheme",
+			"label": "Color scheme",
+			"default": "scheme-opposite"
+		},
+		{
+			"type": "select",
+			"id": "background",
+			"label": "Background",
+			"default": "transparent",
+			"options": [
+				{
+					"value": "canvas",
+					"label": "Default"
+				},
+				{
+					"value": "tint",
+					"label": "Tint"
+				},
+				{
+					"value": "transparent",
+					"label": "∅"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			],
+			"visible_if": "{{ section.settings.contain_section }}"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background color",
+			"default": "#ffffff",
+			"alpha": false,
+			"visible_if": "{{ section.settings.contain_section and section.settings.background == 'custom' }}"
+		},
+		{
+			"type": "header",
+			"content": "Transparent header",
+			"info": "Applies when the header has transparency enabled, and this section is first.",
+			"visible_if": "{{ section.settings.contain_section == false and section.settings.enable_transparent == true }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_transparent",
+			"label": "Enable transparent header",
+			"default": true,
+			"visible_if": "{{ section.settings.contain_section == false }}"
+		},
+		{
+			"type": "select",
+			"id": "transparent_style",
+			"visible_if": "{{ section.settings.contain_section == false and section.settings.enable_transparent == true }}",
+			"label": "Transparent style",
+			"info": "Note: Section content will be pushed down by the header height.",
+			"default": "auto",
+			"options": [
+				{
+					"value": "auto",
+					"label": "Auto"
+				},
+				{
+					"value": "light",
+					"label": "Light"
+				},
+				{
+					"value": "dark",
+					"label": "Dark"
+				}
+			]
+		},
+		{
+			"type": "header",
+			"content": "Target device",
+			"visible_if": "{{ settings.show_target_device_settings == true }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_target_device",
+			"label": "Set target device",
+			"visible_if": "{{ settings.show_target_device_settings == true }}",
+			"default": false
+		},
+		{
+			"type": "select",
+			"label": "Show on",
+			"id": "target_device",
+			"default": "desktop",
+			"visible_if": "{{ settings.show_target_device_settings == true and section.settings.set_target_device == true }}",
+			"options": [
+				{
+					"value": "mobile",
+					"label": "Mobile"
+				},
+				{
+					"value": "desktop",
+					"label": "Desktop"
+				}
+			]
+		},
+	],
+	"presets": [
+		{
+			"name": "Video",
+			"category": "Full width"
+		}
+	],
+	"disabled_on": {
+		"groups": [
+			"header",
+			"custom.overlays",
+			"custom.drawers"
+		]
+	}
+}
+{% endschema %}

@@ -1,0 +1,26 @@
+{% doc %}
+  - Renders accepted payment icons and block label
+
+  @param {string} [attributes]
+  @param {block} [block]
+  @param {string} [class] - The classes
+{% enddoc %}
+
+{%- unless shop.enabled_payment_types == empty -%}
+  {% assign payment_types_label = block.settings.label %}
+
+  <div class="flex flex-col gap-r5 {{ class }}" {{ attributes }}>
+    {% if payment_types_label != blank %}
+      <p class="text-r3 text-center">{{ payment_types_label }}</p>
+    {% endif %}
+
+    <ul class="flex flex-wrap justify-center gap-r4">
+      {% for type in shop.enabled_payment_types %}
+        <li>
+          {{ type | payment_type_svg_tag }}
+          <span class="sr-only">{{ type | capitalize | replace: '_', ' ' }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+{%- endunless -%}

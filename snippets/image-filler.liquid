@@ -1,0 +1,38 @@
+{% doc %}
+  - Renders a gradient panel where an image would go
+
+  @param {string} [bg_class] - classes for the background
+  @param {string} [class] - The classes
+  @param {number} [random_seed] - seed picking the gradient angle
+  @param {string} [size_class] - classes sizing the panel
+{% enddoc %}
+
+{% assign size_class = size_class | default: 'size-full' %}
+{% assign bg_class = bg_class | default: 'bg-content-mix-5/95' %}
+{% assign timestamp = 'now' | date: '%N' | plus: 0 %}
+{% assign random_seed = random_seed | default: timestamp %}
+
+{% comment %} Random gradient angles from 0 - 359{% endcomment %}
+{% assign angle1 = random_seed | modulo: 360 %}
+{% assign angle2 = random_seed | times: 3 | modulo: 360 %}
+
+<div
+  class="
+    relative overflow-hidden
+    {{ size_class }}
+    {{ bg_class }}
+    {{ class }}
+  "
+  data-test-id="image-filler"
+>
+  <div class="absolute inset-0 pointer-events-none">
+    <div
+      class="absolute inset-0"
+      style="background: linear-gradient({{ angle1 }}deg, var(--content-alpha-3) 0%, transparent 100%);"
+    ></div>
+    <div
+      class="absolute inset-0"
+      style="background: linear-gradient({{ angle2 }}deg, var(--content-alpha-5) 0%, transparent 100%);"
+    ></div>
+  </div>
+</div>

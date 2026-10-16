@@ -1,0 +1,118 @@
+{% doc %}
+  - Renders a dropdown panel under a header link
+
+  @param {string} [animation_setting_class] - classes carrying the open animation
+  @param {string} [attributes]
+  @param {string} [bg_class] - classes for the panel background
+  @param {string} [class] - The classes
+  @param {link} link
+  @param {string} [menu_id] - id linking the panel to its trigger
+  @param {object} [s] - settings object
+  @param {string} [style] - inline styles
+  @param {string} [target_device] - 'mobile' or 'desktop', defaults to s.target_device
+{% enddoc %}
+
+{% liquid
+  assign offset = 0
+  assign color_scheme = s.color_scheme
+  assign target_device = target_device | default: s.target_device
+%}
+
+{% capture class %}
+  {{ class }}
+  origin-top
+  hit-area-t-after-[--offset]
+  top-auto left-[--float-x]
+  {{ animation_setting_class }}
+  [--max-width:200px]
+  [--dropdown-px:theme(space.r7)]
+  [--dropdown-py:theme(space.r4)]
+  {% render 'props-class-target-device', target_device: target_device %}
+{% endcapture %}
+
+{% capture style %}
+  {{ style }}
+  --offset: {{ offset }}px;
+{% endcapture %}
+
+{% capture link_class %}
+  block overflow-hidden truncate py-r3
+
+  {% comment %} Dim link when other link is being hovered {% endcomment %}
+  transition-[color] duration-500
+
+  text-content
+  group-[:has(:hover)]/link-list:text-muted
+  hover:!text-content
+{% endcapture %}
+
+<div
+  class="{{ class }} origin-top group/dropdown vars-{{ color_scheme.id }} absolute z-50 overflow-visible"
+  x-header-dropdown="{{ menu_id }}"
+  {% comment %}
+    Dropdowns only open from the desktop nav. A phone still gets the markup, so skip Alpine
+    there entirely; on desktop start up immediately so the first hover is not waiting on a
+    dead popup.
+  {% endcomment %}
+  data-lazy-alpine="desktop"
+  data-lazy-alpine-on="immediate"
+  data-morph-update="none"
+  x-cloak
+  {{ attributes }}
+  style="--float-x: -9999px; --float-width: 0; {{ style }}"
+>
+  <div
+    class="
+      {{ bg_class }} z-20 relative
+
+      {% comment %} Attempt to match the width of the reference element, but don't exceed the max width {% endcomment %}
+      min-w-[min(var(--float-width),var(--max-width))]
+      max-w-[--max-width]
+
+      pb-[--dropdown-py]
+
+      {% comment %} Use a psuedo element for background so that dropdown items align with the menu item {% endcomment %}
+      before:absolute before:inset-y-0 before:-inset-x-[--dropdown-px] before:bg-canvas before:z-[-1]
+      before:border-line-subtle before:border-x before:border-b before:rounded-b-subtle
+    "
+    x-header-dropdown:panel
+    x-transition:enter="!transition-[clip-path,opacity] !duration-[calc(var(--header-menu-dropdown-enter-duration)*0.5),calc(var(--header-menu-dropdown-enter-duration))]"
+    x-transition:enter-start="[clip-path:inset(0%_calc(-1*var(--dropdown-px))_var(--clip-distance)_calc(-1*var(--dropdown-px)))] opacity-0"
+    x-transition:enter-end="[clip-path:inset(0%_calc(-1*var(--dropdown-px))_0%_calc(-1*var(--dropdown-px)))] opacity-100"
+    x-transition:leave="!transition-opacity !duration-[--header-menu-dropdown-exit-duration]"
+    x-transition:leave-start="opacity-100"
+    x-transition:leave-end="opacity-0"
+    style="--clip-distance: min(75%, 400px);"
+  >
+    <ul
+      class="group/link-list"
+      :class="
+        {
+          'animate-in fade-in slide-in-from-top-[5px] animate-delay-[calc(var(--header-menu-dropdown-enter-duration)*0.5)] animate-duration-[calc(var(--header-menu-dropdown-enter-duration)*1.25)]': $headerMenuPopup.isVisible,
+          'animate-out fade-out slide-out-to-top-[5px] animate-duration-[calc(var(--header-menu-dropdown-exit-duration)*0.25)]': !$headerMenuPopup.isVisible,
+        }
+      "
+    >
+      {% for child_link in link.links %}
+        {% assign link_label = child_link.title | strip_html | escape_once %}
+        {% capture link_attributes %}
+          href="{{ child_link.url }}"
+          {% if child_link.current %}
+            aria-current="page"
+          {% endif %}
+        {% endcapture %}
+
+        <li role="none">
+          {% render 'core-text-preset',
+            tag: 'a',
+            text: link_label,
+            class: link_class,
+            attributes: link_attributes,
+            settings_suffix: 'dropdown',
+            s: s
+          %}
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>

@@ -1,0 +1,117 @@
+{% doc %}
+  - Renders sibling product swatches for a large product card
+
+  @param {string} destination_url
+  @param {string} [image_sizes]
+  @param {string} [image_widths]
+  @param {product} product
+  @param {metafield} siblings_metafield
+{% enddoc %}
+
+{% liquid
+  assign swatch_limit = settings.card_swatch_limit | default: 5
+  assign all_siblings = null | sort
+  assign sibling_total = null
+
+  case siblings_metafield.type
+    when 'single_line_text_field'
+      assign collection_handle = siblings_metafield.value
+      assign all_siblings = collections[collection_handle].products
+      # Shopify limits collections[handle].products to 50 outside paginate
+      assign sibling_total = collections[collection_handle].all_products_count
+    when 'metaobject_reference'
+      assign siblings_metaobject = siblings_metafield.value
+      assign product_list_field_name = settings.metafield_siblings_inner_name | default: 'products'
+      assign all_siblings = siblings_metaobject[product_list_field_name].value
+  endcase
+
+  assign visible_siblings = null | sort
+  assign current_product_is_visible = false
+  assign current_product_match = all_siblings | where: 'id', product.id
+  assign current_product_is_in_group = false
+  if current_product_match != blank
+    assign current_product_is_in_group = true
+  endif
+
+  for sibling in all_siblings limit: swatch_limit
+    assign visible_sibling = sibling | sort
+    assign visible_siblings = visible_siblings | concat: visible_sibling
+    if sibling.id == product.id
+      assign current_product_is_visible = true
+    endif
+  endfor
+
+  if current_product_is_visible == false and all_siblings.size > 0
+    assign visible_siblings = null | sort
+    assign sibling_limit_before_current = swatch_limit | minus: 1
+    for sibling in all_siblings limit: sibling_limit_before_current
+      assign visible_sibling = sibling | sort
+      assign visible_siblings = visible_siblings | concat: visible_sibling
+    endfor
+    assign current_product = product | sort
+    assign visible_siblings = visible_siblings | concat: current_product
+  endif
+
+  assign total_selections = sibling_total | default: all_siblings.size
+  if current_product_is_in_group == false
+    # Only a complete list can prove that the current product is absent
+    if total_selections == all_siblings.size
+      if total_selections > 0
+        assign total_selections = total_selections | plus: 1
+      endif
+    endif
+  endif
+
+  assign selected_selection_id = product.id
+  assign selection_links = ''
+  # hit-area-x-r2 fills half the gap on each side without overlap
+  assign selection_class = 'group/swatch-link relative hit-area-x-r2'
+%}
+
+{% if total_selections > 1 %}
+  {% for sibling in visible_siblings %}
+    {% liquid
+      assign selected = false
+      if sibling.id == product.id
+        assign selected = true
+      endif
+
+      assign sibling_url = sibling.url
+      assign sibling_focus_key = 'sibling-' | append: sibling.id
+      assign sibling_image = sibling.featured_media.preview_image
+    %}
+    {% capture selection_attributes %}
+      data-product-card-selection
+      data-preload-url="{{ sibling_url }}"
+      {% render 'card-product-lg-preload-image-attributes',
+        image: sibling_image,
+        image_sizes: image_sizes,
+        image_widths: image_widths
+      %}
+      :data-swatch-active="$asyncLink.state === 'pending'"
+      x-section-api:link.nopush
+    {% endcapture %}
+    {% capture selection_links %}
+      {{ selection_links }}
+      {% render 'product-sibling-swatch',
+        sibling: sibling,
+        tag: 'link',
+        url: sibling_url,
+        selected: selected,
+        selection_id: sibling.id,
+        focus_key: sibling_focus_key,
+        class: selection_class,
+        custom_size: settings.card_swatch_custom_size,
+        attributes: selection_attributes
+      %}
+    {% endcapture %}
+  {% endfor %}
+{% endif %}
+
+{% render 'card-product-lg-selections',
+  destination_url: destination_url,
+  selection_links: selection_links,
+  selected_selection_id: selected_selection_id,
+  swatch_limit: swatch_limit,
+  total_selections: total_selections
+%}

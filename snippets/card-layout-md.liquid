@@ -1,0 +1,138 @@
+{% doc %}
+  - Renders medium card layout
+
+  Title renders as plain text. Use details for markup.
+
+  @param {string} [aria_label] - card link label, defaults to title
+  @param {number} [aspect_ratio]
+  @param {string} [attributes]
+  @param {string} [button] - content after details
+  @param {string} [class] - The classes
+  @param {string} [cover]
+  @param {string} [details] - content below title
+  @param {boolean} [icon] - icon shown without image or media
+  @param {image} [image]
+  @param {string} [link_attributes] - attributes for card links
+  @param {boolean} [loader] - renders loading state
+  @param {media} [media] - media used instead of image
+  @param {string} [media_size_class] - classes sizing the media, defaults to 'aspect-[--aspect-ratio] w-r12'
+  @param {string} [media_tag] - 'div' by default, or 'a' when url is set
+  @param {string} [style] - inline styles
+  @param {boolean} [title] - plain-text title
+  @param {string} [title_tag] - 'div' by default, or 'a' when url is set
+  @param {boolean} [url] - card URL, turns title and media into links
+{% enddoc %}
+
+{% liquid
+  assign loader = loader | default: false
+  assign url = url | default: false
+  assign media_tag = media_tag | default: 'div'
+  assign title_tag = title_tag | default: 'div'
+  assign title = title | default: false
+  assign aria_label = aria_label | default: title
+  assign alt_default = title | strip_html | escape_once
+  assign media_size_class = media_size_class | default: 'aspect-[--aspect-ratio] w-r12'
+%}
+
+{% if loader %}
+  {% assign media = false %}
+  {% capture content %}
+    <div class="{{ media_size_class }}">
+      {% render 'spinner', class: 'absolute top-1/2 left-1/2 -mx-r4 -mt-r4 z-10' %}
+      <span class="line-clamp-2 text-r4 opacity-0">
+        Loading...
+      </span>
+    </div>
+  {% endcapture %}
+{% endif %}
+
+{% if url != false %}
+  {% capture link_attributes %}
+    {{ link_attributes }}
+    href="{{ url }}"
+  {% endcapture %}
+  {% assign title_tag = 'a' %}
+  {% assign media_tag = 'a' %}
+{% endif %}
+
+<card-md
+  role="article"
+  class="
+    vars-card-md
+    flex min-w-[250px] rounded-[--card-md-radius] overflow-hidden text-start
+    bg-[--card-md-bg-color] ring-1 ring-[--card-md-border-color]
+    {% if url != false %}cursor-pointer{% endif %}
+    {{ class }}
+  "
+  style="
+    {{ style }}
+    {% # The 'loader' needs access to the --aspect-ratio too %}
+    --aspect-ratio: {{ aspect_ratio | default: 1 | at_least: 0.7 }};
+  "
+  {% if aria_label %}
+    aria-label="{{ aria_label | strip_html | escape_once }}"
+  {% endif %}
+  {% if url != false %}
+    x-link-area data-interactive
+  {% endif %}
+  {{ attributes }}
+>
+  {% comment %} Allow media to be hidden when passing 'false' {% endcomment %}
+  {% if media != false %}
+    <{{ media_tag }}
+      {% if aria_label %}
+        aria-label="{{ aria_label | strip_html | escape_once }}"
+      {% endif %}
+      class="relative flex shrink-0 flex-center overflow-hidden rounded-[--card-md-media-radius] {{ media_size_class }}"
+      tabindex="0"
+      {{ link_attributes }}
+    >
+      {% if media %}
+        {{ media }}
+      {% elsif image %}
+        {% render 'core-image',
+          image: image,
+          alt_default: alt_default,
+          cover: cover,
+          sizes: '96px',
+          class: 'h-full relative',
+          aspect_ratio: 0
+        %}
+      {% elsif icon %}
+        <div class="flex size-full flex-none flex-center bg-content-mix-5">
+          {% render 'core-icon', icon: icon %}
+        </div>
+      {% else %}
+        {% render 'image-filler', size_class: 'size-full' %}
+      {% endif %}
+    </{{ media_tag }}>
+  {% endif %}
+
+  <div class="grow text-content">
+    {% if content %}
+      {{ content }}
+    {% else %}
+      <div class="h-full flex-row-center justify-between gap-x-r3 px-[--card-md-inner-padding-x] py-[--card-md-inner-padding-y]">
+        <div class="flex flex-col gap-y-r3">
+          {%- if title -%}
+            <{{ title_tag }}
+              {{ link_attributes }}
+              {% comment %} We don't want to expose this tag as a link to screen readers since we already have a link for this card {% endcomment %}
+              aria-hidden="true"
+              tabindex="-1"
+              class="self-start text-r4 font-bold {% if settings.truncate_card_titles %}line-clamp-2{% endif %}"
+            >
+              {{ title | strip_html | escape_once }}
+            </{{ title_tag }}>
+          {%- endif -%}
+
+          {%- if details -%}
+            <span class="text-r3 text-muted">{{ details }}</span>
+          {%- endif -%}
+        </div>
+
+        {{ button }}
+      </div>
+    {% endif %}
+  </div>
+</card-md>

@@ -1,0 +1,242 @@
+{% doc %}
+  - Renders responsive Shopify image with optional mobile source
+
+  A separate mobile image disables preload.
+
+  @param {string} [alt] - image.alt, then alt_default, then empty for decorative image
+  @param {string} [alt_default] - fallback alt text
+  @param {boolean} [aria_hidden]
+  @param {number} [aspect_ratio] - image ratio, then 1.7
+  @param {string} [aspect_ratio_mobile]
+  @param {string} [class] - The classes
+  @param {boolean} [cover] - crops to fill, defaults to true. Add a fill-size class
+  @param {string} [crop] - Shopify crop position
+  @param {string} [fetchpriority]
+  @param {string} [id]
+  @param {image} [image]
+  @param {object} [image_mobile] - image below md breakpoint
+  @param {string} [loading]
+  @param {string} [mobile_widths] - comma-separated mobile srcset widths
+  @param [placeholder] - placeholder_svg_tag name, or false. Only drawn in placeholder mode or the theme editor
+  @param {boolean} [preload] - uses eager loading and high fetch priority
+  @param {string} [sizes]
+  @param {string} [srcset]
+  @param {string} [style] - inline styles
+  @param [width] - pixel width, capped at natural width
+  @param {string} [widths]
+  @param {string} [x-ref]
+{% enddoc %}
+
+{%- liquid
+  assign aria_hidden = aria_hidden | default: null
+
+  assign enable_placeholder = false
+  if settings.placeholder_mode or request.design_mode
+    assign enable_placeholder = true
+  endif
+
+  # By default, images are cropped to cover their parent container
+  if cover != false
+    assign cover = true
+  endif
+
+  # If no explicit width is passed in, image will default to Shopify default 100px
+  # If width is passed in, max out at the image's natural width
+  if width != blank and image.width > 0
+    if image.src contains '.svg'
+      assign width = width | default: image.width
+    else
+      assign width = width | at_most: image.width
+    endif
+  endif
+
+  # Removing a focal point does not reset the value to nil, so we need a default for consistent behavior
+  assign focal = image.presentation.focal_point | default: '50.0% 50.0%'
+
+  assign default_aspect_ratio = 1.7
+  assign aspect_ratio = aspect_ratio | default: image.aspect_ratio | default: default_aspect_ratio
+
+  # Use reasonable defaults but allow granular control through params.
+  # Final '' default marks the image as decorative when no alt source is set —
+  # otherwise Shopify's image_tag omits the alt attribute entirely (WCAG F65).
+  assign alt = alt | default: image.alt | default: alt_default | default: ''
+  assign preload = preload | default: false
+
+  if placeholder != false
+    assign placeholder = placeholder | default: 'image'
+  endif
+
+  # We don't preload when there's a mobile image to prevent preloading the desktop image on mobile devices
+  if image_mobile != blank
+    assign preload = false
+  endif
+
+  # Recommendation: use section.index to preload images above the fold
+  if preload
+    assign fetchpriority = fetchpriority | default: 'high'
+    assign loading = loading | default: 'eager'
+  else
+    assign fetchpriority = fetchpriority | default: 'auto'
+    assign loading = loading | default: 'lazy'
+  endif
+
+  if sizes != blank
+    # Strip newlines and other extra whitespace
+    assign sizes = sizes | strip | strip_newlines | replace: '  ', ' '
+    # `sizes=auto` lets supporting browsers use the rendered width instead of the manual fallback.
+    # Spec-valid only with loading=lazy; older browsers ignore the leading token and fall through.
+    if loading == 'lazy'
+      assign sizes = sizes | prepend: 'auto, '
+    endif
+  endif
+
+  if cover == true
+    assign class = 'object-cover ' | append: class
+  else
+    assign class = 'object-contain ' | append: class
+  endif
+-%}
+
+{% if width != blank and srcset == blank %}
+  {% comment %} If explicit width is passed in, srcset contains width and retina width {% endcomment %}
+  {% assign width_double = width | times: 2 %}
+  {% capture srcset -%}
+    {{ image | image_url: width: width }} 1x, {{ image | image_url: width: width_double }} 2x
+  {%- endcapture %}
+{% endif %}
+
+{%- capture style -%}
+  {% if cover == false and width != blank %}
+    width: {{ width }}px;
+  {% endif %}
+  {% if aspect_ratio != 0 and aspect_ratio != blank %}
+    --image-aspect-ratio: {{ aspect_ratio }};
+  {% else %}
+    {% if cover == false and image.aspect_ratio != blank %}
+      --image-aspect-ratio: {{ image.aspect_ratio }};
+    {% endif %}
+  {% endif %}
+  {% if image_mobile != blank %}
+    {% if aspect_ratio_mobile != 0 and aspect_ratio_mobile != blank %}
+      --mobile-image-aspect-ratio: {{ aspect_ratio_mobile }};
+    {% else %}
+      {% if cover == false and image_mobile.aspect_ratio != blank %}
+        --mobile-image-aspect-ratio: {{ image_mobile.aspect_ratio }};
+      {% endif %}
+    {% endif %}
+  {% endif %}
+  object-position: {{ focal }};
+  {{ style }}
+{%- endcapture -%}
+
+{% capture class %}
+  max-md:aspect-[var(--mobile-image-aspect-ratio,var(--image-aspect-ratio))]
+  md:aspect-[var(--image-aspect-ratio)]
+  {{ class }}
+{% endcapture %}
+
+{% if image_mobile != blank %}
+  {%- liquid
+    # Mobile image override forces use of a picture tag, and prevents use of preload
+    # We dont want preloading because it will preload the desktop image on mobile devices
+
+    # Removing a focal point does not reset the value to nil, so we need a default for consistent behavior
+    assign focal_mobile = image_mobile.presentation.focal_point | default: '50.0% 50.0%'
+
+    # Without object-position set inline the theme editor will warn
+    # merchants that the theme does not support focal points
+    assign image_style = style | append: 'object-position: var(--focal-point, center);'
+    assign image_style = image_style | append: ' --object-position-mobile: ' | append: focal_mobile | append: ';'
+    assign image_style = image_style | append: ' --object-position-desktop: ' | append: focal | append: ';'
+    assign class = class | append: ' [--focal-point:var(--object-position-mobile)] md:[--focal-point:var(--object-position-desktop)]'
+
+    assign image_desktop = image | default: image_mobile
+
+    assign mobile_widths = mobile_widths | default: '416, 600, 800, 1200, 1600'
+    assign mobile_widths_array = mobile_widths | split: ', '
+  -%}
+
+  {% capture srcset_mobile -%}
+    {%- for mobile_width in mobile_widths_array -%}
+      {{ image_mobile | image_url: width: mobile_width }} {{ mobile_width }}w{% unless forloop.last %},{% endunless %}
+    {%- endfor -%}
+  {%- endcapture -%}
+
+  <picture>
+    {% comment %} Mobile source {% endcomment %}
+    <source
+      media="(max-width: 768px)"
+      sizes="{{ sizes }}"
+      srcset="{{ srcset_mobile | strip | strip_newlines | replace: '  ', ' ' }}"
+    >
+    {% comment %} This conditional sucks but is neccesary because passing `srcset` to image_tag even if it's null will cause `widths` to be ignored {% endcomment %}
+    {% if srcset != blank %}
+      {{
+        image_desktop
+        | image_url: width: width, crop: crop
+        | image_tag:
+          class: class,
+          alt: alt,
+          srcset: srcset,
+          loading: loading,
+          fetchpriority: fetchpriority,
+          style: image_style,
+          aria-hidden: aria_hidden
+      }}
+    {% else %}
+      {{
+        image_desktop
+        | image_url: width: width, crop: crop
+        | image_tag:
+          class: class,
+          alt: alt,
+          widths: widths,
+          loading: loading,
+          fetchpriority: fetchpriority,
+          style: image_style,
+          aria-hidden: aria_hidden
+      }}
+    {% endif %}
+  </picture>
+{% elsif image != blank %}
+  {% comment %} This conditional sucks but is neccesary because passing `srcset` to image_tag even if it's null will cause `widths` to be ignored {% endcomment %}
+  {% if srcset != blank %}
+    {{
+      image
+      | image_url: width: width, crop: crop
+      | image_tag:
+        id: id,
+        class: class,
+        alt: alt,
+        preload: preload,
+        data-preload: preload,
+        sizes: sizes,
+        srcset: srcset,
+        loading: loading,
+        fetchpriority: fetchpriority,
+        style: style,
+        x-ref: x-ref,
+        aria-hidden: aria_hidden
+    }}
+  {% else %}
+    {{
+      image
+      | image_url: width: width, crop: crop
+      | image_tag:
+        id: id,
+        class: class,
+        alt: alt,
+        preload: preload,
+        data-preload: preload,
+        sizes: sizes,
+        widths: widths,
+        loading: loading,
+        fetchpriority: fetchpriority,
+        style: style,
+        x-ref: x-ref,
+        aria-hidden: aria_hidden
+    }}
+  {% endif %}
+{% elsif placeholder != blank and placeholder != false and enable_placeholder %}
+  {% render 'image-placeholder', placeholder: placeholder, width: width, class: class, style: style %}
+{% endif %}

@@ -1,0 +1,196 @@
+<!-- blocks/_product-group-tabs.liquid -->
+
+
+
+
+
+{% render 'core-tabs', s: block.settings, blocks: block.blocks, attributes: block.shopify_attributes %}
+
+{% schema %}
+{
+	"name": "Tabs",
+	"tag": null,
+	"settings": [
+		{
+			"type": "header",
+			"content": "Typography"
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_typography",
+			"label": "Set typography",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "type_font",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ block.settings.enable_typography == true }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 4,
+			"visible_if": "{{ block.settings.enable_typography == true }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ block.settings.enable_typography == true }}"
+		},
+		{
+			"type": "header",
+			"content": "Spacing"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_gap_tab_x",
+			"label": "Set tab spacing",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "gap_tab_x",
+			"label": "Tab",
+			"default": "sm",
+			"visible_if": "{{ block.settings.set_gap_tab_x }}",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "gap_custom_tab_x",
+			"label": "Custom",
+			"default": 0,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ block.settings.gap_tab_x == 'custom'  and block.settings.set_gap_tab_x }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_gap_tab_y",
+			"label": "Set vertical gap",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "gap_tab_y",
+			"label": "Vertical gap",
+			"default": "sm",
+			"visible_if": "{{ block.settings.set_gap_tab_y }}",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "gap_custom_tab_y",
+			"label": "Custom",
+			"default": 0,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ block.settings.gap_tab_y == 'custom'  and block.settings.set_gap_tab_y }}"
+		},
+	],
+	"blocks": [
+		{
+			"type": "_product-group-tab"
+		}
+	],
+	"presets": [
+		{
+			"name": "Tabs",
+			"category": "Layout",
+			"blocks": [
+				{
+					"type": "_product-group-tab",
+					"settings": {
+						"title": "Description"
+					},
+					"blocks": [
+						{
+							"type": "_product-description"
+						}
+					]
+				},
+				{
+					"type": "_product-group-tab",
+					"settings": {
+						"title": "Information"
+					},
+					"blocks": [
+						{
+							"type": "theme-text",
+							"settings": {
+								"text": "Fast shipping on qualifying orders. Eligible items can be returned per our return policy.",
+								"type_preset": "p"
+							}
+						}
+					]
+				}
+			]
+		}
+	]
+}
+{% endschema %}
+

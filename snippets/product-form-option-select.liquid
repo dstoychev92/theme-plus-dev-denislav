@@ -1,0 +1,108 @@
+{% doc %}
+  - Renders one product option as a select
+
+  @param {block} [block]
+  @param {string} [class] - The classes
+  @param {boolean} [history] - updates the URL as the option changes
+  @param {string} [id] - id for the select, built from the block and option name when absent
+  @param {object} [option] - the product option
+  @param {product} product
+  @param {string} [select_size] - defaults to 'md'
+{% enddoc %}
+
+{% liquid
+  assign default_id = 'variant-select-' | append: block.id
+  assign id = id | default: default_id | append: '-' | append: option.name | handleize
+
+  assign select_size = select_size | default: 'md'
+
+  if history
+    assign history_mode = 'replace'
+  else
+    assign history_mode = 'none'
+  endif
+
+  assign selected_values_ids = product.options_with_values | map: 'selected_value' | map: 'id' | join: '-'
+%}
+
+{% capture options %}
+  {% for value in option.values %}
+    {% liquid
+      assign available = value.available
+      assign option_value_variant_id = value.variant.id
+      assign option_selected = value.selected
+
+      if value.variant == null
+        # Use option value ID instead of variant ID when variant is null because
+        # x-select needs unique values per <li> to track selection.
+        # Safe because @change skips variant dispatch when value.variant is null.
+        assign option_value_variant_id = value.id
+        if selected_values_ids contains option_value_variant_id
+          assign option_selected = true
+        endif
+      endif
+
+      if option_selected
+        assign option_selected_value_variant_id = option_value_variant_id
+      endif
+    %}
+    {% capture option_label %}
+      <span class="{% if available == false %} line-through text-muted {% endif %}">
+        {{- value.name -}}
+      </span>
+    {% endcapture %}
+
+    {%- capture option_url -%}
+      {%- render 'product-option-value-url', option: option, product: product, value: value -%}
+    {%- endcapture -%}
+
+    {% capture option_attributes %}
+      data-option-url="{{- option_url | strip -}}"
+      data-preload-url="{{- option_url | strip -}}"
+      {% render 'product-option-value-events', part: 'attributes', product: product, value: value %}
+
+      @change="
+        await $yieldToMain();
+        {% render 'product-option-value-events', part: 'handler', product: product, value: value %}
+        $sectionApi.navigate($el.dataset.optionUrl, '{{ history_mode }}')
+      "
+    {% endcapture %}
+
+    {% render 'custom-select-option', label: option_label, value: option_value_variant_id, selected: option_selected, attributes: option_attributes %}
+  {% endfor %}
+{% endcapture %}
+
+{% liquid
+  if option_selected_value_variant_id == null
+    assign option_selected_value_variant_id = option.selected_value.variant.id
+  endif
+%}
+
+{% capture select_label %}
+  <span class="{% if option.selected_value.available == false %} line-through text-muted {% endif %}">
+    {% if option.selected_value != blank %}
+      {{ option.selected_value.name }}
+    {% else %}
+      {{ 'product.accessibility.select_option' | t: name: option.name }}
+    {% endif %}
+  </span>
+{% endcapture %}
+
+{% capture attributes %}
+  key="{{ option.name | escape_once }}-{{ option.selected_value.name | escape_once }}-{{ option.selected_value.variant.id }}"
+  x-preloader.interact.intersect
+{% endcapture %}
+
+{% render 'field-custom-select',
+  size: select_size,
+  id: id,
+  value: option_selected_value_variant_id,
+  options: options,
+  class: class,
+  button_class: '*:pointer-events-none',
+  name: 'variant',
+  label: select_label,
+  initial_display: select_label,
+  hide_label: true,
+  attributes: attributes
+%}

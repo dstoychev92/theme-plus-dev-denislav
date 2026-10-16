@@ -1,0 +1,1084 @@
+<!-- sections/header-drawer.liquid -->
+
+{% comment %}
+  Drawer that displays the main navigation menu, secondary links, and optional features like search, social links, and
+  account access. Integrates with global drawer state via $store.drawer and opens via 'theme:menu-drawer:open' event.
+
+  Implements submenu navigation with smooth slide animations between menu levels, using overlay transitions to maintain
+  context while navigating deeper into the menu hierarchy.
+{% endcomment %}
+
+{% liquid
+  assign search_form_id = 'search-form-menu-drawer'
+%}
+
+{% if section.settings.show_search %}
+  {% capture search_bar %}
+    <div
+      class="w-full flex relative pe-[--control-height] duration-250 transition-[padding-right] delay-0"
+      style="--search-input-padding: var(--r7)"
+      :class="{ '!delay-50 !pe-0': isSearchActive }"
+    >
+      <form
+        id="{{ search_form_id }}"
+        action="{{ routes.search_url }}"
+        x-predictive-search:form
+        {% comment %}
+          Lazy on the form, not on the wrapper — the wrapper also holds the close button,
+          which has to work the instant the drawer is open. Nothing in here is reachable
+          before a hand lands on the field, and focusin wakes the root first.
+        {% endcomment %}
+        data-lazy-alpine
+        data-lazy-alpine-on="visible interact"
+        role="search"
+        class="rounded-pill focus-within:ring-2 focus-within:ring-secondary h-control flex flex-row items-center relative overflow-clip bg-content/5 flex-1"
+      >
+        {% if settings.search_products_only %}
+          {% comment %} type scopes the /search page, resources[type] scopes the predictive fetch since the plugin copies resources fields into its request {% endcomment %}
+          <input type="hidden" name="type" value="product">
+          <input type="hidden" name="resources[type]" value="product,query">
+        {% endif %}
+
+        {% assign input_label = 'search.accessibility.input_label' | t %}
+        {% render 'core-icon', icon: 'fill-magnify', size: 'sm', class: 'absolute start-[calc(var(--search-input-padding)-5px)]' %}
+        {% comment %} :for matches the :id the x-predictive-search plugin binds on the input; aria-label stays as the nojs name {% endcomment %}
+        <label class="sr-only" :for="$id('predictive-search-input')">{{ input_label }}</label>
+        <input
+          name="q"
+          type="search"
+          autocomplete="off"
+          placeholder="{{ 'search.placeholder' | t }}"
+          x-predictive-search:input
+          aria-label="{{ input_label }}"
+          class="bg-transparent transition-[width] ps-[calc(var(--search-input-padding)+var(--icon-size))] text-size-input focus:outline-none w-full h-full hide-search-clear"
+          @focus="isSearchActive = true"
+          @keydown.escape.stop.prevent="isSearchActive = false"
+        >
+        <button
+          aria-label="{{ 'search.clear' | t }}"
+          type="reset"
+          class="absolute flex flex-center hit-area-r3 end-r4 rounded-pill bg-content/10 hover:bg-content/20 size-control vars-control-xs"
+          @click="$predictiveSearch.reset(); isSearchActive = false"
+          {% comment %} x-show starts false, and the form around it is lazy {% endcomment %}
+          x-cloak
+          x-show="isSearchActive"
+          x-transition:enter="transition-opacity delay-200 duration-250"
+          x-transition:enter-start="opacity-0 scale-90"
+          x-transition:enter-end="opacity-100 scale-100"
+          x-transition:leave="transition-opacity duration-250"
+          x-transition:leave-start="opacity-100 scale-100"
+          x-transition:leave-end="opacity-0 scale-90"
+        >
+          {% render 'core-icon', icon: 'stroke-bare-x', size: 'xs' %}
+        </button>
+
+      </form>
+      {% capture close_button_attributes %}
+        x-show="!isSearchActive"
+        x-transition:enter="transition-opacity delay-250 duration-250"
+        x-transition:enter-start="opacity-0 scale-50"
+        x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition-opacity duration-250"
+        x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-50"
+      {% endcapture %}
+      {% capture drawer_close_button_class %}
+        !absolute end-0 top-0 bottom-0
+      {% endcapture %}
+      {% render 'drawer-close-button', class: drawer_close_button_class, close_button_attributes: close_button_attributes %}
+    </div>
+  {% endcapture %}
+{% endif %}
+
+{% assign main_menu_linklist = linklists[section.settings.linklist] %}
+{% if main_menu_linklist.links.size > 0 %}
+  {% capture main_menu %}
+    {% render 'header-drawer-linklist', linklist: main_menu_linklist %}
+  {% endcapture %}
+  {% capture submenus %}
+    {% comment %} Loop the full list (not a filtered one) so forloop.index matches the index header-drawer-linklist passes to each trigger — the overlay and its trigger pair up through that index {% endcomment %}
+    {% for link in main_menu_linklist.links %}
+      {% if link.levels == 2 %}
+        {% capture submenu %}
+          {% render 'header-drawer-linklist', parent_link: link, s: section.settings, expand_dropdowns: true %}
+        {% endcapture %}
+        {% render 'header-drawer-submenu-overlay', link: link, index: forloop.index, content: submenu %}
+      {% endif %}
+    {% endfor %}
+  {% endcapture %}
+{% endif %}
+
+{% if section.settings.show_secondary_links %}
+  {% assign secondary_linklist = linklists[section.settings.secondary_linklist] %}
+  {% if secondary_linklist.links.size > 0 %}
+    {% capture secondary_menu %}
+      <nav class="p-[--drawer-padding] font-family-body text-r3">
+        <ul class="grid grid-cols-2 gap-layout">
+          {% for link in secondary_linklist.links %}
+            {% assign index_modulo = forloop.index | modulo: 2 %}
+            <li class="{% if index_modulo == 0 %}text-end{% else %}text-start{% endif %}">
+              {% render 'core-link',
+                href: link.url,
+                text: link.title,
+                settings_suffix: 'secondary_link',
+                color: 'content',
+                appearance: 'clean',
+                s: section.settings
+              %}
+            </li>
+          {% endfor %}
+        </ul>
+      </nav>
+    {% endcapture %}
+  {% endif %}
+{% endif %}
+
+{% if section.settings.show_social_links %}
+  {% capture social_style %}
+    --r-multiplier: 1;
+  {% endcapture %}
+  {% capture social_icons %}
+    {% render 'social-icons',
+      size: 'sm',
+      style: social_style,
+      class: 'justify-around p-[--drawer-padding] bg-content/5 border-t border-t-content-mix-10 min-h-control'
+    %}
+  {% endcapture %}
+{% endif %}
+
+{% if section.settings.show_account_link and shop.customer_accounts_enabled %}
+  {% assign account_button_label = 'header.account_label' | t %}
+  {% if customer %}
+    {% capture logged_in_indicator %}
+      <span
+        class="absolute top-0 end-0 translate-x-1/3 -translate-y-1/2 flex flex-center rounded-full bg-content text-canvas uppercase overflow-hidden"
+        style="
+          width: 1em;
+          height: 1em;
+          font-size: calc(var(--icon-size) * 0.65);
+        "
+      >
+        <span
+          class="ty-type-center"
+          style="
+            font-size: 0.875em;
+            {% comment %} Ignore font-weight settings and just bold it {% endcomment %}
+            font-weight: bold;
+          "
+        >{{ customer.name | first | upcase }}</span>
+      </span>
+    {% endcapture %}
+  {% endif %}
+
+  {% capture account_links %}
+    <a
+      href="{{ routes.account_url }}"
+      class="flex-row-center gap-x-r4 border-t border-t-content-mix-10 p-[--drawer-padding] min-h-control"
+    >
+      <span class="relative shrink-0">
+        {% render 'core-icon', icon: 'stroke-header-user' %}
+        {{ logged_in_indicator }}
+      </span>
+      {% render 'core-text-preset', tag: 'span', text: account_button_label, settings_suffix: 'account_locale', s: section.settings %}
+    </a>
+  {% endcapture %}
+{% endif %}
+
+{% if section.settings.show_language or section.settings.show_country %}
+  {% capture localization_selectors %}
+    {%- form 'localization', id: 'localization-form-menu-drawer' -%}
+      {% capture localization_select_class %}
+        border-t border-t-content-mix-10 h-control p-[--drawer-padding]
+        {% render 'props-class-type-preset', s: section.settings, settings_suffix: 'account_locale' %}
+        [--control-font-size:--font-size-calc]
+        [--icon-size:13px]
+      {% endcapture %}
+      {% if section.settings.show_language %}
+        {% capture globe_icon %}
+          {% render 'core-icon', icon: 'fill-globe', class: 'shrink-0' %}
+        {% endcapture %}
+
+        {%- if localization.available_languages.size > 1 -%}
+          {%- render 'localization-locale-select',
+            placement: 'top',
+            offset: '0px',
+            edge_padding: '0px',
+            size: 'lg',
+            flip: false,
+            language_style: section.settings.language_style,
+            start_icon: globe_icon,
+            button_class: localization_select_class,
+            popup_class: '!border-x-0 !border-b-0',
+            popup_list_class: '!p-[--drawer-padding]',
+            option_class: 'h-control !type-btn !text-r3'
+          -%}
+        {%- endif -%}
+      {%- endif -%}
+
+      {% if section.settings.show_country %}
+        {%- if localization.available_countries.size > 1 -%}
+          {% render 'localization-country-select',
+            placement: 'top',
+            offset: '0px',
+            edge_padding: '0px',
+            size: 'lg',
+            flip: false,
+            button_class: localization_select_class,
+            popup_class: '!border-x-0 !border-b-0',
+            option_class: '!px-[--drawer-padding] h-control !type-btn !text-r3',
+            option_group_label_class: '!px-[--drawer-padding]',
+            currency_display_style: section.settings.currency_display_style,
+            country_display_style: section.settings.country_display_style,
+            show_popular_options: 'bottom'
+          %}
+        {%- endif -%}
+      {%- endif -%}
+    {% endform %}
+  {% endcapture %}
+{% endif %}
+
+{% capture drawer_content %}
+  {% comment %}
+    Everything in the drawer body is invisible until the drawer opens, so none of it belongs
+    in the page-load commit — not the search results panel, not the menu tree, not the
+    account link and locale selects. Each of the three is its own lazy root, marked on a real
+    box so the visible trigger can observe it. The drawer shell around them stays live, so
+    anything can still open it, and the menu button's aria-controls names that shell, which
+    wakes every lazy root inside it on the way down.
+  {% endcomment %}
+  {% if section.settings.show_search %}
+    <div
+      x-show="$predictiveSearch.state != 'idle'"
+      {% comment %}
+        x-show starts false, so this needs x-cloak to hold it hidden until the root wakes —
+        an open that comes from anywhere but a hand (the theme editor selecting the section)
+        has only the async visible trigger, and an uncloaked h-screen panel would push the
+        menu off screen until that lands.
+      {% endcomment %}
+      x-cloak
+      data-lazy-alpine
+      data-lazy-alpine-on="visible interact"
+      class="flex-1 h-screen-dynamic max-h-[--predictive-search-max-height] flex flex-col px-[--drawer-padding]"
+    >
+      <div x-predictive-search:results></div>
+    </div>
+  {% endif %}
+
+  <nav
+    class="flex-1 vars-icon-grade-bold"
+    data-lazy-alpine
+    data-lazy-alpine-on="visible interact"
+    x-show="$predictiveSearch.state == 'idle'"
+    x-effect="
+      if ($dialog.isOpen == false) {
+        // Close submenu when closing dialog
+        visibleSubmenuOverlay = null;
+        activeSubmenuOverlay = null;
+      }
+
+      // If we're changing the active overlay menu, we need to wait for the animation to
+      // finish before updating the visible overlay menu and allowing focus
+      if (activeSubmenuOverlay != visibleSubmenuOverlay) {
+        if (visibleSubmenuOverlay == null) {
+          const animations = await $waitForAnimations({ subtree: true })
+          visibleSubmenuOverlay = activeSubmenuOverlay
+          wasSubMenuOpen = true
+        } else {
+          await $waitForAnimations({ subtree: true })
+          visibleSubmenuOverlay = null
+          wasSubMenuOpen = false
+        }
+      }
+    "
+  >
+    <div
+      class="relative flex flex-col duration-500 bg-canvas [--layout-buffer-y:--layout-buffer-x] z-10 h-full"
+      style="--drawer-scroll-padding: var(--drawer-padding)"
+      x-show="!isSubMenuOpen"
+      x-transition:enter="animate-in fade-in slide-in-from-left-1/4 animate-delay-100 animate-duration-500"
+      x-transition:leave="animate-out fade-out slide-out-to-left-1/4 animate-duration-1000"
+    >
+      {{ main_menu }}
+      <div class="mt-auto">
+        {% content_for 'blocks' %}
+        {{ secondary_menu }}
+        {{ social_icons }}
+      </div>
+    </div>
+    {{ submenus }}
+  </nav>
+
+  <div
+    class="
+      flex flex-col bg-canvas mt-auto
+      [--enter-footer-duration:300ms]
+      [--enter-footer-delay:200ms]
+      animate-delay-[--enter-footer-delay] animate-in fade-in animate-opacity-duration-[--enter-footer-duration]
+    "
+    data-lazy-alpine
+    data-lazy-alpine-on="visible interact"
+    x-show="$predictiveSearch.state == 'idle'"
+  >
+    {{ account_links }}
+    {{ localization_selectors }}
+  </div>
+{% endcapture %}
+
+{% capture footer_attributes %}
+  x-show="$predictiveSearch.state == 'success' && !$media.matches.sm"
+{% endcapture %}
+
+{% capture header_attributes %}
+  x-ref="header"
+{% endcapture %}
+
+{%- capture footer -%}
+  {% capture show_results_label %}
+    {{ 'search.view_all_results' | t }}
+  {% endcapture %}
+  {% capture submit_button_label_class %}
+    [--shimmer-btn-text-color:color-mix(in_srgb,_var(--btn-text-color)_80%,_black)]
+    [:not(:hover)>&]:text-shimmer-[--shimmer-btn-text-color] [:not(:hover)>&]:animate-text-shimmer
+    repeat-infinite animate-ease-linear
+  {% endcapture %}
+  {% render 'core-button',
+    label: show_results_label,
+    type: 'submit',
+    appearance: 'fill',
+    color: 'content',
+    sizing: 'lg',
+    class: 'w-full',
+    label_class: submit_button_label_class,
+    form: search_form_id
+  %}
+{%- endcapture -%}
+
+<div
+  class="relative vars-{{ section.settings.color_scheme.id }} vars-layout-like-mobile"
+
+  x-data="
+    {
+      visibleSubmenuOverlay: null,
+      activeSubmenuOverlay: null,
+      wasSubMenuOpen: false,
+      isSearchActive: false,
+      get isMenuOpen() {
+        return $store.drawer.isOpen && $store.drawer.type === 'menu'
+      },
+      get isSubMenuOpen() {
+        return this.isMenuOpen && this.activeSubmenuOverlay != null
+      },
+    }
+  "
+
+  :style="{ '--drawer-max-height': isSearchActive ? $store.page.visualViewportHeight + 'px' : 'auto' }"
+
+  x-predictive-search="predictive-search-results"
+
+  x-dialog.modal="
+    {
+      get isOpen() {
+        return isMenuOpen
+      },
+      set isOpen(value) {
+         if (value) {
+          $dispatch('theme:menu-drawer:open')
+        } else {
+          $dispatch('theme:menu-drawer:close')
+        }
+      }
+    }
+  "
+
+  x-effect="
+    if (!$dialog.isOpen) {
+      $predictiveSearch.reset()
+    }
+
+    if ($predictiveSearch.state == 'success' || $predictiveSearch.state == 'loading') {
+      isSearchActive = true
+    }
+  "
+
+  {% if request.design_mode %}
+    @shopify:section:select.window="
+      if ($isSelectedSection) {
+        $dispatch('theme:menu-drawer:open')
+      } else {
+        $dispatch('theme:menu-drawer:close')
+      }
+    "
+  {% endif %}
+
+  @focusout="isSearchActive = false"
+>
+  {% assign drawer_aria_label = 'header.accessibility.menu_drawer' | t %}
+
+  {% comment %}
+    Unlike other drawers, the header-drawer has a submenu-overlay that sits above both the drawer content and footer.
+    To achieve this, both the content and footer are combined and passed as a single "content" parameter, with "scrollable: false" to avoid ending up with double scroll in the submenu-overlay.
+  {% endcomment %}
+  {% render 'drawer',
+    side: 'left',
+    aria_label: drawer_aria_label,
+    close_button_attributes: close_button_attributes,
+    header: search_bar,
+    footer: footer,
+    content: drawer_content,
+    scrollable: true,
+    id: 'header-drawer',
+    autofocus_close_button: true,
+    footer_attributes: footer_attributes,
+    header_attributes: header_attributes
+  %}
+</div>
+
+{% schema %}
+{
+	"name": "Menu drawer",
+	"class": "section-header-drawer",
+	"settings": [
+		{
+			"type": "color_scheme",
+			"id": "color_scheme",
+			"label": "Color scheme"
+		},
+		{
+			"type": "link_list",
+			"label": "Links",
+			"id": "linklist",
+			"default": "main-menu"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_search",
+			"label": "Show search bar",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "show_social_links",
+			"label": "Show social links",
+			"default": false
+		},
+		{
+			"type": "checkbox",
+			"id": "show_account_link",
+			"label": "Show account link",
+			"default": false
+		},
+		{
+			"type": "header",
+			"content": "Secondary links"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_secondary_links",
+			"label": "Show secondary links",
+			"default": false
+		},
+		{
+			"type": "link_list",
+			"label": "Secondary links",
+			"id": "secondary_linklist",
+			"visible_if": "{{ section.settings.show_secondary_links == true }}"
+		},
+		{
+			"type": "header",
+			"content": "Language selector",
+			"info": "To add a language, go to your [language settings](/admin/settings/languages).",
+			"visible_if": "{{ section.settings.show_language == true }}"
+		},
+		{
+			"type": "header",
+			"content": "Language selector",
+			"visible_if": "{{ section.settings.show_language != true }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_language",
+			"label": "Show language selector",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "language_style",
+			"label": "Style",
+			"default": "long",
+			"options": [
+				{
+					"value": "long",
+					"label": "Long"
+				},
+				{
+					"value": "short",
+					"label": "Short"
+				}
+			],
+			"visible_if": "{{ section.settings.show_language == true }}"
+		},
+		{
+			"type": "header",
+			"content": "Country/Region selector",
+			"info": "To add a currency, go to your [markets settings](/admin/settings/markets).",
+			"visible_if": "{{ section.settings.show_country == true }}"
+		},
+		{
+			"type": "header",
+			"content": "Country/Region selector",
+			"visible_if": "{{ section.settings.show_country != true }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_country",
+			"label": "Show country selector",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "country_display_style",
+			"label": "Country display",
+			"default": "flag_name",
+			"options": [
+				{
+					"value": "name",
+					"label": "Country name"
+				},
+				{
+					"value": "symbol",
+					"label": "Country symbol"
+				},
+				{
+					"value": "flag_name",
+					"label": "Flag and country name"
+				},
+				{
+					"value": "flag_symbol",
+					"label": "Flag and country symbol"
+				},
+				{
+					"value": "flag",
+					"label": "Flag"
+				}
+			],
+			"visible_if": "{{ section.settings.show_country == true }}"
+		},
+		{
+			"type": "select",
+			"id": "currency_display_style",
+			"label": "Currency display",
+			"default": "short",
+			"options": [
+				{
+					"value": "long",
+					"label": "Name"
+				},
+				{
+					"value": "short",
+					"label": "Symbol"
+				},
+				{
+					"value": "none",
+					"label": "None"
+				}
+			],
+			"visible_if": "{{ section.settings.show_country == true }}"
+		},
+		{
+			"type": "header",
+			"content": "Collection images",
+			"visible_if": "{{ section.settings.show_collection_images == false }}"
+		},
+		{
+			"type": "header",
+			"content": "Collection images",
+			"info": "Adds a collection image banner to drill-down menus.",
+			"visible_if": "{{ section.settings.show_collection_images == true }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_collection_images",
+			"label": "Show collection images",
+			"default": true
+		},
+		{
+			"type": "range",
+			"id": "collection_images_aspect_ratio",
+			"min": 0.5,
+			"max": 5,
+			"step": 0.1,
+			"unit": ":1",
+			"label": "Collection image aspect ratio",
+			"default": 2.5,
+			"visible_if": "{{ section.settings.show_collection_images == true }}"
+		},
+		{
+			"type": "header",
+			"content": "Typography"
+		},
+		{
+			"type": "select",
+			"id": "type_preset_main_link",
+			"label": "Links",
+			"default": "btn",
+			"options": [
+				{
+					"group": "Headings",
+					"value": "h1",
+					"label": "Heading 1"
+				},
+				{
+					"group": "Headings",
+					"value": "h2",
+					"label": "Heading 2"
+				},
+				{
+					"group": "Headings",
+					"value": "h3",
+					"label": "Heading 3"
+				},
+				{
+					"group": "Headings",
+					"value": "h4",
+					"label": "Heading 4"
+				},
+				{
+					"group": "Headings",
+					"value": "h5",
+					"label": "Heading 5"
+				},
+				{
+					"group": "Headings",
+					"value": "h6",
+					"label": "Heading 6"
+				},
+				{
+					"group": "Content",
+					"value": "section",
+					"label": "Section title"
+				},
+				{
+					"group": "Content",
+					"value": "p",
+					"label": "Paragraph"
+				},
+				{
+					"group": "Content",
+					"value": "kicker",
+					"label": "Kicker"
+				},
+				{
+					"group": "Content",
+					"value": "micro",
+					"label": "Micro"
+				},
+				{
+					"group": "Elements",
+					"value": "btn",
+					"label": "Button"
+				},
+				{
+					"group": "Elements",
+					"value": "accordion",
+					"label": "Accordion"
+				},
+				{
+					"group": "Elements",
+					"value": "tab",
+					"label": "Tab"
+				},
+				{
+					"group": "Custom",
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_resize_main_link",
+			"label": "Size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			],
+			"visible_if": "{{ section.settings.type_preset_main_link != 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_font_main_link",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ section.settings.type_preset_main_link == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size_main_link",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 5,
+			"visible_if": "{{ section.settings.type_preset_main_link == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase_main_link",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ section.settings.type_preset_main_link == 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_preset_secondary_link",
+			"label": "Secondary links",
+			"default": "p",
+			"visible_if": "{{ section.settings.show_secondary_links == true }}",
+			"options": [
+				{
+					"group": "Headings",
+					"value": "h1",
+					"label": "Heading 1"
+				},
+				{
+					"group": "Headings",
+					"value": "h2",
+					"label": "Heading 2"
+				},
+				{
+					"group": "Headings",
+					"value": "h3",
+					"label": "Heading 3"
+				},
+				{
+					"group": "Headings",
+					"value": "h4",
+					"label": "Heading 4"
+				},
+				{
+					"group": "Headings",
+					"value": "h5",
+					"label": "Heading 5"
+				},
+				{
+					"group": "Headings",
+					"value": "h6",
+					"label": "Heading 6"
+				},
+				{
+					"group": "Content",
+					"value": "section",
+					"label": "Section title"
+				},
+				{
+					"group": "Content",
+					"value": "p",
+					"label": "Paragraph"
+				},
+				{
+					"group": "Content",
+					"value": "kicker",
+					"label": "Kicker"
+				},
+				{
+					"group": "Content",
+					"value": "micro",
+					"label": "Micro"
+				},
+				{
+					"group": "Elements",
+					"value": "btn",
+					"label": "Button"
+				},
+				{
+					"group": "Elements",
+					"value": "accordion",
+					"label": "Accordion"
+				},
+				{
+					"group": "Elements",
+					"value": "tab",
+					"label": "Tab"
+				},
+				{
+					"group": "Custom",
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_resize_secondary_link",
+			"label": "Size",
+			"default": "xs",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			],
+			"visible_if": "{{ section.settings.show_secondary_links == true and section.settings.type_preset_secondary_link != 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_font_secondary_link",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ section.settings.type_preset_secondary_link == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size_secondary_link",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 5,
+			"visible_if": "{{ section.settings.type_preset_secondary_link == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase_secondary_link",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ section.settings.type_preset_secondary_link == 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_preset_account_locale",
+			"label": "Account & locale",
+			"default": "btn",
+			"options": [
+				{
+					"group": "Headings",
+					"value": "h1",
+					"label": "Heading 1"
+				},
+				{
+					"group": "Headings",
+					"value": "h2",
+					"label": "Heading 2"
+				},
+				{
+					"group": "Headings",
+					"value": "h3",
+					"label": "Heading 3"
+				},
+				{
+					"group": "Headings",
+					"value": "h4",
+					"label": "Heading 4"
+				},
+				{
+					"group": "Headings",
+					"value": "h5",
+					"label": "Heading 5"
+				},
+				{
+					"group": "Headings",
+					"value": "h6",
+					"label": "Heading 6"
+				},
+				{
+					"group": "Content",
+					"value": "section",
+					"label": "Section title"
+				},
+				{
+					"group": "Content",
+					"value": "p",
+					"label": "Paragraph"
+				},
+				{
+					"group": "Content",
+					"value": "kicker",
+					"label": "Kicker"
+				},
+				{
+					"group": "Content",
+					"value": "micro",
+					"label": "Micro"
+				},
+				{
+					"group": "Elements",
+					"value": "btn",
+					"label": "Button"
+				},
+				{
+					"group": "Elements",
+					"value": "accordion",
+					"label": "Accordion"
+				},
+				{
+					"group": "Elements",
+					"value": "tab",
+					"label": "Tab"
+				},
+				{
+					"group": "Custom",
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_resize_account_locale",
+			"label": "Size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			],
+			"visible_if": "{{ section.settings.type_preset_account_locale != 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_font_account_locale",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ section.settings.type_preset_account_locale == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size_account_locale",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 5,
+			"visible_if": "{{ section.settings.type_preset_account_locale == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase_account_locale",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ section.settings.type_preset_account_locale == 'custom' }}"
+		},
+	],
+	"blocks": [
+		{
+			"type": "_card-slider"
+		}
+	],
+	"presets": [
+		{
+			"name": "Menu drawer"
+		}
+	],
+	"enabled_on": {
+		"groups": [
+			"custom.drawers"
+		]
+	}
+}
+{% endschema %}

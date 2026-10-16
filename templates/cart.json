@@ -1,0 +1,101 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "cart_classic_gxRCW5_anlgv0p0": {
+      "type": "cart-classic",
+      "blocks": {
+        "customer_notes_PclXEy_anlgv0p0": {
+          "type": "customer_notes",
+          "disabled": true,
+          "settings": {
+            "accordion": true,
+            "title": "Special instructions for seller",
+            "label": "Instructions"
+          }
+        },
+        "shipping_estimate_gwie2o_anlgv0p0": {
+          "type": "shipping_estimate",
+          "disabled": true,
+          "settings": {
+            "accordion": true,
+            "appearance": "stroke",
+            "sizing": "md",
+            "color": "primary",
+            "type_preset": "btn",
+            "type_resize": "md",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          }
+        },
+        "cart_upsell_lU8a2c_anlgv0p0": {
+          "type": "cart_upsell",
+          "disabled": true,
+          "settings": {
+            "title": "Top picks",
+            "product_list": [],
+            "limit": 1,
+            "include_line_item_upsells": false,
+            "prioritize_shipping_upsell": false
+          }
+        },
+        "payment_icons_jclDgj_anlgv0p0": {
+          "type": "payment_icons",
+          "disabled": true,
+          "settings": {
+            "label": "We accept"
+          }
+        }
+      },
+      "block_order": [
+        "customer_notes_PclXEy_anlgv0p0",
+        "shipping_estimate_gwie2o_anlgv0p0",
+        "cart_upsell_lU8a2c_anlgv0p0",
+        "payment_icons_jclDgj_anlgv0p0"
+      ],
+      "settings": {
+        "color_scheme": "",
+        "background": "canvas",
+        "background_color": "#f2f2f2",
+        "content_width": "page",
+        "empty_cart_buttons": "",
+        "continue_browsing_label": "Continue shopping",
+        "continue_browsing_link": "",
+        "continue_browsing_open_in_new_window": false,
+        "set_free_shipping_message": false,
+        "free_shipping_limit": "100",
+        "free_shipping_progress_message": "You are ||amount|| away from free shipping.",
+        "free_shipping_success_message": "Congratulations! Your order qualifies for free shipping",
+        "show_quantity_selector": true,
+        "quantity_sizing": "md",
+        "show_cart_review": true,
+        "show_tax_message": true,
+        "show_checkbox": true,
+        "checkbox_label": "<p>I agree to terms and conditions</p>",
+        "richtext_size_checkbox": "md",
+        "checkbox_required": true,
+        "appearance_checkout_button": "fill",
+        "color_checkout_button": "primary",
+        "color_custom_checkout_button": "#000000",
+        "text_color_checkout_button": "#ffffff",
+        "type_preset_checkout_button": "btn",
+        "type_resize_checkout_button": "lg",
+        "type_font_checkout_button": "body",
+        "type_size_checkout_button": 4,
+        "type_uppercase_checkout_button": false,
+        "show_additional_buttons": true
+      }
+    }
+  },
+  "order": [
+    "cart_classic_gxRCW5_anlgv0p0"
+  ]
+}

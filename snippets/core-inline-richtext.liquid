@@ -1,0 +1,36 @@
+{% doc %}
+  - Renders inline rich text with a type preset
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {string} [default_type_preset] - preset used when none is set
+  @param {object} [s] - settings object
+  @param {boolean} [settings_suffix] - suffix picking a settings group
+  @param {string} [style] - inline styles
+  @param {string} [tag] - defaults to 'p'
+  @param {string} [text]
+  @param {string} [type_preset]
+{% enddoc %}
+
+{% liquid
+  if settings_suffix
+    assign id_suffix = settings_suffix | prepend: '_'
+  endif
+  assign type_preset_id = 'type_preset' | append: id_suffix
+
+  assign text = text | default: s.text
+  assign type_preset = type_preset | default: s[type_preset_id] | default: default_type_preset | default: 'p'
+  assign tag = tag | default: 'p'
+%}
+
+<{{ tag }}
+  class="
+    inline-richtext
+    {{ class }}
+    type-{{ type_preset }}
+  "
+  style="{{ style }}"
+  {{ attributes }}
+>
+  {{ text }}
+</{{ tag }}>

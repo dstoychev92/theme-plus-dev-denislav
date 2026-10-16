@@ -1,0 +1,420 @@
+<!-- blocks/theme-button.liquid -->
+
+{% capture attributes %}
+  {{ block.shopify_attributes }}
+{% endcapture %}
+
+{% capture class %}
+  {% comment %} Disable entrance animations in visual preview mode to prevent "No preview available" error {% endcomment %}
+  {% unless request.visual_preview_mode %}
+    entrance-item entrance-standard
+  {% endunless %}
+{% endcapture %}
+
+{% render 'core-button', s: block.settings, tag: 'a', attributes: attributes, class: class %}
+
+{% schema %}
+{
+	"name": "Button",
+	"tag": null,
+	"settings": [
+		{
+			"type": "text",
+			"id": "text",
+			"label": "Text",
+			"default": "Button Text"
+		},
+		{
+			"type": "url",
+			"id": "href",
+			"label": "Link"
+		},
+		{
+			"type": "checkbox",
+			"id": "open_in_new_window",
+			"label": "Open link in new window",
+			"default": false
+		},
+		{
+			"type": "header",
+			"content": "Style"
+		},
+		{
+			"type": "select",
+			"id": "appearance",
+			"label": "Style",
+			"default": "fill",
+			"options": [
+				{
+					"value": "fill",
+					"label": "Fill"
+				},
+				{
+					"value": "stroke",
+					"label": "Stroke"
+				},
+				{
+					"value": "soft",
+					"label": "Soft"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "color",
+			"label": "Color",
+			"default": "content",
+			"options": [
+				{
+					"value": "content",
+					"label": "Text default"
+				},
+				{
+					"value": "primary",
+					"label": "Primary accent"
+				},
+				{
+					"value": "secondary",
+					"label": "Link accent"
+				},
+				{
+					"value": "sale",
+					"label": "Sale"
+				},
+				{
+					"value": "canvas",
+					"label": "Background default"
+				},
+				{
+					"value": "black",
+					"label": "Black"
+				},
+				{
+					"value": "white",
+					"label": "White"
+				},
+				{
+					"value": "custom",
+					"label": "Custom"
+				},
+				{
+					"value": "custom_gradient",
+					"label": "Custom gradient"
+				}
+			]
+		},
+		{
+			"type": "color",
+			"id": "color_custom",
+			"alpha": true,
+			"default": "#000000",
+			"visible_if": "{{ block.settings.color == 'custom' }}",
+			"label": "Custom color"
+		},
+		{
+			"type": "color",
+			"id": "custom_gradient_from",
+			"alpha": true,
+			"default": "#009C9C",
+			"visible_if": "{{ block.settings.color == 'custom_gradient' and block.settings.appearance == 'fill' }}",
+			"label": "Gradient color 1"
+		},
+		{
+			"type": "color",
+			"id": "custom_gradient_to",
+			"alpha": true,
+			"default": "#6600D9",
+			"visible_if": "{{ block.settings.color == 'custom_gradient' and block.settings.appearance == 'fill' }}",
+			"label": "Gradient color 2"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "Text color",
+			"default": "#FFFFFF",
+			"visible_if": "{{ block.settings.appearance == 'fill' and block.settings.color == 'custom' or block.settings.color == 'custom_gradient' }}"
+		},
+		{
+			"type": "paragraph",
+			"content": "Custom gradients only apply to fill buttons",
+			"visible_if": "{{ block.settings.color == 'custom_gradient' and block.settings.appearance != 'fill' }}"
+		},
+		{
+			"type": "header",
+			"content": "Typography"
+		},
+		{
+			"type": "header",
+			"content": "Text style",
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_preset",
+			"label": "Text style",
+			"default": "btn",
+			"options": [
+				{
+					"group": "Headings",
+					"value": "h1",
+					"label": "Heading 1"
+				},
+				{
+					"group": "Headings",
+					"value": "h2",
+					"label": "Heading 2"
+				},
+				{
+					"group": "Headings",
+					"value": "h3",
+					"label": "Heading 3"
+				},
+				{
+					"group": "Headings",
+					"value": "h4",
+					"label": "Heading 4"
+				},
+				{
+					"group": "Headings",
+					"value": "h5",
+					"label": "Heading 5"
+				},
+				{
+					"group": "Headings",
+					"value": "h6",
+					"label": "Heading 6"
+				},
+				{
+					"group": "Content",
+					"value": "section",
+					"label": "Section title"
+				},
+				{
+					"group": "Content",
+					"value": "p",
+					"label": "Paragraph"
+				},
+				{
+					"group": "Content",
+					"value": "kicker",
+					"label": "Kicker"
+				},
+				{
+					"group": "Content",
+					"value": "micro",
+					"label": "Micro"
+				},
+				{
+					"group": "Elements",
+					"value": "btn",
+					"label": "Button"
+				},
+				{
+					"group": "Elements",
+					"value": "accordion",
+					"label": "Accordion"
+				},
+				{
+					"group": "Elements",
+					"value": "tab",
+					"label": "Tab"
+				},
+				{
+					"group": "Custom",
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_resize",
+			"label": "Text size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset != 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_font",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 4,
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "header",
+			"content": "Rounding"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_rounding",
+			"label": "Set rounding",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "rounding_style",
+			"label": "Rounding",
+			"default": "none",
+			"options": [
+				{
+					"value": "none",
+					"label": "0"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "pill",
+					"label": "L"
+				}
+			],
+			"visible_if": "{{ block.settings.set_rounding }}"
+		},
+		{
+			"type": "header",
+			"content": "Size"
+		},
+		{
+			"type": "select",
+			"id": "sizing",
+			"label": "Height",
+			"default": "lg",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			]
+		},
+		{
+			"type": "checkbox",
+			"id": "set_width",
+			"label": "Set width",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "width_unit",
+			"label": "Unit",
+			"default": "percent",
+			"options": [
+				{
+					"value": "percent",
+					"label": "Percent"
+				},
+				{
+					"value": "pixel",
+					"label": "Pixel"
+				}
+			],
+			"visible_if": "{{ block.settings.set_width == true }}"
+		},
+		{
+			"type": "range",
+			"id": "width_px",
+			"label": "Width",
+			"unit": "px",
+			"min": 100,
+			"max": 500,
+			"step": 5,
+			"default": 200,
+			"visible_if": "{{ block.settings.set_width == true and block.settings.width_unit == 'pixel' }}"
+		},
+		{
+			"type": "range",
+			"id": "width_percent",
+			"label": "Width",
+			"unit": "%",
+			"min": 0,
+			"max": 100,
+			"step": 5,
+			"default": 100,
+			"visible_if": "{{ block.settings.set_width == true and block.settings.width_unit == 'percent' }}"
+		}
+	],
+	"presets": [
+		{
+			"name": "Button",
+			"category": "Basic"
+		}
+	]
+}
+{% endschema %}

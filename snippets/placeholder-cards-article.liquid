@@ -1,0 +1,35 @@
+{% doc %}
+  - Renders placeholder article cards
+
+  @param {number} [aspect_ratio]
+  @param {string} [attributes]
+  @param {string} [block_attributes]
+  @param {number} [limit]
+{% enddoc %}
+
+{% liquid
+  assign limit = limit | default: 10
+  assign enable_placeholder_article = false
+
+  if settings.placeholder_mode or request.design_mode
+    assign enable_placeholder_article = true
+  endif
+%}
+
+{% if enable_placeholder_article %}
+  {% for i in (1..limit) %}
+    {% if forloop.first %}
+      {% capture attributes %}
+        {{ block_attributes }}
+        {{ attributes }}
+      {% endcapture %}
+    {% endif %}
+
+    {% render 'card-article',
+      size: 'lg',
+      placeholder: true,
+      aspect_ratio: aspect_ratio,
+      attributes: attributes
+    %}
+  {% endfor %}
+{% endif %}

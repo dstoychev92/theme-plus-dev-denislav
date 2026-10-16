@@ -1,0 +1,115 @@
+<!-- blocks/_related-tab-recent-products.liquid -->
+
+{% liquid
+  assign limit = block.settings.card_limit
+  assign threshold = block.settings.threshold
+  assign has_loaded = false
+
+  if search.performed
+    assign has_loaded = true
+  endif
+
+  if has_loaded and search.results.size > 0
+    assign recent_products = search.results
+  endif
+
+  assign default_title = 'product.recently_viewed' | t
+  assign title = block.settings.title | default: default_title
+%}
+
+{%- capture image_widths -%}
+  {%- render 'image-grid-widths' -%}
+{%- endcapture -%}
+{%- capture image_sizes -%}
+  {%- render 'image-grid-sizes' -%}
+{%- endcapture -%}
+
+{% capture tab_button_attributes %}
+  {{ block.shopify_attributes }}
+  x-show="!$sectionRelated.isTabEmpty($tab.index)"
+  x-effect="if ($tab.isSelected && $sectionRelated.isTabEmpty($tab.index)) $nextTick(() => $tabs.select($sectionRelated.nextVisibleTabIndex($tab.index)))"
+  {% if request.design_mode %}
+    @shopify:block:select="$tab.select()"
+  {% endif %}
+{% endcapture %}
+
+{% capture attributes %}
+  id="{{ section.id }}-recent-products"
+  x-section-api="{{ section.id }}-recent-products"
+  data-render-region="recent-products"
+  {% # core-section-wrapper hides the section while a descendant carries data-hide-section %}
+  :data-hide-section="$sectionRelated.visibleTabCount === 0"
+  {% unless request.visual_preview_mode or has_loaded %}
+    x-section-related:recent-products-tab.limit.{{ limit }}.threshold.{{ threshold }}
+  {% endunless %}
+{% endcapture %}
+
+{% capture list_items %}
+  {% if has_loaded %}
+    {% if recent_products.size > 0 %}
+      {% for recent_product in recent_products limit: limit %}
+        {% if recent_product.metafields.seo.hidden != true %}
+          {% render 'card-product', size: 'lg', product: recent_product, attributes: 'x-carousel:item', view_context: 'recommendation', image_widths: image_widths, image_sizes: image_sizes %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  {% else %}
+    {% for i in (1..limit) %}
+      {% render 'card-layout-lg', loader: true %}
+    {% endfor %}
+  {% endif %}
+{%- endcapture -%}
+
+{% render 'core-tab-card-list',
+  list_items: list_items,
+  s: section.settings,
+  title: title,
+  attributes: attributes,
+  tab_button_attributes: tab_button_attributes
+%}
+
+{% schema %}
+{
+	"name": "Recently viewed products",
+	"tag": null,
+	"settings": [
+		{
+			"type": "paragraph",
+			"content": "Displays products that a customer viewed and may want to revisit. Will hide if there are no recently viewed products."
+		},
+		{
+			"type": "text",
+			"id": "title",
+			"label": "Title",
+			"default": "Recently viewed",
+			"info": "Tab title hides when there is only one tab to display"
+		},
+		{
+			"type": "range",
+			"id": "card_limit",
+			"min": 1,
+			"max": 20,
+			"step": 1,
+			"label": "Card limit",
+			"default": 6
+		},
+		{
+			"type": "range",
+			"id": "threshold",
+			"label": "Display threshold",
+			"min": 1,
+			"max": 6,
+			"step": 1,
+			"default": 3,
+			"info": "The number of recently viewed products that must be present to display the tab"
+		}
+	],
+	"presets": [
+		{
+			"name": "Recently viewed products",
+			"category": "Additional product info",
+			"blocks": []
+		}
+	]
+}
+{% endschema %}

@@ -1,0 +1,244 @@
+{% doc %}
+  - Renders product card action
+
+  Chooses Instant Add, Quick Add, or Quick View from product options and theme settings.
+  Selling plans require Quick View. A sold-out product renders only the product form shell.
+
+  @param {string} [alert_attributes]
+  @param {string} [attributes]
+  @param {block} [block]
+  @param {string} [class] - The classes
+  @param {product} product
+  @param {product_option} [promoted_option] - option handled by card swatches
+  @param {section} [section]
+  @param {boolean} selection_is_explicit - true for selected variant or Section API response
+  @param {string} [selection_url] - product or selected option URL
+  @param {variant} [variant]
+{% enddoc %}
+{%- liquid
+  assign requested_variant = variant
+  assign variant = requested_variant | default: product.selected_or_first_available_variant
+  assign quick_view_url = selection_url | default: requested_variant.url | default: product.url
+
+  # Keep option menu inside card media
+  assign max_quick_add_option_values = 15
+  assign max_quick_add_option_combined_characters = 90
+  assign max_quick_add_option_characters = 16
+
+  assign is_quick_add_allowed = false
+  assign is_instant_add_allowed = false
+  assign quick_add_option = null
+  assign option_group_count = product.options_with_values.size
+
+  if settings.enable_card_quickadd or settings.enable_instant_add
+    if promoted_option == blank
+      if option_group_count == 1
+        assign quick_add_option = product.options_with_values.first
+      elsif product.variants.size == 1
+        assign is_instant_add_allowed = true
+      endif
+    elsif promoted_option.position == 1
+      if option_group_count == 2 and selection_is_explicit
+        assign quick_add_option = product.options_with_values[1]
+      elsif option_group_count == 1 and requested_variant != blank
+        assign is_instant_add_allowed = true
+      endif
+    endif
+
+    if quick_add_option != blank
+      assign quick_add_value_count = quick_add_option.values.size
+      assign combined_number_of_characters = 0
+      assign longest_value_characters = 0
+      assign actionable_value_count = 0
+      assign candidate_has_swatches = false
+      assign candidate_quantity_min = null
+      assign has_mixed_quantity_min = false
+
+      for value in quick_add_option.values
+        assign value_name_size = value.name | size
+        assign combined_number_of_characters = combined_number_of_characters | plus: value_name_size
+        assign longest_value_characters = longest_value_characters | at_least: value_name_size
+        if value.swatch != blank
+          assign candidate_has_swatches = true
+        endif
+        if value.variant != blank and value.variant.available
+          assign actionable_value_count = actionable_value_count | plus: 1
+          assign value_quantity_min = value.variant.quantity_rule.min | default: 1
+          if candidate_quantity_min == blank
+            assign candidate_quantity_min = value_quantity_min
+          elsif candidate_quantity_min != value_quantity_min
+            assign has_mixed_quantity_min = true
+          endif
+        endif
+      endfor
+
+      if quick_add_value_count == 1 and actionable_value_count == 1
+        assign variant = quick_add_option.values.first.variant
+        assign is_instant_add_allowed = true
+      elsif quick_add_value_count > 1 and quick_add_value_count <= max_quick_add_option_values
+        if combined_number_of_characters <= max_quick_add_option_combined_characters
+          if longest_value_characters <= max_quick_add_option_characters
+            if actionable_value_count > 0 and candidate_has_swatches == false and has_mixed_quantity_min == false
+              assign is_quick_add_allowed = true
+            endif
+          endif
+        endif
+      endif
+    endif
+  endif
+
+  if product.selling_plan_groups.size > 0
+    assign is_quick_add_allowed = false
+    assign is_instant_add_allowed = false
+  endif
+
+  if product.available == false
+    assign is_quick_add_allowed = false
+    assign is_instant_add_allowed = false
+  endif
+
+  if is_instant_add_allowed and variant.available == false
+    assign is_instant_add_allowed = false
+  endif
+
+  assign action_mode = 'none'
+  if settings.enable_card_quickadd and is_quick_add_allowed
+    assign action_mode = 'quick_add'
+  elsif settings.enable_instant_add and is_instant_add_allowed
+    assign action_mode = 'instant_add'
+  elsif settings.enable_quickview
+    assign action_mode = 'quick_view'
+  endif
+
+  # A sold-out product renders the form shell with no action control
+  if product.available == false
+    assign action_mode = 'none'
+  endif
+
+  assign requires_product_form = false
+  if action_mode == 'quick_add' or action_mode == 'instant_add'
+    assign requires_product_form = true
+  endif
+
+  assign form_quantity_min = variant.quantity_rule.min | default: 1
+  if action_mode == 'quick_add'
+    assign form_quantity_min = candidate_quantity_min | default: 1
+  endif
+-%}
+
+{% capture button_class %}
+  touch:aspect-square touch:p-0 touch:min-h-0 touch:w-row-md touch:h-row-md
+{% endcapture %}
+
+{% capture error_message %}
+  <div
+    x-cloak
+    x-show="$productForm.state === 'error'"
+    class="
+      flex flex-row gap-x-r3 flex-center
+      w-full top-0 sticky p-r3 vars-scheme-error text-content bg-canvas
+      rounded-sm
+      animate-in slide-in-from-bottom-1/2 fade-in duration-500
+    "
+  >
+    {% capture alert_icon %}
+      {% render 'core-icon', icon: 'fill-circle-alert' %}
+    {% endcapture %}
+    {% capture alert_content %}
+      <div>
+        {% assign default_error_message = "product.error_adding_to_cart" | t %}
+        <p
+          data-default-error="{{ default_error_message | escape_once }}"
+          x-html="$productForm.errorDescription || $productForm.errorMessage || $el.dataset.defaultError"
+        ></p>
+      </div>
+    {% endcapture %}
+    {% render 'alert',
+      icon: alert_icon,
+      content: alert_content,
+      type: 'error',
+      attributes: alert_attributes,
+      class: 'rounded-btn w-full'
+    %}
+  </div>
+{% endcapture %}
+
+{% capture action_control %}
+  {% case action_mode %}
+    {% when 'quick_add' %}
+      {% render 'card-product-lg-quick-add',
+        product: product,
+        option: quick_add_option,
+        option_value_count: quick_add_value_count,
+        longest_value_characters: longest_value_characters,
+        placeholder_button_class: button_class,
+        icon_swap: true
+      %}
+    {% when 'instant_add' %}
+      {% render 'card-product-lg-instant-add-button',
+        class: button_class,
+        product: product,
+        variant: variant,
+        icon_swap: true
+      %}
+    {% when 'quick_view' %}
+      {% render 'card-product-lg-quick-view-button',
+        class: button_class,
+        product: product,
+        variant: variant,
+        url: quick_view_url,
+        icon_swap: true
+      %}
+  {% endcase %}
+{% endcapture %}
+
+{% capture action_content %}
+  <div
+    data-test-id="product-card-quick-actions"
+    data-product-card-action-mode="{{ action_mode }}"
+    class="
+      vars-control-lg flex flex-col gap-y-r3 items-center touch:items-end justify-end relative
+      h-full w-full pointer-events-passthrough
+      opacity-0 touch:opacity-100 mouse:[content-visibility:hidden] touch:[content-visibility:visible]
+      transition-opacity duration-[--quick-actions-exit-animation-duration]
+      mouse:data-[action-visible=true]:opacity-100 mouse:md:data-[visible=true]:[content-visibility:visible]
+      {{ class }}
+    "
+    :data-visible="$productCard.isActive{% if requires_product_form %} || ($productForm?.state ?? 'idle') !== 'idle'{% endif %}"
+    :data-action-visible="($productCard.isActive && !$productCard.isHoveringSelections){% if requires_product_form %} || ($productForm?.state ?? 'idle') !== 'idle'{% endif %}"
+    :inert="$sectionApi.state === 'loading'"
+    {{ attributes }}
+  >
+    {% if requires_product_form %}
+      {{ error_message }}
+    {% endif %}
+    {{ action_control }}
+  </div>
+{% endcapture %}
+
+{% comment %} The form renders for every action mode and product state, so a selection update morphs one persistent form instead of removing and re-inserting it {% endcomment %}
+<div x-product-form.wait-error.2000ms.wait-success.1500ms class="contents">
+  {% comment %} Shopify's default form id (product_form_<product.id>) duplicates when the same product renders in more than one card on a page — e.g. in two tabs of one section — so scope it by section and block. The api-card-product response loses that scope, so data-morph-keep-id keeps the first-render id through every section update {% endcomment %}
+  {% capture product_form_id %}product-form-quick-actions-{{ product.id }}-{{ section.id }}-{{ block.id }}{% endcapture %}
+  {% form 'product',
+    product,
+    id: product_form_id,
+    data-product-card-form: '',
+    data-morph-keep-id: '',
+    class: 'absolute overflow-clip inset-[--card-lg-media-padding] flex-col justify-end items-center max-h-full pointer-events-none'
+  %}
+    {% if requires_product_form %}
+      <input
+        type="hidden"
+        name="quantity"
+        value="{{ form_quantity_min }}"
+      >
+
+      {% render 'product-preorder-properties', product: product %}
+      {% render 'product-line-item-properties', product: product %}
+    {% endif %}
+    {% unless action_mode == 'none' %}
+      {{ action_content }}
+    {% endunless %}
+  {% endform %}
+</div>

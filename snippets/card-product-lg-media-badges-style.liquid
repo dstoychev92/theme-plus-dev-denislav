@@ -1,0 +1,74 @@
+{% doc %}
+  - Renders one styled card badge
+
+  @param {string} [bg_color] - CSS background color
+  @param {string} [class] - The classes
+  @param {string} content
+  @param {string} [size] - 'sm', 'md' or 'lg', defaults to 'md'
+  @param {string} [style] - inline styles
+  @param {string} [tag] - defaults to 'card-badge'
+  @param {string} [text_color] - CSS text color
+{% enddoc %}
+
+{% liquid
+  assign tag = tag | default: 'card-badge'
+  assign size = size | default: 'md'
+
+  case size
+    when 'sm'
+      assign padding_class = 'px-r2 py-r1'
+      assign size_type_resize = 'xs'
+    when 'md'
+      assign padding_class = 'px-r4 py-r2'
+      assign size_type_resize = 'sm'
+    when 'lg'
+      assign padding_class = 'px-r5 py-r3'
+      assign size_type_resize = 'md'
+  endcase
+
+  if settings.set_card_badge_type
+    assign badge_type_preset = 'custom'
+    assign badge_type_font = settings.type_font_card_badge
+    assign badge_type_size = settings.type_size_card_badge
+    assign badge_type_uppercase = settings.type_uppercase_card_badge
+  else
+    assign badge_type_preset = 'btn'
+    assign badge_type_resize = size_type_resize
+  endif
+%}
+
+{% capture type_classes %}
+  {%- render 'props-class-type-preset',
+    type_preset: badge_type_preset,
+    type_resize: badge_type_resize,
+    type_font: badge_type_font,
+    type_size: badge_type_size,
+    type_uppercase: badge_type_uppercase
+  -%}
+{% endcapture %}
+
+{% capture class %}
+  {{ padding_class }}
+  {{ class }}
+{% endcapture %}
+
+<{{ tag }}
+  class="
+    block rounded-[--radius-badge] bg-[--badge-bg-color]
+    text-[color:var(--badge-text-color)]
+    whitespace-nowrap leading-none
+    {{ type_classes }}
+    {{ class }}
+  "
+  style="
+    {% if bg_color != blank %}
+      --badge-bg-color: {{ bg_color }};
+    {% endif %}
+    {% if text_color != blank %}
+      --badge-text-color: {{ text_color }};
+    {% endif %}
+    {{ style }}
+  "
+>
+  {{ content }}
+</{{ tag }}>

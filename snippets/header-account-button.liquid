@@ -1,0 +1,93 @@
+{% doc %}
+  - Renders header account link
+
+  Prints nothing when customer accounts are off.
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {string} [icon_type_class] - classes for the icon
+  @param {string} [label_style] - 'icon', 'label' or 'both'
+  @param {object} [s] - settings object
+  @param {string} [target_device] - 'mobile' or 'desktop', defaults to s.target_device
+{% enddoc %}
+
+{%- if shop.customer_accounts_enabled -%}
+  {% liquid
+    assign label_style = label_style | default: s.label_style | default: 'both'
+    assign target_device = target_device | default: s.target_device
+    assign aria_label = 'header.account_label' | t
+    assign label = aria_label
+  %}
+
+  {% capture class %}
+    focus-group-item
+    {% render 'props-class-target-device', target_device: target_device %}
+    {{ class }}
+  {% endcapture %}
+
+  {% capture signed_out_class %}
+    min-h-[--header-row-height] hit-area-x-[calc(var(--header-row-gap-x)/2)]
+  {% endcapture %}
+
+  {% capture signed_out_attributes %}
+    {% comment %} Prevent focus on signed_out link - the '<shopify-account>' is being focused instead {% endcomment %}
+    tabindex="-1"
+    {{ attributes }}
+  {% endcapture %}
+
+  <div
+    class="
+      {% comment %} Contain hit-area-y pseudo-element {% endcomment %}
+      relative h-full
+      {% render 'props-class-target-device', target_device: target_device %}
+    "
+  >
+    <shopify-account
+      class="
+        vars-stain-content
+        h-full flex flex-center text-stain
+        {{ class }}
+      "
+    >
+      <div slot="signed-out-avatar">
+        {% render 'header-link',
+          s: s,
+          tag: 'div',
+          href: routes.account_url,
+          icon: 'stroke-header-user',
+          label: label,
+          label_style: label_style,
+          label_class: 'antialiased',
+          class: signed_out_class,
+          attributes: signed_out_attributes,
+          icon_type_class: icon_type_class
+        %}
+      </div>
+    </shopify-account>
+  </div>
+
+  <style>
+    shopify-account {
+      font-size: inherit;
+      --shopify-account-signed-in-avatar-size: calc(var(--icon-size) * 1.5);
+
+      {% comment %} Used when user had a profile picture set in their Shop account {% endcomment %}
+      --shop-brand-color: #000000;
+
+      {% comment %} Used when logged in user has no img profile photo {% endcomment %}
+      --shopify-account-signed-in-avatar-color-background: oklch(var(--stain-oklch) / var(--tw-text-opacity)); {% # uses "stain" color to match the header text color  %}
+      --shopify-account-signed-in-avatar-color-text: var(--canvas); {% # "canvas" color to ensure the text is visible when transparent header %}
+
+      {% comment %} Heading is just a bold instance of body font {% endcomment %}
+      --shopify-account-font-heading: var(--root-font-stack-body);
+      --shopify-account-font-body: var(--root-font-stack-body);
+    }
+
+    {% comment %} Reset header account button styles {% endcomment %}
+    shopify-account::part(signed-out-avatar) {
+      min-width: auto;
+      min-height: auto;
+      font-size: inherit;
+    }
+  </style>
+{%- endif -%}

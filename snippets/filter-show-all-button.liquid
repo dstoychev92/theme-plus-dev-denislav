@@ -1,0 +1,28 @@
+{% doc %}
+  - Renders button revealing the filter values held back by visible_limit
+
+  @param {string} [attributes]
+{% enddoc %}
+
+{%- assign show_all = 'collection.filters.show_all' | t -%}
+
+{%- capture attributes -%}
+  {{ attributes }}
+  {% comment %} The button hides itself once clicked (x-show), which would silently drop keyboard focus to <body> - hand focus to the first revealed item instead {% endcomment %}
+  @click.stop="
+    showAllFilterItems = true;
+    $nextTick(() => $refs.firstOverflowFilterItem?.querySelector('a[href], button, input:not([type=hidden])')?.focus());
+  "
+  {% comment %} Ensure the filter form is not submitted when the button is clicked by making sure this isn't a submit button {% endcomment %}
+  type="button"
+{%- endcapture -%}
+
+{% render 'core-link',
+  text: show_all,
+  appearance: 'both',
+  tag: 'button',
+  color: 'content',
+  icon: 'stroke-bare-plus',
+  class: 'type-btn type-resize-all-sm font-bold vars-icon-grade-bold',
+  attributes: attributes
+%}

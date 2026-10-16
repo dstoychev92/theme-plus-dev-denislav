@@ -1,0 +1,372 @@
+<!-- blocks/_pair-slideshow.liquid -->
+
+{% liquid
+  if section.settings.enable_ensemble
+    assign autoplay = section.settings.autoplay
+    assign duration = section.settings.duration | times: 1000
+  else
+    assign autoplay = block.settings.autoplay
+    assign duration = block.settings.duration | times: 1000
+  endif
+%}
+
+{% capture attributes %}
+  {% if section.settings.enable_ensemble %}
+    x-init="$ensemble.registerMember('slideshow', $el)"
+    x-ensemble:slideshow.duration.{{ duration }}ms
+    {% if request.design_mode %}
+      {% if autoplay %}
+        @shopify:block:select="$ensemble.autoplay = false"
+        @shopify:block:deselect="$ensemble.autoplay = true"
+      {% endif %}
+    {% endif %}
+  {% else %}
+    {% if autoplay %}
+      x-slideshow.duration.{{ duration }}ms.autoplay
+      {% if request.design_mode %}
+        @shopify:block:select="$slideshow.pause()"
+        @shopify:block:deselect="$slideshow.play()"
+      {% endif %}
+    {% else %}
+      x-slideshow.duration.{{ duration }}ms
+    {% endif %}
+  {% endif %}
+
+  {{ block.shopify_attributes }}
+{% endcapture %}
+
+{% capture content %}
+  <div
+    class="
+      flex-1 z-0 grid-stack group/slideshow relative
+
+      {% comment %} Prevent browser from interfering with the horizontal panning because we are handling it ourselves with x-slideshow-mobile-swipe {% endcomment %}
+      touch-pan-y
+
+      {% comment %} Hide all but the first slide until alpine has loaded and taken over rendering {% endcomment %}
+      prealpine:[&>:not(:first-of-type)]:!hidden
+    "
+    x-slideshow:viewport
+    x-slideshow-mobile-swipe
+    data-test-id="pair-slideshow"
+
+    {% # Child blocks have no way to access this (parent) block's settings, so mark the cases where their controls must stay hidden: the merchant turned them off, or there is only one slide %}
+    {% unless block.settings.show_controls and block.blocks.size > 1 %}
+      data-hide-controls
+    {% endunless %}
+  >
+    {% content_for 'blocks' %}
+  </div>
+{% endcapture %}
+
+{% render 'pair-column',
+  content: content,
+  s: block.settings,
+  class: 'pair-media',
+  attributes: attributes,
+  is_media_block: true
+%}
+
+{% schema %}
+{
+	"name": "Slideshow",
+	"tag": null,
+	"settings": [
+		{
+			"type": "checkbox",
+			"id": "autoplay",
+			"label": "Auto-rotate slides",
+			"default": true,
+			"visible_if": "{{ section.settings.enable_ensemble != true }}"
+		},
+		{
+			"type": "range",
+			"id": "duration",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"unit": "sec",
+			"label": "Change slides every",
+			"default": 5,
+			"visible_if": "{{ block.settings.autoplay and section.settings.enable_ensemble != true }}"
+		},
+		{
+			"type": "color_scheme",
+			"id": "color_scheme",
+			"label": "Color scheme"
+		},
+		{
+			"type": "header",
+			"content": "Border"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_border",
+			"label": "Set border",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "border_width",
+			"label": "Thickness",
+			"unit": "px",
+			"min": 0,
+			"max": 10,
+			"step": 1,
+			"default": 1,
+			"visible_if": "{{ block.settings.set_border }}"
+		},
+		{
+			"type": "color",
+			"id": "border_color",
+			"label": "Color",
+			"alpha": true,
+			"default": "#000000",
+			"visible_if": "{{ block.settings.set_border }}"
+		},
+		{
+			"type": "header",
+			"content": "Rounding"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_rounding",
+			"label": "Set rounding",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "rounding_radius",
+			"label": "Radius",
+			"default": "lg",
+			"options": [
+				{
+					"value": "none",
+					"label": "0"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			],
+			"visible_if": "{{ block.settings.set_rounding  }}"
+		},
+		{
+			"type": "range",
+			"id": "rounding_radius_custom",
+			"label": "Radius",
+			"unit": "px",
+			"min": 0,
+			"max": 50,
+			"step": 1,
+			"default": 20,
+			"visible_if": "{{ block.settings.set_rounding and block.settings.rounding_radius == 'custom'  }}"
+		},
+		{
+			"type": "header",
+			"content": "Height"
+		},
+		{
+			"type": "select",
+			"id": "height",
+			"label": "Desktop height",
+			"default": "screen-one-half",
+			"visible_if": "{{ section.settings.height_mode == 'column' }}",
+			"options": [
+				{
+					"value": "screen",
+					"label": "Full screen height"
+				},
+				{
+					"value": "screen-five-sixths",
+					"label": "Five sixths screen"
+				},
+				{
+					"value": "screen-three-quarters",
+					"label": "Three quarters screen"
+				},
+				{
+					"value": "screen-one-half",
+					"label": "One half screen"
+				},
+				{
+					"value": "screen-one-third",
+					"label": "One third screen"
+				},
+				{
+					"value": "screen-one-quarter",
+					"label": "One quarter screen"
+				},
+				{
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "custom_height_type",
+			"label": "Height type",
+			"default": "percentage",
+			"options": [
+				{
+					"value": "percentage",
+					"label": "%"
+				},
+				{
+					"value": "px",
+					"label": "px"
+				}
+			],
+			"visible_if": "{{ section.settings.height_mode == 'column' and block.settings.height == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "custom_height_percentage",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"unit": "%",
+			"label": "Custom height",
+			"default": 33,
+			"visible_if": "{{ section.settings.height_mode == 'column' and block.settings.height == 'custom' and block.settings.custom_height_type == 'percentage' }}",
+			"info": "Percentage of screen height"
+		},
+		{
+			"type": "range",
+			"id": "custom_height_px",
+			"min": 0,
+			"max": 1000,
+			"step": 50,
+			"unit": "px",
+			"label": "Custom height",
+			"default": 350,
+			"visible_if": "{{ section.settings.height_mode == 'column' and block.settings.height == 'custom' and block.settings.custom_height_type == 'px' }}"
+		},
+		{
+			"visible_if": "{{ section.settings.height_mode != 'column' }}",
+			"type": "paragraph",
+			"content": "Desktop height setting isn't available when the height is set by the section."
+		},
+		{
+			"type": "select",
+			"id": "height_mobile",
+			"label": "Mobile height",
+			"default": "screen-one-half",
+			"options": [
+				{
+					"value": "screen",
+					"label": "Full screen height"
+				},
+				{
+					"value": "screen-five-sixths",
+					"label": "Five sixths screen"
+				},
+				{
+					"value": "screen-three-quarters",
+					"label": "Three quarters screen"
+				},
+				{
+					"value": "screen-one-half",
+					"label": "One half screen"
+				},
+				{
+					"value": "screen-one-third",
+					"label": "One third screen"
+				},
+				{
+					"value": "screen-one-quarter",
+					"label": "One quarter screen"
+				},
+				{
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "custom_height_type_mobile",
+			"label": "Mobile height type",
+			"default": "percentage",
+			"options": [
+				{
+					"value": "percentage",
+					"label": "%"
+				},
+				{
+					"value": "px",
+					"label": "px"
+				}
+			],
+			"visible_if": "{{ block.settings.height_mobile == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "custom_height_percentage_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"unit": "%",
+			"label": "Mobile custom height",
+			"default": 33,
+			"visible_if": "{{ block.settings.height_mobile == 'custom' and block.settings.custom_height_type_mobile == 'percentage' }}"
+		},
+		{
+			"type": "range",
+			"id": "custom_height_px_mobile",
+			"min": 0,
+			"max": 1000,
+			"step": 50,
+			"unit": "px",
+			"label": "Mobile custom height",
+			"default": 350,
+			"visible_if": "{{ block.settings.height_mobile == 'custom' and block.settings.custom_height_type_mobile == 'px' }}"
+		},
+		{
+			"type": "header",
+			"content": "Navigation"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_controls",
+			"label": "Show pagination",
+			"default": false
+		}
+	],
+	"blocks": [
+		{
+			"type": "_pair-slide"
+		}
+	],
+	"presets": [
+		{
+			"name": "Slideshow",
+			"category": "Media",
+			"blocks": [
+				{
+					"type": "_pair-slide"
+				},
+				{
+					"type": "_pair-slide"
+				},
+				{
+					"type": "_pair-slide"
+				}
+			]
+		}
+	]
+}
+{% endschema %}

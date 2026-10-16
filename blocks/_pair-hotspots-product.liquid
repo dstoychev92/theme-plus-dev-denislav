@@ -1,0 +1,76 @@
+<!-- blocks/_pair-hotspots-product.liquid -->
+
+{% render 'hotspot-product',
+  product: block.settings.product,
+  s: block.settings,
+  attributes: block.shopify_attributes
+%}
+
+{% schema %}
+{
+	"name": "Product",
+	"tag": null,
+	"settings": [
+		{
+			"type": "range",
+			"id": "left",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"label": "Left",
+			"default": 50,
+			"unit": "%"
+		},
+		{
+			"type": "range",
+			"id": "top",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"label": "Top",
+			"default": 50,
+			"unit": "%"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_position_mobile",
+			"label": "Set mobile position",
+			"info": "Match dot with a mobile image override",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "left_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"label": "Left (Mobile)",
+			"default": 50,
+			"visible_if": "{{ block.settings.set_position_mobile == true }}",
+			"unit": "%"
+		},
+		{
+			"type": "range",
+			"id": "top_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"label": "Top (Mobile)",
+			"default": 50,
+			"visible_if": "{{ block.settings.set_position_mobile == true }}",
+			"unit": "%"
+		},
+		{
+			"type": "product",
+			"id": "product",
+			"label": "Product"
+		}
+	],
+	"blocks": [],
+	"presets": [
+		{
+			"name": "Product"
+		}
+	]
+}
+{% endschema %}

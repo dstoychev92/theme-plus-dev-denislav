@@ -1,0 +1,67 @@
+{% doc %}
+  - Renders a section wrapper around already-rendered content
+
+  A thin pass-through to core-section-wrapper, with the content column built for you.
+
+  @param {string} [attributes]
+  @param {string} [background] - rendered background markup
+  @param {string} [background_color] - CSS background color
+  @param {string} [class] - The classes
+  @param {color_scheme} [color_scheme]
+  @param {boolean} [contain_controls_rhythm] - the contain setting drives padding and rhythm
+  @param {boolean} [contain_disables_transparent_header] - containing the section turns off header transparency
+  @param {string} content
+  @param {string} [content_align] - horizontal alignment
+  @param {string} [content_padding] - content padding step
+  @param {number} [content_width] - content width in pixels
+  @param {number} [content_width_custom] - custom content width as a percentage
+  @param {number} [content_width_custom_mobile] - custom content width on mobile
+  @param {string} [inner_attributes] - attributes for the inner column
+  @param {string} [inner_class] - classes for the inner column
+  @param {string} [inner_col_class] - classes for the content column
+  @param {string} [inner_style] - inline styles for the inner column
+  @param {boolean} [lazy_alpine] - starts Alpine only when the section reaches the viewport
+  @param {boolean} [padding] - false removes the section padding
+  @param {boolean} [photoswipe] - false leaves the section out of the lightbox
+  @param {object} [s] - settings object
+  @param {number} [section_width] - section width in pixels
+  @param {string} [style] - inline styles
+  @param {string} [tag] - defaults to 'div'
+  @param {string} [target_device] - limits the section to one device
+  @param {string} [text_class] - classes for the text colour
+{% enddoc %}
+
+{% capture section_content %}
+  {% render 'core-section-content',
+    class: inner_class,
+    attributes: inner_attributes,
+    inner_col_class: inner_col_class,
+    content: content,
+    style: inner_style
+  %}
+{% endcapture %}
+
+{% render 'core-section-wrapper',
+  tag: tag,
+  s: s,
+  section_width: section_width,
+  content_width: content_width,
+  content_width_custom: content_width_custom,
+  content_width_custom_mobile: content_width_custom_mobile,
+  content_padding: content_padding,
+  contain_controls_rhythm: contain_controls_rhythm,
+  contain_disables_transparent_header: contain_disables_transparent_header,
+  padding: padding,
+  target_device: target_device,
+  color_scheme: color_scheme,
+  background: background,
+  background_color: background_color,
+  text_class: text_class,
+  class: class,
+  style: style,
+  attributes: attributes,
+  content: section_content,
+  lazy_alpine: lazy_alpine,
+  content_align: content_align,
+  photoswipe: photoswipe
+%}

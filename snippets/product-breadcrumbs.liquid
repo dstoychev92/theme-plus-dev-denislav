@@ -1,0 +1,62 @@
+{% doc %}
+  - Renders product breadcrumbs from the section settings
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {section} [section]
+{% enddoc %}
+
+{% liquid
+  assign product = closest.product
+  assign product_breadcrumbs_list = section.settings.product_breadcrumbs_list
+%}
+
+{% capture content %}
+  {% if product_breadcrumbs_list.count > 0 %}
+    {%- capture divider -%}
+      {% if section.settings.appearance_breadcrumbs == 'clean' or section.settings.appearance_breadcrumbs == 'line' %}
+        <span aria-hidden="true" class="px-r5 text-muted">/</span>
+      {% else %}
+        <span aria-hidden="true" class="pr-r5"></span>
+      {% endif %}
+    {%- endcapture -%}
+
+    <nav aria-label="{{ 'other.accessibility.breadcrumbs' | t }}">
+      <ol class="flex flex-wrap justify-content-align gap-y-r5">
+        {% for collection in product_breadcrumbs_list %}
+          <li class="flex items-center">
+            {% render 'core-link',
+              href: collection.url,
+              text: collection.title,
+              appearance: section.settings.appearance_breadcrumbs,
+              icon_class: 'text-muted',
+              settings_suffix: 'breadcrumbs',
+              s: section.settings
+            %}
+            {{ divider }}
+          </li>
+        {%- endfor -%}
+        <li class="flex items-center">
+          {% render 'core-link',
+            text: product.title,
+            appearance: 'bare',
+            tag: 'span',
+            class: 'text-muted',
+            settings_suffix: 'breadcrumbs',
+            s: section.settings
+          %}
+        </li>
+      </ol>
+    </nav>
+  {% elsif settings.placeholder_mode or request.design_mode %}
+    {% render 'core-text-preset',
+      text: 'Add collections to see breadcrumbs',
+      tag: 'span',
+      class: 'text-muted italic',
+      settings_suffix: 'breadcrumbs',
+      s: section.settings
+    %}
+  {% endif %}
+{% endcapture %}
+
+{% render 'product-block', content: content, target_device: section.settings.target_device_breadcrumbs, class: class, attributes: attributes %}

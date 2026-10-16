@@ -1,0 +1,52 @@
+{% doc %}
+  - Renders the selection event attributes or handler statements for one product option value
+
+  A value on the option that switches combined-listing children carries that child's product_url,
+  on the parent page and on every child page. Such a value announces the switch like a sibling
+  swatch, so recently viewed and the other product sections follow, and it names the child in the
+  select event. The sibling id is empty when the child has no variant for the current selection.
+
+  @param {string} part - 'attributes' for the data attributes, or 'handler' for the JavaScript statements
+  @param {product} product
+  @param {section} [section]
+  @param {product_option_value} value
+{% enddoc %}
+
+{%- liquid
+  assign sibling_handle = ''
+  if value.product_url != blank
+    assign sibling_handle = value.product_url | split: '/' | last
+  endif
+  assign is_sibling_product = false
+  if sibling_handle != blank and sibling_handle != product.handle
+    assign is_sibling_product = true
+  endif
+-%}
+
+{% if part == 'attributes' %}
+  {% if value.variant != null %}
+    {%- capture product_select_payload -%}
+      {%- render 'product-select-payload', part: 'variant', product: product, variant: value.variant -%}
+    {%- endcapture -%}
+    data-product-select-payload="{{ product_select_payload | strip | escape }}"
+  {% endif %}
+  {% if is_sibling_product %}
+    data-sibling-id="{{ value.variant.product.id }}"
+    data-sibling-handle="{{ sibling_handle | escape_once }}"
+    {% if value.variant != null %}
+      {%- capture product_select_product -%}
+        {%- render 'product-select-payload', part: 'product', product: value.variant.product -%}
+      {%- endcapture -%}
+      data-product-select-product="{{ product_select_product | strip | escape }}"
+    {% endif %}
+  {% endif %}
+{% endif %}
+
+{% if part == 'handler' %}
+  {% if value.variant != null %}
+    $standardEvents.productSelect({ ...JSON.parse($el.dataset.productSelectPayload), variantId: {{ value.variant.id }}, productId: {{ product.id }}, sectionId: '{{ section.id }}', variantFeaturedMediaId: {{ value.variant.featured_media.id | default: 'null' }} });
+  {% endif %}
+  {% if is_sibling_product %}
+    $dispatch('theme:sibling:change', { siblingId: Number($el.dataset.siblingId) || null, productId: {{ product.id }}, sectionId: '{{ section.id }}', url: $el.dataset.preloadUrl, handle: $el.dataset.siblingHandle });
+  {% endif %}
+{% endif %}

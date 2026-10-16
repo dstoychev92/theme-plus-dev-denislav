@@ -1,0 +1,472 @@
+<!-- sections/search.liquid -->
+
+{%- liquid
+  assign columns_sm = section.settings.columns_sm
+  assign columns_md = section.settings.columns_md
+  assign columns_lg = section.settings.columns_lg
+
+  assign search_form_id = section.id | append: '-search-form'
+  assign value = search.terms | escape_once
+%}
+
+{% capture search_status_bar_class %}
+  bg-content/5 text-r3 p-r6 rounded w-full
+{% endcapture %}
+
+{% capture search_form %}
+  <div>
+    <form
+      id="{{ search_form_id }}"
+      class="flex w-full flex-col gap-y-r3"
+      action="{{ routes.search_url }}"
+      x-data
+      role="search"
+    >
+      <div class="
+        relative w-full flex-none flex-row-center group border border-line-bold
+        p-r3 rounded-form-field
+      ">
+        {% if settings.search_products_only %}
+          <input type="hidden" name="type" value="product">
+        {% endif %}
+
+        {% assign input_label = 'search.accessibility.input_label' | t %}
+        <label class="sr-only" for="{{ search_form_id }}-input">{{ input_label }}</label>
+        <input
+          id="{{ search_form_id }}-input"
+          name="q"
+          type="search"
+          x-ref="searchInput"
+          autocomplete="off"
+          placeholder="{{ 'search.placeholder' | t }}"
+          class="w-full h-row-lg flex-1 hide-search-clear text-content bg-transparent ps-r7 rounded-form-field text-size-input"
+          value="{{ value }}"
+        >
+        <div class="flex-none flex flex-row gap-x-r2">
+          {% capture clear_button_aria_label %}
+            {{ 'search.clear' | t }}
+          {% endcapture %}
+          {% capture clear_button_label %}
+            {% render 'core-icon', size: 'md', icon: 'fill-x-md' %}
+          {% endcapture %}
+          {% capture clear_button_attributes %}
+            {% comment %} Cant rely on default reset button behaviour because it doesn't clear when the search input has a preset value {% endcomment %}
+            @click.stop.prevent='$refs.searchInput.value = ""'
+          {% endcapture %}
+          {% render 'core-button',
+            type: 'reset',
+            label: clear_button_label,
+            aria_label: clear_button_aria_label,
+            color: 'content',
+            appearance: 'bare',
+            sizing: 'lg',
+            rounding: false,
+            class: '
+              visible
+              opacity-100
+              group-has-[:placeholder-shown]:opacity-0
+              group-has-[:placeholder-shown]:invisible
+              px-r6 !rounded-form-field
+            ',
+            attributes: clear_button_attributes
+          %}
+
+          {% capture submit_button_label %}
+            <span class="max-md:hidden" x-show="$sectionApi.state != 'loading'">
+              {{'search.accessibility.submit_button_label' | t}}
+            </span>
+            <span class="md:hidden" x-show="$sectionApi.state != 'loading'">
+              {% render 'core-icon', size: 'md', icon: 'fill-magnify' %}
+            </span>
+            <span x-cloak x-show="$sectionApi.state == 'loading'">
+              {% render 'spinner' %}
+            </span>
+          {% endcapture %}
+          {% render 'core-button',
+            type: 'submit',
+            label: submit_button_label,
+            color: 'content',
+            appearance: 'soft',
+            sizing: 'lg',
+            rounding: false,
+            class: '!rounded-form-field'
+          %}
+        </div>
+      </div>
+
+      {% comment %} Suggested search list {% endcomment %}
+       {% if section.settings.show_suggested_searches %}
+        {% if search.performed == false or search.results.size == 0 %}
+          {% assign search_terms_list = settings.search_suggested_searches | strip_html | strip | split: ',' %}
+          {% render 'suggested-search-tags', search_terms: search_terms_list %}
+        {% endif %}
+      {% endif %}
+    </form>
+
+    <div class="sr-only" role="status" aria-live="polite">
+      {{ 'search.title_with_terms' | t: count: search.results_count, terms: search.terms}}
+    </div>
+  </div>
+
+{% endcapture %}
+
+{% if search.performed and search.results.size > 0 %}
+  {%- paginate search.results by section.settings.limit -%}
+    {% capture search_results_grid %}
+      {%- capture image_widths -%}
+        {%- render 'image-grid-widths' -%}
+      {%- endcapture -%}
+      {%- capture image_sizes -%}
+        {%- render 'image-grid-sizes' -%}
+      {%- endcapture -%}
+
+      {% capture search_result_collection_items %}
+        {% for result in search.results %}
+          {% comment %} Fetch the first row eagerly, lazyload the rest — the same pair
+            collection.liquid uses. Not preload: only banner images preload {% endcomment %}
+          {% liquid
+            assign loading = 'lazy'
+            assign fetchpriority = 'auto'
+
+            if forloop.index0 < columns_lg
+              assign loading = 'eager'
+              assign fetchpriority = 'high'
+            endif
+          %}
+
+          {% case result.object_type %}
+            {% when 'product' %}
+              {% render 'card-product',
+                size: 'lg',
+                product: result,
+                view_context: 'search',
+                image_loading: loading,
+                image_fetchpriority: fetchpriority,
+                class: 'flex-1',
+                image_widths: image_widths,
+                image_sizes: image_sizes
+              %}
+            {% when 'article' %}
+              {% render 'card-article',
+                size: 'lg',
+                article: result,
+                image_loading: loading,
+                image_fetchpriority: fetchpriority,
+                class: 'flex-1',
+                show_tags: true
+              %}
+            {% when 'page' %}
+              {% render 'card-generic', size: 'lg', resource: result, class: 'flex-1' %}
+          {% endcase %}
+        {% endfor %}
+      {% endcapture %}
+
+      <div class="gap">
+        {%- render 'card-grid',
+          items: search_result_collection_items,
+          attributes: 'x-ref="paginationResults"'
+        -%}
+      </div>
+    {% endcapture %}
+
+    {% capture results %}
+      {% assign filter_url = routes.search_url | append: "?q=" | append: search.terms %}
+      {% if settings.search_products_only %}
+        {% assign filter_url = filter_url | append: "&type=product" %}
+      {% endif %}
+
+      {% render 'collection-layout',
+        content: search_results_grid,
+        collection: search,
+        filters: search.filters,
+        q: search.terms,
+        columns_sm: columns_sm,
+        columns_md: columns_md,
+        columns_lg: columns_lg,
+        filter_url: filter_url,
+        products_count: search.results.size,
+        all_products_count: search.results_count,
+        paginate: paginate
+      %}
+    {% endcapture %}
+  {%- endpaginate -%}
+{% endif %}
+
+{% capture search_bar %}
+  <div class="flex flex-col gap-y-r8 col-section-content">
+    {{ search_form }}
+    {% if search.performed %}
+      {% if search.results.size > 0 %}
+        {% capture results_for_value %}
+          <strong class="text-muted">{{ value }}</strong>
+        {% endcapture %}
+
+        <div class="{{ search_status_bar_class }}">{{ 'search.results_for_html' | t: count: search.results_count, term: results_for_value }}</div>
+      {% else %}
+        {% capture results_for_value %}
+          <strong class="text-muted">{{ value }}</strong>
+        {% endcapture %}
+
+        <div class="{{ search_status_bar_class }}">{{ 'search.no_results_for_html' | t: term: results_for_value }}</div>
+      {% endif %}
+    {% endif %}
+  </div>
+{% endcapture %}
+
+{% capture content %}
+  {{ search_bar }}
+  {{ results }}
+{% endcapture %}
+
+{% render 'core-section-wrapper',
+  lazy_alpine: false,
+  s: section.settings,
+  content: content,
+  class: 'gap-y-r8',
+  photoswipe: false
+%}
+
+{% schema %}
+{
+	"name": "Search",
+	"class": "section-search",
+	"tag": "section",
+	"settings": [
+		{
+			"type": "checkbox",
+			"id": "show_suggested_searches",
+			"label": "Show suggested searches",
+			"default": true,
+			"info": "Configure the list in [theme settings](/editor?context=theme&category=Search&previewPath=%2Fsearch) for \"Suggested searches\" under \"Search\""
+		},
+		{
+			"type": "header",
+			"content": "Controls"
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_sorting",
+			"label": "Sort by",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_layout_buttons",
+			"label": "Grid toggle",
+			"default": true
+		},
+		{
+			"type": "header",
+			"content": "Filters"
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_filters",
+			"label": "Enable filters",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "show_products_count",
+			"label": "Product count",
+			"default": true
+		},
+		{
+			"type": "range",
+			"id": "expanded_filters_count",
+			"min": 0,
+			"max": 20,
+			"step": 1,
+			"label": "Expanded filters",
+			"info": "Limit the filter groups expanded on page load.",
+			"default": 6
+		},
+		{
+			"type": "range",
+			"id": "visible_filter_options_limit",
+			"min": 0,
+			"max": 20,
+			"step": 1,
+			"label": "Visible options",
+			"info": "Limit the filter values displayed before a \"Show all\" toggle",
+			"default": 6
+		},
+		{
+			"type": "select",
+			"id": "filter_mode",
+			"label": "Desktop style",
+			"default": "sidebar",
+			"info": "Mobile filters show in a drawer.",
+			"options": [
+				{
+					"value": "sidebar",
+					"label": "Sidebar"
+				},
+				{
+					"value": "drawer",
+					"label": "Drawer"
+				}
+			]
+		},
+		{
+			"type": "checkbox",
+			"id": "filter_sidebar_open_by_default",
+			"label": "Sidebar open",
+			"default": true,
+			"visible_if": "{{ section.settings.filter_mode == 'sidebar' }}"
+		},
+		{
+			"type": "select",
+			"id": "out_of_stock_style",
+			"label": "Out of stock",
+			"default": "checkbox",
+			"info": "Toggle presents availability as a one-line Show / Hide control.",
+			"options": [
+				{
+					"value": "checkbox",
+					"label": "Checkbox"
+				},
+				{
+					"value": "toggle",
+					"label": "Toggle"
+				}
+			]
+		},
+		{
+			"type": "header",
+			"content": "Results grid"
+		},
+		{
+			"type": "range",
+			"id": "columns_lg",
+			"min": 2,
+			"max": 4,
+			"step": 1,
+			"label": "Desktop",
+			"default": 3
+		},
+		{
+			"type": "range",
+			"id": "columns_md",
+			"min": 2,
+			"max": 4,
+			"step": 1,
+			"label": "Tablet",
+			"default": 2
+		},
+		{
+			"type": "select",
+			"id": "columns_sm",
+			"label": "Mobile",
+			"default": "2",
+			"options": [
+				{
+					"value": "1",
+					"label": "1"
+				},
+				{
+					"value": "2",
+					"label": "2"
+				}
+			]
+		},
+		{
+			"type": "checkbox",
+			"id": "mobile_dense_card_grid",
+			"label": "Dense card grid on mobile",
+			"default": true,
+			"info": "Expand card images to their maximum size on mobile by removing page margin, card gaps and card image rounding."
+		},
+		{
+			"type": "range",
+			"id": "limit",
+			"min": 1,
+			"max": 50,
+			"step": 1,
+			"label": "Products per page",
+			"default": 24
+		},
+		{
+			"type": "header",
+			"content": "Section"
+		},
+		{
+			"type": "color_scheme",
+			"id": "color_scheme",
+			"label": "Color scheme"
+		},
+		{
+			"type": "select",
+			"id": "background",
+			"label": "Background",
+			"default": "canvas",
+			"options": [
+				{
+					"value": "canvas",
+					"label": "Default"
+				},
+				{
+					"value": "tint",
+					"label": "Tint"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background color",
+			"default": "#f2f2f2",
+			"alpha": false,
+			"visible_if": "{{ section.settings.background == 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "content_width",
+			"label": "Width",
+			"default": "page",
+			"options": [
+				{
+					"value": "full",
+					"label": "Full"
+				},
+				{
+					"value": "page",
+					"label": "Page"
+				}
+			]
+		},
+		{
+			"type": "checkbox",
+			"id": "set_rhythm",
+			"label": "Custom rhythm",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "section_padding_top",
+			"label": "Spacing top",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 40,
+			"visible_if": "{{ section.settings.set_rhythm == true  }}"
+		},
+		{
+			"type": "range",
+			"id": "section_padding_bottom",
+			"label": "Spacing bottom",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 40,
+			"visible_if": "{{ section.settings.set_rhythm == true  }}"
+		},
+	]
+}
+{% endschema %}

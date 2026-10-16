@@ -1,0 +1,9 @@
+{% doc %}
+  - Prints max-width variable and rule
+
+  @param {number} [max_width] - max width in pixels
+{% enddoc %}
+
+{% if max_width %}
+  --max-width: {{ max_width }}px; max-width: var(--max-width);
+{% endif %}

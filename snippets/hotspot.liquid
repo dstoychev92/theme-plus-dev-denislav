@@ -1,0 +1,60 @@
+{% doc %}
+  - Renders one hotspot dot and its tooltip
+
+  @param {string} [attributes]
+  @param {block} [block]
+  @param {string} [s] - settings object
+  @param {section} [section]
+{% enddoc %}
+
+{% capture wrapper_attributes %}
+  x-init="$hotspots.register($el)"
+
+  x-data="{
+    get index() {
+      return $hotspots.indexOf($el)
+    },
+    get isSelected() {
+      return $hotspots.isSelected(this.index)
+    },
+    set isSelected(value) {
+      if (value) {
+        $hotspots.select(this.index)
+      } else {
+        $hotspots.deselect(this.index)
+      }
+    },
+  }"
+
+  {% if request.design_mode %}
+    @shopify:block:select="isSelected = true"
+    @shopify:block:deselect="isSelected = false"
+  {% endif %}
+  {{ attributes }}
+{% endcapture %}
+
+{% capture dot_attributes %}
+  id="{{section.id}}-{{ block.id }}-hotspot"
+  aria-label="{{ 'other.accessibility.hotspot' | t }}"
+
+  x-custom-cursor:snap-point
+  :aria-expanded="isSelected"
+
+  @click.stop.prevent="isSelected = true;"
+  x-hover:start="isSelected = true;"
+  x-hover:end="isSelected = false;"
+{% endcapture %}
+
+{% capture dot %}
+  {% render 'hotspot-dot',
+    attributes: dot_attributes
+  %}
+{% endcapture %}
+
+<div
+  class="{% render 'props-class-float', s: s %}"
+  style="{% render 'props-style-float', s: s, z_index: 10 %}"
+  {{ wrapper_attributes }}
+>
+  {{ dot }}
+</div>

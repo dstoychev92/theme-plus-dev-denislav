@@ -1,0 +1,276 @@
+<!-- blocks/_marquee-gallery.liquid -->
+
+{%- liquid
+  assign sizing_mode = block.settings.sizing_mode | default: 'height'
+  assign set_aspect_ratio = block.settings.set_aspect_ratio
+  assign height_px = block.settings.height_px
+  assign width_px = block.settings.width_px
+  assign aspect_ratio = block.settings.aspect_ratio
+  assign set_rounding = block.settings.set_rounding
+  assign rounding_radius = block.settings.rounding_radius
+  assign rounding_radius_custom = block.settings.rounding_radius_custom
+
+  comment
+    Two orthogonal axes:
+      1. sizing_mode picks which dimension is fixed: Height or Width
+      2. set_aspect_ratio (off by default) optionally forces every cell into the same shape
+
+    Combinations:
+      Height,         no ratio → fixed height, width follows natural aspect    (no crop)
+      Width,          no ratio → fixed width, height follows natural aspect    (no crop)
+      Height + ratio          → fixed height + aspect-ratio → width = h × r    (crop per image_fit)
+      Width + ratio           → fixed width  + aspect-ratio → height = w / r   (crop per image_fit)
+
+    image_fit only matters when set_aspect_ratio is on; otherwise the cell takes the image's
+    natural aspect on the free axis so there's no overflow to crop — we hard-set object-contain.
+
+    Vertical alignment of cells inside the marquee row inherits from the parent _marquee's
+    block_alignment setting via the --placement-content-vertical CSS var (set by the
+    vars-placement-grid-* class on the marquee root; see src/css/placement.css).
+  endcomment
+
+  comment
+    The cell fixes one axis, and the image's intrinsic aspect ratio determines the other.
+    Keep the unconstrained axis auto: a percentage creates a cyclic dependency that
+    WebKit resolves incorrectly. When set_aspect_ratio fixes both axes, the image can
+    fill the cell and image_fit controls whether it is contained or cropped.
+  endcomment
+  case sizing_mode
+    when 'width'
+      assign cell_style = 'width: ' | append: width_px | append: 'px;'
+      assign img_size_class = '[&>image-placeholder]:w-full [&>image-placeholder]:h-auto [&_img]:w-full [&_img]:h-auto'
+    else
+      assign cell_style = 'height: ' | append: height_px | append: 'px;'
+      assign img_size_class = '[&>image-placeholder]:h-full [&>image-placeholder]:w-auto [&_img]:h-full [&_img]:w-auto'
+  endcase
+
+  assign img_fit_class = '[&_img]:object-contain'
+  if set_aspect_ratio
+    assign img_size_class = '[&>image-placeholder]:size-full [&_img]:size-full'
+    assign cell_style = cell_style | append: ' aspect-ratio: ' | append: aspect_ratio | append: ';'
+    if block.settings.image_fit == 'contain'
+      assign img_fit_class = '[&_img]:object-contain'
+    else
+      assign img_fit_class = '[&_img]:object-cover'
+    endif
+  endif
+
+  if set_rounding
+    capture radius_style
+      render 'props-style-radius', rounding_radius: rounding_radius, rounding_radius_custom: rounding_radius_custom
+    endcapture
+    assign cell_style = cell_style | append: ' ' | append: radius_style
+  endif
+-%}
+
+<div
+  class="inline-flex flex-row [align-items:--placement-content-vertical] gap-x-[--layout-gutter] shrink-0 align-middle"
+  {{ block.shopify_attributes }}
+>
+  {%- for child in block.blocks -%}
+    {%- capture content -%}{%- render child -%}{%- endcapture -%}
+
+    {%- if content contains 'g4lleryx574r7xm3d14' -%}
+      {%- assign child_media = content | split: 'g4lleryx574r7xm3d14' | last | split: 'g4lleryx3ndxm3d14' | first -%}
+      {%- assign child_href = content
+        | split: 'g4lleryx574r7xhr3f'
+        | last
+        | split: 'g4lleryx3ndxhr3f'
+        | first
+        | strip
+      -%}
+      {%- assign child_newtab = content
+        | split: 'g4lleryx574r7xn3wt48'
+        | last
+        | split: 'g4lleryx3ndxn3wt48'
+        | first
+        | strip
+      -%}
+
+      {%- capture cell -%}
+        <div class="overflow-hidden shrink-0 align-middle {{ img_size_class }} {{ img_fit_class }}"
+             style="{{ cell_style | strip_newlines | strip }}">
+          {{- child_media -}}
+        </div>
+      {%- endcapture -%}
+
+      {%- if child_href != blank -%}
+        <a
+          href="{{ child_href }}"
+          class="block shrink-0"
+          {%- if child_newtab == '1' %}
+            target="_blank" rel="noopener"
+          {%- endif -%}
+        >
+          {{- cell -}}
+        </a>
+      {%- else -%}
+        {{- cell -}}
+      {%- endif -%}
+    {%- endif -%}
+  {%- endfor -%}
+</div>
+
+{% schema %}
+{
+	"name": "Gallery",
+	"tag": null,
+	"settings": [
+		{
+			"type": "header",
+			"content": "Sizing"
+		},
+		{
+			"type": "select",
+			"id": "sizing_mode",
+			"label": "Sizing",
+			"default": "height",
+			"options": [
+				{
+					"value": "height",
+					"label": "Height"
+				},
+				{
+					"value": "width",
+					"label": "Width"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "height_px",
+			"label": "Height",
+			"min": 50,
+			"max": 600,
+			"step": 10,
+			"default": 120,
+			"unit": "px",
+			"visible_if": "{{ block.settings.sizing_mode == 'height' }}"
+		},
+		{
+			"type": "range",
+			"id": "width_px",
+			"label": "Width",
+			"min": 50,
+			"max": 600,
+			"step": 10,
+			"default": 200,
+			"unit": "px",
+			"visible_if": "{{ block.settings.sizing_mode == 'width' }}"
+		},
+		{
+			"type": "header",
+			"content": "Aspect ratio"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_aspect_ratio",
+			"label": "Set aspect ratio",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "aspect_ratio",
+			"label": "Aspect ratio",
+			"min": 0.3,
+			"max": 3,
+			"step": 0.1,
+			"default": 1,
+			"unit": ":1",
+			"visible_if": "{{ block.settings.set_aspect_ratio }}"
+		},
+		{
+			"type": "select",
+			"id": "image_fit",
+			"label": "Image fit",
+			"default": "cover",
+			"options": [
+				{
+					"value": "cover",
+					"label": "Crop to fill"
+				},
+				{
+					"value": "contain",
+					"label": "Fit inside"
+				}
+			],
+			"visible_if": "{{ block.settings.set_aspect_ratio }}"
+		},
+		{
+			"type": "header",
+			"content": "Rounding"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_rounding",
+			"label": "Set rounding",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "rounding_radius",
+			"label": "Radius",
+			"default": "lg",
+			"options": [
+				{
+					"value": "none",
+					"label": "0"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			],
+			"visible_if": "{{ block.settings.set_rounding  }}"
+		},
+		{
+			"type": "range",
+			"id": "rounding_radius_custom",
+			"label": "Radius",
+			"unit": "px",
+			"min": 0,
+			"max": 50,
+			"step": 1,
+			"default": 20,
+			"visible_if": "{{ block.settings.set_rounding and block.settings.rounding_radius == 'custom'  }}"
+		},
+	],
+	"blocks": [
+		{
+			"type": "_marquee-gallery-image"
+		}
+	],
+	"presets": [
+		{
+			"name": "Gallery",
+			"category": "Layout",
+			"blocks": [
+				{
+					"type": "_marquee-gallery-image"
+				},
+				{
+					"type": "_marquee-gallery-image"
+				},
+				{
+					"type": "_marquee-gallery-image"
+				},
+				{
+					"type": "_marquee-gallery-image"
+				}
+			]
+		}
+	]
+}
+{% endschema %}

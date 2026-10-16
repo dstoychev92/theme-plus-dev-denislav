@@ -1,0 +1,94 @@
+{% doc %}
+  - Renders product card Quick View link
+
+  Opens Quick View with JavaScript. Without JavaScript, the link opens the product.
+
+  @param {string} [appearance]
+  @param {string} [aria_label]
+  @param {string} [class] - The classes
+  @param {string} [color]
+  @param {boolean} [icon_swap]
+  @param {string} [label_class]
+  @param {product} product
+  @param {string} [size]
+  @param {string} [type_resize]
+  @param {string} [url] - selection URL, then variant URL, then product URL
+  @param {variant} variant
+{% enddoc %}
+{% liquid
+  assign size = size | default: 'lg'
+  assign color = color | default: 'content'
+  assign appearance = appearance | default: 'blur'
+  assign button_text = 'product.quick_view' | t
+  assign button_href = url | default: variant.url | default: product.url
+
+  if icon_swap == true
+    assign swap_touch_content_class = 'mouse:hidden'
+    assign swap_pointer_content_class = 'touch:hidden'
+  else
+    assign swap_touch_content_class = 'hidden'
+    assign swap_pointer_content_class = ''
+  endif
+
+  assign is_out_of_stock = false
+  if product.available == false
+    assign is_out_of_stock = true
+  endif
+
+  if is_out_of_stock
+    assign button_text = 'product.sold_out' | t
+    assign button_href = product.url
+  endif
+
+  assign aria_label = aria_label | default: button_text
+%}
+
+{%- capture cart_icon -%}
+  fill-add-{{- settings.cart_icon -}}
+{%- endcapture -%}
+
+{% capture label %}
+  {% render 'core-icon', icon: cart_icon, size: 'lg', class: swap_touch_content_class %}
+  <span class="{{ swap_pointer_content_class }}">
+    {{ button_text }}
+  </span>
+{% endcapture %}
+
+{% capture label_class %}
+  leading-[--leading-block] text-center overflow-hidden text-ellipsis whitespace-nowrap
+  {{ label_class }}
+{% endcapture %}
+
+{% capture class %}
+  group-[:not(:has([id='product-quickview-drawer']))]/body:hidden
+  !overflow-visible max-md:hit-area-[--card-lg-media-padding]
+  {{ class }}
+{% endcapture %}
+
+{% unless is_out_of_stock %}
+  {% capture attributes %}
+    data-product-card-destination
+    @mouseover.once="$dispatch('theme:quickview:preload', { url: $el.href });"
+    @focus.once="$dispatch('theme:quickview:preload', { url: $el.href });"
+
+    @click.stop.prevent="$dispatch('theme:quickview:open', { url: $el.href });"
+
+    :role="'button'"
+    :aria-haspopup="'dialog'"
+  {% endcapture %}
+{% endunless %}
+
+{% render 'core-button',
+  tag: 'a',
+  href: button_href,
+  label: label,
+  aria_label: aria_label,
+  appearance: appearance,
+  sizing: size,
+  type_resize: type_resize,
+  color: color,
+  name: 'id',
+  class: class,
+  attributes: attributes,
+  label_class: label_class
+%}

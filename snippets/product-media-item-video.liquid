@@ -1,0 +1,42 @@
+{% doc %}
+  - Renders a product video
+
+  @param {number} [aspect_ratio] - media aspect ratio
+  @param {boolean} [autoplay] - defaults to s.video_autoplay
+  @param {block} [block]
+  @param {boolean} [controls] - renders the native controls
+  @param {string} [id]
+  @param {media} media
+  @param {string} [preload]
+  @param {object} [s] - settings object
+  @param {section} [section]
+  @param {boolean} [show_custom_controls] - renders the theme's own controls, defaults to s.custom_controls
+  @param {boolean} [zoom_focusable] - keeps the zoom link in the tab order, for layouts with no slideshow
+{% enddoc %}
+
+{% liquid
+  assign id = id | default: block.id | default: section.id
+  assign video_id = id | append: '-' | append: media.id
+  assign show_custom_controls = show_custom_controls | default: s.custom_controls | default: false, allow_false: true
+  assign autoplay = autoplay | default: s.video_autoplay | default: false, allow_false: true
+
+  assign enable_zoom = false
+  if show_custom_controls or autoplay
+    # Show zoom button(to open in modal) when the video is autoplayed
+    assign enable_zoom = true
+  endif
+%}
+
+{% render 'core-video',
+  id: video_id,
+  video: media,
+  aspect_ratio: aspect_ratio,
+  autoplay: autoplay,
+  controls: controls,
+  show_custom_controls: false,
+  preload: preload,
+  placeholder: false,
+  is_product_video: true
+%}
+
+{% render 'product-media-zoom-button', s: s, media: media, enable_zoom: enable_zoom, zoom_focusable: zoom_focusable %}

@@ -1,0 +1,65 @@
+{% doc %}
+  - Renders one product option value as a swatch link
+
+  Resolves native and manual color-pattern swatches, while callers retain
+  control of availability and navigation policy.
+
+  @param {boolean} available
+  @param {boolean} selected
+  @param {product_option_value} value
+  @param {string} url
+  @param {string} [attributes]
+  @param {string} [class]
+  @param {number} [custom_size]
+  @param {string} [focus_key]
+  @param {string} [label]
+  @param {string} [selection_id]
+  @param {string} [size]
+  @param {string} [swatch_attributes]
+  @param {string} [swatch_class]
+  @param {string} [title]
+{% enddoc %}
+
+{% liquid
+  assign swatch_object = value.swatch
+  if swatch_object == null
+    assign swatch_handle = value.name | handleize
+    assign swatch_object = metaobjects['shopify--color-pattern'][swatch_handle]
+  endif
+
+  assign label = label | default: value.name
+  assign selection_id = selection_id | default: value.id
+  assign focus_key = focus_key | default: selection_id
+%}
+
+{% capture resolved_swatch_attributes %}
+  data-selection-target
+  role="presentation"
+  aria-hidden="true"
+  {{ swatch_attributes }}
+{% endcapture %}
+
+{% capture content %}
+  {% render 'swatch',
+    image: swatch_object.image,
+    color: swatch_object.color,
+    available: available,
+    selected: selected,
+    size: size,
+    custom_size: custom_size,
+    class: swatch_class,
+    attributes: resolved_swatch_attributes
+  %}
+{% endcapture %}
+
+{% render 'swatch-link',
+  content: content,
+  url: url,
+  label: label,
+  title: title,
+  selected: selected,
+  selection_id: selection_id,
+  focus_key: focus_key,
+  class: class,
+  attributes: attributes
+%}

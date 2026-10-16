@@ -1,0 +1,53 @@
+{% doc %}
+  - Prints the sale badge text for a product or variant
+
+  Prints a custom label, an "X% off" or an "$X off" depending on the sale_type setting, and
+  nothing at all when there is no sale. It summarises a product or a color, which can hold
+  variants at different prices, so it falls back to the label when the discount is unreliable.
+  The caller styles it.
+
+  @param {product} [product]
+  @param {string} [sale_type] - which of the three forms to print
+  @param {variant} [variant] - price source, defaults to the product
+{% enddoc %}
+
+{%- liquid
+  assign sale_type = sale_type | default: settings.card_badge_sale_type
+  assign variant = variant | default: product.selected_or_first_available_variant
+  assign product = product | default: variant.product
+  assign compare_at_price = variant.compare_at_price
+  assign on_sale = false
+
+  if settings.show_card_badge_sale and compare_at_price > variant.price
+    assign on_sale = true
+  endif
+
+  # Try to compute a specific discount amount.
+  # Falls back to the sale label for: label type, sub-1% discounts,
+  # or when prices vary (discount amounts are unreliable).
+  assign discount_text = blank
+
+  if on_sale and product.price_varies != true
+    if sale_type == 'percentage'
+      assign percent_off = compare_at_price | minus: variant.price | times: 100 | divided_by: compare_at_price | floor
+      if percent_off > 0
+        assign discount_text = percent_off | append: '%'
+      endif
+    elsif sale_type == 'dollar'
+      assign amount_off = compare_at_price | minus: variant.price
+      if amount_off > 0
+        capture discount_text
+          render 'money', price: amount_off, show_currency: false
+        endcapture
+      endif
+    endif
+  endif
+-%}
+
+{% if on_sale %}
+  {% if discount_text != blank %}
+    {{ 'product.badge_discount_amount_html' | t: amount: discount_text }}
+  {% else %}
+    {{ 'product.sale' | t }}
+  {% endif %}
+{% endif %}

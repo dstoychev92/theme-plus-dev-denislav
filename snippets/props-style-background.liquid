@@ -1,0 +1,23 @@
+{% doc %}
+  - Prints custom background color
+
+  @param {string} [background] - 'custom' to use background_custom
+  @param {string} [background_custom] - CSS color
+  @param {object} [s] - settings object
+  @param {boolean} [set_color_scheme] - false prints nothing
+{% enddoc %}
+
+{% liquid
+  assign set_color_scheme = set_color_scheme | default: s.set_color_scheme | default: false
+
+  if set_color_scheme
+    assign background = background | default: s.background
+    assign background_custom = background_custom | default: s.background_custom
+  endif
+%}
+
+{% if set_color_scheme %}
+  {% if background == 'custom' and background_custom != blank %}
+    background-color: {{ background_custom }};
+  {% endif %}
+{% endif %}

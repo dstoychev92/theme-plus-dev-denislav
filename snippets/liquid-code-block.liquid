@@ -1,0 +1,21 @@
+{% doc %}
+  - Renders the merchant's custom Liquid block
+
+  @param {string} [attributes]
+  @param {block} [block]
+  @param {string} [class] - The classes
+{% enddoc %}
+
+{% if block.settings.output == 'wrapped' %}
+  <div
+    class="w-full {{ class }}"
+    {% if block.settings.prevent_dynamic_updates %}
+      data-morph-update="none"
+    {% endif %}
+    {{ attributes }}
+  >
+    {{ block.settings.code }}
+  </div>
+{% else %}
+  {{ block.settings.code }}
+{% endif %}

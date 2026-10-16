@@ -1,0 +1,66 @@
+{% doc %}
+  - Renders one text item in a marquee
+
+  @param {string} [attributes]
+  @param {boolean} [hide_links] - renders link text without the link
+  @param {object} [s] - settings object
+{% enddoc %}
+
+{% liquid
+  assign text = s.text
+  assign highlight_toggle = s.highlight_toggle
+  assign enable_typography = s.enable_typography
+  assign outline_text = s.outline_text
+
+  # Split the text into seperate words wrapped in span tags
+  capture split_text
+    render 'split-text', text: text, attributes: 'data-scroll-stagger-item', class: 'inline'
+  endcapture
+%}
+
+{% capture class %}
+  {% if enable_typography %}
+    {% render 'props-class-type-preset', s: s, type_preset: 'custom' %}
+  {% endif %}
+
+  {% comment %} When the block has its own color, apply it. Otherwise inherit from the parent marquee — the marquee block already provides a sensible default text color and may have its own override (e.g. background-marquee with custom color). {% endcomment %}
+  {% if s.set_color %}
+    text-{{ s.color | default: 'content' }}
+  {% endif %}
+
+  {% unless hide_links %}
+    inline-richtext
+  {% endunless %}
+
+  {% if outline_text %}
+    text-stroke
+    {% if s.set_color and s.color == 'custom' %}
+      text-stroke-[color:--color-custom-text]
+    {% else %}
+      text-stroke-current
+    {% endif %}
+  {% endif %}
+{% endcapture %}
+
+{% capture style %}
+  {% if s.set_color and s.color == 'custom' %}
+    --color-custom-text: {{ s.color_custom }};
+  {% endif %}
+{% endcapture %}
+
+<div
+  class="shrink-0 {{ class }}"
+  {% if request.design_mode %}
+    @shopify:block:select="$marquee.scrollTo($el)"
+  {% endif %}
+  style="{{ style }}"
+  {{ attributes }}
+>
+  {% if highlight_toggle == 'auto' %}
+    {% render 'text-autohighlight', text: split_text, s: s %}
+  {% elsif highlight_toggle == 'full' %}
+    {% render 'text-highlight', text: split_text, s: s %}
+  {% else %}
+    {{ split_text }}
+  {% endif %}
+</div>

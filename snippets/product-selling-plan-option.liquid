@@ -1,0 +1,106 @@
+{% doc %}
+  Render a selling plan radio button option for the product form
+
+  @param {string} history_mode - navigate or replace, passed to $sectionApi.navigate
+  @param {selling_plan} [plan] - The selling plan to display
+  @param {product} [product] - The product to display the selling plan option for
+  @param {string} product_form_id - form the radio belongs to
+  @param {object} [s] - settings object
+  @param {boolean} [show_discount_badge]
+{% enddoc %}
+{% liquid
+  assign plan_id = product_form_id | append: '-' | append: plan.id
+  assign preselected_plan = false
+  assign current_variant = product.selected_or_first_available_variant
+  assign price = current_variant.price
+
+  assign show_discount_badge = show_discount_badge | default: s.show_discount_badge
+
+  if plan.selected
+    assign preselected_plan = true
+  elsif product.requires_selling_plan and product.selling_plan_groups[0].selling_plans[0].id == plan.id
+    assign preselected_plan = true
+  endif
+
+  # Make sure the variant exists (it isn't 'unavailable') and showing a price makes sense
+  if current_variant
+    assign price_adjustment = plan.price_adjustments[0]
+
+    case price_adjustment.value_type
+      when 'percentage'
+        assign plan_discount_amount = price | times: price_adjustment.value | divided_by: 100
+      when 'fixed_amount'
+        assign plan_discount_amount = price_adjustment.value
+      when 'price'
+        assign plan_price = price_adjustment.value
+    endcase
+  endif
+%}
+
+{%- capture variant_url_with_selling_plan -%}
+  {%- render 'product-url',
+    product: product,
+    variant: current_variant,
+    selling_plan: plan
+  -%}
+{%- endcapture -%}
+
+{% capture plan_attributes %}
+  aria-label="{{ plan.name }}{% if plan.description %} - {{ plan.description | escape_once }}{% endif %}"
+  data-navigate-url="{{ variant_url_with_selling_plan | strip }}"
+  @change="$sectionApi.navigate($el.dataset.navigateUrl, '{{ history_mode }}')"
+  :checked="{{ preselected_plan }}"
+{% endcapture %}
+
+{% capture selling_plan_label %}
+  {{ plan.name }}
+
+  {% if show_discount_badge %}
+    {%- capture sale_badge_content -%}
+      {% case price_adjustment.value_type %}
+        {% when 'percentage' %}
+          {% assign percent_off = price_adjustment.value %}
+          {% if percent_off > 0 %}
+            {% capture amount %}
+              {{ percent_off | append: '%' }}
+            {% endcapture %}
+            {{ 'product.save_amount_html' | t: amount: amount }}
+          {% endif %}
+        {% when 'fixed_amount' %}
+          {% if plan_discount_amount > 0 %}
+            {% capture amount %}
+              {% render 'money', price: plan_discount_amount %}
+            {% endcapture %}
+            {{ 'product.save_amount_html' | t: amount: amount }}
+          {% endif %}
+        {% when 'price' %}
+          {% if plan_price != blank and plan_price != current_variant.price %}
+            {% render 'money', price: plan_price %}
+          {% endif %}
+      {% endcase %}
+    {%- endcapture -%}
+    {% if sale_badge_content != blank %}
+      <span
+        class="
+          block rounded-[--radius-badge] bg-[--sale-color-bg]
+          text-[color:var(--sale-color)]
+          whitespace-nowrap leading-none
+          px-r4 py-r2
+        "
+      >
+        {{ sale_badge_content }}
+      </span>
+    {% endif %}
+  {% endif %}
+{% endcapture %}
+
+{% render 'field-radio',
+  form: product_form_id,
+  id: plan_id,
+  name: 'selling_plan',
+  value: plan.id,
+  label: selling_plan_label,
+  checked: preselected_plan,
+  input_attributes: plan_attributes,
+  label_class: '!whitespace-normal gap-x-r4'
+%}

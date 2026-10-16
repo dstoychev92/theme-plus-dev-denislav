@@ -1,0 +1,162 @@
+{% doc %}
+  - Renders one drawer menu item and its submenu trigger
+
+  index keeps two links with the same title from sharing a submenu id.
+
+  @param {boolean} [expand_dropdowns] - opens every submenu instead of nesting them
+  @param {boolean} [index] - position among the links, appended to the submenu id
+  @param {string} [item_class] - classes for the list item
+  @param {string} [item_style] - inline styles for the list item
+  @param {link} [link]
+  @param {section} [section]
+  @param {string} [submenu_placeholder] - renders a placeholder submenu in the theme editor
+{% enddoc %}
+
+{% liquid
+  if expand_dropdowns != null and expand_dropdowns != false
+    assign expand_dropdowns = true
+  endif
+
+  if submenu_placeholder and request.design_mode
+    assign menu_id = 'placeholder'
+  else
+    assign menu_id = link.title | downcase | strip_html | escape_once | handleize
+    # Two links can share a title, so the title alone would produce duplicate ids and make
+    # both submenu overlays open together. The index is the link's position in the full
+    # top-level list — the same position header-drawer.liquid keys the matching overlay by.
+    if index
+      assign menu_id = menu_id | append: '-' | append: index
+    endif
+  endif
+
+  assign aria_label = 'header.accessibility.menu_item' | t: label: link.title | strip_html
+-%}
+
+{% capture chevron_right %}
+  {% render 'core-icon', icon: 'stroke-chevron-right', class: 'rtl:rotate-180' %}
+  <span class="sr-only">{{ aria_label }}</span>
+{% endcapture %}
+
+{% if link.levels == 0 %}
+  {% comment %} Link without a dropdown {% endcomment %}
+  <li class="{{ item_class }}" style="{{ item_style }}">
+    {% render 'header-drawer-link', link: link %}
+  </li>
+{% elsif link.levels == 1 %}
+  {% comment %} Link with 1 level dropdown {% endcomment %}
+  {% capture accessory_attributes %}
+    x-disclosure:button
+  {% endcapture %}
+
+  {% capture disclosure_arrows %}
+    {% render 'core-icon', icon: 'stroke-bare-plus', attributes: 'x-show="!$disclosure.isExpanded"' %}
+    {% render 'core-icon', icon: 'stroke-bare-minus', attributes: 'x-show="$disclosure.isExpanded"' %}
+    <span class="sr-only" x-show="!$disclosure.isExpanded">{{ aria_label }} - {{ 'other.accessibility.expand' | t }}</span>
+    <span class="sr-only" x-show="$disclosure.isExpanded">{{ aria_label }} - {{ 'other.accessibility.collapse' | t }}</span>
+  {% endcapture %}
+
+  <li
+    {% if expand_dropdowns %}
+      x-disclosure.expand
+    {% else %}
+      x-disclosure
+    {% endif %}
+    class="{{ item_class }}"
+    style="{{ item_style }}"
+    data-link-levels="{{ link.levels }}"
+  >
+    {% liquid
+      # When link is empty, the whole thing becomes a button so clicking the text would also open the overlay
+      assign accessory = 'button'
+
+      if link.url == '#'
+        assign tag = 'button'
+        assign text_tag = 'span'
+        assign attributes = accessory_attributes
+        assign accessory_attributes = null
+        assign accessory = true
+        assign accessory_tag = 'span'
+      endif
+    %}
+
+    {% render 'header-drawer-link',
+      link: link,
+      tag: tag,
+      text_tag: text_tag,
+      accessory: accessory,
+      accessory_tag: accessory_tag,
+      accessory_attributes: accessory_attributes,
+      accessory_icon: disclosure_arrows,
+      attributes: attributes
+    %}
+
+    {% comment %} We need this extra div to ensure the panel is properly hidden when the disclosure is collapsed and so it doesn't "jump" {% endcomment %}
+    <div
+      class="!ease-in-out relative overflow-hidden w-full nojs:!block"
+      x-disclosure:panel
+      x-collapse.duration.400ms
+      {% unless expand_dropdowns %}
+        x-cloak
+      {% endunless %}
+    >
+      <ul class="flex flex-col px-[--drawer-padding] mb-[--drawer-padding] ms-[--drawer-padding] border-s border-s-line-subtle">
+        {% for child_link in link.links %}
+          <li>
+            {% capture link_text %}
+              {{ child_link.title | strip_html }}
+            {% endcapture %}
+            {% capture link_attributes %}
+              href="{{ child_link.url }}"
+            {% endcapture %}
+            {% render 'core-link',
+              class: 'w-full min-h-row-sm',
+              href: child_link.url,
+              text: link_text,
+              appearance: 'clean',
+              type_resize: 'sm',
+              settings_suffix: 'main_link',
+              attributes: link_attributes,
+              s: section.settings
+            %}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </li>
+{% else %}
+  {% comment %} Link with 2 level dropdown {% endcomment %}
+  <li class="{{ item_class }}" style="{{ item_style }}">
+    {% capture accessory_attributes %}
+      @click="activeSubmenuOverlay = '{{ menu_id }}'"
+      id="header-drawer-link-{{ menu_id }}"
+      aria-haspopup="true"
+      aria-controls="header-drawer-menu-submenu-overlay-{{ menu_id }}"
+      :aria-expanded="activeSubmenuOverlay == '{{ menu_id }}'"
+    {% endcapture %}
+
+    {% liquid
+      # When link is empty, the whole thing becomes a button so clicking the text would also open the overlay
+      assign accessory = 'button'
+
+      if link.url == '#'
+        assign tag = 'button'
+        assign text_tag = 'span'
+        assign attributes = accessory_attributes
+        assign accessory_attributes = null
+        assign accessory = true
+        assign accessory_tag = 'span'
+      endif
+    %}
+
+    {% render 'header-drawer-link',
+      link: link,
+      tag: tag,
+      text_tag: text_tag,
+      accessory: accessory,
+      accessory_tag: accessory_tag,
+      accessory_icon: chevron_right,
+      accessory_attributes: accessory_attributes,
+      attributes: attributes
+    %}
+  </li>
+{% endif %}

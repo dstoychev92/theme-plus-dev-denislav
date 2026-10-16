@@ -1,0 +1,66 @@
+{% doc %}
+  - Renders one slideshow slide
+
+  @param {string} [attributes]
+  @param {string} [background] - rendered background markup
+  @param {string} [background_class] - classes for the background
+  @param {string} [class] - The classes
+  @param {string} content
+  @param {section} [section]
+  @param {boolean} [visible] - marks it the slide on screen
+{% enddoc %}
+
+{% capture class %}
+  grid-rows-subgrid relative !z-0 snap-start
+  {{ class }}
+{% endcapture %}
+
+{% capture attributes %}
+  {% if request.design_mode %}
+    @shopify:block:select="
+      $slideshow.currentSlideIndex = $slide.slideIndex;
+      {% # Remove the inline display now since the editor measures the slide for its scroll before Alpine applies x-show %}
+      $el.style.removeProperty('display');
+    "
+  {% endif %}
+
+  aria-atomic="true"
+  role="group"
+  {% # A backtick or a ${ in the translation breaks the template literal %}
+  data-index-separator="{{ 'product.gallery.index_indicator_separator' | t | escape_once }}"
+  :aria-label="`${$slide.slideIndex + 1} ${$el.dataset.indexSeparator} ${$slideshow.totalSlides}`"
+  :data-slide="$slide.slideIndex"
+
+  {% unless visible %}
+    x-cloak
+  {% endunless %}
+
+  x-slideshow:slide
+  x-show="$slide.isCurrentSlide"
+  x-transition:enter="!duration-[--slide-transition-duration] transition-opacity"
+  x-transition:enter-start="opacity-0"
+  x-transition:enter-end="opacity-100"
+  x-transition:leave="!duration-[--slide-transition-duration] transition-opacity"
+  x-transition:leave-start="opacity-100"
+  x-transition:leave-end="opacity-0"
+
+  {{ attributes }}
+{% endcapture %}
+
+{% capture background %}
+  {% comment %} Blur overlay for mobile swipe effect {% endcomment %}
+  <div
+    x-cloak
+    class="w-full h-full touch:backdrop-blur-[calc(var(--slideshow-mobile-swipe-progress,0.0)*10px)] pointer-events-none opacity-0 touch:opacity-100"
+  ></div>
+  {{ background }}
+{% endcapture %}
+
+<article
+  {{ attributes }}
+  class="overflow-clip col-span-full row-span-full section-grid group/section reverse-z-stack {{ class }}"
+>
+  {% render 'core-section-content', content: content, s: section.settings %}
+
+  {% render 'core-section-background', content: background, s: section.settings, class: background_class %}
+</article>

@@ -1,0 +1,209 @@
+<!-- sections/list-collections.liquid -->
+
+{% capture header %}
+  {% content_for 'block', type: '_section-title', id: 'section-title' %}
+{% endcapture %}
+
+{% paginate collections by section.settings.limit %}
+  {%- capture collection_items -%}
+    {%- for collection in collections -%}
+      {% content_for 'block', type: '_card-collection', id: 'collection-card', closest.collection: collection %}
+    {%- endfor -%}
+  {%- endcapture -%}
+  {% if paginate.pages > 1 %}
+    {% capture footer %}
+      {% render 'pagination', paginate: paginate, class: 'w-full' %}
+    {% endcapture %}
+  {% endif %}
+{% endpaginate %}
+
+{% capture attributes %}
+  @theme:section:navigate.window="
+    if ($event.detail.sectionId != '{{ section.id }}') return
+    await $yieldToMain()
+    $scrollIntoView()
+  "
+  :class="
+    {
+      'opacity-50 pointer-events-none': $sectionApi.state == 'loading'
+    }
+  "
+{% endcapture %}
+
+{% render 'core-section-card-list',
+  s: section.settings,
+  layout_mobile: 'grid',
+  columns_sm: section.settings.columns_sm,
+  attributes: attributes,
+  list_items: collection_items,
+  list_attributes: 'x-ref="paginationResults"',
+  header: header,
+  footer: footer
+%}
+
+{% schema %}
+{
+	"name": "Collection list",
+	"class": "section-list-collections",
+	"settings": [
+		{
+			"type": "header",
+			"content": "Columns"
+		},
+		{
+			"type": "range",
+			"id": "columns_lg",
+			"min": 2,
+			"max": 5,
+			"step": 1,
+			"label": "Desktop",
+			"default": 4
+		},
+		{
+			"type": "range",
+			"id": "columns_md",
+			"min": 2,
+			"max": 5,
+			"step": 1,
+			"label": "Tablet",
+			"default": 3
+		},
+		{
+			"type": "select",
+			"id": "columns_sm",
+			"label": "Mobile",
+			"default": "2",
+			"options": [
+				{
+					"value": "1",
+					"label": "1"
+				},
+				{
+					"value": "2",
+					"label": "2"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "limit",
+			"min": 1,
+			"max": 50,
+			"step": 1,
+			"label": "Collections per page",
+			"default": 24
+		},
+		{
+			"type": "header",
+			"content": "Title"
+		},
+		{
+			"type": "text_alignment",
+			"id": "title_placement",
+			"label": "Title alignment",
+			"default": "center"
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "content_width",
+			"label": "Content width",
+			"default": "page",
+			"options": [
+				{
+					"value": "full",
+					"label": "Full"
+				},
+				{
+					"value": "page",
+					"label": "Page"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "content_width_custom",
+			"label": "Desktop width",
+			"visible_if": "{{ section.settings.content_width == 'custom'  }}",
+			"min": 25,
+			"max": 100,
+			"step": 5,
+			"default": 65,
+			"unit": "%"
+		},
+		{
+			"type": "range",
+			"id": "content_width_custom_mobile",
+			"label": "Mobile width",
+			"visible_if": "{{ section.settings.content_width == 'custom'   }}",
+			"min": 25,
+			"max": 100,
+			"step": 5,
+			"default": 100,
+			"unit": "%"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_rhythm",
+			"label": "Custom rhythm",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "section_padding_top",
+			"label": "Spacing top",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 40,
+			"visible_if": "{{ section.settings.set_rhythm == true  }}"
+		},
+		{
+			"type": "range",
+			"id": "section_padding_bottom",
+			"label": "Spacing bottom",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 40,
+			"visible_if": "{{ section.settings.set_rhythm == true  }}"
+		},
+	],
+	"blocks": [],
+	"presets": [
+		{
+			"name": "Collection list",
+			"blocks": [
+				{
+					"id": "section-title",
+					"type": "_section-title",
+					"static": true,
+					"settings": {
+						"text": "All Collections",
+						"type_preset": "h2"
+					}
+				},
+				{
+					"id": "collection-card",
+					"static": true,
+					"type": "_card-collection"
+				}
+			]
+		}
+	],
+	"enabled_on": {
+		"templates": [
+			"list-collections"
+		]
+	}
+}
+{% endschema %}

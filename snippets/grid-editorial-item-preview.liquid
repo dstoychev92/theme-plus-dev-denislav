@@ -1,0 +1,88 @@
+{% doc %}
+  - Renders the editorial grid item preview shown in the theme editor
+
+  @param {string} [attributes]
+  @param {object} [s] - settings object
+{% enddoc %}
+
+{%- liquid
+  assign d_col_start = s.col_start | default: 1
+  assign d_col_end_raw = s.col_end | default: 12
+  assign d_col_end = d_col_end_raw | plus: 1
+
+  if s.set_grid_tablet
+    assign t_col_start = s.col_start_md | default: 1
+    assign t_col_end_raw = s.col_end_md | default: 12
+    assign t_col_end = t_col_end_raw | plus: 1
+  else
+    assign t_col_start = d_col_start
+    assign t_col_end = d_col_end
+  endif
+
+  assign set_grid_mobile = s.set_grid_mobile
+  if s.target_device == 'mobile'
+    assign set_grid_mobile = true
+  endif
+
+  if set_grid_mobile
+    assign m_col_start = s.col_start_sm | default: 1
+    assign m_col_end_raw = s.col_end_sm | default: 12
+    assign m_col_end = m_col_end_raw | plus: 1
+  else
+    assign m_col_start = d_col_start
+    assign m_col_end = d_col_end
+  endif
+
+  assign row_span = 1
+  if s.set_row_span
+    assign row_span = s.row_span
+  endif
+
+  assign breakpoints = 'Desktop,Tablet,Mobile' | split: ','
+-%}
+
+<div class="flex flex-col gap-r10 w-[1300px] min-h-screen bg-none text-black items-start" {{ attributes }}>
+  {% for breakpoint in breakpoints %}
+    {%- liquid
+      case breakpoint
+        when 'Desktop'
+          assign bp_col_start = d_col_start
+          assign bp_col_end = d_col_end
+          assign bp_width = 'w-[1200px]'
+        when 'Tablet'
+          assign bp_col_start = t_col_start
+          assign bp_col_end = t_col_end
+          assign bp_width = 'w-[768px]'
+        when 'Mobile'
+          assign bp_col_start = m_col_start
+          assign bp_col_end = m_col_end
+          assign bp_width = 'w-[375px]'
+      endcase
+    -%}
+
+    <div class="{{ bp_width }} flex flex-col gap-r4 px-r4">
+      <span class="w-full text-left text-r9 py-r9 font-bold text-black/90">{{ breakpoint }}</span>
+      <div
+        class="grid relative z-10 border-t-[3px] border-l-[3px] border-dashed border-black/50"
+        style="
+          grid-template-columns: repeat(12, 1fr);
+          grid-template-rows: repeat({{ row_span }}, 1fr);
+          aspect-ratio: 12 / {{ row_span }};
+        "
+      >
+        {% for r in (1..row_span) %}
+          {% for c in (1..12) %}
+            <div
+              class="relative z-10 border-r-[3px] border-b-[3px] border-dashed border-black/50"
+              style="grid-column: {{ c }}; grid-row: {{ r }};"
+            ></div>
+          {% endfor %}
+        {% endfor %}
+        <div
+          class="bg-white/80 relative z-0"
+          style="grid-column: {{ bp_col_start }} / {{ bp_col_end }}; grid-row: 1 / span {{ row_span }};"
+        ></div>
+      </div>
+    </div>
+  {% endfor %}
+</div>

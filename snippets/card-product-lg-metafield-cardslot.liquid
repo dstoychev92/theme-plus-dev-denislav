@@ -1,0 +1,68 @@
+{% doc %}
+  - Wraps card content with the metafields set for its slot
+
+  Reads the metafield_cardslot_<type>_<position> settings, for the above, beside and below
+  positions.
+
+  @param {string} content
+  @param {product} [product]
+  @param {string} [type] - slot name, such as price or title
+  @param {variant} [variant]
+{% enddoc %}
+{% liquid
+  # Read metafield content for each position
+  assign positions = 'above,beside,below' | split: ','
+  for position in positions
+    assign setting_id = 'metafield_cardslot_' | append: type | append: '_' | append: position
+    assign metafield_reference = settings[setting_id]
+
+    # Parse and access metafield if reference exists
+    if metafield_reference != blank
+      assign metafield_namespace = metafield_reference | split: '.' | first
+      assign metafield_key = metafield_reference | split: '.' | last
+      if variant != blank
+        assign variant_metafield = variant.metafields[metafield_namespace][metafield_key]
+      endif
+      if product != blank
+        assign product_metafield = product.metafields[metafield_namespace][metafield_key]
+      endif
+      assign metafield = variant_metafield | default: product_metafield
+
+      if metafield != blank
+        capture metafield_content
+          echo '<span class="metafield-cardslot-content">'
+          if metafield.type contains 'multi_line_text_field'
+            echo metafield.value
+          else
+            echo metafield | metafield_tag
+          endif
+          echo '</span>'
+        endcapture
+
+        # Assign to position-specific variables
+        if position == 'above'
+          assign above_content = metafield_content
+        elsif position == 'beside'
+          assign beside_content = metafield_content
+        elsif position == 'below'
+          assign below_content = metafield_content
+        endif
+      endif
+    endif
+  endfor
+%}
+
+<span class="flex flex-col gap-y-r2">
+  {{ above_content }}
+
+  {% if beside_content != blank %}
+    <span>
+      {{ content }}
+      {{ beside_content }}
+    </span>
+  {% else %}
+    {{ content }}
+  {% endif %}
+
+  {{ below_content }}
+</span>

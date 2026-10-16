@@ -1,0 +1,152 @@
+{% doc %}
+  - Renders section-api pagination controls
+
+  Mark the results container x-ref="paginationResults" in the same Alpine scope to move focus
+  into the first result of the new page. The controls sit below the results, so without it Tab
+  skips everything that just rendered.
+
+  @param {string} [class] - The classes
+  @param {object} [paginate]
+{% enddoc %}
+
+{% capture item_class %}
+  flex flex-center p-r2 min-h-row-sm
+{% endcapture %}
+
+{% assign icon_class = 'rtl:rotate-180' %}
+
+{% capture icon_prev_class %}
+  {{ icon_class }}
+  {% unless paginate.previous %}
+    opacity-50
+  {% endunless %}
+{% endcapture %}
+
+{% capture icon_next_class %}
+  {{ icon_class }}
+  {% unless paginate.next %}
+    opacity-50
+  {% endunless %}
+{% endcapture %}
+
+<div class="pt-r10 {{ class }}">
+  <nav
+    class="
+      flex items-center justify-between gap-x-r3 pt-r6 border-t border-line-subtle
+      md:justify-center md:gap-x-r6
+      type-p font-bold
+    "
+    aria-label="{{ 'collection.accessibility.pagination' | t }}"
+    {% comment %} Focus sits in this nav after a page change, or on body when the new page has no Previous or Next link to take it back. A filter, sort, or tag control keeps its own focus through the update {% endcomment %}
+    @theme:section:navigate.window="
+      if ($event.detail.sectionId != '{{ section.id }}') return
+      if (!$el.contains(document.activeElement) && document.activeElement != document.body) return
+      $refs.paginationResults
+      ?.querySelector('a[href]:not([tabindex=\'-1\']), button:not(:disabled)')
+      ?.focus({ preventScroll: true })
+    "
+  >
+    {% comment %} Prev {% endcomment %}
+    <a
+      key="prev"
+      class="
+        {{ item_class }}
+        leading-tight gap-x-r4
+        {% unless paginate.previous %}
+          cursor-not-allowed
+        {% endunless %}
+      "
+
+      {% if paginate.previous %}
+        x-section-api:link
+        href="{{ paginate.previous.url }}"
+        aria-label="{{ paginate.previous.title }}"
+      {% else %}
+        {% comment %} Not aria-hidden - the morph can put a link into this state while it still holds focus (e.g. clicking Prev on page 2), and hiding a focused element from AT is blocked by browsers {% endcomment %}
+        aria-disabled="true"
+        tabindex="-1"
+      {% endif %}
+    >
+      {% render 'core-icon', icon: 'stroke-chevron-left', class: icon_prev_class, size: 'sm', stroke_weight: 'bold' %}
+      {{ 'collection.pagination.previous' | t }}
+    </a>
+
+    <ul class="flex justify-center flex-wrap gap-x-r1 md:gap-x-r4 text-r4 leading-tight">
+      {% comment %} Default {% endcomment %}
+      {% for part in paginate.parts %}
+        {% if part.is_link %}
+          <li key="{{ part.title }}">
+            <a
+              x-section-api:link
+              href="{{ part.url }}"
+              aria-label="{{ 'collection.pagination.page_number' | t: page: part.title }}"
+              class="
+                {{ item_class }}
+                aspect-square text-muted rounded-full transition
+                hover:bg-content-mix-5 hover:text-content
+              "
+            >
+              {{ part.title }}
+            </a>
+          </li>
+        {% else %}
+          {% comment %} Active {% endcomment %}
+          {% if part.title == paginate.current_page %}
+            <li key="{{ part.title }}">
+              <a
+                x-section-api:link
+                aria-current="page"
+                href="{{ part.url }}"
+                aria-label="{{ 'collection.pagination.page_number' | t: page: part.title }}"
+                class="
+                  {{ item_class }}
+                  aspect-square text-content rounded-full transition
+                  ring-1 ring-inset ring-content/[--line-alpha]
+                  hover:bg-content-mix-5 hover:text-content
+                "
+              >
+                {{ part.title }}
+              </a>
+            </li>
+          {% else %}
+            {% comment %} Dots {% endcomment %}
+            <li key="{{ part.title }}">
+              <span class="{{ item_class }} aspect-square text-muted">
+                {{ part.title }}
+              </span>
+            </li>
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    </ul>
+
+    {% comment %} Next {% endcomment %}
+    <a
+      key="next"
+      class="
+        {{ item_class }}
+        leading-tight gap-x-r4
+        {% unless paginate.next %}
+          cursor-not-allowed
+        {% endunless %}
+      "
+
+      {% if paginate.next %}
+        x-section-api:link
+        href="{{ paginate.next.url }}"
+        aria-label="{{ paginate.next.title }}"
+      {% else %}
+        {% comment %} Not aria-hidden - the morph can put a link into this state while it still holds focus (e.g. clicking Prev on page 2), and hiding a focused element from AT is blocked by browsers {% endcomment %}
+        aria-disabled="true"
+        tabindex="-1"
+      {% endif %}
+    >
+      {{ 'collection.pagination.next' | t }}
+      {% render 'core-icon', icon: 'stroke-chevron-right', class: icon_next_class, size: 'sm', stroke_weight: 'bold' %}
+    </a>
+  </nav>
+
+  <span class="sr-only" aria-live="polite">
+    {{ 'collection.pagination.page_of_pages' | t: page: paginate.current_page, pages: paginate.pages }}
+  </span>
+</div>

@@ -1,0 +1,35 @@
+{% doc %}
+  - Renders form error summary and success message
+
+  Render it inside the form tag, where the form object exists.
+
+  @param {object} [form] - form object from enclosing form tag
+  @param {string} success_message - message shown after successful post
+{% enddoc %}
+
+{%- if form.errors -%}
+  <div class="vars-scheme-error bg-canvas p-r5 text-start text-r2 text-content">
+    <span>{{ 'other.form.error_heading' | t }}</span>
+
+    <ul class="list-disc pl-r5">
+      {%- for field in form.errors -%}
+        <li>
+          {%- if field == 'form' -%}
+            {{ form.errors.messages[field] }}
+          {%- else -%}
+            <span class="text-r2">
+              {{ form.errors.translated_fields[field] | capitalize }}
+              {{ form.errors.messages[field] }}
+            </span>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+{%- endif -%}
+
+{% if form.posted_successfully? %}
+  <p class="vars-scheme-success text-r2 text-content" role="status" aria-live="polite">
+    {{ success_message }}
+  </p>
+{% endif %}

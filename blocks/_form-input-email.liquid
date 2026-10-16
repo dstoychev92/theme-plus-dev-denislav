@@ -1,0 +1,77 @@
+<!-- blocks/_form-input-email.liquid -->
+
+{%- liquid
+  # Theme blocks never see the form tag's `form` object (content_for passes
+  # only globals), so server-side errors can only render in the form's
+  # summary (core-form-status) — not per field here.
+  assign label_handle = block.settings.label | handleize
+  assign id = label_handle | append: '-' | append: block.id
+%}
+
+{% capture input_attributes %}
+  spellcheck="false"
+  autocapitalize="off"
+  autocomplete="email"
+  {% # type="email" alone accepts "test@test" %}
+  pattern="[^@\s]+@[^@\s]+\.[^@\s]+"
+  title="{{ 'other.form.invalid_email' | t }}"
+  {% if block.settings.required %}
+    required
+  {% endif %}
+{% endcapture %}
+
+{% render 'field-input',
+  type: 'email',
+  name: 'contact[email]',
+  id: id,
+  size: block.settings.sizing,
+  label: block.settings.label,
+  input_attributes: input_attributes,
+  wrapper_attributes: block.shopify_attributes
+%}
+
+{% schema %}
+{
+	"name": "Input email",
+	"tag": null,
+	"settings": [
+		{
+			"type": "text",
+			"id": "label",
+			"label": "Label",
+			"default": "Email"
+		},
+		{
+			"type": "select",
+			"id": "sizing",
+			"label": "Size",
+			"default": "md",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				}
+			]
+		},
+		{
+			"type": "checkbox",
+			"id": "required",
+			"label": "Required",
+			"default": true
+		}
+	],
+	"presets": [
+		{
+			"name": "Input email"
+		}
+	]
+}
+{% endschema %}

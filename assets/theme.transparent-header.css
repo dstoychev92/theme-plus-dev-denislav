@@ -1,0 +1,305 @@
+
+/*
+* @license
+* ANALOG Theme (c) Groupthought Themes
+*
+* The contents of this file should not be modified.
+* Add any minor changes to assets/custom.css
+*
+*/
+
+/*
+ * CSS :hover and :has(:hover) caused whole-header flashing when animated countdown digits changed
+ * inside the display: contents header. Use [data-header-hover] to prevent hover state flashing.
+ */
+/* Hover devices */
+@media (hover: hover) {
+  /* Dark transparent header when header not stuck and not being interacted with */
+  body:has(main > .shopify-section:first-of-type > [data-allows-overlay-header=dark]):not([data-drawer-open=true]) header:not([data-header-stuck],
+  [data-header-hover],
+  :focus-within,
+  :has([aria-expanded=true]),
+  :has(:popover-open),
+  :has([data-megamenu-visible])) :is([data-overlay-header][data-sticky-header=always], [data-overlay-header][data-sticky-header=scroll]),
+  body:has(main > .shopify-section:first-of-type > [data-allows-overlay-header=dark]):not([data-drawer-open=true]) header:not([data-header-hover],
+  :focus-within,
+  :has([aria-expanded=true]),
+  :has(:popover-open),
+  :has([data-megamenu-visible])) [data-overlay-header][data-sticky-header=never] {
+    --header-bg-opacity: 0;
+    --header-transparent-white-logo-opacity: 1;
+    --header-auto-border: 0;
+    --canvas-oklch: var(--scheme-dark-canvas-oklch);
+    --canvas-contrast-oklch: var(--scheme-dark-canvas-contrast-oklch);
+    --content-oklch: var(--scheme-dark-content-oklch);
+    --content-contrast-oklch: var(--scheme-dark-content-contrast-oklch);
+    --shadow-oklch: var(--scheme-dark-shadow-oklch);
+    --muted-oklch: var(--scheme-dark-muted-oklch);
+    --muted-contrast-oklch: var(--scheme-dark-muted-contrast-oklch);
+    --muted-alpha: var(--scheme-dark-muted-alpha);
+    --primary-oklch: var(--scheme-dark-primary-oklch);
+    --primary-contrast-oklch: var(--scheme-dark-primary-contrast-oklch);
+    --secondary-oklch: var(--scheme-dark-secondary-oklch);
+    --secondary-contrast-oklch: var(--scheme-dark-secondary-contrast-oklch);
+    --sale-oklch: var(--scheme-dark-sale-oklch);
+    --sale-contrast-oklch: var(--scheme-dark-sale-contrast-oklch);
+    --mix-5: var(--scheme-dark-mix-5);
+    --mix-10: var(--scheme-dark-mix-10);
+    --mix-20: var(--scheme-dark-mix-20);
+    --mix-30: var(--scheme-dark-mix-30);
+    --mix-40: var(--scheme-dark-mix-40);
+    --mix-50: var(--scheme-dark-mix-50);
+    --line-alpha-subtle: var(--scheme-dark-line-alpha-subtle);
+    --line-alpha: var(--scheme-dark-line-alpha);
+    --line-alpha-bold: var(--scheme-dark-line-alpha-bold);
+    --canvas-fallback: var(--scheme-dark-canvas-fallback);
+    --canvas-contrast-fallback: var(--scheme-dark-canvas-contrast-fallback);
+    --content-fallback: var(--scheme-dark-content-fallback);
+    --content-contrast-fallback: var(--scheme-dark-content-contrast-fallback);
+    --shadow-fallback: var(--scheme-dark-shadow-fallback);
+    --muted-fallback: var(--scheme-dark-muted-fallback);
+    --muted-contrast-fallback: var(--scheme-dark-muted-contrast-fallback);
+    --primary-fallback: var(--scheme-dark-primary-fallback);
+    --primary-contrast-fallback: var(--scheme-dark-primary-contrast-fallback);
+    --secondary-fallback: var(--scheme-dark-secondary-fallback);
+    --secondary-contrast-fallback: var(--scheme-dark-secondary-contrast-fallback);
+    --sale-fallback: var(--scheme-dark-sale-fallback);
+    --sale-contrast-fallback: var(--scheme-dark-sale-contrast-fallback);
+    --muted: oklch(var(--content-oklch) / var(--muted-alpha));
+  }
+  /* Light transparent header when header not stuck and not being interacted with */
+  body:has(main > .shopify-section:first-of-type > [data-allows-overlay-header=light],
+  main > .shopify-section:first-of-type > [data-allows-overlay-header=""]):not([data-drawer-open=true]) header:not([data-header-stuck],
+  [data-header-hover],
+  :focus-within,
+  :has([aria-expanded=true]),
+  :has(:popover-open),
+  :has([data-megamenu-visible])) :is([data-overlay-header][data-sticky-header=always], [data-overlay-header][data-sticky-header=scroll]),
+  body:has(main > .shopify-section:first-of-type > [data-allows-overlay-header=light],
+  main > .shopify-section:first-of-type > [data-allows-overlay-header=""]):not([data-drawer-open=true]) header:not([data-header-hover],
+  :focus-within,
+  :has([aria-expanded=true]),
+  :has(:popover-open),
+  :has([data-megamenu-visible])) [data-overlay-header][data-sticky-header=never] {
+    --header-bg-opacity: 0;
+    --header-transparent-white-logo-opacity: 0;
+    --header-auto-border: 0;
+    --canvas-oklch: var(--scheme-light-canvas-oklch);
+    --canvas-contrast-oklch: var(--scheme-light-canvas-contrast-oklch);
+    --content-oklch: var(--scheme-light-content-oklch);
+    --content-contrast-oklch: var(--scheme-light-content-contrast-oklch);
+    --shadow-oklch: var(--scheme-light-shadow-oklch);
+    --muted-oklch: var(--scheme-light-muted-oklch);
+    --muted-contrast-oklch: var(--scheme-light-muted-contrast-oklch);
+    --muted-alpha: var(--scheme-light-muted-alpha);
+    --primary-oklch: var(--scheme-light-primary-oklch);
+    --primary-contrast-oklch: var(--scheme-light-primary-contrast-oklch);
+    --secondary-oklch: var(--scheme-light-secondary-oklch);
+    --secondary-contrast-oklch: var(--scheme-light-secondary-contrast-oklch);
+    --sale-oklch: var(--scheme-light-sale-oklch);
+    --sale-contrast-oklch: var(--scheme-light-sale-contrast-oklch);
+    --mix-5: var(--scheme-light-mix-5);
+    --mix-10: var(--scheme-light-mix-10);
+    --mix-20: var(--scheme-light-mix-20);
+    --mix-30: var(--scheme-light-mix-30);
+    --mix-40: var(--scheme-light-mix-40);
+    --mix-50: var(--scheme-light-mix-50);
+    --line-alpha-subtle: var(--scheme-light-line-alpha-subtle);
+    --line-alpha: var(--scheme-light-line-alpha);
+    --line-alpha-bold: var(--scheme-light-line-alpha-bold);
+    --canvas-fallback: var(--scheme-light-canvas-fallback);
+    --canvas-contrast-fallback: var(--scheme-light-canvas-contrast-fallback);
+    --content-fallback: var(--scheme-light-content-fallback);
+    --content-contrast-fallback: var(--scheme-light-content-contrast-fallback);
+    --shadow-fallback: var(--scheme-light-shadow-fallback);
+    --muted-fallback: var(--scheme-light-muted-fallback);
+    --muted-contrast-fallback: var(--scheme-light-muted-contrast-fallback);
+    --primary-fallback: var(--scheme-light-primary-fallback);
+    --primary-contrast-fallback: var(--scheme-light-primary-contrast-fallback);
+    --secondary-fallback: var(--scheme-light-secondary-fallback);
+    --secondary-contrast-fallback: var(--scheme-light-secondary-contrast-fallback);
+    --sale-fallback: var(--scheme-light-sale-fallback);
+    --sale-contrast-fallback: var(--scheme-light-sale-contrast-fallback);
+    --muted: oklch(var(--content-oklch) / var(--muted-alpha));
+  }
+}
+/* Touch devices */
+@media (pointer: coarse) and (hover: none) {
+  /* Dark transparent header when header not stuck */
+  body:has(main > .shopify-section:first-of-type > [data-allows-overlay-header=dark]) header:not([data-header-stuck]) [data-overlay-header] {
+    --header-bg-opacity: 0;
+    --header-transparent-white-logo-opacity: 1;
+    --header-auto-border: 0;
+    --canvas-oklch: var(--scheme-dark-canvas-oklch);
+    --canvas-contrast-oklch: var(--scheme-dark-canvas-contrast-oklch);
+    --content-oklch: var(--scheme-dark-content-oklch);
+    --content-contrast-oklch: var(--scheme-dark-content-contrast-oklch);
+    --shadow-oklch: var(--scheme-dark-shadow-oklch);
+    --muted-oklch: var(--scheme-dark-muted-oklch);
+    --muted-contrast-oklch: var(--scheme-dark-muted-contrast-oklch);
+    --muted-alpha: var(--scheme-dark-muted-alpha);
+    --primary-oklch: var(--scheme-dark-primary-oklch);
+    --primary-contrast-oklch: var(--scheme-dark-primary-contrast-oklch);
+    --secondary-oklch: var(--scheme-dark-secondary-oklch);
+    --secondary-contrast-oklch: var(--scheme-dark-secondary-contrast-oklch);
+    --sale-oklch: var(--scheme-dark-sale-oklch);
+    --sale-contrast-oklch: var(--scheme-dark-sale-contrast-oklch);
+    --mix-5: var(--scheme-dark-mix-5);
+    --mix-10: var(--scheme-dark-mix-10);
+    --mix-20: var(--scheme-dark-mix-20);
+    --mix-30: var(--scheme-dark-mix-30);
+    --mix-40: var(--scheme-dark-mix-40);
+    --mix-50: var(--scheme-dark-mix-50);
+    --line-alpha-subtle: var(--scheme-dark-line-alpha-subtle);
+    --line-alpha: var(--scheme-dark-line-alpha);
+    --line-alpha-bold: var(--scheme-dark-line-alpha-bold);
+    --canvas-fallback: var(--scheme-dark-canvas-fallback);
+    --canvas-contrast-fallback: var(--scheme-dark-canvas-contrast-fallback);
+    --content-fallback: var(--scheme-dark-content-fallback);
+    --content-contrast-fallback: var(--scheme-dark-content-contrast-fallback);
+    --shadow-fallback: var(--scheme-dark-shadow-fallback);
+    --muted-fallback: var(--scheme-dark-muted-fallback);
+    --muted-contrast-fallback: var(--scheme-dark-muted-contrast-fallback);
+    --primary-fallback: var(--scheme-dark-primary-fallback);
+    --primary-contrast-fallback: var(--scheme-dark-primary-contrast-fallback);
+    --secondary-fallback: var(--scheme-dark-secondary-fallback);
+    --secondary-contrast-fallback: var(--scheme-dark-secondary-contrast-fallback);
+    --sale-fallback: var(--scheme-dark-sale-fallback);
+    --sale-contrast-fallback: var(--scheme-dark-sale-contrast-fallback);
+    --muted: oklch(var(--content-oklch) / var(--muted-alpha));
+  }
+  /* Light transparent header when header not stuck */
+  body:has(main > .shopify-section:first-of-type > [data-allows-overlay-header=light],
+  main > .shopify-section:first-of-type > [data-allows-overlay-header=""]) header:not([data-header-stuck]) [data-overlay-header] {
+    --header-bg-opacity: 0;
+    --header-transparent-white-logo-opacity: 0;
+    --header-auto-border: 0;
+    --canvas-oklch: var(--scheme-light-canvas-oklch);
+    --canvas-contrast-oklch: var(--scheme-light-canvas-contrast-oklch);
+    --content-oklch: var(--scheme-light-content-oklch);
+    --content-contrast-oklch: var(--scheme-light-content-contrast-oklch);
+    --shadow-oklch: var(--scheme-light-shadow-oklch);
+    --muted-oklch: var(--scheme-light-muted-oklch);
+    --muted-contrast-oklch: var(--scheme-light-muted-contrast-oklch);
+    --muted-alpha: var(--scheme-light-muted-alpha);
+    --primary-oklch: var(--scheme-light-primary-oklch);
+    --primary-contrast-oklch: var(--scheme-light-primary-contrast-oklch);
+    --secondary-oklch: var(--scheme-light-secondary-oklch);
+    --secondary-contrast-oklch: var(--scheme-light-secondary-contrast-oklch);
+    --sale-oklch: var(--scheme-light-sale-oklch);
+    --sale-contrast-oklch: var(--scheme-light-sale-contrast-oklch);
+    --mix-5: var(--scheme-light-mix-5);
+    --mix-10: var(--scheme-light-mix-10);
+    --mix-20: var(--scheme-light-mix-20);
+    --mix-30: var(--scheme-light-mix-30);
+    --mix-40: var(--scheme-light-mix-40);
+    --mix-50: var(--scheme-light-mix-50);
+    --line-alpha-subtle: var(--scheme-light-line-alpha-subtle);
+    --line-alpha: var(--scheme-light-line-alpha);
+    --line-alpha-bold: var(--scheme-light-line-alpha-bold);
+    --canvas-fallback: var(--scheme-light-canvas-fallback);
+    --canvas-contrast-fallback: var(--scheme-light-canvas-contrast-fallback);
+    --content-fallback: var(--scheme-light-content-fallback);
+    --content-contrast-fallback: var(--scheme-light-content-contrast-fallback);
+    --shadow-fallback: var(--scheme-light-shadow-fallback);
+    --muted-fallback: var(--scheme-light-muted-fallback);
+    --muted-contrast-fallback: var(--scheme-light-muted-contrast-fallback);
+    --primary-fallback: var(--scheme-light-primary-fallback);
+    --primary-contrast-fallback: var(--scheme-light-primary-contrast-fallback);
+    --secondary-fallback: var(--scheme-light-secondary-fallback);
+    --secondary-contrast-fallback: var(--scheme-light-secondary-contrast-fallback);
+    --sale-fallback: var(--scheme-light-sale-fallback);
+    --sale-contrast-fallback: var(--scheme-light-sale-contrast-fallback);
+    --muted: oklch(var(--content-oklch) / var(--muted-alpha));
+  }
+}
+/*
+ Styles to simulate `(pointer: coarse) and (hover: none)` in the theme editor mobile preview
+ */
+@media (max-width: 767px) {
+  html[data-theme-editor] body:has(main > .shopify-section:first-of-type > [data-allows-overlay-header=dark]) header:not([data-header-stuck]) [data-overlay-header] {
+    --header-bg-opacity: 0;
+    --header-transparent-white-logo-opacity: 1;
+    --header-auto-border: 0;
+    --canvas-oklch: var(--scheme-dark-canvas-oklch);
+    --canvas-contrast-oklch: var(--scheme-dark-canvas-contrast-oklch);
+    --content-oklch: var(--scheme-dark-content-oklch);
+    --content-contrast-oklch: var(--scheme-dark-content-contrast-oklch);
+    --shadow-oklch: var(--scheme-dark-shadow-oklch);
+    --muted-oklch: var(--scheme-dark-muted-oklch);
+    --muted-contrast-oklch: var(--scheme-dark-muted-contrast-oklch);
+    --muted-alpha: var(--scheme-dark-muted-alpha);
+    --primary-oklch: var(--scheme-dark-primary-oklch);
+    --primary-contrast-oklch: var(--scheme-dark-primary-contrast-oklch);
+    --secondary-oklch: var(--scheme-dark-secondary-oklch);
+    --secondary-contrast-oklch: var(--scheme-dark-secondary-contrast-oklch);
+    --sale-oklch: var(--scheme-dark-sale-oklch);
+    --sale-contrast-oklch: var(--scheme-dark-sale-contrast-oklch);
+    --mix-5: var(--scheme-dark-mix-5);
+    --mix-10: var(--scheme-dark-mix-10);
+    --mix-20: var(--scheme-dark-mix-20);
+    --mix-30: var(--scheme-dark-mix-30);
+    --mix-40: var(--scheme-dark-mix-40);
+    --mix-50: var(--scheme-dark-mix-50);
+    --line-alpha-subtle: var(--scheme-dark-line-alpha-subtle);
+    --line-alpha: var(--scheme-dark-line-alpha);
+    --line-alpha-bold: var(--scheme-dark-line-alpha-bold);
+    --canvas-fallback: var(--scheme-dark-canvas-fallback);
+    --canvas-contrast-fallback: var(--scheme-dark-canvas-contrast-fallback);
+    --content-fallback: var(--scheme-dark-content-fallback);
+    --content-contrast-fallback: var(--scheme-dark-content-contrast-fallback);
+    --shadow-fallback: var(--scheme-dark-shadow-fallback);
+    --muted-fallback: var(--scheme-dark-muted-fallback);
+    --muted-contrast-fallback: var(--scheme-dark-muted-contrast-fallback);
+    --primary-fallback: var(--scheme-dark-primary-fallback);
+    --primary-contrast-fallback: var(--scheme-dark-primary-contrast-fallback);
+    --secondary-fallback: var(--scheme-dark-secondary-fallback);
+    --secondary-contrast-fallback: var(--scheme-dark-secondary-contrast-fallback);
+    --sale-fallback: var(--scheme-dark-sale-fallback);
+    --sale-contrast-fallback: var(--scheme-dark-sale-contrast-fallback);
+    --muted: oklch(var(--content-oklch) / var(--muted-alpha));
+  }
+  html[data-theme-editor] body:has(main > .shopify-section:first-of-type > [data-allows-overlay-header=light],
+  main > .shopify-section:first-of-type > [data-allows-overlay-header=""]) header:not([data-header-stuck]) [data-overlay-header] {
+    --header-bg-opacity: 0;
+    --header-transparent-white-logo-opacity: 0;
+    --header-auto-border: 0;
+    --canvas-oklch: var(--scheme-light-canvas-oklch);
+    --canvas-contrast-oklch: var(--scheme-light-canvas-contrast-oklch);
+    --content-oklch: var(--scheme-light-content-oklch);
+    --content-contrast-oklch: var(--scheme-light-content-contrast-oklch);
+    --shadow-oklch: var(--scheme-light-shadow-oklch);
+    --muted-oklch: var(--scheme-light-muted-oklch);
+    --muted-contrast-oklch: var(--scheme-light-muted-contrast-oklch);
+    --muted-alpha: var(--scheme-light-muted-alpha);
+    --primary-oklch: var(--scheme-light-primary-oklch);
+    --primary-contrast-oklch: var(--scheme-light-primary-contrast-oklch);
+    --secondary-oklch: var(--scheme-light-secondary-oklch);
+    --secondary-contrast-oklch: var(--scheme-light-secondary-contrast-oklch);
+    --sale-oklch: var(--scheme-light-sale-oklch);
+    --sale-contrast-oklch: var(--scheme-light-sale-contrast-oklch);
+    --mix-5: var(--scheme-light-mix-5);
+    --mix-10: var(--scheme-light-mix-10);
+    --mix-20: var(--scheme-light-mix-20);
+    --mix-30: var(--scheme-light-mix-30);
+    --mix-40: var(--scheme-light-mix-40);
+    --mix-50: var(--scheme-light-mix-50);
+    --line-alpha-subtle: var(--scheme-light-line-alpha-subtle);
+    --line-alpha: var(--scheme-light-line-alpha);
+    --line-alpha-bold: var(--scheme-light-line-alpha-bold);
+    --canvas-fallback: var(--scheme-light-canvas-fallback);
+    --canvas-contrast-fallback: var(--scheme-light-canvas-contrast-fallback);
+    --content-fallback: var(--scheme-light-content-fallback);
+    --content-contrast-fallback: var(--scheme-light-content-contrast-fallback);
+    --shadow-fallback: var(--scheme-light-shadow-fallback);
+    --muted-fallback: var(--scheme-light-muted-fallback);
+    --muted-contrast-fallback: var(--scheme-light-muted-contrast-fallback);
+    --primary-fallback: var(--scheme-light-primary-fallback);
+    --primary-contrast-fallback: var(--scheme-light-primary-contrast-fallback);
+    --secondary-fallback: var(--scheme-light-secondary-fallback);
+    --secondary-contrast-fallback: var(--scheme-light-secondary-contrast-fallback);
+    --sale-fallback: var(--scheme-light-sale-fallback);
+    --sale-contrast-fallback: var(--scheme-light-sale-contrast-fallback);
+    --muted: oklch(var(--content-oklch) / var(--muted-alpha));
+  }
+}

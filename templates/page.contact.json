@@ -1,0 +1,735 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "page_default_I62IKR_anlgv0p0": {
+      "type": "page-default",
+      "settings": {}
+    },
+    "section_pair_8LlkIG_anlgv0p0": {
+      "type": "section-pair",
+      "blocks": {
+        "pair_custom_uJKhDy_anlgv0p0": {
+          "type": "_pair-custom",
+          "settings": {
+            "vertical_placement": "top"
+          },
+          "blocks": {
+            "theme_text_k9sLg7_anlgv0p0": {
+              "type": "theme-text",
+              "settings": {
+                "text": "<strong>Get in touch</strong>",
+                "type_preset": "p",
+                "type_resize": "lg"
+              },
+              "blocks": {}
+            },
+            "form_contact_WY2xNM_anlgv0p0": {
+              "type": "_form-contact",
+              "settings": {
+                "gap_custom": 2
+              },
+              "blocks": {
+                "form_input_name_7s2vEn_anlgv0p0": {
+                  "type": "_form-input-name",
+                  "settings": {},
+                  "blocks": {}
+                },
+                "form_input_email_T3H40J_anlgv0p0": {
+                  "type": "_form-input-email",
+                  "settings": {},
+                  "blocks": {}
+                },
+                "form_select_FOx6tC_anlgv0p0": {
+                  "type": "_form-select",
+                  "settings": {
+                    "label": "How can we help?"
+                  },
+                  "blocks": {
+                    "form_select_item_ZbvvD7_anlgv0p0": {
+                      "type": "_form-select-item",
+                      "settings": {
+                        "label": "General inquiry"
+                      },
+                      "blocks": {}
+                    },
+                    "form_select_item_rkIEFu_anlgv0p0": {
+                      "type": "_form-select-item",
+                      "settings": {
+                        "label": "Order support"
+                      },
+                      "blocks": {}
+                    }
+                  },
+                  "block_order": [
+                    "form_select_item_ZbvvD7_anlgv0p0",
+                    "form_select_item_rkIEFu_anlgv0p0"
+                  ]
+                },
+                "form_input_text_14KALc_anlgv0p0": {
+                  "type": "_form-input-text",
+                  "settings": {},
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "form_input_name_7s2vEn_anlgv0p0",
+                "form_input_email_T3H40J_anlgv0p0",
+                "form_select_FOx6tC_anlgv0p0",
+                "form_input_text_14KALc_anlgv0p0"
+              ]
+            }
+          },
+          "block_order": [
+            "theme_text_k9sLg7_anlgv0p0",
+            "form_contact_WY2xNM_anlgv0p0"
+          ]
+        },
+        "pair_custom_t5zr9L_anlgv0p0": {
+          "type": "_pair-custom",
+          "settings": {
+            "vertical_placement": "top"
+          },
+          "blocks": {
+            "theme_text_zSPGD7_anlgv0p0": {
+              "type": "theme-text",
+              "settings": {
+                "text": "<strong>Frequently Asked Questions</strong>",
+                "type_preset": "p",
+                "type_resize": "lg"
+              },
+              "blocks": {}
+            },
+            "accordion_group_h0dMVh_anlgv0p0": {
+              "type": "_accordion-group",
+              "settings": {},
+              "blocks": {
+                "accordion_UQmTti_anlgv0p0": {
+                  "type": "_accordion",
+                  "settings": {
+                    "title": "How long will my items take to ship?",
+                    "expand": true
+                  },
+                  "blocks": {
+                    "theme_richtext_LzLNHt_anlgv0p0": {
+                      "type": "theme-richtext",
+                      "settings": {
+                        "text": "<p>Share where you ship and estimated delivery times. Link to your shipping policy for the full details.</p>"
+                      },
+                      "blocks": {}
+                    }
+                  },
+                  "block_order": [
+                    "theme_richtext_LzLNHt_anlgv0p0"
+                  ]
+                },
+                "accordion_C633ug_anlgv0p0": {
+                  "type": "_accordion",
+                  "settings": {
+                    "title": "Where do I find my tracking number?"
+                  },
+                  "blocks": {
+                    "theme_richtext_GyGIYY_anlgv0p0": {
+                      "type": "theme-richtext",
+                      "settings": {
+                        "text": "<p>Explain how customers can track their order — for example, where to find the tracking link once it ships.</p>"
+                      },
+                      "blocks": {}
+                    }
+                  },
+                  "block_order": [
+                    "theme_richtext_GyGIYY_anlgv0p0"
+                  ]
+                },
+                "accordion_D1X7LW_anlgv0p0": {
+                  "type": "_accordion",
+                  "settings": {
+                    "title": "Can I return my product?"
+                  },
+                  "blocks": {
+                    "theme_richtext_TBKs0F_anlgv0p0": {
+                      "type": "theme-richtext",
+                      "settings": {
+                        "text": "<p>Explain how returns or exchanges work and how customers can start one. Link to your return policy for the full details.</p>"
+                      },
+                      "blocks": {}
+                    }
+                  },
+                  "block_order": [
+                    "theme_richtext_TBKs0F_anlgv0p0"
+                  ]
+                }
+              },
+              "block_order": [
+                "accordion_UQmTti_anlgv0p0",
+                "accordion_C633ug_anlgv0p0",
+                "accordion_D1X7LW_anlgv0p0"
+              ]
+            }
+          },
+          "block_order": [
+            "theme_text_zSPGD7_anlgv0p0",
+            "accordion_group_h0dMVh_anlgv0p0"
+          ]
+        }
+      },
+      "block_order": [
+        "pair_custom_uJKhDy_anlgv0p0",
+        "pair_custom_t5zr9L_anlgv0p0"
+      ],
+      "settings": {
+        "height": "custom",
+        "gap_custom": 2,
+        "enable_ensemble": false,
+        "autoplay": false
+      }
+    },
+    "section_pair_I1FxEf_anlgv0p0": {
+      "type": "section-pair",
+      "blocks": {
+        "pair_custom_N0nyuR_anlgv0p0": {
+          "type": "_pair-custom",
+          "settings": {
+            "background": "canvas"
+          },
+          "blocks": {
+            "theme_text_A1T5U7_anlgv0p0": {
+              "type": "theme-text",
+              "settings": {
+                "text": "Shipping & Delivery",
+                "type_preset": "h3",
+                "heading_tag": "h3"
+              },
+              "blocks": {}
+            },
+            "accordion_group_oC0oBG_anlgv0p0": {
+              "type": "_accordion-group",
+              "settings": {
+                "enable_timer_indicator": false
+              },
+              "blocks": {
+                "accordion_ftGwUP_anlgv0p0": {
+                  "type": "_accordion",
+                  "settings": {
+                    "title": "How long does shipping take?",
+                    "expand": true
+                  },
+                  "blocks": {
+                    "theme_richtext_T1in9H_anlgv0p0": {
+                      "type": "theme-richtext",
+                      "settings": {
+                        "text": "<p>Share where you ship and estimated delivery times. Link to your shipping policy for the full details.</p>"
+                      },
+                      "blocks": {}
+                    }
+                  },
+                  "block_order": [
+                    "theme_richtext_T1in9H_anlgv0p0"
+                  ]
+                },
+                "accordion_8X6GXn_anlgv0p0": {
+                  "type": "_accordion",
+                  "settings": {
+                    "title": "Do you ship internationally?"
+                  },
+                  "blocks": {
+                    "theme_richtext_EqYydx_anlgv0p0": {
+                      "type": "theme-richtext",
+                      "settings": {
+                        "text": "<p>Share which countries or regions you ship to and anything international customers should know, like duties or taxes.</p>"
+                      },
+                      "blocks": {}
+                    }
+                  },
+                  "block_order": [
+                    "theme_richtext_EqYydx_anlgv0p0"
+                  ]
+                },
+                "accordion_JWwr5X_anlgv0p0": {
+                  "type": "_accordion",
+                  "settings": {
+                    "title": "How much does shipping cost?"
+                  },
+                  "blocks": {
+                    "theme_richtext_zS2O2P_anlgv0p0": {
+                      "type": "theme-richtext",
+                      "settings": {
+                        "text": "<p>Explain how shipping costs are calculated and any thresholds for free or discounted shipping.</p>"
+                      },
+                      "blocks": {}
+                    }
+                  },
+                  "block_order": [
+                    "theme_richtext_zS2O2P_anlgv0p0"
+                  ]
+                },
+                "accordion_1aX1t5_anlgv0p0": {
+                  "type": "_accordion",
+                  "settings": {
+                    "title": "Can I track my order?"
+                  },
+                  "blocks": {
+                    "theme_richtext_efZzkj_anlgv0p0": {
+                      "type": "theme-richtext",
+                      "settings": {
+                        "text": "<p>Explain how customers can track their order — for example, where to find the tracking link once it ships.</p>"
+                      },
+                      "blocks": {}
+                    }
+                  },
+                  "block_order": [
+                    "theme_richtext_efZzkj_anlgv0p0"
+                  ]
+                }
+              },
+              "block_order": [
+                "accordion_ftGwUP_anlgv0p0",
+                "accordion_8X6GXn_anlgv0p0",
+                "accordion_JWwr5X_anlgv0p0",
+                "accordion_1aX1t5_anlgv0p0"
+              ]
+            }
+          },
+          "block_order": [
+            "theme_text_A1T5U7_anlgv0p0",
+            "accordion_group_oC0oBG_anlgv0p0"
+          ]
+        },
+        "pair_banner_XgIWgW_anlgv0p0": {
+          "type": "_pair-banner",
+          "settings": {
+            "set_rounding": true,
+            "rounding_radius": "md",
+            "height": "content",
+            "height_mobile": "screen-one-third"
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "pair_custom_N0nyuR_anlgv0p0",
+        "pair_banner_XgIWgW_anlgv0p0"
+      ],
+      "name": "FAQ: Shipping & Delivery",
+      "settings": {
+        "background_color": "#f1efeb",
+        "enable_ensemble": false,
+        "autoplay": false
+      }
+    },
+    "section_pair_cS5Uxs_anlgv0p0": {
+      "type": "section-pair",
+      "blocks": {
+        "pair_banner_M5pxE9_anlgv0p0": {
+          "type": "_pair-banner",
+          "settings": {
+            "set_rounding": true,
+            "rounding_radius": "md",
+            "height": "content",
+            "height_mobile": "screen-one-third"
+          },
+          "blocks": {}
+        },
+        "pair_custom_hkv2DM_anlgv0p0": {
+          "type": "_pair-custom",
+          "settings": {
+            "background": "canvas"
+          },
+          "blocks": {
+            "theme_text_OK6hoL_anlgv0p0": {
+              "type": "theme-text",
+              "settings": {
+                "text": "Returns & Exchanges",
+                "type_preset": "h3",
+                "heading_tag": "h3"
+              },
+              "blocks": {}
+            },
+            "accordion_group_6akrwQ_anlgv0p0": {
+              "type": "_accordion-group",
+              "settings": {
+                "enable_timer_indicator": false
+              },
+              "blocks": {
+                "accordion_pYg7Lz_anlgv0p0": {
+                  "type": "_accordion",
+                  "settings": {
+                    "title": "What is your return policy?",
+                    "expand": true
+                  },
+                  "blocks": {
+                    "theme_richtext_mPFnmt_anlgv0p0": {
+                      "type": "theme-richtext",
+                      "settings": {
+                        "text": "<p>Explain how returns or exchanges work and how customers can start one. Link to your return policy for the full details.</p>"
+                      },
+                      "blocks": {}
+                    }
+                  },
+                  "block_order": [
+                    "theme_richtext_mPFnmt_anlgv0p0"
+                  ]
+                },
+                "accordion_KkbflS_anlgv0p0": {
+                  "type": "_accordion",
+                  "settings": {
+                    "title": "How do I start a return?"
+                  },
+                  "blocks": {
+                    "theme_richtext_L6Tcla_anlgv0p0": {
+                      "type": "theme-richtext",
+                      "settings": {
+                        "text": "<p>Walk customers through the steps to start a return. Link to your return policy or returns portal for the full details.</p>"
+                      },
+                      "blocks": {}
+                    }
+                  },
+                  "block_order": [
+                    "theme_richtext_L6Tcla_anlgv0p0"
+                  ]
+                },
+                "accordion_qiSqtc_anlgv0p0": {
+                  "type": "_accordion",
+                  "settings": {
+                    "title": "Can I exchange an item for a different size?"
+                  },
+                  "blocks": {
+                    "theme_richtext_87z8Wr_anlgv0p0": {
+                      "type": "theme-richtext",
+                      "settings": {
+                        "text": "<p>Explain whether you offer exchanges and how customers can request one.</p>"
+                      },
+                      "blocks": {}
+                    }
+                  },
+                  "block_order": [
+                    "theme_richtext_87z8Wr_anlgv0p0"
+                  ]
+                },
+                "accordion_pr9Usb_anlgv0p0": {
+                  "type": "_accordion",
+                  "settings": {
+                    "title": "How long do refunds take to process?"
+                  },
+                  "blocks": {
+                    "theme_richtext_vAKqXC_anlgv0p0": {
+                      "type": "theme-richtext",
+                      "settings": {
+                        "text": "<p>Explain how long refunds usually take once a return is received, and anything that can affect the timing.</p>"
+                      },
+                      "blocks": {}
+                    }
+                  },
+                  "block_order": [
+                    "theme_richtext_vAKqXC_anlgv0p0"
+                  ]
+                }
+              },
+              "block_order": [
+                "accordion_pYg7Lz_anlgv0p0",
+                "accordion_KkbflS_anlgv0p0",
+                "accordion_qiSqtc_anlgv0p0",
+                "accordion_pr9Usb_anlgv0p0"
+              ]
+            }
+          },
+          "block_order": [
+            "theme_text_OK6hoL_anlgv0p0",
+            "accordion_group_6akrwQ_anlgv0p0"
+          ]
+        }
+      },
+      "block_order": [
+        "pair_banner_M5pxE9_anlgv0p0",
+        "pair_custom_hkv2DM_anlgv0p0"
+      ],
+      "name": "FAQ: Returns & Exchanges",
+      "settings": {
+        "order_mobile": "reversed",
+        "enable_ensemble": false,
+        "autoplay": false
+      }
+    },
+    "section_pair_APrwqM_anlgv0p0": {
+      "type": "section-pair",
+      "blocks": {
+        "pair_custom_FVPiec_anlgv0p0": {
+          "type": "_pair-custom",
+          "settings": {
+            "background": "canvas"
+          },
+          "blocks": {
+            "theme_text_AeGIlJ_anlgv0p0": {
+              "type": "theme-text",
+              "settings": {
+                "text": "Orders & Payment",
+                "type_preset": "h3",
+                "heading_tag": "h3"
+              },
+              "blocks": {}
+            },
+            "accordion_group_B6iY8M_anlgv0p0": {
+              "type": "_accordion-group",
+              "settings": {
+                "enable_timer_indicator": false
+              },
+              "blocks": {
+                "accordion_2wZHkg_anlgv0p0": {
+                  "type": "_accordion",
+                  "settings": {
+                    "title": "What payment methods do you accept?",
+                    "expand": true
+                  },
+                  "blocks": {
+                    "theme_richtext_vsrQ1s_anlgv0p0": {
+                      "type": "theme-richtext",
+                      "settings": {
+                        "text": "<p>Describe the payment methods you accept and how transactions and customer data are kept secure.</p>"
+                      },
+                      "blocks": {}
+                    }
+                  },
+                  "block_order": [
+                    "theme_richtext_vsrQ1s_anlgv0p0"
+                  ]
+                },
+                "accordion_kf2ek8_anlgv0p0": {
+                  "type": "_accordion",
+                  "settings": {
+                    "title": "Can I modify or cancel my order after placing it?"
+                  },
+                  "blocks": {
+                    "theme_richtext_zLEwMW_anlgv0p0": {
+                      "type": "theme-richtext",
+                      "settings": {
+                        "text": "<p>Explain whether orders can be changed or cancelled after they are placed, and how quickly customers need to get in touch.</p>"
+                      },
+                      "blocks": {}
+                    }
+                  },
+                  "block_order": [
+                    "theme_richtext_zLEwMW_anlgv0p0"
+                  ]
+                },
+                "accordion_GWA059_anlgv0p0": {
+                  "type": "_accordion",
+                  "settings": {
+                    "title": "I received the wrong item or a damaged product. What should I do?"
+                  },
+                  "blocks": {
+                    "theme_richtext_8riSbq_anlgv0p0": {
+                      "type": "theme-richtext",
+                      "settings": {
+                        "text": "<p>Tell customers how to report a wrong or damaged item — for example, what details or photos to include — and how you will make it right.</p>"
+                      },
+                      "blocks": {}
+                    }
+                  },
+                  "block_order": [
+                    "theme_richtext_8riSbq_anlgv0p0"
+                  ]
+                },
+                "accordion_CnRLP4_anlgv0p0": {
+                  "type": "_accordion",
+                  "settings": {
+                    "title": "Do you offer gift cards?"
+                  },
+                  "blocks": {
+                    "theme_richtext_cGVbJM_anlgv0p0": {
+                      "type": "theme-richtext",
+                      "settings": {
+                        "text": "<p>Share whether you offer gift cards, the amounts available, and how they are delivered.</p>"
+                      },
+                      "blocks": {}
+                    }
+                  },
+                  "block_order": [
+                    "theme_richtext_cGVbJM_anlgv0p0"
+                  ]
+                }
+              },
+              "block_order": [
+                "accordion_2wZHkg_anlgv0p0",
+                "accordion_kf2ek8_anlgv0p0",
+                "accordion_GWA059_anlgv0p0",
+                "accordion_CnRLP4_anlgv0p0"
+              ]
+            }
+          },
+          "block_order": [
+            "theme_text_AeGIlJ_anlgv0p0",
+            "accordion_group_B6iY8M_anlgv0p0"
+          ]
+        },
+        "pair_banner_bdiEZH_anlgv0p0": {
+          "type": "_pair-banner",
+          "settings": {
+            "set_rounding": true,
+            "rounding_radius": "md",
+            "height": "content",
+            "height_mobile": "screen-one-third"
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "pair_custom_FVPiec_anlgv0p0",
+        "pair_banner_bdiEZH_anlgv0p0"
+      ],
+      "name": "FAQ: Orders & Payment",
+      "settings": {
+        "enable_ensemble": false,
+        "autoplay": false
+      }
+    },
+    "section_pair_G6QOu8_anlgv0p0": {
+      "type": "section-pair",
+      "blocks": {
+        "pair_banner_aZyRZf_anlgv0p0": {
+          "type": "_pair-banner",
+          "settings": {
+            "set_rounding": true,
+            "rounding_radius": "md",
+            "height": "content",
+            "height_mobile": "screen-one-third"
+          },
+          "blocks": {}
+        },
+        "pair_custom_bGhYKS_anlgv0p0": {
+          "type": "_pair-custom",
+          "settings": {
+            "background": "canvas"
+          },
+          "blocks": {
+            "theme_text_lEFH0A_anlgv0p0": {
+              "type": "theme-text",
+              "settings": {
+                "text": "Account & General",
+                "type_preset": "h3",
+                "heading_tag": "h3"
+              },
+              "blocks": {}
+            },
+            "accordion_group_0pE1KB_anlgv0p0": {
+              "type": "_accordion-group",
+              "settings": {
+                "enable_timer_indicator": false
+              },
+              "blocks": {
+                "accordion_PAgJY2_anlgv0p0": {
+                  "type": "_accordion",
+                  "settings": {
+                    "title": "Do I need an account to place an order?",
+                    "expand": true
+                  },
+                  "blocks": {
+                    "theme_richtext_UlqNRw_anlgv0p0": {
+                      "type": "theme-richtext",
+                      "settings": {
+                        "text": "<p>Explain whether customers can check out as a guest and the benefits of creating an account, like faster checkout and order history.</p>"
+                      },
+                      "blocks": {}
+                    }
+                  },
+                  "block_order": [
+                    "theme_richtext_UlqNRw_anlgv0p0"
+                  ]
+                },
+                "accordion_AIZNxc_anlgv0p0": {
+                  "type": "_accordion",
+                  "settings": {
+                    "title": "How do I reset my password?"
+                  },
+                  "blocks": {
+                    "theme_richtext_Gh1kus_anlgv0p0": {
+                      "type": "theme-richtext",
+                      "settings": {
+                        "text": "<p>Explain how customers can reset their password — for example, from the \"Forgot password\" link on the login page.</p>"
+                      },
+                      "blocks": {}
+                    }
+                  },
+                  "block_order": [
+                    "theme_richtext_Gh1kus_anlgv0p0"
+                  ]
+                },
+                "accordion_74hVmb_anlgv0p0": {
+                  "type": "_accordion",
+                  "settings": {
+                    "title": "How can I contact customer support?"
+                  },
+                  "blocks": {
+                    "theme_richtext_ka4wDy_anlgv0p0": {
+                      "type": "theme-richtext",
+                      "settings": {
+                        "text": "<p>Tell customers the best ways to reach you and how quickly you typically respond.</p>"
+                      },
+                      "blocks": {}
+                    }
+                  },
+                  "block_order": [
+                    "theme_richtext_ka4wDy_anlgv0p0"
+                  ]
+                },
+                "accordion_q6vQkX_anlgv0p0": {
+                  "type": "_accordion",
+                  "settings": {
+                    "title": "Do you have a physical store?"
+                  },
+                  "blocks": {
+                    "theme_richtext_Nbxt5s_anlgv0p0": {
+                      "type": "theme-richtext",
+                      "settings": {
+                        "text": "<p>Share whether customers can find your products in person, and where.</p>"
+                      },
+                      "blocks": {}
+                    }
+                  },
+                  "block_order": [
+                    "theme_richtext_Nbxt5s_anlgv0p0"
+                  ]
+                }
+              },
+              "block_order": [
+                "accordion_PAgJY2_anlgv0p0",
+                "accordion_AIZNxc_anlgv0p0",
+                "accordion_74hVmb_anlgv0p0",
+                "accordion_q6vQkX_anlgv0p0"
+              ]
+            }
+          },
+          "block_order": [
+            "theme_text_lEFH0A_anlgv0p0",
+            "accordion_group_0pE1KB_anlgv0p0"
+          ]
+        }
+      },
+      "block_order": [
+        "pair_banner_aZyRZf_anlgv0p0",
+        "pair_custom_bGhYKS_anlgv0p0"
+      ],
+      "name": "FAQ: Account & General",
+      "settings": {
+        "section_padding_bottom": 64,
+        "order_mobile": "reversed",
+        "enable_ensemble": false,
+        "autoplay": false
+      }
+    }
+  },
+  "order": [
+    "page_default_I62IKR_anlgv0p0",
+    "section_pair_8LlkIG_anlgv0p0",
+    "section_pair_I1FxEf_anlgv0p0",
+    "section_pair_cS5Uxs_anlgv0p0",
+    "section_pair_APrwqM_anlgv0p0",
+    "section_pair_G6QOu8_anlgv0p0"
+  ]
+}

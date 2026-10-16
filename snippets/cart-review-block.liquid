@@ -1,0 +1,84 @@
+{% doc %}
+  - Renders cart totals and tax message
+
+  @param {string} [attributes]
+  @param {block} [block]
+  @param {string} [index] - position among the cart blocks
+{% enddoc %}
+
+{% assign index = index | default: 0 %}
+{% assign label = 'cart.review' | t %}
+
+{%- capture content -%}
+  {%- if block.settings.show_cart_review -%}
+    {% render 'cart-summary' %}
+  {%- endif -%}
+  {%- if block.settings.show_tax_message -%}
+    <p class="text-r3 text-muted italic">
+      {% render 'taxes-included-cart' %}
+    </p>
+  {%- endif -%}
+{%- endcapture -%}
+
+{% if content != blank %}
+  <div
+    class="gap-[--drawer-padding]"
+    {% if block.settings.accordion %}
+      x-disclosure
+
+      {% comment %} Scrolls to the bottom of the drawer when either of the accordions gets opened {% endcomment %}
+      x-effect="
+        if ($disclosure.isExpanded) {
+          await $disclosure.waitForAnimations()
+          setTimeout(() => {
+            $el.scrollIntoView({ block: 'end', behavior: 'smooth' });
+          }, 250);
+        }
+      "
+      {% if request.design_mode %}
+        @shopify:block:select="$disclosure.expand()"
+      {% endif %}
+    {% endif %}
+
+    {{ attributes }}
+  >
+    {% if block.settings.accordion %}
+      <button
+        type="button"
+        x-disclosure:button
+        class="relative p-[--drawer-padding] w-full cursor-pointer flex-row-center justify-between gap-r5 text-r4"
+      >
+        {{ label }}
+        <div class="relative size-icon">
+          {% capture spinner_attributes %}
+            x-show="$cartForm.state === 'pending'" aria-hidden="true" role="presentation"
+            x-transition.opacity
+          {% endcapture %}
+          {% render 'spinner', class: 'absolute inset-0', attributes: spinner_attributes %}
+
+          {% capture success_attributes %}
+            x-show="$cartForm.state === 'success'" aria-hidden="true" role="presentation"
+            x-transition.opacity
+          {% endcapture %}
+          {% render 'core-icon', icon: 'stroke-bare-check', class: 'absolute inset-0', attributes: success_attributes %}
+        </div>
+
+        {% render 'core-icon', icon: 'stroke-bare-plus', attributes: 'x-show="!$disclosure.isExpanded"' %}
+        {% render 'core-icon', icon: 'stroke-bare-minus', attributes: 'x-show="$disclosure.isExpanded"' %}
+      </button>
+    {% endif %}
+
+    <div
+      class="nojs:!block"
+      {% if block.settings.accordion %}
+        x-collapse
+        x-disclosure:panel
+        x-cloak
+      {% endif %}
+    >
+      <div class="flex flex-col gap-y-r4 px-[--drawer-padding] {% if block.settings.accordion %}pb-[--drawer-padding]{% else %}py-[--drawer-padding]{% endif %}">
+        {{ content }}
+      </div>
+    </div>
+  </div>
+{% endif %}

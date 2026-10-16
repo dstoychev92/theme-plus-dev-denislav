@@ -1,0 +1,231 @@
+<!-- blocks/_product-layout-details-quickview.liquid -->
+
+<div
+  style="
+    {% render 'props-style-gap', s: block.settings %}
+    {% if block.settings.content_align == 'left' %}
+      --title-flex: row;
+      --title-justify: space-between;
+      --title-align: start;
+    {% else %}
+      --title-flex: column;
+      --title-justify: center;
+      --title-align: center;
+    {% endif %}
+  "
+  class="
+    flex flex-col max-w-full px-root-buffer
+    vars-content-align-{{ block.settings.content_align }}
+    text-content-align items-content-align
+  "
+  x-product-form
+  x-data="{ quantity: 1 }"
+  x-id="['input']"
+  data-morph-update="children"
+  data-test-id="product-form"
+  {{ block.shopify_attributes }}
+>
+  {% comment %}
+    Each direct theme block is a render region so variant changes update its entire rendered subtree,
+    including nested blocks inside containers such as frames. Keep this boundary here instead of in
+    product-block, which is not rendered by every block. App blocks stay outside our render regions so
+    their injected DOM and client-side state are left untouched.
+  {% endcomment %}
+  {% for block in block.blocks %}
+    {% if block.type == '@theme' %}
+      <div class="contents" data-render-region="{{ block.id }}">
+        {% render block %}
+      </div>
+    {% else %}
+      {% render block %}
+    {% endif %}
+  {% endfor %}
+</div>
+
+{% schema %}
+{
+	"name": "Details",
+	"tag": null,
+	"settings": [
+		{
+			"type": "text_alignment",
+			"id": "content_align",
+			"label": "Alignment",
+			"default": "left"
+		},
+		{
+			"type": "header",
+			"content": "Block spacing"
+		},
+		{
+			"type": "select",
+			"id": "gap",
+			"label": "Gap",
+			"default": "lg",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "gap_custom",
+			"label": "Custom gap",
+			"default": 0,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ block.settings.gap == 'custom'  }}"
+		},
+	],
+	"blocks": [
+		{
+			"type": "_product-title"
+		},
+		{
+			"type": "_product-price"
+		},
+		{
+			"type": "_product-description"
+		},
+		{
+			"type": "_product-disclosures"
+		},
+		{
+			"type": "_product-pickup"
+		},
+		{
+			"type": "_product-rating"
+		},
+		{
+			"type": "_product-sku"
+		},
+		{
+			"type": "_product-stock-status"
+		},
+		{
+			"type": "_product-option-selectors"
+		},
+		{
+			"type": "_product-option-siblings"
+		},
+		{
+			"type": "_product-subscription"
+		},
+		{
+			"type": "_product-quantity"
+		},
+		{
+			"type": "_product-add-buttons"
+		},
+		{
+			"type": "_product-sharing"
+		},
+		{
+			"type": "theme-badge"
+		},
+		{
+			"type": "theme-button"
+		},
+		{
+			"type": "theme-countdown"
+		},
+		{
+			"type": "theme-decoration"
+		},
+		{
+			"type": "theme-form-newsletter"
+		},
+		{
+			"type": "theme-text"
+		},
+		{
+			"type": "theme-image"
+		},
+		{
+			"type": "theme-video"
+		},
+		{
+			"type": "theme-icon"
+		},
+		{
+			"type": "theme-link"
+		},
+		{
+			"type": "theme-liquid-code"
+		},
+		{
+			"type": "theme-social-links"
+		},
+		{
+			"type": "theme-spacer"
+		},
+		{
+			"type": "theme-richtext"
+		},
+		{
+			"type": "theme-scale-bar"
+		},
+		{
+			"type": "theme-video-button"
+		},
+		{
+			"type": "_product-group-frame"
+		},
+		{
+			"type": "_product-group-flex"
+		},
+		{
+			"type": "_product-group-row"
+		},
+		{
+			"type": "_product-group-inline"
+		},
+		{
+			"type": "_product-group-target"
+		},
+		{
+			"type": "_callout"
+		},
+		{
+			"type": "_callout-group"
+		},
+		{
+			"type": "_card-showcase"
+		},
+		{
+			"type": "_form-contact"
+		},
+		{
+			"type": "_product-grid-editorial"
+		},
+		{
+			"type": "_product-grid-auto"
+		},
+		{
+			"type": "_product-group-accordion-group"
+		},
+		{
+			"type": "_product-group-tabs"
+		},
+		{
+			"type": "@app"
+		},
+	]
+}
+{% endschema %}

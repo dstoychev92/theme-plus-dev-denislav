@@ -1,0 +1,61 @@
+{% doc %}
+  - Renders a product image with its zoom link
+
+  @param {number} [aspect_ratio] - media aspect ratio
+  @param {string} [class] - The classes
+  @param {boolean} [cover] - crops to fill
+  @param {string} [fetchpriority]
+  @param {string} [image_sizes] - sizes hint
+  @param {string} [image_widths] - widths for the srcset
+  @param {string} [loading]
+  @param {media} media
+  @param {boolean} [preload]
+  @param {object} [s] - settings object
+  @param {section} [section]
+  @param {boolean} [zoom_focusable] - keeps the zoom link in the tab order, for layouts with no slideshow
+{% enddoc %}
+
+{% liquid
+  assign image = media.preview_image
+  assign sizes = image_sizes
+  assign widths = image_widths
+%}
+
+{% capture class %}
+  w-full relative z-10 {{ class }}
+{% endcapture %}
+
+{% # Fallback to 2 column grid if no sizes or widths are provided %}
+{% if sizes == blank or widths == blank %}
+  {%- capture sizes -%}
+    {%- render 'image-grid-sizes',
+      columns_lg: 2,
+      columns_md: 2,
+      columns_sm: 1,
+      section_width: section.settings.content_width
+    %}
+  {%- endcapture -%}
+  {%- capture widths -%}
+    {%- render 'image-grid-widths',
+      columns_lg: 2,
+      columns_md: 2,
+      columns_sm: 1
+    -%}
+  {%- endcapture -%}
+{% endif %}
+
+{% render 'core-image',
+  image: image,
+  cover: cover,
+  aspect_ratio: aspect_ratio,
+  sizes: sizes,
+  widths: widths,
+  preload: preload,
+  loading: loading,
+  alt: media.alt,
+  class: class,
+  fetchpriority: fetchpriority
+%}
+{% render 'image-loading-placeholder', image: image, wrapper_class: 'absolute inset-0 z-0 w-full' %}
+
+{% render 'product-media-zoom-button', s: s, media: media, zoom_focusable: zoom_focusable %}

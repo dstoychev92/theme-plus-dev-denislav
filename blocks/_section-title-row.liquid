@@ -1,0 +1,359 @@
+<!-- blocks/_section-title-row.liquid -->
+
+
+
+
+
+{% capture blocks %}
+  {% content_for "blocks" %}
+{% endcapture %}
+
+{% liquid
+  assign show_arrows = block.settings.show_arrows
+  assign set_stack = block.settings.set_stack
+  assign full_width = block.settings.full_width
+%}
+
+{% capture row_group_class %}
+  flex flex-row flex-nowrap items-content-gravity
+  overflow-x-auto overflow-y-hidden scrollbar-hide max-w-full min-w-0
+  leading-clip-safe
+  *:auto-stagger-animations-[--entrance-animation-stagger]
+  *:shrink-0
+  {% if show_arrows %}edge-mask{% endif %}
+
+  {% if full_width %}
+    w-full
+    {% # `-safe` variants degrade to flex-start when children overflow, keeping the scroll origin reachable %}
+    {% case block.settings.placement %}
+      {% when 'start' %}
+        justify-start
+      {% when 'center' %}
+        justify-center-safe
+      {% when 'end' %}
+        justify-end-safe
+      {% when 'spread' %}
+        {% case block.settings.spread %}
+          {% when 'between' %}
+            justify-between
+          {% when 'around' %}
+            justify-around
+          {% when 'evenly' %}
+            justify-evenly
+        {% endcase %}
+    {% endcase %}
+  {% endif %}
+
+  {% if block.settings.set_text_alignment %}
+    vars-content-align-{{ block.settings.text_alignment }} text-content-align
+  {% endif %}
+{% endcapture %}
+
+{% capture style %}
+  {% render 'props-style-gap', s: block.settings %}
+  --content-gravity: center;
+  --entrance-animation-stagger: 70ms;
+  --entrance-animation-duration: 240ms;
+  --entrance-animation-ease: cubic-bezier(0.23, 1, 0.32, 1);
+  --entrance-animation-slide-in-from-bottom: 0px;
+{% endcapture %}
+
+{% if set_stack %}
+  {% liquid
+    # When stacked, main-axis flips to vertical. Placement's horizontal intent
+    # is preserved by translating to align-items (cross-axis = horizontal in column).
+    # spread has no clean column equivalent → falls back to center.
+    assign stacked_align = 'center'
+    if full_width
+      case block.settings.placement
+        when 'start'
+          assign stacked_align = 'flex-start'
+        when 'end'
+          assign stacked_align = 'flex-end'
+      endcase
+    endif
+  %}
+  {% style %}
+    @container width (max-width: {{ block.settings.stack_breakpoint_px }}px) {
+      row-group[data-row-id='{{ block.id }}'] {
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: {{ stacked_align }};
+      }
+      row-track[data-row-id='{{ block.id }}'] > button {
+        display: none;
+      }
+    }
+  {% endstyle %}
+{% endif %}
+
+{% capture row_group_markup %}
+  <row-group
+    data-row-id='{{ block.id }}'
+    class='{{ row_group_class }}'
+    style='{{ style }}'
+    {% if show_arrows %}
+      x-overflow:viewport
+      x-ref='track'
+      :class="
+        {
+          'edge-mask-r': $overflow.end,
+          'edge-mask-l': $overflow.start
+        }
+      "
+    {% endif %}
+  >
+    {{ blocks }}
+  </row-group>
+{% endcapture %}
+
+<row-track
+  data-row-id="{{ block.id }}"
+  {% if show_arrows %}
+    x-overflow.scroll
+  {% endif %}
+  {{ block.shopify_attributes }}
+>
+  {% if show_arrows %}
+    <button
+      aria-label="{{ 'other.accessibility.prev' | t }}"
+      class="absolute left-0 top-1/2 -translate-y-1/2 z-10 hit-area-x-r3 h-full transition-opacity"
+      :disabled="!$overflow.start"
+      :class="
+        {
+          'opacity-0 pointer-events-none': !$overflow.start,
+          'opacity-100 pointer-events-auto': $overflow.start
+        }
+      "
+      x-cloak
+      @click="$refs.track.scrollBy({ left: -Math.min($refs.track.clientWidth * 0.75, 500), behavior: 'smooth' })"
+    >
+      {% render 'core-icon', icon: 'stroke-chevron-left' %}
+    </button>
+  {% endif %}
+
+  {{ row_group_markup }}
+
+  {% if show_arrows %}
+    <button
+      aria-label="{{ 'other.accessibility.next' | t }}"
+      class="absolute right-0 top-1/2 -translate-y-1/2 z-10 hit-area-x-r3 h-full transition-opacity"
+      :disabled="!$overflow.end"
+      :class="
+        {
+          'opacity-0 pointer-events-none': !$overflow.end,
+          'opacity-100 pointer-events-auto': $overflow.end
+        }
+      "
+      x-cloak
+      @click="$refs.track.scrollBy({ left: Math.min($refs.track.clientWidth * 0.75, 500), behavior: 'smooth' })"
+    >
+      {% render 'core-icon', icon: 'stroke-chevron-right' %}
+    </button>
+  {% endif %}
+</row-track>
+
+{% schema %}
+{
+	"name": "Row",
+	"tag": null,
+	"settings": [
+		{
+			"type": "checkbox",
+			"id": "full_width",
+			"label": "Full width",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "placement",
+			"label": "Placement",
+			"default": "start",
+			"options": [
+				{
+					"value": "start",
+					"label": "⇤"
+				},
+				{
+					"value": "center",
+					"label": "|"
+				},
+				{
+					"value": "end",
+					"label": "⇥"
+				},
+				{
+					"value": "spread",
+					"label": "↔"
+				}
+			],
+			"visible_if": "{{ block.settings.full_width == true }}"
+		},
+		{
+			"type": "select",
+			"id": "spread",
+			"label": "Distribute",
+			"default": "between",
+			"options": [
+				{
+					"value": "between",
+					"label": "▮·▮·▮ Between"
+				},
+				{
+					"value": "around",
+					"label": "·▮·▮·▮· Around"
+				},
+				{
+					"value": "evenly",
+					"label": "·▮··▮··▮· Evenly"
+				}
+			],
+			"visible_if": "{{ block.settings.full_width == true and block.settings.placement == 'spread' }}"
+		},
+		{
+			"type": "header",
+			"content": "Stack"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_stack",
+			"label": "Enable stacking",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "stack_breakpoint_px",
+			"label": "Breakpoint width",
+			"unit": "px",
+			"min": 200,
+			"max": 1000,
+			"step": 20,
+			"default": 600,
+			"visible_if": "{{ block.settings.set_stack }}",
+			"info": "Stack items when the row is narrower than the breakpoint"
+		},
+		{
+			"type": "header",
+			"content": "Overflow"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_arrows",
+			"label": "Show arrows",
+			"info": "Row always scrolls when contents overflow. Arrows add chevron controls and edge fade.",
+			"default": false
+		},
+		{
+			"type": "header",
+			"content": "Gap"
+		},
+		{
+			"type": "select",
+			"id": "gap",
+			"label": "Gap",
+			"default": "md",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "gap_custom",
+			"label": "Custom gap",
+			"default": 0,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ block.settings.gap == 'custom'  }}"
+		},
+		{
+			"type": "header",
+			"content": "Text"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_text_alignment",
+			"label": "Set text alignment",
+			"default": false
+		},
+		{
+			"type": "text_alignment",
+			"id": "text_alignment",
+			"label": "Alignment",
+			"default": "left",
+			"visible_if": "{{ block.settings.set_text_alignment }}"
+		}
+	],
+	"blocks": [
+		{
+			"type": "@app"
+		},
+		{
+			"type": "theme-link"
+		},
+		{
+			"type": "theme-button"
+		},
+		{
+			"type": "theme-spacer"
+		},
+		{
+			"type": "theme-text"
+		},
+		{
+			"type": "theme-richtext"
+		},
+		{
+			"type": "theme-group-text"
+		},
+		{
+			"type": "theme-decoration"
+		},
+		{
+			"type": "theme-icon"
+		}
+	],
+	"presets": [
+		{
+			"name": "Row",
+			"category": "Layout",
+			"settings": {
+				"set_stack": true,
+				"stack_breakpoint_px": 760
+			},
+			"blocks": [
+				{
+					"type": "theme-decoration"
+				},
+				{
+					"type": "theme-text",
+					"settings": {
+						"text": "Section Title",
+						"type_preset": "h5"
+					}
+				},
+				{
+					"type": "theme-decoration"
+				}
+			]
+		}
+	]
+}
+{% endschema %}
+

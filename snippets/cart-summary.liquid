@@ -1,0 +1,44 @@
+{% doc %}
+  - Renders the cart discounts, subtotal and total
+{% enddoc %}
+
+<div class="flex flex-col gap-y-r5 text-r3">
+  {%- if cart.cart_level_discount_applications.size > 0 -%}
+    {% comment %} Subtotal {% endcomment %}
+    <div class="flex justify-between items-center text-content">
+      <span>{{ 'cart.subtotal' | t }}</span>
+      <span>
+        {%- render 'money', price: cart.items_subtotal_price, show_currency: true, hide_trailing_zeros: false -%}
+      </span>
+    </div>
+
+    {% comment %} Cart-level discount applications {% endcomment %}
+    {% for discount in cart.cart_level_discount_applications %}
+      <div class="flex justify-between items-center text-content">
+        <div class="flex items-center gap-x-r3">
+          {% if discount.type == 'discount_code' %}
+            <span>{{ 'cart.discount_code' | t }}</span>
+            <span class="font-bold">{{ discount.code }}</span>
+          {% else %}
+            <span>{{ discount.title }}</span>
+          {% endif %}
+          {% render 'core-icon', icon: 'fill-tag', stroke_weight: 'light' %}
+        </div>
+        <span>
+          -
+          {%- render 'money',
+            price: discount.total_allocated_amount,
+            show_currency: true,
+            hide_trailing_zeros: false
+          -%}
+        </span>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  {% comment %} Estimated total {% endcomment %}
+  <div class="flex justify-between items-center font-bold text-content">
+    <span>{{ 'cart.estimated_total' | t }}</span>
+    <span>{% render 'money', price: cart.total_price, show_currency: true, hide_trailing_zeros: false %}</span>
+  </div>
+</div>

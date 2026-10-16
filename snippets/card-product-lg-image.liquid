@@ -1,0 +1,72 @@
+{% doc %}
+  - Renders one image on a large product card
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {string} [fetchpriority]
+  @param {image} image
+  @param {string} [image_class] - classes for the image
+  @param {string} [image_sizes] - sizes hint for the image
+  @param {string} [image_widths] - widths for the image srcset
+  @param {string} [loading]
+  @param {boolean} [placeholder] - renders placeholder artwork without an image, defaults to true
+  @param {product} [product]
+{% enddoc %}
+
+{%- liquid
+  if placeholder == blank
+    assign placeholder = true
+  endif
+
+  assign cover = false
+
+  case settings.product_card_image_fit
+    when 'scale'
+      assign cover = false
+    when 'crop'
+      assign cover = true
+    when 'uneven'
+      assign cover = true
+  endcase
+-%}
+
+{%- liquid
+  if image_sizes == blank
+    capture image_sizes
+      render 'image-grid-sizes'
+    endcapture
+  endif
+  if image_widths == blank
+    capture image_widths
+      render 'image-grid-widths'
+    endcapture
+  endif
+-%}
+
+<div
+  class="{{ class }}"
+  data-test-id="product-card-image"
+  {{ attributes }}
+>
+  {% comment %} alt_default ensures the alt attribute exists; the wrapping product link's aria-label is the real accessible name. {% endcomment %}
+  {% render 'core-image',
+    cover: cover,
+    image: image,
+    alt_default: product.title,
+    sizes: image_sizes,
+    widths: image_widths,
+    class: 'size-full relative z-10',
+    x-ref: 'productCardImage',
+    loading: loading,
+    fetchpriority: fetchpriority
+  %}
+
+  {% if placeholder and loading == 'lazy' %}
+    {% render 'image-loading-placeholder',
+      cover: cover,
+      image: image,
+      wrapper_class: 'absolute inset-0 z-0 size-full',
+      class: image_class
+    %}
+  {% endif %}
+</div>

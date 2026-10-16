@@ -1,0 +1,220 @@
+{% doc %}
+  - Renders one product media item, picking the snippet for its type
+
+  The featured media loads eagerly at high priority, everything else lazily.
+
+  @param {number} [aspect_ratio] - media aspect ratio
+  @param {string} [attributes]
+  @param {block} [block]
+  @param {string} [class] - The classes
+  @param {string} [id]
+  @param {string} [image_sizes] - sizes hint for the image
+  @param {string} [image_widths] - widths for the image srcset
+  @param {boolean} [is_featured_media] - loads it eagerly at high fetch priority
+  @param {string} [item_class] - classes for the item wrapper
+  @param {string} [layout] - desktop layout the item sits in
+  @param {media} [media]
+  @param {object} [product_media] - the media to render, already ordered
+  @param {object} [s] - settings object
+  @param {section} [section]
+  @param {string} [stack_style] - stack layout variant
+{% enddoc %}
+
+{% liquid
+  assign preload = false
+  assign loading = false
+
+  # Featured media should always be high priority
+  if is_featured_media
+    assign fetchpriority = 'high'
+  endif
+
+  # On the product page we preload the featured media and load all other images eagerly
+  if request.page_type == 'product'
+    if is_featured_media
+      assign preload = true
+    endif
+
+    assign loading = 'eager'
+  endif
+
+  # Determine aria-label based on media type
+  assign aria_label = ''
+  case media.media_type
+    when 'video'
+      assign aria_label = 'product.accessibility.video_label' | t
+    when 'external_video'
+      assign aria_label = 'product.accessibility.video_label' | t
+    when 'model'
+      assign aria_label = 'product.accessibility.model_label' | t
+    else
+      assign aria_label = 'product.accessibility.image_label' | t
+  endcase
+
+  assign product_media_size_count = product_media.size | default: product_media.count
+
+  # Desktop static layouts (single, stack, columns, mosaic) have no slideshow to trap arrow
+  # keys and no focus-revealed keyboard zoom button, so the zoom overlay link stays focusable
+  # there. The mobile gallery passes no layout and keeps the slideshow behavior.
+  assign zoom_focusable = false
+  if layout and layout != 'showcase'
+    assign zoom_focusable = true
+  endif
+
+  # Images and models go full height in mosaic or column layouts
+  if layout == 'stack'
+    if stack_style == 'mosaic' or stack_style == 'columns'
+      if media.media_type == 'image'
+        assign class = class | append: ' h-full'
+        assign item_class = item_class | append: ' h-full'
+      elsif media.media_type == 'model'
+        assign class = class | append: ' h-full'
+        assign item_class = item_class | append: ' h-full *:h-full'
+      endif
+    endif
+  endif
+%}
+
+{% comment %} Custom cursor {% endcomment %}
+{% assign has_custom_cursor = false %}
+{% if s.enable_zoom %}
+  {% if media.media_type == 'image' or media.media_type == 'video' %}
+    {% assign has_custom_cursor = true %}
+
+    {% capture custom_cursor %}
+      {% comment %} Cursor blur background circle {% endcomment %}
+      <div
+        x-cloak
+        x-custom-cursor:element.mass.15
+        class="
+          size-fit fixed top-0 left-0 z-10 overflow-visible pointer-events-none cursor-pointer motion-reduce:hidden touch:hidden
+          transition-opacity group-has-[[data-edge]]/media:opacity-0
+        "
+        :class="{
+          '!opacity-0': $customCursor.isHidden
+        }"
+      >
+        <div class="[--cursor-size:42px] size-[--cursor-size] rounded-full frosted-glass border border-white/50"></div>
+      </div>
+      {% comment %} Cursor arrow {% endcomment %}
+      <span
+        x-cloak
+        x-custom-cursor:element
+        class="
+          fixed top-0 left-0 z-10 pointer-events-none flex flex-center [--cursor-size:42px] size-[--cursor-size] touch:hidden
+          transition-opacity group-has-[[data-edge]]/media:opacity-0
+        "
+        :class="{
+          '!opacity-0': $customCursor.isHidden
+        }"
+      >
+        {% render 'core-icon', icon: 'fill-magnify', size: 'md', class: 'text-white' %}
+      </span>
+    {% endcapture %}
+  {% endif %}
+{% endif %}
+
+<figure
+  class="
+    relative overflow-hidden {{ class }}
+    {% if section.settings.contain_section %}
+      md:rounded-[--media-rounding]
+    {% endif %}
+    {% if block.settings.contain_media_mobile %}
+      max-md:rounded-[--media-rounding-mobile]
+    {% endif %}
+  "
+  id="{{ id }}"
+  key="{{ media.id }}"
+
+  {% if media.media_type == 'image' %}
+    data-photoswipe-media="{{ media.id }}"
+  {% endif %}
+
+  {% if product_media_size_count == 1 %}
+    aria-label="{{ aria_label }}"
+  {% else %}
+    aria-label="{{ aria_label }} {{ media.position }}/{{ product_media_size_count }}"
+  {% endif %}
+  {{ attributes }}
+>
+  {% comment %}
+    Wrapper carries the custom-cursor scope and lazy-alpine load when zoom is enabled.
+    It must sit inside the figure rather than on it: `data-lazy-alpine` tells Alpine to 'skip()'
+    this element, which would freeze the figure's slideshow directives (`x-slideshow:slide`,
+    `x-show`, `x-cloak`) until the 4.5s lazy fallback fires
+  {% endcomment %}
+  <div
+    class="block w-full h-full"
+    {% if has_custom_cursor %}
+      data-lazy-alpine
+      data-lazy-alpine-module="@theme/custom-cursor"
+      x-custom-cursor
+    {% endif %}
+  >
+    {% case media.media_type %}
+      {% when 'video' %}
+        {% liquid
+          assign media_id = id | append: '-' | append: media.id
+          assign thumb_el_id = '#' | append: media_id | append: '-video'
+        %}
+
+        {% for source in media.sources %}
+          {% comment %} Video media need to populate photoswipe from an explicit json object since the video tag itself doesnt provide enough info like width and height {% endcomment %}
+          {% comment %} Check for mp4, mov or webm source so we can get the correct video URL {% endcomment %}
+          {% case source.mime_type %}
+            {% when 'video/mp4', 'video/quicktime', 'video/webm' %}
+              {% render 'photoswipe-video-json',
+                id: media.id,
+                video: media,
+                video_source: source.url,
+                thumb_el: thumb_el_id
+              %}
+              {% break %}
+          {% endcase %}
+        {% endfor %}
+
+        {% render 'product-media-item-video',
+          s: s,
+          aspect_ratio: aspect_ratio,
+          media: media,
+          preload: preload,
+          id: id,
+          zoom_focusable: zoom_focusable
+        %}
+
+      {% when 'external_video' %}
+        {% render 'product-media-item-video-external',
+          s: s,
+          aspect_ratio: aspect_ratio,
+          media: media
+        %}
+
+      {% when 'model' %}
+        {% render 'product-media-item-model',
+          s: s,
+          aspect_ratio: aspect_ratio,
+          media: media,
+          preload: preload,
+          loading: loading,
+          class: item_class
+        %}
+
+      {% else %}
+        {% render 'product-media-item-image',
+          s: s,
+          aspect_ratio: aspect_ratio,
+          media: media,
+          loading: loading,
+          preload: preload,
+          image_sizes: image_sizes,
+          image_widths: image_widths,
+          class: item_class,
+          fetchpriority: fetchpriority,
+          zoom_focusable: zoom_focusable
+        %}
+    {% endcase %}
+
+    {{ custom_cursor }}
+  </div>
+</figure>

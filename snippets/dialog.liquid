@@ -1,0 +1,167 @@
+{% doc %}
+  - Renders a native dialog element
+
+  @param {string} [animation] - entry animation name
+  @param {string} [attributes]
+  @param {string} content
+  @param {string} [content_class] - classes for the content
+  @param {string} [content_style] - inline styles for the content
+  @param {string} [dialog_class] - classes for the dialog
+  @param {string} [label] - accessible name for the dialog
+  @param {boolean} [modal] - opens it modally, with a backdrop and a close button
+  @param {string} [modal_backdrop_bg_class] - classes for the backdrop
+  @param {string} [modal_bg_class] - classes for the modal background
+  @param {boolean} [open] - opens it on load
+  @param {string} [position] - where the dialog sits
+  @param {boolean} [scrollable] - lets the content scroll
+{% enddoc %}
+
+{% comment %}
+  Markup for rendering a dialog component (meant to be used inside of an element with x-dialog)
+
+  content {string} - content to render inside dialog
+  modal {boolean} - whether or not dialog should be "modal", i.e. prevent user from interacting with rest of page (optional)
+  position {string} - position of dialog on page, e.g. "center center" (optional)
+  animation {string} - animation type, e.g. 'from-left'
+
+  dialog_class {string} - additional classes to apply to dialog element (optional)
+  attributes {string} - Other HTML attributes to add to root dialog element
+  content_class {string} - additional classes to apply to dialog content element (optional)
+  modal_bg_class {string} - class to use for modal background (optional, defaults to 'bg-content/80')
+
+  <div x-dialog>
+    <button x-dialog:button>Open dialog</button>
+    {% render 'dialog', content: 'Hello 123' %}
+  </div
+{% endcomment %}
+
+{% liquid
+  assign modal = modal | default: false
+  assign animation = animation | default: 'from-bottom'
+
+  # Class attributes
+  assign dialog_class = dialog_class | default: ''
+  assign modal_bg_class = modal_bg_class | default: ''
+
+  #
+  # Set default animation based on the position when 'animation' is null
+  #
+  if animation == 'auto'
+    case position
+      when 'center left'
+        assign animation = 'from-left'
+      when 'center right'
+        assign animation = 'from-right'
+      else
+        assign animation = 'from-bottom'
+    endcase
+  endif
+
+  #
+  # Transform a given position from e.g. 'center center' to flexbox alignment classes
+  #
+  assign position = position | default: 'center center' | split: ' '
+  assign main_axis_position = position[0]
+  assign cross_axis_position = position[1]
+
+  assign justify_class = null
+  assign items_class = null
+
+  case main_axis_position
+    when 'top'
+      assign items_class = 'items-start'
+    when 'center'
+      assign items_class = 'items-center'
+    when 'bottom'
+      assign items_class = 'items-end'
+  endcase
+
+  case cross_axis_position
+    when 'left'
+      assign justify_class = 'justify-start'
+    when 'center'
+      assign justify_class = 'justify-center'
+    when 'right'
+      assign justify_class = 'justify-end'
+  endcase
+%}
+
+<dialog
+  {% if label %}
+    aria-label="{{ label }}"
+  {% endif %}
+
+  x-dialog:dialog
+  :data-closing="!$dialog.isOpen && $dialog.wasOpen"
+  x-cloak
+
+  {% if modal %}
+    x-scroll-lock="$dialog.isOpen"
+  {% endif %}
+
+  {% if open %}
+    open
+  {% endif %}
+
+  class="
+    z-50 fixed group/dialog inset-0 p-root-buffer m-0 w-screen h-screen-dynamic bg-transparent border-none overflow-hidden
+    open:flex {{ items_class }} {{ justify_class }}
+    animate-dialog {{ animation }}
+
+    {% if modal %}
+      {% assign modal_backdrop_bg_class = modal_backdrop_bg_class | default: 'backdrop:bg-canvas/80' %}
+      {{ modal_backdrop_bg_class }} backdrop:backdrop-blur-md
+    {% else %}
+      pointer-events-none
+    {% endif %}
+
+    {{ dialog_class }}
+  "
+
+  {% comment %} Dialog should not be interactable until it is opened. x-dialog removes this automatically {% endcomment %}
+
+  {{ attributes }}
+>
+  <div
+    class="
+      relative flex flex-col gap-root-buffer
+      rounded-[--dialog-radius] bg-[--dialog-bg-color] bg-canvas shadow text-content pointer-events-auto
+      w-[--width] max-w-[--max-width] p-[--layout-buffer]
+      max-h-[calc(100%-var(--layout-buffer-x))] mt-[--layout-buffer-x]
+      md:max-h-[calc(100%-var(--layout-buffer-x)*2)] md:my-[--layout-buffer-x]
+      {{ content_class }}
+      {% if scrollable %}overflow-y-auto{% else %}overflow-y-hidden{% endif %}
+    "
+    style="
+      --default-buffer: calc(var(--root-buffer) + var(--row-lg));
+      --layout-buffer-x: var(--dialog-buffer, var(--default-buffer));
+      --width: var(--dialog-width, 1000px);
+      --max-width: var(--dialog-max-width, var(--page-width));
+      --layout-buffer: var(--dialog-padding, var(--root-buffer));
+      {{ content_style }}
+    "
+    x-dialog:content
+    data-skip-animation-wait
+  >
+    {{ content }}
+  </div>
+
+  {% if modal %}
+    <button
+      class="
+        flex flex-center aspect-square rounded-full bg-btn text-btn border-none vars-btn-lg vars-btn-fill vars-btn-canvas size-btn shadow
+        z-20 !fixed top-root-buffer transition-none pointer-events-auto
+      "
+      aria-label="{{ 'other.accessibility.close' | t }}"
+      x-dialog:close
+      :class="
+        {
+          'animate-in animate-delay-300 animate-duration-[--dialog-enter-duration] origin-center fade-in': $dialog.isOpen,
+          'animate-out origin-center fade-out': !$dialog.isOpen
+        }
+      "
+    >
+      {% render 'core-icon', icon: 'stroke-bare-x' %}
+    </button>
+  {% endif %}
+</dialog>

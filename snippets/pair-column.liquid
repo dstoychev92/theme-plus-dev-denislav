@@ -1,0 +1,281 @@
+{% doc %}
+  - Renders one column of a pair section, with its own frame settings
+
+  @param {string} [align_self] - vertical alignment within the row
+  @param {number} [aspect_ratio] - column ratio for the 'image' height, from the caller's media
+  @param {string} [attributes]
+  @param {string} [background] - rendered background markup
+  @param {block} [block]
+  @param {string} [border_color] - CSS color
+  @param {number} [border_width] - border width in pixels
+  @param {string} [class] - The classes
+  @param {string} [color_scheme] - colour scheme for the column
+  @param {string} [content]
+  @param {string} [custom_height_percentage] - height as a percentage of the viewport
+  @param {string} [custom_height_percentage_mobile] - height as a percentage of the viewport on mobile
+  @param {number} [custom_height_px] - height in pixels
+  @param {string} [custom_height_px_mobile] - height in pixels on mobile
+  @param {string} [custom_height_type] - 'percentage' or 'px'
+  @param {string} [custom_height_type_mobile] - 'percentage' or 'px'
+  @param {boolean} [enable_gap] - applies the gap
+  @param {boolean} [enable_spacing] - applies the padding
+  @param {boolean} [enable_sticky] - sticks the column while the other scrolls
+  @param {boolean} [gap] - gap step
+  @param {string} [gap_custom] - gap in pixels when gap is 'custom'
+  @param {string} [height] - height step
+  @param {string} [height_mobile] - height step on mobile
+  @param {boolean} [is_media_block] - the column holds the media, which changes its defaults
+  @param {string} [padding_custom_horizontal] - horizontal padding in pixels
+  @param {string} [padding_custom_vertical] - vertical padding in pixels
+  @param {string} [padding_horizontal] - horizontal padding step
+  @param {string} [padding_vertical] - vertical padding step
+  @param {string} [rounding_radius] - radius step
+  @param {number} [rounding_radius_custom] - radius in pixels
+  @param {object} [s] - settings object
+  @param {section} [section]
+  @param {boolean} [set_border] - draws the border
+  @param {boolean} [set_color_scheme] - applies the colour scheme
+  @param {boolean} [set_height] - applies the height
+  @param {boolean} [set_rounding] - rounds the corners
+  @param {string} [style] - inline styles
+{% enddoc %}
+
+{% liquid
+  assign block_index = section.blocks | find_index: 'id', block.id
+
+  # Media block flag - allows rounding/border without background
+  assign is_media_block = is_media_block | default: false
+
+  # Colors
+  assign color_scheme = color_scheme | default: s.color_scheme
+  assign set_color_scheme = set_color_scheme | default: s.set_color_scheme | default: true, allow_false: true
+  assign background = background | default: s.background
+
+  # Spacing
+  assign enable_spacing = enable_spacing | default: s.set_spacing | default: false
+  assign padding_horizontal = padding_horizontal | default: s.padding_horizontal, allow_false: true
+  assign padding_vertical = padding_vertical | default: s.padding_vertical, allow_false: true
+  assign padding_custom_horizontal = padding_custom_horizontal | default: s.padding_custom_horizontal, allow_false: true
+  assign padding_custom_vertical = padding_custom_vertical | default: s.padding_custom_vertical, allow_false: true
+
+  # Sticky
+  assign enable_sticky = enable_sticky | default: section.settings.enable_sticky | default: false
+
+  # Alignment
+  assign align_self = align_self | default: section.settings.align_self, allow_false: true
+
+  # Gap - within pair block, not section-level pair gap
+  assign enable_gap = enable_gap | default: s.set_gap | default: false
+  assign gap = gap | default: s.gap, allow_false: true
+  assign gap_custom = gap_custom | default: s.gap_custom, allow_false: true
+
+  # Height. The mode picks the settings owner, so the svh-support class below tracks
+  # the same settings that set --custom-height
+  if section.settings.height_mode == 'column'
+    assign height = height | default: s.height, allow_false: true | default: false
+    assign set_height = set_height | default: s.set_height | default: true, allow_false: true
+    assign custom_height_type = custom_height_type | default: s.custom_height_type
+    assign custom_height_percentage = custom_height_percentage | default: s.custom_height_percentage
+    assign custom_height_px = custom_height_px | default: s.custom_height_px
+  else
+    assign set_height = true
+    assign height = height | default: section.settings.height, allow_false: true
+    assign custom_height_type = custom_height_type | default: section.settings.custom_height_type
+    assign custom_height_percentage = custom_height_percentage | default: section.settings.custom_height_percentage
+    assign custom_height_px = custom_height_px | default: section.settings.custom_height_px
+  endif
+
+  # Border
+  assign set_border = set_border | default: s.set_border, allow_false: true | default: false
+  assign border_width = border_width | default: s.border_width | default: 0
+  assign border_color = border_color | default: s.border_color | default: '#ffffff00'
+
+  # Rounding
+  assign set_rounding = set_rounding | default: s.set_rounding, allow_false: true | default: false
+  assign rounding_radius = rounding_radius | default: s.rounding_radius | default: 'none'
+  assign rounding_radius_custom = rounding_radius_custom | default: s.rounding_radius_custom | default: 0
+
+  # `has_surface` — intrinsic visual surface: media block, non-transparent background,
+  # or border with width. Drives default rounding, contain insets, adjacency merging
+  # (pair-column-surface), and the bg-opaque grid row-gap.
+  assign has_surface = false
+  if is_media_block
+    assign has_surface = true
+  elsif set_color_scheme and background != 'transparent'
+    assign has_surface = true
+  elsif set_border and border_width > 0
+    assign has_surface = true
+  endif
+
+  # `hosts_surface` — escape hatch for transparent columns that wrap an inner
+  # surface (full-bleed image, card grid, etc.). Merchant opts in explicitly via
+  # color scheme + transparent bg + set_rounding=true. The column rounds/clips its
+  # inner content but does not become a surface itself, so it doesn't merge with
+  # adjacent surfaces in gapless layouts.
+  assign hosts_surface = false
+  if set_rounding and set_color_scheme and background == 'transparent'
+    assign hosts_surface = true
+  endif
+
+  if set_rounding and has_surface == false and hosts_surface == false
+    assign set_rounding = false
+  endif
+
+  # Default rounding only kicks in with a surface and when merchant didn't set their own.
+  # Desktop-only via md:overflow-hidden below so it doesn't prevent full-bleed on mobile.
+  assign has_default_rounding = false
+  unless set_rounding
+    if settings.banner_default_rounding != 'none' and has_surface
+      assign has_default_rounding = true
+    endif
+  endunless
+
+  assign background_transparent = false
+  unless has_surface
+    assign background_transparent = true
+  endunless
+
+  # `pair-column-contain` matches section-contain semantics: surface present, or merchant spacing.
+  assign pair_column_contain = false
+  if has_surface or enable_spacing
+    assign pair_column_contain = true
+  endif
+
+  assign height_mobile = height_mobile | default: s.height_mobile | default: false
+  assign custom_height_type_mobile = custom_height_type_mobile | default: s.custom_height_type_mobile
+  assign custom_height_percentage_mobile = custom_height_percentage_mobile | default: s.custom_height_percentage_mobile
+  assign custom_height_px_mobile = custom_height_px_mobile | default: s.custom_height_px_mobile
+-%}
+
+{% capture style %}
+  {% if enable_spacing %}
+    {% render 'props-style-buffer', s: s, namespace: 'pair' %}
+  {% endif %}
+
+  {% if enable_gap %}
+    {% if gap %}
+      {% render 'props-style-gap', gap: gap, gap_custom: gap_custom, apply: false, card_vars: true %}
+    {% endif %}
+  {% endif %}
+
+  {{ style }}
+
+  {% render 'props-style-background', s: s %}
+
+  {% if set_border %}
+    {% render 'props-style-border', border_width: border_width, border_color: border_color %}
+  {% endif %}
+
+  {% if set_rounding %}
+    {% render 'props-style-radius', rounding_radius: rounding_radius, rounding_radius_custom: rounding_radius_custom %}
+  {% elsif has_default_rounding %}
+    --custom-radius: var(--radius-banner-default);
+    --layout-radius: var(--custom-radius);
+  {% endif %}
+
+  {% if section.settings.height_mode == 'column' %}
+    {% render 'props-style-custom-height', s: s, set_height_mobile: true %}
+    {% if height == 'image' and aspect_ratio != blank %}
+      --background-aspect-ratio: {{ aspect_ratio }};
+    {% endif %}
+  {% else %}
+    {% render 'props-style-custom-height', s: section.settings, set_height_mobile: true, height_mobile: height_mobile, custom_height_type_mobile: custom_height_type_mobile, custom_height_percentage_mobile: custom_height_percentage_mobile, custom_height_px_mobile: custom_height_px_mobile %}
+  {% endif %}
+{% endcapture %}
+
+{% capture class %}
+  {% if set_rounding and rounding_radius != 'none' %}
+    {% # Secret sauce - use set_rounding with rounding_radius_custom:0 for inset without rounding %}
+    overflow-hidden pair-column-rounded pair-column-visual-rounded
+  {% elsif has_default_rounding %}
+    md:overflow-hidden md:rounded-[--custom-radius] pair-column-default-rounded pair-column-visual-rounded
+  {% endif %}
+
+  w-full max-w-screen group/pair-column cq-width
+
+  {% if enable_spacing %}
+    pair-column-custom-spacing
+  {% endif %}
+
+  {%- if set_height -%}
+    {% if height == 'custom' and custom_height_type == 'percentage' %}
+      vars-custom-height-svh-support
+    {% endif %}
+  {%- endif -%}
+
+  {% if height_mobile == 'custom' and custom_height_type_mobile == 'percentage' %}
+    vars-mobile-custom-height-svh-support
+  {% endif %}
+
+  max-md:min-h-[--mobile-custom-height]
+
+  {% if section.settings.height_mode == 'column' %}
+    {% if align_self != blank %}
+      {% case align_self %}
+        {% when 'start' %}
+          self-start {% if enable_sticky %} sticky-column sticky-column--flush-top {% endif %}
+        {% when 'center' %}
+          self-center {% if enable_sticky %} sticky-column sticky-column--flush-top {% endif %}
+        {% when 'end' %}
+          self-end {% if enable_sticky %} sticky-column sticky-column--end {% endif %}
+      {% endcase %}
+      md:min-h-[--custom-height]
+    {% else %}
+      md:min-h-[--custom-height]
+    {% endif %}
+
+    {% if height == 'image' and aspect_ratio != blank %}
+      {% # The ::before band in theme.pair.css floors the column at the media ratio %}
+      pair-column-image-band
+    {% endif %}
+  {% else %}
+    md:min-h-[--custom-height]
+  {% endif %}
+
+  {% render 'props-class-background', s: s %}
+
+  {% if background_transparent %}
+    pair-bg-transparent
+  {% else %}
+    pair-bg-opaque
+  {% endif %}
+
+  {% if has_surface %}
+    pair-column-surface
+  {% endif %}
+
+  {% if pair_column_contain %}
+    pair-column-contain
+  {% endif %}
+
+  {% if set_border == true and border_width > 0 %}
+    pair-column-border
+  {% endif %}
+
+  {% unless section.settings.gap == 'custom' and section.settings.gap_custom == 0 %}
+    pair-gap
+  {% endunless %}
+
+  {% case block_index %}
+    {% when 0 %}
+      pair-column-1
+    {% when 1 %}
+      pair-column-2
+  {% endcase %}
+
+  {{ class }}
+{% endcapture %}
+
+<pair-column
+  data-test-id="column"
+  class="{{ class }}"
+  style="{{ style }}"
+  {% comment %} Pair column needs to be parallax root instead of the section so that parallax works properly on mobile (since pair columns stack so section being parallax root breaks things) {% endcomment %}
+  x-parallax
+  {% if enable_sticky %}
+    x-sticky-columns:column
+  {% endif %}
+  {{ attributes }}
+>
+  {{ content }}
+</pair-column>

@@ -1,0 +1,258 @@
+<!-- blocks/_pair-hotspots.liquid -->
+
+{% liquid
+  # Section height mode: the image covers the column instead of putting a floor
+  # under it. Content-driven heights keep the in-flow image, since the image is
+  # the content that sizes them.
+  assign hotspots_height = 'image'
+  if section.settings.height_mode == 'section'
+    unless section.settings.height == 'content'
+      assign hotspots_height = false
+    endunless
+  endif
+%}
+
+{% capture class %}
+  pair-media
+  {% comment %} Keep columns equal height when placeholder image {% endcomment %}
+  {% if block.settings.image != blank and section.settings.height_mode == 'column' %}
+    self-start h-fit
+  {% endif %}
+{% endcapture %}
+
+{% capture attributes %}
+  data-test-id="pair-hotspots"
+  {{ block.shopify_attributes }}
+{% endcapture %}
+
+{% capture blocks %}
+  {% content_for "blocks" %}
+{% endcapture %}
+
+{% capture content %}
+  {% render 'hotspots', s: block.settings, hotspots: blocks, height: hotspots_height %}
+{% endcapture %}
+
+{% render 'pair-column',
+  content: content,
+  s: block.settings,
+  class: class,
+  attributes: attributes,
+  is_media_block: true
+%}
+
+{% schema %}
+{
+	"name": "Hotspots",
+	"tag": null,
+	"settings": [
+		{
+			"type": "image_picker",
+			"id": "image",
+			"label": "Image"
+		},
+		{
+			"type": "image_picker",
+			"id": "image_mobile",
+			"label": "Mobile image"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_aspect_ratio",
+			"label": "Set aspect ratio",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "aspect_ratio",
+			"min": 0.5,
+			"max": 3,
+			"step": 0.1,
+			"unit": ":1",
+			"label": "Aspect ratio",
+			"default": 1,
+			"visible_if": "{{ block.settings.set_aspect_ratio == true  }}"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color",
+			"id": "hotspot_color",
+			"label": "Hotspot color",
+			"default": "#ffffff"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_color_scheme",
+			"label": "Set colors",
+			"default": false
+		},
+		{
+			"type": "color_scheme",
+			"id": "color_scheme",
+			"label": "Color scheme",
+			"visible_if": "{{ block.settings.set_color_scheme }}",
+			"default": "scheme-opposite"
+		},
+		{
+			"type": "select",
+			"id": "background",
+			"label": "Background",
+			"default": "tint",
+			"options": [
+				{
+					"value": "canvas",
+					"label": "Default"
+				},
+				{
+					"value": "tint",
+					"label": "Tint"
+				},
+				{
+					"value": "transparent",
+					"label": "∅"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			],
+			"visible_if": "{{ block.settings.set_color_scheme }}"
+		},
+		{
+			"type": "color",
+			"id": "background_custom",
+			"label": "Background color",
+			"default": "#DEDEDE",
+			"visible_if": "{{ block.settings.set_color_scheme and block.settings.background == 'custom' }}"
+		},
+		{
+			"type": "header",
+			"content": "Border"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_border",
+			"label": "Set border",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "border_width",
+			"label": "Thickness",
+			"unit": "px",
+			"min": 0,
+			"max": 10,
+			"step": 1,
+			"default": 1,
+			"visible_if": "{{ block.settings.set_border }}"
+		},
+		{
+			"type": "color",
+			"id": "border_color",
+			"label": "Color",
+			"alpha": true,
+			"default": "#000000",
+			"visible_if": "{{ block.settings.set_border }}"
+		},
+		{
+			"type": "header",
+			"content": "Rounding"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_rounding",
+			"label": "Set rounding",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "rounding_radius",
+			"label": "Radius",
+			"default": "lg",
+			"options": [
+				{
+					"value": "none",
+					"label": "0"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			],
+			"visible_if": "{{ block.settings.set_rounding  }}"
+		},
+		{
+			"type": "range",
+			"id": "rounding_radius_custom",
+			"label": "Radius",
+			"unit": "px",
+			"min": 0,
+			"max": 50,
+			"step": 1,
+			"default": 20,
+			"visible_if": "{{ block.settings.set_rounding and block.settings.rounding_radius == 'custom'  }}"
+		},
+	],
+	"blocks": [
+		{
+			"type": "_pair-hotspot"
+		},
+		{
+			"type": "_pair-hotspots-product"
+		},
+		{
+			"type": "_pair-hotspots-tooltip"
+		}
+	],
+	"presets": [
+		{
+			"name": "Hotspots",
+			"category": "Media",
+			"blocks": [
+				{
+					"type": "_pair-hotspot",
+					"settings": {
+						"top": 70,
+						"left": 20,
+						"top_mobile": 70,
+						"left_mobile": 20
+					}
+				},
+				{
+					"type": "_pair-hotspot",
+					"settings": {
+						"top": 55,
+						"left": 45,
+						"top_mobile": 55,
+						"left_mobile": 45
+					}
+				},
+				{
+					"type": "_pair-hotspot",
+					"settings": {
+						"top": 40,
+						"left": 70,
+						"top_mobile": 40,
+						"left_mobile": 70
+					}
+				},
+			]
+		}
+	]
+}
+{% endschema %}

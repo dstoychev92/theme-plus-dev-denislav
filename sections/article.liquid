@@ -1,0 +1,413 @@
+<!-- sections/article.liquid -->
+
+{%- liquid
+  assign show_image = section.settings.show_image
+  assign show_author = section.settings.show_author
+  assign show_date = section.settings.show_date
+  assign show_read_time = section.settings.show_read_time
+  assign show_tags = section.settings.show_tags
+  assign show_share = section.settings.show_share
+-%}
+
+{%- capture article_content -%}
+  <article>
+    <div class="grid grid-cols-1 gap-r10">
+      <div class="flex flex-col gap-r5 bg-canvas">
+        {% if section.settings.show_title %}
+          {% render 'core-text-preset', tag: 'h1', text: article.title, s: section.settings, settings_suffix: 'title' %}
+        {% endif %}
+
+        {% if show_read_time %}
+          {% render 'read-time', content: article.content %}
+        {% endif %}
+
+        <div class="flex-row-center gap-r4">
+          {%- liquid
+            if show_author and article.user.image != blank
+              render 'core-image', image: article.user.image, width: 40, aspect_ratio: 1.0, class: 'rounded-full', preload: true
+            endif
+          -%}
+
+          <div class="flex flex-col items-start gap-r1">
+            {%- if show_author -%}
+              <span class="font-bold text-r5">{{ article.author }}</span>
+            {%- endif -%}
+
+            {%- if show_date -%}
+              {%- liquid
+                assign published_datetime = article.published_at | date: '%Y-%m-%dT%H:%M:%S%:z'
+                assign published_date_format = 'other.date_formats.month_day_year' | t
+                assign published_display = article.published_at | date: published_date_format
+              -%}
+              <time
+                datetime="{{ published_datetime }}"
+                class="text-r3 text-muted"
+              >
+                {{- published_display -}}
+              </time>
+            {%- endif -%}
+          </div>
+        </div>
+
+        {%- if article.tags.size > 0 and show_tags -%}
+          <div class="flex flex-wrap gap-r5">
+            {%- liquid
+              for tag in article.tags
+                render 'blog-tag', tag: tag
+              endfor
+            -%}
+          </div>
+        {%- endif -%}
+
+        {%- liquid
+          if show_image and article.image != blank
+            render 'core-image', image: article.image, class: 'w-full', preload: true
+          endif
+        -%}
+
+        {%- if article.content != blank -%}
+          <div class="max-w-full prose type-resize-all-{{ section.settings.richtext_size }}">
+            {{ article.content }}
+          </div>
+        {%- endif -%}
+
+        {% if show_share %}
+          {% assign share_label = 'blog.article.share' | t %}
+          {% render 'share', label: share_label, article: article %}
+        {% endif %}
+      </div>
+
+      {%- if blog.comments_enabled? -%}
+        {% render 'article-comments', article: article %}
+      {%- endif -%}
+    </div>
+  </article>
+{%- endcapture -%}
+
+{%- render 'core-section', s: section.settings, content: article_content -%}
+
+{% # Article schema.org markup for Google search results. %}
+<script type="application/ld+json">
+  {{ article | structured_data }}
+</script>
+
+{% schema %}
+{
+	"name": "Article",
+	"class": "section-article",
+	"settings": [
+		{
+			"type": "checkbox",
+			"id": "show_image",
+			"label": "Show featured image",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "show_author",
+			"label": "Show author",
+			"default": false
+		},
+		{
+			"type": "checkbox",
+			"id": "show_date",
+			"label": "Show date",
+			"default": false
+		},
+		{
+			"type": "checkbox",
+			"id": "show_read_time",
+			"label": "Show estimated read time",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "show_tags",
+			"label": "Show article tags",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "show_share",
+			"label": "Show link sharing",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "show_title",
+			"label": "Show title",
+			"default": true
+		},
+		{
+			"type": "header",
+			"content": "Title",
+			"visible_if": "{{ section.settings.show_title }}"
+		},
+		{
+			"type": "select",
+			"id": "type_preset_title",
+			"label": "Style",
+			"default": "h1",
+			"visible_if": "{{ section.settings.show_title }}",
+			"options": [
+				{
+					"group": "Headings",
+					"value": "h1",
+					"label": "Heading 1"
+				},
+				{
+					"group": "Headings",
+					"value": "h2",
+					"label": "Heading 2"
+				},
+				{
+					"group": "Headings",
+					"value": "h3",
+					"label": "Heading 3"
+				},
+				{
+					"group": "Headings",
+					"value": "h4",
+					"label": "Heading 4"
+				},
+				{
+					"group": "Headings",
+					"value": "h5",
+					"label": "Heading 5"
+				},
+				{
+					"group": "Headings",
+					"value": "h6",
+					"label": "Heading 6"
+				},
+				{
+					"group": "Content",
+					"value": "section",
+					"label": "Section title"
+				},
+				{
+					"group": "Content",
+					"value": "p",
+					"label": "Paragraph"
+				},
+				{
+					"group": "Content",
+					"value": "kicker",
+					"label": "Kicker"
+				},
+				{
+					"group": "Content",
+					"value": "micro",
+					"label": "Micro"
+				},
+				{
+					"group": "Elements",
+					"value": "btn",
+					"label": "Button"
+				},
+				{
+					"group": "Elements",
+					"value": "accordion",
+					"label": "Accordion"
+				},
+				{
+					"group": "Elements",
+					"value": "tab",
+					"label": "Tab"
+				},
+				{
+					"group": "Custom",
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_resize_title",
+			"label": "Text size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			],
+			"visible_if": "{{ section.settings.show_title == true and section.settings.type_preset_title != 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_font_title",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ section.settings.show_title == true and section.settings.type_preset_title == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size_title",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 9,
+			"visible_if": "{{ section.settings.show_title == true and section.settings.type_preset_title == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase_title",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ section.settings.show_title == true and section.settings.type_preset_title == 'custom' }}"
+		},
+		{
+			"type": "header",
+			"content": "Content"
+		},
+		{
+			"type": "select",
+			"id": "richtext_size",
+			"label": "Text size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			]
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color_scheme",
+			"id": "color_scheme",
+			"label": "Color scheme"
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "content_width",
+			"label": "Content width",
+			"default": "page",
+			"options": [
+				{
+					"value": "full",
+					"label": "Full"
+				},
+				{
+					"value": "page",
+					"label": "Page"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "content_width_custom",
+			"label": "Desktop width",
+			"visible_if": "{{ section.settings.content_width == 'custom'  }}",
+			"min": 25,
+			"max": 100,
+			"step": 5,
+			"default": 65,
+			"unit": "%"
+		},
+		{
+			"type": "range",
+			"id": "content_width_custom_mobile",
+			"label": "Mobile width",
+			"visible_if": "{{ section.settings.content_width == 'custom'   }}",
+			"min": 25,
+			"max": 100,
+			"step": 5,
+			"default": 100,
+			"unit": "%"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_rhythm",
+			"label": "Custom rhythm",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "section_padding_top",
+			"label": "Spacing top",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 40,
+			"visible_if": "{{ section.settings.set_rhythm == true  }}"
+		},
+		{
+			"type": "range",
+			"id": "section_padding_bottom",
+			"label": "Spacing bottom",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 40,
+			"visible_if": "{{ section.settings.set_rhythm == true  }}"
+		},
+	]
+}
+{% endschema %}

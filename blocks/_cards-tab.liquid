@@ -1,0 +1,104 @@
+<!-- blocks/_cards-tab.liquid -->
+
+{% capture list_items %}
+  {% content_for 'blocks' %}
+{% endcapture %}
+
+{% capture attributes %}
+  {% if request.design_mode %}
+    @shopify:block:select="
+      {% comment %} Scrolling to the panel's container last element(which is the card-list container), because targeting the tab buttons is very hard at this point {% endcomment %}
+      let scrollToElement = ($event.target === $el)
+        ? $el.lastElementChild
+        : $event.target;
+      $tab.select();
+      setTimeout(() => {
+        scrollToElement.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+      }, 350);
+    "
+  {% endif %}
+{% endcapture %}
+
+{% # Set block.shopify_attributes to the list_items container because its wrapper has 'display: contents' and setting it on the parent element will make it fallbacks to the wrong inner element, in our case - the arrows %}
+{% assign list_attributes = block.shopify_attributes %}
+
+{% render 'core-tab-card-list',
+  list_items: list_items,
+  s: section.settings,
+  attributes: attributes,
+  list_attributes: list_attributes
+%}
+
+{% schema %}
+{
+	"name": "Tab",
+	"tag": null,
+	"settings": [
+		{
+			"type": "text",
+			"id": "title",
+			"label": "Title",
+			"default": "Tab",
+			"info": "Tab title hides when there is only one tab to display"
+		}
+	],
+	"blocks": [
+		{
+			"type": "_cards-products"
+		},
+		{
+			"type": "_cards-collections"
+		},
+		{
+			"type": "_cards-articles"
+		},
+		{
+			"type": "_tile-image"
+		},
+		{
+			"type": "_card-custom"
+		},
+		{
+			"type": "_tile-frame"
+		},
+	],
+	"presets": [
+		{
+			"name": "Custom tab"
+		},
+		{
+			"name": "Products",
+			"settings": {
+				"title": "Best Sellers"
+			},
+			"blocks": [
+				{
+					"type": "_cards-products"
+				}
+			]
+		},
+		{
+			"name": "Collections",
+			"settings": {
+				"title": "Featured Collections"
+			},
+			"blocks": [
+				{
+					"type": "_cards-collections"
+				}
+			]
+		},
+		{
+			"name": "Articles",
+			"settings": {
+				"title": "Popular Articles"
+			},
+			"blocks": [
+				{
+					"type": "_cards-articles"
+				}
+			]
+		}
+	]
+}
+{% endschema %}

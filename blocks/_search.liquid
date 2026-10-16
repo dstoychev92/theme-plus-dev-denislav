@@ -1,0 +1,138 @@
+<!-- blocks/_search.liquid -->
+
+{% doc %}
+  Search form block. Private, only offered in the 404 section's content area.
+{% enddoc %}
+
+{% liquid
+  assign appearance = block.settings.search_appearance | default: 'line'
+
+  if block.settings.set_rounding
+    assign rounding = block.settings.rounding_style
+  endif
+%}
+
+<form
+  action="{{ routes.search_url }}"
+  role="search"
+  class="
+    w-full flex-row-center gap-r6 text-r4
+    {% case appearance %}
+      {% when 'line' %}
+        border-b border-line-bold
+      {% when 'box' %}
+        border border-line-bold p-r3 ps-r6
+        rounded-btn
+        {% if rounding %}
+          vars-btn-rounding-{{ rounding }}
+        {% endif %}
+    {% endcase %}
+  "
+  {{ block.shopify_attributes }}
+>
+  {% if settings.search_products_only %}
+    <input type="hidden" name="type" value="product">
+  {% endif %}
+
+  <label class="sr-only" for="{{ block.id }}-search-input">{{ 'search.accessibility.input_label' | t }}</label>
+
+  <input
+    id="{{ block.id }}-search-input"
+    name="q"
+    type="search"
+    placeholder="{{ 'search.placeholder' | t }}"
+    autocomplete="off"
+    class="
+      bg-transparent
+      vars-control-md py-control min-h-control leading-control
+      text-content
+      text-size-input
+      flex-1 placeholder-muted text-start
+      w-0
+      hide-search-clear
+    "
+  >
+
+  {% case appearance %}
+    {% when 'line' %}
+      <button
+        type="submit"
+        class="p-0 relative min-w-r9 flex justify-end text-content"
+        aria-label="{{ 'search.accessibility.submit_button_label' | t }}"
+      >
+        {% render 'core-icon', icon: 'stroke-header-search', class: '[--icon-size:1.25em]' %}
+      </button>
+    {% when 'box' %}
+      {% assign button_label = 'search.title' | t %}
+      {% render 'core-button',
+        type: 'submit',
+        label: button_label,
+        sizing: 'md',
+        color: 'content',
+        appearance: 'soft'
+      %}
+  {% endcase %}
+</form>
+
+{% schema %}
+{
+	"name": "Search",
+	"tag": null,
+	"settings": [
+		{
+			"type": "select",
+			"id": "search_appearance",
+			"label": "Style",
+			"default": "line",
+			"options": [
+				{
+					"value": "box",
+					"label": "Box"
+				},
+				{
+					"value": "line",
+					"label": "Line"
+				}
+			]
+		},
+		{
+			"type": "checkbox",
+			"id": "set_rounding",
+			"label": "Set rounding",
+			"default": false,
+			"visible_if": "{{ block.settings.search_appearance == 'box' }}"
+		},
+		{
+			"type": "select",
+			"id": "rounding_style",
+			"label": "Rounding",
+			"default": "none",
+			"options": [
+				{
+					"value": "none",
+					"label": "0"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "pill",
+					"label": "L"
+				}
+			],
+			"visible_if": "{{ block.settings.search_appearance == 'box' and block.settings.set_rounding }}"
+		}
+	],
+	"presets": [
+		{
+			"name": "Search",
+			"category": "Content"
+		}
+	]
+}
+{% endschema %}

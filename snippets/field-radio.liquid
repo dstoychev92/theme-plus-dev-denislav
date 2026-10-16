@@ -1,0 +1,97 @@
+{% doc %}
+  Render a radio button with a label
+
+  @param {string} [attributes]
+  @param {boolean} [checked]
+  @param {string} [class]
+  @param {boolean} [disabled]
+  @param {string} [error_message]
+  @param {string} [form]
+  @param {string} [id] - The id of the radio button
+  @param {string} [input_attributes]
+  @param {string} [input_class]
+  @param {string} label - The label of the radio button
+  @param {string} [label_class]
+  @param {string} name - The name of the radio button
+  @param {boolean} [reversed]
+  @param [size]
+  @param {string} [success_message]
+  @param {string} [value] - The value of the radio button
+{% enddoc %}
+{% liquid
+  assign id = id | default: name | handleize
+  assign reversed = reversed | default: false
+
+  # Passing null or false will allow us to set the size class on a wrapping container, e.g. a radio group container
+  if size != null and size != false
+    assign size = size | default: 'md'
+    case size
+      when 'sm'
+        assign size_class = 'vars-control-sm'
+      when 'md'
+        assign size_class = 'vars-control-md'
+      when 'lg'
+        assign size_class = 'vars-control-lg'
+    endcase
+  endif
+%}
+
+<div
+  class="
+    flex items-center gap-x-r4
+    {% if reversed %}flex-row-reverse{% else %}flex-row{% endif %}
+    text-size-control text-start
+    {{ size_class }}
+    {{ class }}
+  "
+  {{ attributes }}
+>
+  <input
+    type="radio"
+    id="{{ id }}"
+    name="{{ name }}"
+    {% if value %}
+      value="{{ value }}"
+    {% endif %}
+    {% if form %}
+      form="{{ form }}"
+    {% endif %}
+    class="
+      radio peer relative flex-none
+      {{ input_class }}
+    "
+    {% if disabled %}
+      disabled
+    {% endif %}
+    {% if checked %}
+      checked
+    {% endif %}
+    {{ input_attributes }}
+  >
+  <label
+    for="{{ id }}"
+    class="
+      flex-row-center justify-between flex-1 py-r2 cursor-pointer peer-disabled:cursor-default peer-disabled:opacity-50
+      {{ label_class }}
+    "
+  >
+    {{ label }}
+  </label>
+</div>
+
+{%- if error_message != '' and error_message != null -%}
+  <p
+    class="vars-scheme-error mt-r2 text-start text-r2 text-content"
+    {% if id != '' %}
+      id="{{ id }}-error"
+    {% endif %}
+  >
+    {{ error_message }}
+  </p>
+{%- endif -%}
+
+{%- if success_message != '' and success_message != null -%}
+  <p class="vars-scheme-success mt-r2 text-start text-r2 text-content">
+    {{ success_message }}
+  </p>
+{%- endif -%}
