@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "store": "theme-plus-dev-denislav.myshopify.com",
-  "stage": "launch",
+  "stage": "care",
   "reviewPage": null,
   "decisions": {
     "E1": {
@@ -135,6 +135,24 @@
       "by": "default",
       "at": "2026-10-16T13:05:37.690Z",
       "evidence": "No instruction"
+    },
+    "L4": {
+      "value": "faaf79f",
+      "by": "client",
+      "at": "2026-10-16T13:06:53.063Z",
+      "evidence": "Developer reviewed it themselves and signed off: 'ys'"
+    },
+    "L3": {
+      "value": "ship",
+      "by": "default",
+      "at": "2026-10-16T13:06:53.087Z",
+      "evidence": "Same theme kept; update only"
+    },
+    "K1": {
+      "value": "Merge each full release on a branch, preview, ship after sign-off",
+      "by": "default",
+      "at": "2026-10-16T13:10:07.255Z",
+      "evidence": "No instruction"
     }
   },
   "questions": {
@@ -157,7 +175,7 @@
       "to": "developer",
       "text": "Do you sign off on the preview for the live theme, \"denislav-analog\"? I recommend yes. The preview runs Analog 1.1.0-beta.3, all checks pass, and the store content stays the same. After your yes, I show the plan to ship. You type the final confirmation.",
       "askedAt": "2026-10-16T13:05:41.449Z",
-      "answeredAt": null
+      "answeredAt": "2026-10-16T13:06:53.064Z"
     }
   },
   "facts": {
@@ -411,6 +429,10 @@
     {
       "at": "2026-10-16T13:05:37.712Z",
       "event": "stage launch"
+    },
+    {
+      "at": "2026-10-16T13:10:07.232Z",
+      "event": "stage care"
     }
   ]
 }
