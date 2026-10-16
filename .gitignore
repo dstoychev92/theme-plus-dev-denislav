@@ -9,3 +9,5 @@ shopify.theme.toml
 splice/*/*
 !splice/*/todo.md
 .DS_Store
+tests/storefront/.results/
+tests/storefront/.storefront-state.json

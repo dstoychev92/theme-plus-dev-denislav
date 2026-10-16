@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "store": "theme-plus-dev-denislav.myshopify.com",
-  "stage": "build",
+  "stage": "launch",
   "reviewPage": null,
   "decisions": {
     "E1": {
@@ -63,6 +63,78 @@
       "by": "guess",
       "at": "2026-10-16T12:28:46.044Z",
       "evidence": "Test store, no audience; no Analog release has the brand page, so no sandbox or export"
+    },
+    "R3": {
+      "value": "Preview · main (#196952129819) via tradecraft preview; later uploads approved",
+      "by": "developer",
+      "at": "2026-10-16T12:56:27.897Z",
+      "evidence": "yes (approved first upload to a preview theme)"
+    },
+    "E4": {
+      "value": "developer reviews; no client review page",
+      "by": "developer",
+      "at": "2026-10-16T13:05:25.560Z",
+      "evidence": "I reviewed it myself"
+    },
+    "P4": {
+      "value": "Keep the live behavior",
+      "by": "guess",
+      "at": "2026-10-16T13:05:31.387Z",
+      "evidence": "Update only; store content unchanged"
+    },
+    "P5": {
+      "value": "No apps to replace",
+      "by": "guess",
+      "at": "2026-10-16T13:05:31.411Z",
+      "evidence": "No app blocks, embeds, or script tags"
+    },
+    "P6": {
+      "value": "Keep the theme contact form posting to Shopify",
+      "by": "guess",
+      "at": "2026-10-16T13:05:31.434Z",
+      "evidence": "discover found no custom forms; one contact page"
+    },
+    "R4": {
+      "value": "splice/theme-plus-dev-denislav/todo.md (no items: update only)",
+      "by": "default",
+      "at": "2026-10-16T13:05:31.457Z",
+      "evidence": "No splice work; the update replaced the code"
+    },
+    "B2": {
+      "value": "The site",
+      "by": "guess",
+      "at": "2026-10-16T13:05:31.478Z",
+      "evidence": "Test store; no other channels"
+    },
+    "B4": {
+      "value": "Never present test products, reviews, or numbers as real",
+      "by": "guess",
+      "at": "2026-10-16T13:05:31.500Z",
+      "evidence": "brand/facts.md absences"
+    },
+    "B5": {
+      "value": "Keep the live homepage",
+      "by": "guess",
+      "at": "2026-10-16T13:05:31.522Z",
+      "evidence": "Update only"
+    },
+    "B6": {
+      "value": "Keep live copy and images",
+      "by": "guess",
+      "at": "2026-10-16T13:05:31.542Z",
+      "evidence": "Update only"
+    },
+    "B7": {
+      "value": "Keep the live header and footer",
+      "by": "guess",
+      "at": "2026-10-16T13:05:31.564Z",
+      "evidence": "Section groups unchanged"
+    },
+    "Q1": {
+      "value": "Storefront suite on the preview; no cart test on the live store",
+      "by": "default",
+      "at": "2026-10-16T13:05:37.690Z",
+      "evidence": "No instruction"
     }
   },
   "questions": {
@@ -72,6 +144,20 @@
       "text": "What should this project do with the store? I recommend that we keep the live theme, \"denislav-analog\". It runs Analog 1.1.0-beta.1, and I update it to the newest release. The other answer is a move to a different theme, such as Horizon. Then I carry the custom work across.",
       "askedAt": "2026-10-16T11:21:53.919Z",
       "answeredAt": "2026-10-16T11:23:04.662Z"
+    },
+    "q2": {
+      "decision": "E4",
+      "to": "developer",
+      "text": "Do you send the review page to the client? I recommend yes. This is a test store with no real client, so you can also review it yourself.",
+      "askedAt": "2026-10-16T13:01:56.565Z",
+      "answeredAt": "2026-10-16T13:05:25.560Z"
+    },
+    "q3": {
+      "decision": "L4",
+      "to": "developer",
+      "text": "Do you sign off on the preview for the live theme, \"denislav-analog\"? I recommend yes. The preview runs Analog 1.1.0-beta.3, all checks pass, and the store content stays the same. After your yes, I show the plan to ship. You type the final confirmation.",
+      "askedAt": "2026-10-16T13:05:41.449Z",
+      "answeredAt": null
     }
   },
   "facts": {
@@ -317,6 +403,14 @@
     {
       "at": "2026-10-16T12:28:46.069Z",
       "event": "stage build"
+    },
+    {
+      "at": "2026-10-16T12:55:16.629Z",
+      "event": "stage review"
+    },
+    {
+      "at": "2026-10-16T13:05:37.712Z",
+      "event": "stage launch"
     }
   ]
 }

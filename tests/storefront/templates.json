@@ -1,0 +1,6 @@
+[
+  {
+    "template": "product.advanced.json",
+    "path": "/products/{product}?view=advanced"
+  }
+]

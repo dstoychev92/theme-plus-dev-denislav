@@ -3,9 +3,11 @@
   "private": true,
   "packageManager": "pnpm@12.3.4",
   "scripts": {
+    "test:storefront": "playwright test -c tests/storefront/playwright.config.ts",
     "build": "pnpm --filter analog run build --settings-path=../store"
   },
   "devDependencies": {
+    "@playwright/test": "1.62.1",
     "@shopify/cli": "4.6.1"
   }
 }
