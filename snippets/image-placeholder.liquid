@@ -1,0 +1,37 @@
+{% capture svg_class %}
+  h-full grayscale
+  {% if width != blank %}
+    {% assign width_style = '--width:' | append: width | append: 'px;' %}
+    w-[--width] max-w-full
+  {% else %}
+    w-full
+  {% endif %}
+{% endcapture %}
+
+{% capture style %}
+  {{ width_style }}
+  {{ style }}
+{% endcapture %}
+
+{% capture svg_tag %}
+  {{ placeholder | placeholder_svg_tag: svg_class }}
+{% endcapture %}
+
+<image-placeholder
+  class="
+    flex flex-center bg-[--placeholder-bg] fill-[--placeholder-fill] aspect-[--aspect-ratio]
+    {{ class }}
+  "
+  style="{{ style }}"
+  aria-hidden="true"
+  {{ attributes }}
+>
+  {% if cover == true %}
+    {% comment %} Manually splice in attributes neccesary for an SVG to mimic `object-fit: cover` {% endcomment %}
+    {% assign parts = svg_tag | split: '<svg' %}
+    {{ parts[0] | prepend: '<svg preserveAspectRatio="xMinYMin slice" ' }}
+    {{ parts[1] }}
+  {% else %}
+    {{ svg_tag }}
+  {% endif %}
+</image-placeholder>

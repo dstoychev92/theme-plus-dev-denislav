@@ -1,0 +1,81 @@
+<!-- blocks/_announcement-shipping-threshold.liquid -->
+
+{% liquid
+  capture threshold_raw
+    render 'free-shipping-threshold', base: block.settings.threshold
+  endcapture
+  assign threshold_amount = threshold_raw | remove: ' ' | remove: ',' | remove: '.' | plus: 0
+  assign progress_message = block.settings.progress_message
+  assign success_message = block.settings.success_message
+  assign hide_when_complete = block.settings.hide_when_complete
+
+  assign threshold_currency = threshold_amount | times: 100
+  assign cart_total = cart.total_price
+  assign price_difference = threshold_currency | minus: cart_total | at_least: 0
+  assign amount_remaining = price_difference | money_without_trailing_zeros
+  assign is_complete = false
+  if price_difference <= 0
+    assign is_complete = true
+  endif
+%}
+
+{% if threshold_amount > 0 %}
+  {% unless is_complete and hide_when_complete %}
+    {% capture text %}
+      {% if is_complete %}
+        {{ success_message }}
+      {% else %}
+        {% capture styled_amount %}<span class="font-bold">{{ amount_remaining }}</span>{% endcapture %}
+        {{ progress_message | replace: '||amount||', styled_amount }}
+      {% endif %}
+    {% endcapture %}
+
+    {% render 'core-inline-richtext',
+      _settings: section.settings,
+      text: text,
+      class: 'self-center [&>a]:text-inherit',
+      attributes: block.shopify_attributes
+    %}
+  {% endunless %}
+{% endif %}
+
+{% schema %}
+{
+	"name": "Free shipping threshold",
+	"tag": null,
+	"settings": [
+		{
+			"type": "text",
+			"id": "threshold",
+			"label": "Free shipping threshold",
+			"default": "50",
+			"info": "Round number, no currency symbol. Matches the value you set in your [shipping rates](/admin/settings/shipping)."
+		},
+		{
+			"type": "inline_richtext",
+			"id": "progress_message",
+			"label": "Progress message",
+			"info": "Use ||amount|| to insert the remaining amount.",
+			"default": "Spend ||amount|| more for free shipping"
+		},
+		{
+			"type": "inline_richtext",
+			"id": "success_message",
+			"label": "Success message",
+			"info": "Shown when the cart meets the threshold.",
+			"default": "You've unlocked free shipping!"
+		},
+		{
+			"type": "checkbox",
+			"id": "hide_when_complete",
+			"label": "Hide once threshold is met",
+			"default": false
+		}
+	],
+	"presets": [
+		{
+			"name": "Free shipping threshold"
+		}
+	]
+}
+{% endschema %}

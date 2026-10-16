@@ -1,0 +1,386 @@
+<!-- blocks/_flex-item.liquid -->
+
+{% liquid
+  assign set_sizing_behavior = block.settings.set_sizing_behavior
+
+  if set_sizing_behavior
+    assign sizing_behavior = block.settings.sizing_behavior
+  endif
+
+  assign set_align_self = block.settings.set_align_self
+
+  if set_align_self
+    assign align_self = block.settings.align_self
+  else
+    assign align_self = 'auto'
+  endif
+
+  assign set_flex_item_mobile = block.settings.set_flex_item_mobile
+
+  if set_flex_item_mobile
+    assign set_sizing_behavior_mobile = block.settings.set_sizing_behavior_mobile
+    assign set_align_self_mobile = block.settings.set_align_self_mobile
+
+    if set_sizing_behavior_mobile
+      assign sizing_behavior_mobile = block.settings.sizing_behavior_mobile
+    endif
+
+    if set_align_self_mobile
+      assign align_self_mobile = block.settings.align_self_mobile
+    else
+      assign align_self_mobile = 'auto'
+    endif
+  endif
+
+  if block.settings.set_layout
+    assign content_align = block.settings.content_align
+    assign gap = block.settings.gap | default: false, allow_false: true
+  endif
+%}
+
+<div
+  class="
+    flex flex-{{ block.settings.flow }} gap-layout relative
+    text-content-align
+    items-content-align
+    {% if content_align %}
+      vars-content-align-{{ content_align }}
+    {% endif %}
+
+    [--flex-grow:var(--flex-grow-md)]
+    [--flex-shrink:var(--flex-shrink-md)]
+    [--align-self:var(--align-self-md)]
+    {% if set_flex_item_mobile %}
+      max-md:[--flex-grow:var(--flex-grow-sm)]
+      max-md:[--flex-shrink:var(--flex-shrink-sm)]
+      max-md:[--align-self:var(--align-self-sm)]
+    {% endif %}
+    {% render 'props-class-target-device', _settings: block.settings %}
+    {{ class }}
+  "
+  style="
+    {%- if gap -%}
+      {% render 'props-style-gap', _settings: block.settings %}
+    {%- endif -%}
+    {% if sizing_behavior == 'grow' %}
+      --flex-grow-md: 1;
+      --flex-shrink-md: 0;
+    {% elsif sizing_behavior == 'shrink' %}
+      --flex-grow-md: 0;
+      --flex-shrink-md: 1;
+    {% else %}
+      --flex-grow-md: auto;
+      --flex-shrink-md: auto;
+    {% endif %}
+
+    {% if align_self != 'inherit' %}
+      --align-self-md: {{ align_self }};
+    {% else %}
+      --align-self-md: auto;
+    {% endif %}
+
+    {% if set_flex_item_mobile %}
+      {% if sizing_behavior_mobile == 'grow' %}
+        --flex-grow-sm: 1;
+        --flex-shrink-sm: 0;
+      {% elsif sizing_behavior_mobile == 'shrink' %}
+        --flex-grow-sm: 0;
+        --flex-shrink-sm: 1;
+      {% else %}
+        --flex-grow-sm: auto;
+        --flex-shrink-sm: auto;
+      {% endif %}
+
+      {% if align_self_mobile != 'inherit' %}
+        --align-self-sm: {{ align_self_mobile }};
+      {% else %}
+        --align-self-sm: auto;
+      {% endif %}
+    {% endif %}
+
+    flex-grow: var(--flex-grow);
+    flex-shrink: var(--flex-shrink);
+    align-self: var(--align-self);
+    {{ style }}
+  "
+  {{ block.shopify_attributes }}
+>
+  {% content_for 'blocks' %}
+</div>
+
+{% schema %}
+{
+  "name": "Flex item",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Flex"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_sizing_behavior",
+      "label": "Set sizing behavior",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "sizing_behavior",
+      "label": "Sizing behavior",
+      "default": "grow",
+      "options": [
+        {
+          "value": "grow",
+          "label": "Grow"
+        },
+        {
+          "value": "shrink",
+          "label": "Shrink"
+        }
+      ],
+      "visible_if": "{{ block.settings.set_sizing_behavior }}"
+    },
+    {
+      "type": "select",
+      "id": "flow",
+      "label": "Flow",
+      "options": [
+        {
+          "value": "row",
+          "label": "Row"
+        },
+        {
+          "value": "col",
+          "label": "Column"
+        }
+      ],
+      "default": "row"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_align_self",
+      "label": "Set alignment",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "align_self",
+      "label": "Align self",
+      "default": "start",
+      "options": [
+        {
+          "value": "start",
+          "label": "Start"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "end",
+          "label": "End"
+        }
+      ],
+      "visible_if": "{{ block.settings.set_align_self }}"
+    },
+    {
+      "type": "header",
+      "content": "Mobile"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_flex_item_mobile",
+      "label": "Set mobile flex",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "set_sizing_behavior_mobile",
+      "label": "Set sizing behavior",
+      "default": false,
+      "visible_if": "{{ block.settings.set_flex_item_mobile }}"
+    },
+    {
+      "type": "select",
+      "id": "sizing_behavior_mobile",
+      "label": "Behavior",
+      "default": "grow",
+      "options": [
+        {
+          "value": "grow",
+          "label": "Grow"
+        },
+        {
+          "value": "shrink",
+          "label": "Shrink"
+        }
+      ],
+      "visible_if": "{{ block.settings.set_flex_item_mobile and block.settings.set_sizing_behavior_mobile }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_align_self_mobile",
+      "label": "Set alignment",
+      "default": false,
+      "visible_if": "{{ block.settings.set_flex_item_mobile }}"
+    },
+    {
+      "type": "select",
+      "id": "align_self_mobile",
+      "label": "Align self",
+      "default": "start",
+      "options": [
+        {
+          "value": "start",
+          "label": "Start"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "end",
+          "label": "End"
+        }
+      ],
+      "visible_if": "{{ block.settings.set_flex_item_mobile and block.settings.set_align_self_mobile }}"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_layout",
+      "label": "Set layout",
+      "default": false
+    },
+    {
+      "type": "text_alignment",
+      "id": "content_align",
+      "label": "Alignment",
+      "default": "center",
+      "visible_if": "{{ block.settings.set_layout }}"
+    },
+    {
+      "type": "select",
+      "id": "gap",
+      "label": "Gap",
+      "default": "md",
+      "visible_if": "{{ block.settings.set_layout }}",
+      "options": [
+        {
+          "value": "sm",
+          "label": "S"
+        },
+        {
+          "value": "md",
+          "label": "M"
+        },
+        {
+          "value": "lg",
+          "label": "L"
+        },
+        {
+          "value": "custom",
+          "label": "⋯"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "gap_custom",
+      "label": "Custom gap",
+      "default": 0,
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "visible_if": "{{ block.settings.gap == 'custom'  and block.settings.set_layout }}"
+    },
+    {
+      "type": "header",
+      "content": "Limit by screen size"
+    },
+    {
+      "type": "select",
+      "label": "Show on",
+      "id": "target_device",
+      "default": "both",
+      "options": [
+        {
+          "value": "mobile",
+          "label": "Mobile"
+        },
+        {
+          "value": "desktop",
+          "label": "Desktop"
+        },
+        {
+          "value": "both",
+          "label": "Both"
+        }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "type": "theme-badge"
+    },
+    {
+      "type": "theme-button"
+    },
+    {
+      "type": "theme-countdown"
+    },
+    {
+      "type": "theme-decoration"
+    },
+    {
+      "type": "theme-form-newsletter"
+    },
+    {
+      "type": "theme-text"
+    },
+    {
+      "type": "theme-image"
+    },
+    {
+      "type": "theme-video"
+    },
+    {
+      "type": "theme-icon"
+    },
+    {
+      "type": "theme-link"
+    },
+    {
+      "type": "theme-liquid-code"
+    },
+    {
+      "type": "theme-social-links"
+    },
+    {
+      "type": "theme-spacer"
+    },
+    {
+      "type": "theme-richtext"
+    },
+    {
+      "type": "theme-video-button"
+    },
+    {
+      "type": "_glass-cup"
+    },
+    {
+      "type": "@app"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Flex item",
+      "blocks": []
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,469 @@
+/*
+ * custom.boom-upsell.css
+ * ──────────────────────
+ * Post add-to-cart upsell popup, per the BOOM! popup design handoff
+ * (desktop centered modal / mobile bottom sheet).
+ *
+ * Companion files:
+ *   • snippets/boom-upsell-popup.liquid — markup + config
+ *   • assets/custom.boom-upsell.js      — behavior
+ *
+ * Brand tokens (BOOM! Brand Guidelines 2026) are intentionally fixed hex
+ * values — the popup is always white-on-brand regardless of color scheme.
+ * The accent is set inline as --boom-upsell-accent by the snippet.
+ */
+
+.boom-upsell {
+  position: fixed;
+  inset: 0;
+  z-index: 100; /* above cart drawer (z-90) and cart notification (z-60) */
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.boom-upsell.is-open {
+  display: flex;
+}
+
+.boom-upsell__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 0, 35, 0.55);
+  animation: boom-upsell-fade 0.25s ease-out;
+}
+
+.boom-upsell__dialog {
+  position: relative;
+  width: 100%;
+  max-height: 90vh;
+  max-height: 90dvh;
+  overflow-y: auto;
+  background: #ffffff;
+  color: #050023;
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0 -20px 60px rgba(5, 0, 35, 0.35);
+  animation: boom-upsell-pop 0.35s ease-out;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    'media'
+    'body'
+    'actions';
+}
+
+.boom-upsell__grabber {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  width: 44px;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.65);
+}
+
+.boom-upsell__x {
+  display: none;
+  position: absolute;
+  top: 16px;
+  inset-inline-end: 16px;
+  z-index: 2;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+  color: #4f4b66;
+  background: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+}
+
+.boom-upsell__x:hover {
+  background: #efeef4;
+}
+
+/* ── Media panel ── */
+
+.boom-upsell__media {
+  grid-area: media;
+  position: relative;
+  justify-self: stretch;
+  margin: 0;
+  background: var(--boom-upsell-accent, #ef3340);
+  display: flex;
+  justify-content: center;
+  padding: 30px 20px 18px;
+  flex-shrink: 0;
+}
+
+.boom-upsell__image {
+  display: block;
+  width: 140px;
+  height: 175px;
+  max-width: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.boom-upsell__badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 1;
+  background: #ffc72c;
+  color: #050023;
+  font-family: 'Heading Now', 'Jost', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.2;
+  padding: 5px 9px;
+  border-radius: 5px;
+  transform: rotate(-4deg);
+}
+
+/* ── Body ── */
+
+.boom-upsell__body {
+  grid-area: body;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 16px 20px 0;
+  min-width: 0;
+}
+
+.boom-upsell__eyebrow {
+  font-family: 'Heading Now', 'Jost', sans-serif;
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--boom-upsell-accent, #ef3340);
+  margin: 0;
+}
+
+.boom-upsell__headline {
+  font-family: 'Heading Now', 'Jost', sans-serif;
+  font-weight: 500;
+  font-size: 20px;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  /* The translation carries a manual line break between the two sentences */
+  white-space: pre-line;
+  text-wrap: pretty;
+  color: #050023;
+  margin: 0;
+}
+
+.boom-upsell__benefits {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+  margin: 2px 0 0;
+  padding: 0;
+  font-family: 'Jost', sans-serif;
+  font-size: 13px;
+  line-height: 1.35;
+  color: #4f4b66;
+}
+
+.boom-upsell__benefits li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.boom-upsell__benefit-check {
+  --icon-width: 14px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--boom-upsell-accent, #ef3340);
+}
+
+.boom-upsell__prices {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.boom-upsell__price {
+  font-family: 'Heading Now', 'Jost', sans-serif;
+  font-weight: 500;
+  font-size: 22px;
+  color: var(--boom-upsell-accent, #ef3340);
+}
+
+.boom-upsell__price-was {
+  font-family: 'Jost', sans-serif;
+  font-size: 15px;
+  color: #8d8a99;
+  text-decoration: line-through;
+}
+
+/* ── Rating (Judge.me metafields) ── */
+
+.boom-upsell__rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Jost', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  color: #4f4b66;
+}
+
+.boom-upsell__stars {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  color: #ffc72c;
+}
+
+.boom-upsell__star {
+  --icon-width: 15px;
+}
+
+.boom-upsell__star--empty {
+  color: #d8d8e0;
+}
+
+/* ── Timer ── */
+
+.boom-upsell__timer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #efeef4;
+  border-radius: 10px;
+  padding: 10px 14px;
+  width: fit-content;
+  font-family: 'Jost', sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  color: #050023;
+  margin: 0;
+}
+
+.boom-upsell__timer[hidden] {
+  display: none;
+}
+
+.boom-upsell__timer-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ef3340;
+  flex-shrink: 0;
+}
+
+.boom-upsell__timer-time {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #ef3340;
+}
+
+/* ── Actions ── */
+
+.boom-upsell__actions {
+  grid-area: actions;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 20px 24px;
+}
+
+.boom-upsell__cta {
+  background: var(--boom-upsell-accent, #ef3340);
+  color: #ffffff;
+  /* Match the theme's buttons: Heading Now 400/18px (see core-button) */
+  font-family: 'Heading Now', 'Jost', sans-serif;
+  font-weight: 400;
+  font-size: 18px;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 15px;
+  border-radius: 12px;
+  min-height: 44px;
+  cursor: pointer;
+  transition: transform 0.12s, background-color 0.2s;
+}
+
+.boom-upsell__cta:hover {
+  transform: scale(1.02);
+}
+
+.boom-upsell__cta.is-busy {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.boom-upsell__cta.is-added {
+  background: #49ac77;
+  transform: none;
+  cursor: default;
+}
+
+.boom-upsell__decline {
+  text-align: center;
+  font-family: 'Jost', sans-serif;
+  font-size: 15px;
+  color: #8d8a99;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.boom-upsell__decline:hover {
+  color: #050023;
+}
+
+/* ── Desktop modal (≥768px) ── */
+
+@media (min-width: 768px) {
+  .boom-upsell {
+    align-items: center;
+    padding: 20px;
+  }
+
+  .boom-upsell__dialog {
+    width: 760px;
+    border-radius: 20px;
+    box-shadow: 0 32px 80px rgba(5, 0, 35, 0.35);
+    overflow: hidden;
+    grid-template-columns: 320px 1fr;
+    grid-template-areas:
+      'media body'
+      'media actions';
+    grid-template-rows: 1fr auto;
+    column-gap: 0;
+  }
+
+  .boom-upsell__grabber {
+    display: none;
+  }
+
+  .boom-upsell__x {
+    display: flex;
+  }
+
+  .boom-upsell__media {
+    background: var(--boom-upsell-accent, #ef3340);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    justify-self: stretch;
+    padding: 28px;
+    margin: 0;
+  }
+
+  .boom-upsell__image {
+    width: 240px;
+    height: 300px;
+    border-radius: 14px;
+  }
+
+  .boom-upsell__badge {
+    top: 20px;
+    left: 20px;
+    font-size: 22px;
+    padding: 8px 14px;
+    border-radius: 6px;
+  }
+
+  .boom-upsell__body {
+    gap: 14px;
+    margin: 0;
+    padding: 32px 36px 0;
+  }
+
+  .boom-upsell__eyebrow {
+    font-size: 15px;
+  }
+
+  .boom-upsell__headline {
+    font-size: 29px;
+    line-height: 1.1;
+  }
+
+  .boom-upsell__benefits {
+    font-size: 15px;
+    gap: 8px;
+  }
+
+  .boom-upsell__benefit-check {
+    --icon-width: 16px;
+  }
+
+  .boom-upsell__rating {
+    font-size: 15px;
+  }
+
+  .boom-upsell__star {
+    --icon-width: 17px;
+  }
+
+  .boom-upsell__prices {
+    gap: 12px;
+    margin-top: 4px;
+  }
+
+  .boom-upsell__price {
+    font-size: 32px;
+  }
+
+  .boom-upsell__price-was {
+    font-size: 20px;
+  }
+
+  .boom-upsell__timer {
+    font-size: 16px;
+  }
+
+  .boom-upsell__actions {
+    gap: 10px;
+    padding: 20px 36px 28px;
+  }
+
+  .boom-upsell__cta {
+    padding: 16px;
+  }
+
+  .boom-upsell__decline {
+    font-size: 16px;
+    padding: 6px;
+  }
+}
+
+@keyframes boom-upsell-pop {
+  0% {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes boom-upsell-fade {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .boom-upsell__scrim,
+  .boom-upsell__dialog {
+    animation: none;
+  }
+
+  .boom-upsell__cta:hover {
+    transform: none;
+  }
+}

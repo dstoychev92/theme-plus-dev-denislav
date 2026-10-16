@@ -1,0 +1,89 @@
+{% liquid
+  assign preload = false
+  assign loading = false
+
+  if is_featured_media
+    assign preload = true
+  endif
+
+  if media.position <= 3
+    assign loading = 'eager'
+  endif
+
+  # Determine aria-label based on media type
+  assign aria_label = ''
+  case media.media_type
+    when 'video'
+      assign aria_label = 'product.accessibility.video_label' | t
+    when 'external_video'
+      assign aria_label = 'product.accessibility.video_label' | t
+    when 'model'
+      assign aria_label = 'product.accessibility.model_label' | t
+    else
+      assign aria_label = 'product.accessibility.image_label' | t
+  endcase
+
+  assign product_media_size_count = product_media.size | default: product_media.count
+%}
+
+<figure
+  class="
+    relative overflow-hidden {{ class }}
+    {% if section.settings.contain_section %}
+      md:rounded-[--media-rounding]
+    {% endif %}
+    {% if block.settings.contain_media_mobile %}
+      max-md:rounded-[--media-rounding-mobile]
+    {% endif %}
+  "
+  id="{{ id }}"
+  key="{{ media.id }}"
+  {% if product_media_size_count == 1 %}
+    aria-label="{{ aria_label }}"
+  {% else %}
+    aria-label="{{ aria_label }} {{ media.position }}/{{ product_media_size_count }}"
+  {% endif %}
+  {{ attributes }}
+>
+  {% case media.media_type %}
+    {% when 'video' %}
+      {% render 'product-media-item-video',
+        _settings: _settings,
+        product: product,
+        aspect_ratio: aspect_ratio,
+        media: media,
+        preload: preload,
+        id: id
+      %}
+
+    {% when 'external_video' %}
+      {% render 'product-media-item-video-external',
+        _settings: _settings,
+        product: product,
+        aspect_ratio: aspect_ratio,
+        media: media
+      %}
+
+    {% when 'model' %}
+      {% render 'product-media-item-model',
+        _settings: _settings,
+        product: product,
+        aspect_ratio: aspect_ratio,
+        media: media,
+        preload: preload,
+        loading: loading
+      %}
+
+    {% else %}
+      {% render 'product-media-item-image',
+        _settings: _settings,
+        product: product,
+        aspect_ratio: aspect_ratio,
+        media: media,
+        loading: loading,
+        preload: preload,
+        image_sizes: image_sizes,
+        image_widths: image_widths
+      %}
+  {% endcase %}
+</figure>

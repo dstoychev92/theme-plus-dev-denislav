@@ -1,0 +1,153 @@
+<!-- blocks/_footer-link-list.liquid -->
+
+{% assign linklist = linklists[block.settings.linklist] %}
+{% if linklist != blank and linklist.links.size > 0 %}
+  <ul class="flex flex-col gap-r4" {{ block.shopify_attributes }}>
+    {% for link in linklist.links %}
+      <li>
+        {% render 'core-link', href: link.url, text: link.title, appearance: 'clean', _settings: block.settings %}
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+{% schema %}
+{
+	"name": "Footer links",
+	"tag": null,
+	"settings": [
+		{
+			"type": "link_list",
+			"id": "linklist",
+			"label": "Link list",
+			"default": "main-menu",
+			"info": "This menu won't show dropdown items"
+		},
+		{
+			"type": "select",
+			"id": "type_preset",
+			"label": "Typography",
+			"default": "p",
+			"options": [
+				{
+					"value": "p",
+					"label": "Paragraph"
+				},
+				{
+					"value": "btn",
+					"label": "Button"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_resize",
+			"label": "Size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset != 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_font",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 4,
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "color",
+			"label": "Color",
+			"default": "content",
+			"options": [
+				{
+					"value": "content",
+					"label": "Text default"
+				},
+				{
+					"value": "muted",
+					"label": "Text muted"
+				},
+				{
+					"value": "primary",
+					"label": "Primary accent"
+				},
+				{
+					"value": "secondary",
+					"label": "Link accent"
+				},
+				{
+					"value": "sale",
+					"label": "Sale"
+				}
+			]
+		},
+	],
+	"presets": [
+		{
+			"name": "Footer links",
+			"blocks": []
+		}
+	]
+}
+{% endschema %}

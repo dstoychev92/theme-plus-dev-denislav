@@ -1,0 +1,103 @@
+{% liquid
+  assign tag = tag | default: 'button'
+  assign type = type | default: 'button'
+  assign color = color | default: _settings.tab_color | default: 'content'
+  assign appearance = appearance | default: _settings.tab_style
+
+  if appearance == blank or appearance == 'inherit'
+    assign appearance = settings.tab_style
+  endif
+%}
+
+{% capture attributes %}
+  {{ attributes }}
+  x-data="{
+    get isActive() {
+      return activeIndex == $tab.index
+    },
+
+    init() {
+      {% if selected %}
+        activeIndex = $tab.index
+      {% endif %}
+    }
+
+    {{ x_data }}
+  }"
+  role="tab"
+  x-tabs:tab
+  {% if selected %}
+    aria-selected="true"
+  {% endif %}
+{% endcapture %}
+
+{% capture class %}
+  keyboard-focus:outline-offset-[-2px]
+  relative z-10 group/tab whitespace-nowrap
+  flex-row-center transition-opacity
+  vars-btn-height-sm h-btn
+  mx-[calc(var(--layout-gutter-x)/2)]
+  hit-area-x-[calc(var(--layout-gutter-x)/2)]
+
+  {% case appearance %}
+    {% when 'outline' %}
+      [--tab-px:calc(var(--control-padding)*2)]
+      px-[var(--tab-px)]
+    {% when 'underline' %}
+      rounded-none
+  {% endcase %}
+  [&:nth-child(2)]:ms-0
+  [&:nth-child(2)]:hit-area-s-0
+  [&:nth-last-child(2)]:me-0
+  [&:nth-last-child(2)]:hit-area-e-0
+  entrance-item entrance-fade
+  {{ class }}
+{% endcapture %}
+
+{% capture content %}
+  <span class="relative">
+    {{ label }}
+    {% case appearance %}
+      {% when 'underline' %}
+        <template x-if="isActive">
+          <div class="h-px bg-content absolute left-0 right-0 bottom-[-2px]" data-layout-id="{{section.id}}-tab-underline"></div>
+        </template>
+    {% endcase %}
+  </span>
+  {% case appearance %}
+    {% when 'outline' %}
+      <template x-if="isActive">
+        <div class="absolute inset-0 bg-content-mix-10 -z-10 rounded-tab" data-layout-id="{{section.id}}-tab-outline"></div>
+      </template>
+  {% endcase %}
+{% endcapture %}
+
+{% case tag %}
+  {% when 'button' %}
+    <button
+      type="{{ type }}"
+      {% if id %}
+        id="{{ id }}"
+      {% endif %}
+      {% if form %}
+        form="{{ form }}"
+      {% endif %}
+      class="{{ class }}"
+      style="{{ style }}"
+      {{ attributes }}
+    >
+      {{ content }}
+    </button>
+  {% when 'a' %}
+    <a
+      href="{{ href }}"
+      class="cursor-pointer {{ class }}"
+      {% if id %}
+        id="{{ id }}"
+      {% endif %}
+      style="{{ style }}"
+      {{ attributes }}
+    >
+      {{ content }}
+    </a>
+{% endcase %}

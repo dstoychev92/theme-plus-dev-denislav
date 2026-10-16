@@ -1,0 +1,20 @@
+{% comment %}
+  Gift icon matching the one in _product-quantity-alt.liquid (product quantity selector).
+  Defaults to the brand sale/orange color; pass `color` to override (e.g. 'currentColor').
+
+  @param {number} size - width/height in px (default 14)
+  @param {string} color - CSS color for the icon (default 'var(--sale)')
+  @param {string} label - accessible label (defaults to boom.tier_bar.gift_label); pass '' for decorative
+
+  {% render 'boom-gift-icon' %}
+  {% render 'boom-gift-icon', size: 16, color: 'currentColor' %}
+{% endcomment %}
+{%- liquid
+  assign icon_size = size | default: 14
+  assign icon_color = color | default: 'var(--sale)'
+  assign icon_label = label
+  if label == nil
+    assign icon_label = 'boom.tier_bar.gift_label' | t
+  endif
+-%}
+<svg width="{{ icon_size }}" height="{{ icon_size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" {% if icon_label != blank %}role="img" aria-label="{{ icon_label }}"{% else %}aria-hidden="true"{% endif %} style="display:inline-block;vertical-align:-0.15em;flex-shrink:0;color:{{ icon_color }};"><rect x="3" y="8" width="18" height="4" rx="0.5"/><path d="M12 8v13"/><path d="M5 12v9h14v-9"/><path d="M12 8S10 3 7.5 3a2.5 2.5 0 0 0 0 5H12z"/><path d="M12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5H12z"/></svg>

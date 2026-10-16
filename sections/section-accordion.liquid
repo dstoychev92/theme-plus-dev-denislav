@@ -1,0 +1,318 @@
+<!-- sections/section-accordion.liquid -->
+
+{% capture content %}
+  {% content_for 'block', type: '_section-title', id: 'section-title' %}
+
+  {% if section.blocks.size > 0 %}
+    <div
+      class="
+        group/accordions
+        {% if section.settings.show_top_border %}
+          border-t border-t-line-subtle
+        {% endif %}
+      "
+      {% if section.settings.show_number %}
+        data-has-counter
+      {% endif %}
+      {% if section.settings.show_open_close_icon %}
+        data-has-icon
+      {% endif %}
+    >
+      {% content_for 'blocks' %}
+    </div>
+    {% assign inner_class = 'gap-y-md' %}
+  {% endif %}
+{% endcapture %}
+
+{% if section.settings.show_number %}
+  {% capture style %}
+    counter-reset: accordion-group;
+  {% endcapture %}
+{% endif %}
+
+{% capture attributes %}
+  {% if section.settings.multiple %}
+    x-disclosure-group.multiple
+  {% else %}
+    x-disclosure-group
+  {% endif %}
+  x-data="{ mutedTitle: {{ section.settings.enable_muted_title | json }} }"
+{% endcapture %}
+
+{% render 'core-section',
+  _settings: section.settings,
+  inner_class: inner_class,
+  content: content,
+  style: style,
+  class: class,
+  attributes: attributes
+%}
+
+{% comment %}
+  FAQPage schema — reads from product metafield custom.seo_faq_schema
+  or page metafield custom.faq_schema (JSON array of {question, answer} objects).
+{% endcomment %}
+{% if section.settings.enable_faq_schema %}
+  {%- assign faq_data = product.metafields.custom.seo_faq_schema.value | default: page.metafields.custom.faq_schema.value -%}
+  {%- if faq_data != blank and faq_data.size > 0 -%}
+    {% render 'schema-faq', faq_items: faq_data %}
+  {%- endif -%}
+{% endif %}
+
+{% schema %}
+{
+	"name": "Accordion",
+	"tag": "section",
+	"settings": [
+		{
+			"type": "text_alignment",
+			"id": "content_align",
+			"label": "Title Alignment",
+			"default": "center"
+		},
+		{
+			"type": "checkbox",
+			"id": "multiple",
+			"label": "Allow multiple items to be expanded at once",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "show_top_border",
+			"label": "Show top border",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "show_number",
+			"label": "Show number",
+			"default": false,
+			"info": "Show a number before the title"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_open_close_icon",
+			"label": "Show open/close icon",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_muted_title",
+			"label": "Enable muted title",
+			"default": true,
+			"info": "Greys out the title when collapsed"
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_faq_schema",
+			"label": "Enable FAQ schema (JSON-LD)",
+			"default": false,
+			"info": "Outputs FAQPage structured data from accordion titles and richtext content"
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "content_width",
+			"label": "Content width",
+			"default": "page",
+			"options": [
+				{
+					"value": "full",
+					"label": "Full"
+				},
+				{
+					"value": "page",
+					"label": "Page"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "content_width_custom",
+			"label": "Desktop width",
+			"visible_if": "{{ section.settings.content_width == 'custom' }}",
+			"min": 25,
+			"max": 100,
+			"step": 5,
+			"default": 65,
+			"unit": "%"
+		},
+		{
+			"type": "range",
+			"id": "content_width_custom_mobile",
+			"label": "Mobile width",
+			"visible_if": "{{ section.settings.content_width == 'custom'  }}",
+			"min": 25,
+			"max": 100,
+			"step": 5,
+			"default": 100,
+			"unit": "%"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_rhythm",
+			"label": "Custom rhythm",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "section_padding_top",
+			"label": "Spacing top",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 40,
+			"visible_if": "{{ section.settings.set_rhythm == true  }}"
+		},
+		{
+			"type": "range",
+			"id": "section_padding_bottom",
+			"label": "Spacing bottom",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 40,
+			"visible_if": "{{ section.settings.set_rhythm == true  }}"
+		},
+		{
+			"type": "header",
+			"content": "Target device",
+			"visible_if": "{{ settings.show_target_device_settings == true }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_target_device",
+			"label": "Set target device",
+			"visible_if": "{{ settings.show_target_device_settings == true }}",
+			"default": false
+		},
+		{
+			"type": "select",
+			"label": "Show on",
+			"id": "target_device",
+			"default": "desktop",
+			"visible_if": "{{ settings.show_target_device_settings == true and section.settings.set_target_device == true }}",
+			"options": [
+				{
+					"value": "mobile",
+					"label": "Mobile"
+				},
+				{
+					"value": "desktop",
+					"label": "Desktop"
+				}
+			]
+		},
+		{
+			"type": "color_scheme",
+			"id": "color_scheme",
+			"label": "Color scheme"
+		},
+		{
+			"type": "select",
+			"id": "background",
+			"label": "Background",
+			"default": "canvas",
+			"options": [
+				{
+					"value": "canvas",
+					"label": "Default"
+				},
+				{
+					"value": "tint",
+					"label": "Tint"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background color",
+			"default": "#f2f2f2",
+			"alpha": false,
+			"visible_if": "{{ section.settings.background == 'custom' }}"
+		},
+	],
+	"blocks": [
+		{
+			"type": "_accordion"
+		}
+	],
+	"presets": [
+		{
+			"name": "Accordion",
+			"category": "Text",
+			"settings": {
+				"content_width": "custom",
+				"content_width_custom": 65
+			},
+			"blocks": [
+				{
+					"id": "section-title",
+					"type": "_section-title",
+					"static": true,
+					"settings": {
+						"text": "Common Questions"
+					}
+				},
+				{
+					"type": "_accordion",
+					"settings": {
+						"expand": true
+					},
+					"blocks": [
+						{
+							"type": "theme-richtext",
+							"settings": {
+								"text": "<p>Use this accordion to share simple text or unleash your creativity with buttons, images, and layout blocks. Experiment with custom designs to make your content stand out and engage your customers.</p>"
+							}
+						}
+					]
+				},
+				{
+					"type": "_accordion",
+					"blocks": [
+						{
+							"type": "theme-richtext",
+							"settings": {
+								"text": "<p>Use this accordion to share simple text or unleash your creativity with buttons, images, and layout blocks. Experiment with custom designs to make your content stand out and engage your customers.</p>"
+							}
+						}
+					]
+				},
+				{
+					"type": "_accordion",
+					"blocks": [
+						{
+							"type": "theme-richtext",
+							"settings": {
+								"text": "<p>Use this accordion to share simple text or unleash your creativity with buttons, images, and layout blocks. Experiment with custom designs to make your content stand out and engage your customers.</p>"
+							}
+						}
+					]
+				}
+			]
+		}
+	],
+	"disabled_on": {
+		"groups": [
+			"header",
+			"custom.overlays",
+			"custom.drawers"
+		]
+	}
+}
+{% endschema %}

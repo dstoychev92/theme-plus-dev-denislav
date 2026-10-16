@@ -1,0 +1,47 @@
+{% # schema.org/Recipe JSON-LD. Replaces the generic article structured_data on recipe pages. %}
+{%- liquid
+  assign recipe_ingredients = article.metafields.custom.recipe_ingredients.value
+  assign recipe_steps = article.metafields.custom.recipe_steps.value
+  assign recipe_video = article.metafields.custom.recipe_video.value
+  assign author_name = article.metafields.custom.author | default: article.author
+  assign date_published = article.published_at | date: '%Y-%m-%d'
+-%}
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Recipe",
+    "name": {{ article.title | json }},
+    {%- if article.excerpt != blank %}
+      "description": {{ article.excerpt | strip_html | json }},
+    {%- endif %}
+    {%- if article.image %}
+      {%- assign schema_image = article.image | image_url: width: 1200 -%}
+      "image": {{ schema_image | prepend: 'https:' | json }},
+    {%- endif %}
+    {%- if article.metafields.custom.recipe_servings != blank %}
+      "recipeYield": {{ article.metafields.custom.recipe_servings | json }},
+    {%- endif %}
+    {%- if recipe_ingredients.size > 0 %}
+      "recipeIngredient": {{ recipe_ingredients | json }},
+    {%- endif %}
+    {%- if recipe_steps.size > 0 %}
+      "recipeInstructions": [
+        {%- for step in recipe_steps -%}
+          { "@type": "HowToStep", "text": {{ step | json }} }{% unless forloop.last %},{% endunless %}
+        {%- endfor -%}
+      ],
+    {%- endif %}
+    {%- if recipe_video != blank and recipe_video.sources.size > 0 %}
+      {%- assign video_thumb = recipe_video.preview_image | image_url: width: 1200 -%}
+      "video": {
+        "@type": "VideoObject",
+        "name": {{ article.title | json }},
+        "thumbnailUrl": {{ video_thumb | prepend: 'https:' | json }},
+        "uploadDate": {{ date_published | json }},
+        "contentUrl": {{ recipe_video.sources.first.url | json }}
+      },
+    {%- endif %}
+    "author": { "@type": "Person", "name": {{ author_name | json }} },
+    "datePublished": {{ date_published | json }}
+  }
+</script>

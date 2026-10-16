@@ -1,0 +1,24 @@
+{% liquid
+  assign target_device = target_device | default: _settings.target_device
+%}
+
+{% capture class %}
+  flex flex-center vars-stain-content text-content
+  relative h-full min-h-[--header-row-height] px-[calc(var(--header-row-gap-x)/2)]
+  transition-[opacity] duration-200
+  aria-expanded:opacity-25
+  {% render 'props-class-target-device', target_device: target_device %}
+  {{ class }}
+{% endcapture %}
+
+<button
+  aria-label="{{ 'header.accessibility.menu_drawer' | t }}"
+  aria-controls="header-drawer"
+  aria-haspopup="dialog"
+  :aria-expanded="$store.drawer.isOpen && $store.drawer.type === 'menu'"
+  @click.stop.prevent="$dispatch('theme:menu-drawer:open')"
+  class="{{ class }}"
+  {{ attributes }}
+>
+  {% render 'core-icon', icon: 'stroke-header-hamburger-uneven' %}
+</button>

@@ -1,0 +1,38 @@
+{% liquid
+  assign show_checkbox = section.settings.show_checkbox
+  assign checkbox_label = section.settings.checkbox_label
+%}
+
+{% if show_checkbox and checkbox_label != blank %}
+  {% liquid
+    if form_id == null
+      assign form_id = 'cart-' | append: section.id
+    endif
+    assign checkbox_id = form_id | append: '-' | append: checkbox_label | strip_html | handleize
+  %}
+
+  {% capture checkbox_name %}
+    attributes[{{ checkbox_label | handleize }}]
+  {% endcapture %}
+
+  {% capture checkbox_label_class %}
+    flex-col richtext type-resize-all-{{ section.settings.richtext_size_checkbox }}
+  {% endcapture %}
+
+  {% if section.settings.checkbox_required %}
+    {% assign checkbox_input_attributes = 'required' %}
+    {% capture checkbox_wrapper_class %}
+      has-[:user-invalid]:animate-wiggle
+    {% endcapture %}
+  {% endif %}
+
+  {% render 'field-checkbox',
+    form: form_id,
+    name: checkbox_name,
+    id: checkbox_id,
+    label: checkbox_label,
+    label_class: checkbox_label_class,
+    input_attributes: checkbox_input_attributes,
+    class: checkbox_wrapper_class
+  %}
+{% endif %}

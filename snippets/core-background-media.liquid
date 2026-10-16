@@ -1,0 +1,80 @@
+{% liquid
+  assign height = height | default: _settings.height, allow_false: true
+  assign set_height = set_height | default: _settings.set_height | default: true, allow_false: true
+  assign height_mobile = height_mobile | default: _settings.height_mobile, allow_false: true
+  assign set_height_mobile = set_height_mobile | default: _settings.set_height_mobile | default: true, allow_false: true
+  assign image = image | default: _settings.image
+  assign image_mobile = image_mobile | default: _settings.image_mobile
+  assign media_type = media_type | default: _settings.media_type | default: 'image'
+  assign show_image_on_mobile = show_image_on_mobile | default: _settings.show_image_on_mobile
+%}
+
+{% case media_type %}
+  {% when 'image' %}
+    {% render 'core-background-image',
+      _settings: _settings,
+      id_prefix: id_prefix,
+      image: image,
+      image_mobile: image_mobile,
+      placeholder: placeholder,
+      aspect_ratio: aspect_ratio,
+      aspect_ratio_mobile: aspect_ratio_mobile,
+      height: height,
+      set_height: set_height,
+      height_mobile: height_mobile,
+      set_height_mobile: set_height_mobile,
+      preload: preload,
+      loading: loading,
+      fetchpriority: fetchpriority,
+      class: class,
+      attributes: attributes,
+      sizes: sizes,
+      widths: widths
+    %}
+
+  {% when 'video' %}
+    {% if show_image_on_mobile == true %}
+      {% assign video_class = class | append: ' max-md:hidden' %}
+      {% assign class = class | append: ' md:hidden' %}
+      {% render 'core-background-image',
+        _settings: _settings,
+        id_prefix: id_prefix,
+        image: false,
+        image_mobile: image_mobile,
+        placeholder: placeholder,
+        aspect_ratio_mobile: aspect_ratio_mobile,
+        sizes: sizes,
+        widths: widths,
+        height: height,
+        set_height: set_height,
+        height_mobile: height_mobile,
+        set_height_mobile: set_height_mobile,
+        preload: preload,
+        loading: loading,
+        fetchpriority: fetchpriority,
+        class: class,
+        attributes: attributes
+      %}
+    {% endif %}
+
+    {% liquid
+      if show_image_on_mobile
+        assign video_attributes = attributes | append: ' data-video-desktop'
+      else
+        assign video_attributes = attributes | append: ' data-video'
+      endif
+    %}
+
+    {% render 'core-background-video',
+      id_prefix: id_prefix,
+      _settings: _settings,
+      video: video,
+      height: height,
+      set_height: set_height,
+      height_mobile: height_mobile,
+      set_height_mobile: set_height_mobile,
+      preload: preload,
+      class: video_class,
+      attributes: video_attributes
+    %}
+{% endcase %}

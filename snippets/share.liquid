@@ -1,0 +1,151 @@
+{% liquid
+  assign label = label | default: block.settings.share_label
+  assign copy_icon_class = 'w-r8 h-r8 shrink-0 text-content'
+
+  if product
+    assign resource = product.selected_variant | default: product
+  elsif article
+    assign resource = article
+  else
+    assign resource = page
+  endif
+  assign share_url = request.origin | append: resource.url
+%}
+
+{% capture share_icon_class %}
+  w-r6 h-r6 text-muted shrink-0
+{% endcapture %}
+
+{% capture share_icon %}
+  {% render 'core-icon', icon: 'fill-share-ios', class: share_icon_class, attributes: 'x-show="!isAndroid"' %}
+  {% render 'core-icon', icon: 'fill-share-android', class: share_icon_class, attributes: 'x-show="isAndroid" x-cloak' %}
+{% endcapture %}
+
+{% capture copy_icon_attributes %}
+  x-show="$clipboard.state == 'initial' || $clipboard.state == 'denied'"
+{% endcapture %}
+{% capture success_icon_attributes %}
+  x-show="$clipboard.state == 'success'"
+  x-cloak
+{% endcapture %}
+{% capture fallback_button_content %}
+  {% render 'core-icon', icon: 'fill-copy', class: copy_icon_class, attributes: copy_icon_attributes %}
+  {% render 'core-icon', icon: 'fill-copy-check', class: copy_icon_class, attributes: success_icon_attributes %}
+  {% comment %} Dummy input element to handle the validation error message when clipboard access is denied {% endcomment %}
+  <input class="sr-only"/>
+{% endcapture %}
+
+{% capture fallback_button_attributes %}
+  aria-label="{{ 'other.accessibility.copy_url' | t }}"
+  x-clipboard:button
+  x-effect="
+    if ($clipboard.state == 'denied') {
+      const validator = $el.querySelector('input');
+      validator.setCustomValidity('{{ 'other.accessibility.clipboard_access_denied' | t | escape }}');
+      validator.reportValidity();
+    }
+  "
+  x-show="$clipboard.isClipboardWriteAllowed"
+{% endcapture %}
+
+{% capture fallback_button %}
+  <button
+    class="flex items-center gap-x-r5 font-family-body text-r3 font-bold"
+    style="flex-direction: var(--share-direction)"
+    x-popover:button
+  >
+    {{ share_icon }}
+    {{ label | escape }}
+  </button>
+
+  {% comment %} Force the popover to match this element's width {% endcomment %}
+  <span
+    class="block w-full"
+    aria-hidden="true"
+    x-popup:float-reference
+  ></span>
+{% endcapture %}
+
+{% capture fallback_content %}
+  <div
+    class="flex-row-center p-r2 rounded-sm border border-line-bold"
+    x-clipboard
+    x-effect="if($clipboard.state == 'initial') { $popover.close() }"
+  >
+    <span
+      class="flex-row-center h-row-md px-r4 font-family-body text-r4 line-clamp-1 break-all"
+      aria-hidden="true"
+      x-clipboard:target
+    >
+      {{- share_url -}}
+    </span>
+
+    {% render 'core-button',
+      content: fallback_button_content,
+      color: 'link',
+      appearance: 'bare',
+      attributes: fallback_button_attributes
+    %}
+  </div>
+{% endcapture %}
+
+{% capture fallback_attributes %}
+  x-show="!canShare"
+  x-cloak
+  x-ref="shareContainerEl"
+{% endcapture %}
+
+<div
+  class="relative text-content"
+  x-data="
+    {
+      canShare: false,
+
+      get isAndroid() {
+        return navigator.userAgentData?.platform.toLowerCase().includes('android') || /Android/i.test(navigator.userAgent);
+      },
+
+      init() {
+        if (this.isWindowsOS()) {
+          this.canShare = false;
+        } else {
+          {% comment %} Check if build-in share functionality is available {% endcomment %}
+          this.canShare = navigator.share ? navigator.canShare({url:'{{ share_url }}'}) : false;
+        }
+      },
+
+      isWindowsOS() {
+        if (navigator.userAgentData?.platform) {
+          return navigator.userAgentData.platform === 'Windows';
+        }
+        return /Windows/i.test(navigator.userAgent);
+      }
+    }
+  "
+>
+  {% comment %} Build-in share functionality {% endcomment %}
+  <button
+    class="flex items-center gap-x-r5 font-family-body text-r3 font-bold"
+    style="flex-direction: var(--share-direction)"
+    @click="navigator.share({url: '{{ share_url }}', title: document.title}).catch(() => {})"
+    x-show="canShare"
+  >
+    {{ share_icon }}
+    {{ label | escape }}
+  </button>
+
+  <template x-if="!canShare">
+    {% comment %} Copy URL fallback {% endcomment %}
+    {% render 'core-popover',
+      button: fallback_button,
+      content: fallback_content,
+      show_arrow: false,
+      position: 'match.bottom-start',
+      offset: 12,
+      size: false,
+      max_width: '100%',
+      popover_class: 'min-w-fit shadow-none !ring-0',
+      attributes: fallback_attributes
+    %}
+  </template>
+</div>

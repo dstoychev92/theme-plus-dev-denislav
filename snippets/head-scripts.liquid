@@ -1,0 +1,272 @@
+<!-- Import maps -->
+{% comment %} Note: this must always go above other script imports or it will not work {% endcomment %}
+<script type="importmap">
+  {
+    "imports": {
+      "photoswipe": "{{ 'vendor.photoswipe.js' | asset_url }}",
+      "photoswipe-video-plugin": "{{ 'vendor.photoswipe.video.js' | asset_url }}",
+      "photoswipe/lightbox": "{{ 'vendor.photoswipe.lightbox.js' | asset_url }}",
+      "tabbable": "{{ 'vendor.tabbable.js' | asset_url }}",
+      "motion": "{{ 'vendor.motion.js' | asset_url }}",
+      "motion-plus/animate-layout": "{{ 'vendor.motion-plus.animate-layout.js' | asset_url }}",
+      "alpinejs": "{{ 'vendor.alpinejs.js' | asset_url }}",
+      "@theme/utils": "{{ 'theme.utils.js' | asset_url }}",
+      "@theme/recent": "{{ 'theme.recent.js' | asset_url }}",
+      "@floating-ui/dom": "{{ 'vendor.floating-ui.dom.js' | asset_url }}",
+      "popover-polyfill": "{{ 'vendor.popover-polyfill.js' | asset_url }}"
+    }
+  }
+</script>
+
+<!-- Theme JS -->
+<script src="{{ 'theme.critical.js' | asset_url }}" type="module" fetchpriority="high"></script>
+<script src="{{ 'theme.events.js' | asset_url }}" type="module"></script>
+<script src="{{ 'theme.main.js' | asset_url }}" type="module"></script>
+
+<link
+  rel="modulepreload"
+  href="{{ 'vendor.alpinejs.js' | asset_url }}"
+>
+<link
+  rel="modulepreload"
+  href="{{ 'vendor.motion.js' | asset_url }}"
+  fetchpriority="low"
+>
+
+{% if request.design_mode %}
+  <script src="{{ 'theme.editor.js' | asset_url }}" type="module" fetchpriority="low"></script>
+{% endif %}
+
+{% if request.page_type == 'product' %}
+  <script src="{{ 'theme.product.js' | asset_url }}" type="module" fetchpriority="low"></script>
+
+  {% if product.metafields.seo.hidden != true %}
+    <script type="module">
+      import { recordProductView } from '@theme/recent';
+      recordProductView({{ product.id | json }});
+
+      document.addEventListener('theme:sibling:change', ($event) => {
+        if (document.querySelector('.main-product')?.contains($event.target)) {
+          recordProductView($event.detail.siblingId);
+        }
+      });
+    </script>
+  {% endif %}
+{% endif %}
+{%- comment -%}
+  In order to use your custom events file at assets/custom.events.js uncomment the line below.
+  <script src="{{ 'custom.events.js' | asset_url }}" defer="defer"></script>
+{%- endcomment -%}
+
+{%- comment -%}
+  In order to use your custom alpine code at assets/custom.alpine.js uncomment the line below.
+  Note: this must be a module script
+  <script src="{{ 'custom.alpine.js' | asset_url }}" type="module" defer="defer"></script>
+{%- endcomment -%}
+
+{% comment %}
+  Boom: gift-sync engine + tier-bar styles (refactored out of
+  snippets/cart-boom-tier-bar.liquid so the JS can be cached and the
+  HTML stays morph-friendly).
+{% endcomment %}
+<link rel="stylesheet" href="{{ 'custom.boom-gift-sync.css' | asset_url }}">
+<script src="{{ 'custom.boom-gift-sync.js' | asset_url }}" defer="defer"></script>
+
+{% comment %}
+  Boom: upsell popup (snippets/boom-upsell-popup.liquid).
+  The inline script must stay inline (not deferred): it runs during parsing,
+  BEFORE the deferred theme.events.js module registers its own
+  theme:cart:add:success listener. Registering first lets it suppress the
+  default cart drawer / notification for the one add that shows the popup,
+  while later listeners (gift sync, etc.) still receive the event.
+  Eligibility lives in custom.boom-upsell.js (window.__boomUpsellShouldShow);
+  until that loads, the default behavior is untouched.
+{% endcomment %}
+{% if settings.boom_upsell_enabled %}
+  <link rel="stylesheet" href="{{ 'custom.boom-upsell.css' | asset_url }}">
+  <script src="{{ 'custom.boom-upsell.js' | asset_url }}" defer="defer"></script>
+  <script>
+    (function () {
+      var suppress = false;
+      window.addEventListener('theme:cart:add:success', function (event) {
+        var detail = event && event.detail;
+        if (!detail) return;
+        if (typeof window.__boomUpsellShouldShow !== 'function') return;
+        if (!window.__boomUpsellShouldShow(detail.items || [detail])) return;
+        suppress = true;
+        setTimeout(function () { suppress = false; }, 0);
+        window.dispatchEvent(new CustomEvent('boom:upsell:show', { detail: detail }));
+      });
+      ['theme:cart-drawer:open', 'theme:cart-notification:show'].forEach(function (type) {
+        window.addEventListener(type, function (event) {
+          if (suppress) event.stopImmediatePropagation();
+        });
+      });
+    })();
+  </script>
+{% endif %}
+
+{% comment %} Boom: cart subscription toggle (global so it survives Section Rendering morphs) {% endcomment %}
+<script>
+  window.__boomCartSubToggle = function(ctx) {
+    if (ctx.busy) return;
+    ctx.busy = true;
+    var tgt = ctx.isSub ? null : parseInt(ctx.bestPlanId, 10);
+    var changeUrl = (window.theme && window.theme.routes && window.theme.routes.cartChange) || '/cart/change.js';
+    var addUrl = (window.theme && window.theme.routes && window.theme.routes.cartAdd) || '/cart/add.js';
+    var headers = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
+
+    fetch(changeUrl, {
+      method: 'POST', headers: headers,
+      body: JSON.stringify({ id: ctx.lineItemKey, quantity: 0 })
+    }).then(function(rmR) {
+      if (!rmR.ok) { ctx.busy = false; return Promise.reject('remove failed'); }
+      var addP = { id: ctx.variantId, quantity: ctx.quantity };
+      if (tgt) addP.selling_plan = tgt;
+      if (ctx.props && Object.keys(ctx.props).length > 0) addP.properties = ctx.props;
+      var sEls = document.querySelectorAll('[data-cart-api-section]');
+      var sIds = [];
+      sEls.forEach(function(el) {
+        var ss = el.closest('.shopify-section');
+        if (ss) sIds.push(ss.id.replace('shopify-section-', ''));
+      });
+      if (sIds.length > 0) addP.sections = sIds;
+      /* Bypass bundle builder fetch interceptor — this is a cart-originating re-add */
+      window.__boomSkipIntercept = true;
+      return fetch(addUrl, { method: 'POST', headers: headers, body: JSON.stringify(addP) });
+    }).then(function(addR) {
+      if (!addR || !addR.ok) {
+        var rb = { id: ctx.variantId, quantity: ctx.quantity };
+        if (ctx.isSub && ctx.curPlanId) rb.selling_plan = ctx.curPlanId;
+        if (ctx.props && Object.keys(ctx.props).length > 0) rb.properties = ctx.props;
+        window.__boomSkipIntercept = true;
+        fetch(addUrl, { method: 'POST', headers: headers, body: JSON.stringify(rb) });
+        ctx.busy = false;
+        return;
+      }
+      return addR.json();
+    }).then(function(addD) {
+      if (addD) {
+        document.body.dispatchEvent(new CustomEvent('theme:cart:add:success', { bubbles: true, detail: addD }));
+      }
+      ctx.busy = false;
+    }).catch(function(e) {
+      console.error('[cartSubToggle]', e);
+      ctx.busy = false;
+    });
+  };
+</script>
+
+{% capture close_icon %}
+  {% render 'core-icon', icon: 'stroke-bare-x' %}
+{% endcapture %}
+{% capture arrow_prev_icon %}
+  {% render 'core-icon', icon: 'stroke-chevron-left' %}
+{% endcapture %}
+{% capture arrow_next_icon %}
+  {% render 'core-icon', icon: 'stroke-chevron-right' %}
+{% endcapture %}
+
+<!-- Theme global variables -->
+{% # prettier-ignore %}
+<script>
+  // Remove the data-fonts-loading attribute when the fonts are loaded so we can use it to trigger animations and whatnot
+  document.fonts.ready.then(() => {
+    document.documentElement.removeAttribute('data-fonts-loading');
+  });
+
+  // Remove the data-alpine-loading attribute when alpine is initialized so we can use it to trigger animations and whatnot
+  document.addEventListener('alpine:init', () => {
+    document.documentElement.removeAttribute('data-alpine-loading');
+  });
+
+  let root = '{{ routes.root_url }}';
+  if (root[root.length - 1] !== '/') {
+    root = `${root}/`;
+  }
+
+  window.theme = {
+    shop: {
+      permanentDomain: '{{ shop.permanent_domain }}',
+    },
+    info: {
+      name: 'pipeline',
+      version: '9.0.0',
+    },
+    routes: {
+      root: root,
+      cart: '{{ routes.cart_url }}',
+      cartAdd: '{{ routes.cart_add_url }}',
+      cartChange: '{{ routes.cart_change_url }}',
+      cartClear: '{{ routes.cart_clear_url }}',
+      cartUpdate: '{{ routes.cart_update_url }}',
+      search: '{{ routes.search_url }}',
+      predictiveSearch: '{{ routes.predictive_search_url }}',
+      productRecommendations: '{{ routes.product_recommendations_url }}',
+    },
+    currency: {
+      {% comment %} theme.currency enables method-ui to match liquid formatting in javascript {% endcomment %}
+      locale:  '{{ request.locale.iso_code | append: '-' | append: localization.country.iso_code }}',
+      currencyCode: '{{ cart.currency.iso_code }}',
+      legacyFormat: {{ shop.money_format | json }},
+    },
+    cart: {
+      action: '{{ settings.after_add_to_cart_action }}',
+      buttonAction: '{{ settings.cart_button_action }}',
+    },
+    translations: {
+      other: {
+        free: {{ 'other.free' | t | json }}
+      }
+    },
+    screen: {
+      sm: 640,
+      md: 768,
+      lg: 1024,
+      xl: 1280,
+      '2xl': 1536
+    },
+    photoswipe: {
+      maxZoomLevel: 4,
+      wheelToZoom: true,
+      zoom: false,
+      trapFocus: true,
+      returnFocus: true,
+      closeTitle: {{ 'product.gallery.close_title' | t | json }},
+      zoomTitle: {{ 'product.gallery.zoom_title' | t | json }},
+      arrowPrevTitle: {{ 'product.gallery.arrow_previous_title' | t | json }},
+      arrowNextTitle: {{ 'product.gallery.arrow_next_title' | t | json }},
+      errorMsg: {{ 'product.gallery.error_message' | t | json }},
+      closeSVG: {{ close_icon | strip_newlines | json }},
+      arrowPrevSVG: {{ arrow_prev_icon | strip_newlines | json }},
+      arrowNextSVG: {{ arrow_next_icon | strip_newlines | json }},
+      showHideAnimationType: 'zoom',
+      preloadFirstSlide: true,
+      paddingFn: (viewportSize, itemData, index) => {
+        const gridPageMargin = Number(getComputedStyle(document.body).getPropertyValue('--raw-page-buffer').replace('px', ''));
+        const buttonHeight = Number(getComputedStyle(document.body).getPropertyValue('--row-lg').replace('px', ''));
+        const counterHeight = Number(getComputedStyle(document.body).getPropertyValue('--row-md').replace('px', ''));
+
+        const padding = {top: 0, bottom: 0, left: 0, right: 0};
+
+        if (viewportSize.x >= window.theme.screen.lg) {
+          padding.left = gridPageMargin * 3 + buttonHeight;
+        } else {
+          padding.left = gridPageMargin;
+        }
+
+        padding.right = padding.left;
+
+        if (viewportSize.x < window.theme.screen.md) {
+          padding.left = 0;
+          padding.right = 0;
+        }
+
+        padding.top = gridPageMargin * 2 + buttonHeight;
+        padding.bottom = gridPageMargin * 2 + counterHeight;
+
+        return padding;
+      }
+    }
+  };
+</script>

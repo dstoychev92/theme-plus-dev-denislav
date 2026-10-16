@@ -1,0 +1,40 @@
+{% comment %}
+  * Renders the product-card add-to-cart button that adds directly to cart, no quick-view or inline size buttons
+{% endcomment %}
+
+{% liquid
+  assign variant = variant | default: product.selected_or_first_available_variant
+  assign appearance = appearance | default: 'blur'
+%}
+
+{%- capture label -%}
+  <span class="flex-row-center gap-x-r3">
+    {{ label }}
+  </span>
+{%- endcapture -%}
+
+{% capture attributes %}
+  :disabled="$productForm.state == 'pending'"
+  :class="
+    {
+      'vars-scheme-error': $productForm.state === 'error',
+      {% comment %} Don't fade out the button when pending {% endcomment %}
+      'disabled:!opacity-100': $productForm.state === 'pending'
+    }
+  "
+  {% comment %} Should add the selected variant to cart, but fall back to using the liquid variant just in case {% endcomment %}
+  :value="{{ variant.id }}"
+{% endcapture %}
+
+{% render 'core-button',
+  type: 'submit',
+  label: label,
+  appearance: appearance,
+  sizing: size,
+  color: color,
+  name: 'id',
+  class: class,
+  form: form_id,
+  value: variant.id,
+  attributes: attributes
+%}

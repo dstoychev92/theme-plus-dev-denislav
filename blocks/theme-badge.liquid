@@ -1,0 +1,288 @@
+<!-- blocks/theme-badge.liquid -->
+
+{% capture padding_style %}
+  {%- case block.settings.size -%}
+    {%- when 'sm' -%}
+      --badge-px: var(--r5);
+      --badge-py: var(--r1);
+    {%- when 'md' -%}
+      --badge-px: var(--r6);
+      --badge-py: var(--r2);
+    {%- when 'lg' -%}
+      --badge-px: var(--r7);
+      --badge-py: var(--r3);
+    {%- when 'custom' -%}
+      --badge-px: {{ block.settings.size_custom }}px;
+      --badge-py: {{ block.settings.size_custom | divided_by: 3 }}px;
+  {%- endcase -%}
+{% endcapture %}
+
+{% if block.settings.set_rounding %}
+  {% capture rounding_class %}
+    {%- case block.settings.rounding_style -%}
+      {%- when 'none' -%}
+        vars-element-rounding-none
+      {%- when 'sm' -%}
+        vars-element-rounding-sm
+      {%- when 'md' -%}
+        vars-element-rounding-md
+      {%- when 'pill' -%}
+        vars-element-rounding-pill
+    {%- endcase -%}
+  {% endcapture %}
+{% endif %}
+
+{% capture class %}
+  entrance-item entrance-standard
+{% endcapture %}
+
+<div {{ block.shopify_attributes }} class="{{ class }}">
+  <span
+    class="
+      inline-richtext
+      rounded-element inline-block
+      text-[color:var(--badge-text)]
+      frosted-glass border-highlight
+
+      {% comment %} Slight shadow on text to enhance readability {% endcomment %}
+      [text-shadow:_0_1px_0_rgb(0_0_0_/_8%)]
+
+      {{ rounding_class }}
+    "
+    style="
+      padding: var(--badge-py) var(--badge-px);
+      {%- if block.settings.set_custom_color -%}
+        {%- if block.settings.outline_style -%}
+          --badge-text: {{ block.settings.custom_color }};
+          background-color: #ffffff;
+          --border-gradient-from: {{ block.settings.custom_color }};
+          --border-gradient-to: {{ block.settings.custom_color }};
+        {%- else -%}
+          --badge-text: {{ block.settings.custom_color | color_darken: 20 }};
+          --frosted-glass-color: {{ block.settings.custom_color }};
+          --border-highlight-from: {{ block.settings.custom_color | color_lighten: 20 | color_modify: 'alpha', 0.10 }};
+          --border-highlight-to: {{ block.settings.custom_color | color_lighten: 20 | color_modify: 'alpha', 0.20 }};
+        {%- endif -%}
+      {% else %}
+       --badge-text: var(--badge-text-color);
+       --border-highlight-from: var(--content-alpha-10);
+       --border-highlight-to: var(--content-alpha-20);
+      {%- endif -%}
+      {{ padding_style }}
+    "
+  >
+    {% render 'core-text-preset', _settings: block.settings %}
+  </span>
+</div>
+
+{% schema %}
+{
+	"name": "Badge",
+	"tag": null,
+	"settings": [
+		{
+			"type": "inline_richtext",
+			"id": "text",
+			"label": "Text",
+			"default": "New"
+		},
+		{
+			"type": "header",
+			"content": "Text style",
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_preset",
+			"label": "Text style",
+			"default": "btn",
+			"options": [
+				{
+					"value": "btn",
+					"label": "Button"
+				},
+				{
+					"value": "p",
+					"label": "Paragraph"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_resize",
+			"label": "Text size",
+			"default": "sm",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset != 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_font",
+			"label": "Font",
+			"default": "subheading",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 2,
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase",
+			"label": "Uppercase",
+			"default": true,
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "size",
+			"label": "Size",
+			"default": "md",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "size_custom",
+			"label": "Custom size",
+			"default": 10,
+			"min": 0,
+			"max": 20,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ block.settings.size == 'custom' }}"
+		},
+		{
+			"type": "header",
+			"content": "Color"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_custom_color",
+			"label": "Set color",
+			"default": false
+		},
+		{
+			"type": "color",
+			"id": "custom_color",
+			"label": "Color",
+			"default": "#f4a482",
+			"visible_if": "{{ block.settings.set_custom_color }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "outline_style",
+			"label": "Outline style",
+			"info": "Color applies to text and border. Background stays white.",
+			"default": false,
+			"visible_if": "{{ block.settings.set_custom_color }}"
+		},
+		{
+			"type": "header",
+			"content": "Rounding"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_rounding",
+			"label": "Set rounding",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "rounding_style",
+			"label": "Rounding",
+			"default": "none",
+			"options": [
+				{
+					"value": "none",
+					"label": "0"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "pill",
+					"label": "L"
+				}
+			],
+			"visible_if": "{{ block.settings.set_rounding }}"
+		},
+	],
+	"presets": [
+		{
+			"name": "Badge",
+			"category": "Basic"
+		}
+	]
+}
+{% endschema %}

@@ -1,0 +1,52 @@
+{%- liquid
+  assign tag_string_connector = '/tagged/'
+  assign parts = request.path | split: tag_string_connector
+  assign tags = null
+  if parts.size > 1
+    assign tags = parts.last
+  endif
+  assign handelized_tag = tag | handleize
+
+  # Check if the current tag is already in the URL. If so, remove it from the URL
+  if tags contains handelized_tag
+    assign tag_list = tags | split: ','
+    assign filtered_tags = ''
+
+    for t in tag_list
+      if t != handelized_tag
+        if filtered_tags != ''
+          assign filtered_tags = filtered_tags | append: ','
+        endif
+        assign filtered_tags = filtered_tags | append: t
+      endif
+    endfor
+
+    if filtered_tags == blank
+      # If we've now removed all tags from the URL, just redirect to the blog page
+      assign tag_url = blog.url
+    else
+      assign tag_url = blog.url | append: tag_string_connector | append: filtered_tags
+    endif
+  else
+    if tags != null
+      assign tag_url = blog.url | append: tag_string_connector | append: tags | append: ',' | append: handelized_tag
+    else
+      assign tag_url = blog.url | append: tag_string_connector | append: handelized_tag
+    endif
+  endif
+
+  # Handle current state
+  assign bt_color = 'content'
+  assign bt_attributes = attributes
+  if current
+    assign bt_color = 'primary'
+    assign bt_attributes = attributes | append: ' aria-current="page"'
+  endif
+
+  capture bt_class
+    echo 'flex-none truncate '
+    echo class
+  endcapture
+
+  render 'core-button', tag: 'a', label: tag, href: tag_url, sizing: 'xs', appearance: 'outline', color: bt_color, type_preset: 'p', type_resize: 'xs', class: bt_class, attributes: bt_attributes
+-%}

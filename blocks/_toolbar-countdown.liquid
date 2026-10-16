@@ -1,0 +1,87 @@
+<!-- blocks/_toolbar-countdown.liquid -->
+
+{% render 'countdown',
+  _settings: block.settings,
+  layout: 'row',
+  class: 'self-center',
+  attributes: block.shopify_attributes
+%}
+
+{% schema %}
+{
+	"name": "Countdown",
+	"tag": null,
+	"settings": [
+		{
+			"type": "text",
+			"id": "end_date",
+			"label": "End date",
+			"info": "Use format \"YYYY-MM-DD\". Expiration date is based on the [store primary timezone](/admin/settings/general)."
+		},
+		{
+			"type": "text",
+			"id": "end_time",
+			"label": "End time",
+			"default": "11:59",
+			"info": "Use 12-hour time convention in format \"HH:MM\""
+		},
+		{
+			"type": "select",
+			"id": "period",
+			"label": "AM/PM",
+			"default": "pm",
+			"options": [
+				{
+					"value": "am",
+					"label": "AM"
+				},
+				{
+					"value": "pm",
+					"label": "PM"
+				}
+			]
+		},
+		{
+			"type": "inline_richtext",
+			"id": "end_message",
+			"label": "End of timer message",
+			"default": "Offer has expired"
+		},
+		{
+			"type": "checkbox",
+			"id": "hide_on_complete",
+			"label": "Hide block after end of timer",
+			"default": false
+		},
+		{
+			"type": "header",
+			"content": "Style"
+		},
+		{
+			"type": "select",
+			"id": "word_length",
+			"label": "Labels",
+			"default": "full",
+			"options": [
+				{
+					"value": "full",
+					"label": "Full"
+				},
+				{
+					"value": "short",
+					"label": "Short"
+				},
+				{
+					"value": "letter",
+					"label": "Letter"
+				}
+			]
+		},
+	],
+	"presets": [
+		{
+			"name": "Countdown"
+		}
+	]
+}
+{% endschema %}

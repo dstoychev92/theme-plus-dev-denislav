@@ -1,0 +1,55 @@
+<!-- snippets/card-product-lg-price.liquid -->
+
+{% liquid
+  assign current_variant = variant | default: product.selected_or_first_available_variant
+
+  # Metafields driving the new pricing block
+  assign dose_count = product.metafields.custom.doses
+%}
+
+{%- capture lowest_per_dose_value -%}
+  {%- render 'dose-price', product: product, part: 'price' -%}
+{%- endcapture -%}
+{%- capture lowest_per_dose_qualifier -%}
+  {%- render 'dose-price', product: product, part: 'qualifier' -%}
+{%- endcapture -%}
+
+{% liquid
+
+  # Brand-flavor accent color (falls back to brand orange)
+  assign accent_color = product.metafields.custom.background_color | default: '#FF6900'
+
+  # Compute per-dose retail price (in cents) when dose_count is present
+  assign per_dose_cents = 0
+  if dose_count != blank and dose_count > 0
+    assign per_dose_cents = current_variant.price | times: 1.0 | divided_by: dose_count | round
+  endif
+
+  # Convert lowest-per-dose decimal metafield (e.g. 1.17) to cents (117) for the money snippet
+  assign lowest_per_dose_cents = 0
+  if lowest_per_dose_value != blank
+    assign lowest_per_dose_cents = lowest_per_dose_value | times: 100 | round
+  endif
+%}
+
+{% capture content %}
+  <span class="flex flex-col items-start gap-y-r2">
+    <span class="flex items-baseline gap-x-r2 flex-wrap">
+      {% render 'card-price', product: product, variant: variant %}
+    </span>
+    {% if lowest_per_dose_cents > 0 %}
+      <span
+        class="inline-flex items-center type-p text-r1 font-bold whitespace-nowrap rounded-md px-r2 py-r1"
+        style="color: {{ accent_color }}; background-color: {{ accent_color }}14;"
+      >
+        {{ 'boom.price.from' | t }}&nbsp;{%- render 'money', price: lowest_per_dose_cents -%}/{{ 'boom.units.dose' | t }}{% if lowest_per_dose_qualifier != blank %}&nbsp;{{ lowest_per_dose_qualifier }}{% endif %}
+      </span>
+    {% endif %}
+  </span>
+{% endcapture %}
+
+{% if settings.enable_metafield_cardslot_price %}
+  {% render 'card-product-lg-metafield-cardslot', type: 'price', product: product, variant: variant, content: content %}
+{% else %}
+  {{ content }}
+{% endif %}

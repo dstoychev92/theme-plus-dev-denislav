@@ -1,0 +1,24 @@
+{% liquid
+  assign phone_label = 'boom.phone.call_us' | t
+  assign target_device = target_device | default: _settings.target_device
+%}
+
+{% capture class %}
+  keyboard-focus:outline-offset-[-2px]
+  px-[calc(var(--header-row-gap-x)/2)]
+  {% render 'props-class-target-device', target_device: target_device %}
+  focus-group-item
+  {{ class }}
+{% endcapture %}
+
+{% render 'header-link',
+  tag: 'a',
+  aria_label: phone_label,
+  href: 'tel:0877914000',
+  label: phone_label,
+  icon: 'stroke-header-phone',
+  class: class,
+  _settings: _settings,
+  label_style: 'icon',
+  icon_type_class: icon_type_class
+%}

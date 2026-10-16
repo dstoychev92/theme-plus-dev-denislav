@@ -1,0 +1,328 @@
+{%- comment -%}
+  UGC Video Slider — 3D-tilt social proof carousel.
+  Each testimonial is a block of type `_ugc-video-testimonial`.
+  Active card autoplays a real video; side cards are gradient placeholders.
+{%- endcomment -%}
+
+{%- liquid
+  assign hide_list = section.settings.hide_on_markets | remove: ' ' | downcase | split: ','
+  assign current_market = localization.market.handle | default: ''
+  assign is_hidden = false
+  if current_market != '' and hide_list contains current_market
+    assign is_hidden = true
+  endif
+-%}
+
+{%- unless is_hidden -%}
+{{ 'custom.ugc-slider.css' | asset_url | stylesheet_tag: preload: true }}
+<script src="{{ 'custom.ugc-slider.js' | asset_url }}" defer></script>
+
+{%- liquid
+  assign color_scheme = section.settings.color_scheme
+
+  assign block_count = 0
+  for block in section.blocks
+    if block.id contains '_ugc_video_testimonial'
+      assign block_count = block_count | plus: 1
+    endif
+  endfor
+-%}
+
+{%- capture header -%}
+  {% content_for 'block', type: '_section-title', id: 'header' %}
+{%- endcapture -%}
+
+{%- if block_count < 3 -%}
+  {%- if request.design_mode -%}
+    <div class="ugc-slider" style="padding: 60px; text-align: center;">
+      <p style="font-size: 16px; opacity: 0.7;">
+        Add at least 3 video testimonial blocks to display the carousel.
+      </p>
+    </div>
+  {%- endif -%}
+{%- else -%}
+
+{%- comment -%}
+  Strings handed to the Alpine component. `__NAME__` / `__ROLE__` are sentinels
+  the script swaps in, so translations keep their own word order.
+{%- endcomment -%}
+{%- capture ugc_i18n -%}
+{ "testimonialBy": {{ 'boom.ugc.testimonial_by' | t: name: '__NAME__', role: '__ROLE__' | json }} }
+{%- endcapture -%}
+
+<section
+  class="ugc-slider vars-{{ color_scheme.id }}"
+  role="region"
+  aria-label="{{ 'boom.ugc.region_label' | t }}"
+  tabindex="0"
+  x-data="ugcSlider({{ ugc_i18n | escape }})"
+  x-init="init()"
+>
+  {%- comment -%}
+    Each testimonial block self-renders a <script type="application/json">
+    tag (see blocks/_ugc-video-testimonial.liquid). Alpine reads them via
+    $root.querySelectorAll() — must live INSIDE the section's x-data root.
+  {%- endcomment -%}
+  <div class="ugc-data" hidden>
+    {%- for block in section.blocks -%}
+      {%- if block.id contains '_ugc_video_testimonial' -%}
+        {% render block %}
+      {%- endif -%}
+    {%- endfor -%}
+  </div>
+
+  <div class="ugc-slider__inner">
+
+    {%- comment -%} ── Header (canonical _section-title block) ─ {%- endcomment -%}
+    <div class="ugc-header">{{ header }}</div>
+
+    {%- comment -%} ── Stage with side-anchored nav arrows ── {%- endcomment -%}
+    <div class="ugc-stage">
+      <button type="button" class="ugc-nav ugc-nav--prev" @click="prev()" aria-label="{{ 'boom.ugc.prev' | t }}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform:scaleX(-1)">
+          <path d="M5 12 L19 12 M13 6 L19 12 L13 18"/>
+        </svg>
+      </button>
+
+      <template x-for="(b, i) in blocks" :key="b.id">
+        <button
+          type="button"
+          class="ugc-card"
+          :class="{ 'is-active': isActive(i) }"
+          x-show="isVisible(i)"
+          :style="cardStyle(i)"
+          :aria-label="testimonialLabel(b)"
+          :aria-current="isActive(i) ? 'true' : 'false'"
+          :tabindex="isActive(i) ? -1 : 0"
+          @click="!isActive(i) && jumpTo(i)"
+        >
+          {%- render 'ugc-silhouette' -%}
+          <template x-if="b.poster && !isActive(i)">
+            <img class="ugc-card__poster" :src="b.poster" alt="" width="720" height="1280" loading="lazy" decoding="async">
+          </template>
+        </button>
+      </template>
+
+      {%- comment -%} Persistent video overlay (always at center) {%- endcomment -%}
+      <div class="ugc-video" x-show="inView" :style="activeVideoStyle()">
+        <template x-if="activeBlock().poster">
+          <img class="ugc-video__poster" :src="activeBlock().poster" alt="" width="720" height="1280" decoding="async" fetchpriority="high">
+        </template>
+
+        <template x-if="inView && activeBlock().video">
+          <video
+            class="ugc-video__el"
+            :class="{ 'is-ready': videoReady }"
+            x-ref="video"
+            :src="activeBlock().video"
+            x-effect="$el.muted = muted"
+            autoplay
+            playsinline
+            preload="auto"
+            @click="togglePlay($event)"
+            @timeupdate="onTimeUpdate($event)"
+            @canplay="onCanPlay()"
+            @loadedmetadata="onLoadedMetadata($event)"
+            @ended="next()"
+          ></video>
+        </template>
+
+        <div class="ugc-live" x-show="videoReady" aria-hidden="true">
+          <span class="ugc-live__dot"></span>
+        </div>
+
+        <button
+          type="button"
+          class="ugc-mute"
+          @click="toggleMute($event)"
+          :aria-pressed="muted ? 'false' : 'true'"
+          :aria-label="muted ? {{ 'boom.ugc.unmute' | t | json | escape }} : {{ 'boom.ugc.mute' | t | json | escape }}"
+        >
+          <template x-if="muted">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M11 5 L6 9 H3 V15 H6 L11 19 Z"/>
+              <path d="M16 9 L22 15 M22 9 L16 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+            </svg>
+          </template>
+          <template x-if="!muted">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M11 5 L6 9 H3 V15 H6 L11 19 Z"/>
+              <path d="M16 9 a4 4 0 0 1 0 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+              <path d="M18.5 7 a8 8 0 0 1 0 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+            </svg>
+          </template>
+        </button>
+
+        <div class="ugc-info" aria-hidden="true">
+          {%- if section.settings.show_rating -%}
+            <div class="ugc-info__stars">
+              <template x-for="(filled, idx) in starsArray(activeBlock().rating)" :key="idx">
+                <svg width="13" height="13" viewBox="0 0 24 24" :fill="filled ? 'currentColor' : 'rgba(255,255,255,0.25)'">
+                  <path d="M12 2 L14.6 8.6 L21.7 9.2 L16.3 13.9 L18 21 L12 17.3 L6 21 L7.7 13.9 L2.3 9.2 L9.4 8.6 Z"/>
+                </svg>
+              </template>
+            </div>
+          {%- endif -%}
+          <div class="ugc-info__row">
+            <span class="ugc-info__name" x-text="activeBlock().name"></span>
+          </div>
+          <div class="ugc-info__role" x-text="activeBlock().role"></div>
+          <div class="ugc-info__quote" x-show="activeBlock().quote" x-text="activeBlock().quote"></div>
+          <a
+            class="ugc-info__product"
+            x-show="activeBlock().product_url"
+            :href="activeBlock().product_url"
+            @click.stop
+          >
+            <img class="ugc-info__product-img" x-show="activeBlock().product_image" :src="activeBlock().product_image" alt="" width="56" height="56">
+            <span class="ugc-info__product-title" x-text="activeBlock().product_title"></span>
+          </a>
+        </div>
+
+        <div class="ugc-progress" aria-hidden="true">
+          <div class="ugc-progress__fill" :style="`width: ${progress}%`"></div>
+        </div>
+      </div>
+
+      <button type="button" class="ugc-nav ugc-nav--next" @click="next()" aria-label="{{ 'boom.ugc.next' | t }}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 12 L19 12 M13 6 L19 12 L13 18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="ugc-sr-only" aria-live="polite" x-ref="live"></div>
+  </div>
+</section>
+
+{%- endif -%}
+{%- endunless -%}
+
+{% schema %}
+{
+  "name": "UGC Video Slider",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Appearance"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-light"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_rating",
+      "label": "Show rating stars",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Market visibility"
+    },
+    {
+      "type": "text",
+      "id": "hide_on_markets",
+      "label": "Hide on markets",
+      "info": "Comma-separated market handles where this section is hidden, e.g. greece,romania. Leave blank to always show."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "_section-title"
+    },
+    {
+      "type": "_ugc-video-testimonial"
+    }
+  ],
+  "max_blocks": 12,
+  "presets": [
+    {
+      "name": "UGC Video Slider",
+      "category": "Custom",
+      "blocks": [
+        {
+          "id": "header",
+          "type": "_section-title",
+          "static": true,
+          "settings": {
+            "text": "Хиляди се събуждат с BOOM"
+          }
+        },
+        {
+          "type": "_ugc-video-testimonial",
+          "settings": {
+            "name": "Мария",
+            "role": "Маркетинг мениджър",
+            "quote": "Заместих 3 кафета на ден с едно BOOM. Енергията е друга.",
+            "rating": 5,
+            "gradient_1": "#d4b896",
+            "gradient_2": "#7a5230"
+          }
+        },
+        {
+          "type": "_ugc-video-testimonial",
+          "settings": {
+            "name": "Иван",
+            "role": "Софтуерен инженер",
+            "quote": "Най-после кафе, което не ме оставя на празно в 11:00.",
+            "rating": 5,
+            "gradient_1": "#b8a884",
+            "gradient_2": "#5c4022"
+          }
+        },
+        {
+          "type": "_ugc-video-testimonial",
+          "settings": {
+            "name": "Елена",
+            "role": "Йога инструктор",
+            "quote": "10g протеин в кафето сутрин? Game changer.",
+            "rating": 5,
+            "gradient_1": "#e0c0a0",
+            "gradient_2": "#8b5a2b"
+          }
+        },
+        {
+          "type": "_ugc-video-testimonial",
+          "settings": {
+            "name": "Георги",
+            "role": "CrossFit треньор",
+            "quote": "Преди тренировка и след — BOOM е в чантата ми.",
+            "rating": 5,
+            "gradient_1": "#c4a484",
+            "gradient_2": "#6b4423"
+          }
+        },
+        {
+          "type": "_ugc-video-testimonial",
+          "settings": {
+            "name": "Виктория",
+            "role": "Майка на две деца",
+            "quote": "5 минути сутрин. Толкова отнема. И държи до обяд.",
+            "rating": 5,
+            "gradient_1": "#d8b894",
+            "gradient_2": "#7d5535"
+          }
+        },
+        {
+          "type": "_ugc-video-testimonial",
+          "settings": {
+            "name": "Никола",
+            "role": "Студент по медицина",
+            "quote": "Сесия + BOOM = без нервност, без срив. Просто работи.",
+            "rating": 4,
+            "gradient_1": "#b89878",
+            "gradient_2": "#604024"
+          }
+        }
+      ]
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "custom.overlays", "custom.drawers"]
+  }
+}
+{% endschema %}

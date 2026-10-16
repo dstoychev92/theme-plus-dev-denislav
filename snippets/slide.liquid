@@ -1,0 +1,59 @@
+{% capture class %}
+  grid-rows-subgrid relative !z-0 snap-start
+  {{ class }}
+{% endcapture %}
+
+{% capture attributes %}
+  {% if request.design_mode %}
+    x-effect="
+      if ($containsSelectedBlock) {
+        $slideshow.currentSlideIndex = $slide.slideIndex;
+      }
+    "
+  {% endif %}
+
+  aria-atomic="true"
+  role="group"
+  :aria-label="`${$slide.slideIndex + 1} {{ 'product.gallery.index_indicator_separator' | t }} ${$slideshow.totalSlides}`"
+  :data-slide="$slide.slideIndex"
+
+  {% unless visible %}
+    x-cloak
+  {% endunless %}
+
+  x-slideshow:slide
+  x-show="$slide.isCurrentSlide"
+  x-transition:enter="!duration-[--slide-transition-duration] transition-opacity"
+  x-transition:enter-start="opacity-0"
+  x-transition:enter-end="opacity-100"
+  x-transition:leave="!duration-[--slide-transition-duration] transition-opacity"
+  x-transition:leave-start="opacity-100"
+  x-transition:leave-end="opacity-0"
+
+  {{ attributes }}
+{% endcapture %}
+
+{% capture content_attributes %}
+  x-show="$slide.isCurrentSlide"
+  x-transition:leave="!duration-[calc(--slide-transition-duration/2)] transition-opacity"
+  x-transition:leave-start="opacity-100"
+  x-transition:leave-end="opacity-0"
+{% endcapture %}
+
+{% capture background %}
+  {% comment %} Blur overlay for mobile swipe effect {% endcomment %}
+  <div
+    x-cloak
+    class="w-full h-full touch:backdrop-blur-[calc(var(--slideshow-mobile-swipe-progress,0.0)*10px)] pointer-events-none opacity-0 touch:opacity-100"
+  ></div>
+  {{ background }}
+{% endcapture %}
+
+<article
+  {{ attributes }}
+  class="overflow-clip col-span-full row-span-full section-grid group/section reverse-z-stack {{ class }}"
+>
+  {% render 'core-section-content', content: content, _settings: section.settings, attributes: content_attributes %}
+
+  {% render 'core-section-background', content: background, _settings: section.settings, class: background_class %}
+</article>

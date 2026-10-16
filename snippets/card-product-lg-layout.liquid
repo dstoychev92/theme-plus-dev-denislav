@@ -1,0 +1,152 @@
+{% doc %}
+  Shared rendering logic between "variant" style and "sibling" style product cards
+{% enddoc %}
+
+{% liquid
+  assign swatch_limit = settings.card_swatch_limit | default: 5
+  assign placeholder = placeholder | default: false, allow_false: true
+  assign swatch_size = swatch_size | default: 'xs'
+  assign swatch_position = settings.card_swatch_position | default: 'bottom'
+
+  if product == blank
+    assign placeholder = true
+  endif
+
+  assign aria_label = product.title | strip_html | escape
+
+  # Product media
+  assign aspect_ratio = aspect_ratio | default: settings.card_aspect_ratio
+
+  if settings.product_card_image_fit == 'uneven'
+    # Disregard the aspect ratio setting and use the aspect ratio of the featured image
+    # If no featured media, use the default aspect ratio
+    assign aspect_ratio = product.featured_media.preview_image.aspect_ratio | default: settings.card_aspect_ratio
+  endif
+%}
+
+{% capture attributes %}
+  x-id="['product-card']"
+  x-product-card
+
+  {% comment %} Identifier for Alpine.morph so that this elements data stack is preserved after a morph {% endcomment %}
+  key="product-card-{{ product.id }}-{{ product.selected_variant.id }}-{{ section.id }}"
+  data-morph-children-only
+
+  {{ attributes }}
+{% endcapture %}
+
+{% unless placeholder %}
+  {% if settings.card_rating_enable and settings.card_rating_position != 'badge' %}
+    {% if product.metafields.reviews.rating.value != blank %}
+      {% capture star_rating %}
+        {% render 'product-rating', product: product, rating_show_count: settings.card_rating_show_count %}
+      {% endcapture %}
+    {% endif %}
+  {% endif %}
+
+  {% capture media_overlay %}
+    <div class="flex-row-center justify-start">
+      {{ badges }}
+    </div>
+
+    {{ quick_actions }}
+  {% endcapture %}
+
+  {% capture swatch_form %}
+    {% if swatches != blank %}
+      <div x-preloader.interact="api-card-product-lg-quick-actions" class="relative flex-row-center z-40 min-h-[24px] text-r2">
+        <div
+          class="w-full flex-col md:flex-row-center gap-x-r2 py-r2 justify-between overflow-hidden"
+          {{ swatches_attributes }}
+        >
+          <form class="flex items-center gap-r4 flex-1 justify-start min-w-0">
+            <fieldset
+              aria-label="{{ 'product.swatches.plural' | t }}"
+              class="
+                flex-row-center gap-x-r4 max-w-full min-h-fit scrollbar-hide overflow-x-auto min-w-0 max-md:flex-1 flex-none edge-mask
+              "
+              :class="
+                {
+                  'edge-mask-r': $overflow.end,
+                  'edge-mask-l': $overflow.start,
+                }
+              "
+              x-overflow.autoregister
+            >
+              {{ swatches }}
+            </fieldset>
+
+            {% if total_swatches > swatch_limit %}
+              {% assign more_swatches = total_swatches | minus: swatch_limit %}
+              <a
+                href="{{ product.url }}"
+                class="
+                  text-r2 whitespace-nowrap transition hover:text-muted
+                  {% comment %} Link is too small to tap on mobile so just disable it to avoid errant taps {% endcomment %}
+                  pointer-events-none md:pointer-events-auto
+                  min-w-0 flex-none
+                "
+                aria-label="{{ 'collection.accessibility.product_card.view_more_swatches' | t: count: more_swatches }}"
+              >
+                {{ 'collection.more_swatches' | t: count: more_swatches }}
+              </a>
+            {% endif %}
+          </form>
+
+        </div>
+      </div>
+    {% endif %}
+  {% endcapture %}
+
+  {% capture details %}
+    {% if product_json %}
+      {% render 'cache-tag', resource: 'products', value: product_json, key: product.id %}
+    {% endif %}
+    {% if products_json %}
+      {% render 'cache-tag', resource: 'products', value: products_json %}
+    {% endif %}
+
+    {% if swatch_position == 'top' %}
+      {{ swatch_form }}
+    {% endif %}
+
+    <a
+      class="
+        flex flex-col justify-between gap-x-r4 gap-y-r4
+        w-full flex-1 items-start text-start
+      "
+      aria-hidden="true"
+      tabindex="-1"
+
+      {{ link_attributes }}
+    >
+      {{ title }}
+      {{ price }}
+
+      {% if settings.card_rating_position == 'details' and star_rating != nil and star_rating != blank %}
+        <div class="flex flex-row type-p whitespace-nowrap text-end max-w-full">
+          {{ star_rating }}
+        </div>
+      {% endif %}
+    </a>
+
+    {% if swatch_position == 'bottom' %}
+      {{ swatch_form }}
+    {% endif %}
+  {% endcapture %}
+{% endunless %}
+
+{% render 'card-layout-lg',
+  url: product.url,
+  details: details,
+  media: media,
+  media_overlay: media_overlay,
+  media_wrapper_attributes: 'x-product-card:media',
+  link_attributes: link_attributes,
+  attributes: attributes,
+  class: class,
+  aspect_ratio: aspect_ratio,
+  appearance: appearance,
+  placeholder: placeholder,
+  aria_label: aria_label
+%}

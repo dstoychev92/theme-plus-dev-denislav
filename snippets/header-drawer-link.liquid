@@ -1,0 +1,49 @@
+{% if accessory == 'button' %}
+  {% assign accessory_tag = 'button' %}
+{% elsif accessory == 'link' %}
+  {% assign accessory_tag = 'a' %}
+{% endif %}
+
+<div
+  class="flex items-center w-full min-h-control text-start px-[--drawer-padding] py-r4 {{ class }}"
+  {{ attributes }}
+>
+  {% capture link_text %}
+    {{ link.title | strip_html }}
+  {% endcapture %}
+  {% capture link_attributes %}
+    href="{{ link.url }}"
+  {% endcapture %}
+  {% capture link_class %}
+    !flex items-center justify-start
+    relative hit-area-s-[--drawer-padding] hit-area-e-r6 hit-area-y-r4 z-20 overflow-visible
+    {% if accessory == blank %}flex-1{% else %}shrink-1{% endif %}
+  {% endcapture %}
+
+  {% if link.url == '#' %}
+    {% render 'core-text-preset',
+      class: link_class,
+      text: link_text,
+      settings_suffix: 'main_link',
+      _settings: section.settings
+    %}
+  {% else %}
+    {% render 'core-link',
+      class: link_class,
+      text: link_text,
+      href: link.url,
+      appearance: 'clean',
+      settings_suffix: 'main_link',
+      _settings: section.settings
+    %}
+  {% endif %}
+
+  {% if accessory and accessory_tag %}
+    <{{ accessory_tag }}
+      {{ accessory_attributes }}
+      class="flex-1 shrink-0 self-stretch flex items-center justify-end hover:opacity-70 transition-opacity"
+    >
+      {{ accessory_icon }}
+    </{{ accessory_tag }}>
+  {% endif %}
+</div>

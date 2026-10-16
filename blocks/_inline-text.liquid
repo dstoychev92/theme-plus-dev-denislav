@@ -1,0 +1,194 @@
+<!-- blocks/_inline-text.liquid -->
+
+{% capture attributes %}
+  {{ block.shopify_attributes }}
+{% endcapture %}
+
+{% render 'inline-highlight-text', _settings: block.settings, attributes: attributes %}
+
+{% schema %}
+{
+	"name": "Text",
+	"tag": null,
+	"settings": [
+		{
+			"type": "inline_richtext",
+			"id": "text",
+			"label": "Text",
+			"default": "<em><strong>Grab</strong></em> your customer's <em><strong>attention</strong></em> with <em><strong>spotlight text</strong></em>"
+		},
+		{
+			"type": "header",
+			"content": "Typography"
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_typography",
+			"label": "Set typography",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "type_font",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ block.settings.enable_typography == true }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 4,
+			"visible_if": "{{ block.settings.enable_typography == true }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ block.settings.enable_typography == true }}"
+		},
+		{
+			"type": "header",
+			"content": "Color"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_color",
+			"label": "Set color",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "color",
+			"label": "Color",
+			"default": "content",
+			"visible_if": "{{ block.settings.set_color == true  }}",
+			"options": [
+				{
+					"value": "content",
+					"label": "Text default"
+				},
+				{
+					"value": "muted",
+					"label": "Text muted"
+				},
+				{
+					"value": "primary",
+					"label": "Primary accent"
+				},
+				{
+					"value": "secondary",
+					"label": "Link accent"
+				},
+				{
+					"value": "sale",
+					"label": "Sale"
+				},
+				{
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "color",
+			"id": "color_custom",
+			"alpha": true,
+			"default": "#000000",
+			"visible_if": "{{ block.settings.color == 'custom' and block.settings.set_color == true  }}",
+			"label": "Custom color"
+		},
+		{
+			"type": "header",
+			"content": "Background highlight",
+			"info": "Use italic and bold together to create a background highlight.",
+			"visible_if": "{{ block.settings.highlight_toggle == 'auto' }}"
+		},
+		{
+			"type": "header",
+			"content": "Background highlight",
+			"visible_if": "{{ block.settings.highlight_toggle == 'full' or block.settings.highlight_toggle == 'none' }}"
+		},
+		{
+			"type": "select",
+			"id": "highlight_toggle",
+			"label": "Background highlight",
+			"default": "none",
+			"options": [
+				{
+					"value": "none",
+					"label": "None"
+				},
+				{
+					"value": "full",
+					"label": "Full"
+				},
+				{
+					"value": "auto",
+					"label": "Auto"
+				}
+			]
+		},
+		{
+			"type": "color",
+			"alpha": true,
+			"id": "highlight_color",
+			"label": "Color",
+			"default": "#77777730",
+			"visible_if": "{{ block.settings.highlight_toggle != 'none' }}"
+		},
+		{
+			"type": "select",
+			"id": "highlight_appearance",
+			"label": "Style",
+			"default": "partial",
+			"options": [
+				{
+					"value": "full",
+					"label": "Full background"
+				},
+				{
+					"value": "partial",
+					"label": "Thick line"
+				},
+				{
+					"value": "underline",
+					"label": "Line"
+				}
+			],
+			"visible_if": "{{ block.settings.highlight_toggle != 'none' }}"
+		}
+	],
+	"presets": [
+		{
+			"name": "Text",
+			"category": "Basic",
+			"settings": {
+				"text": "Standard text"
+			}
+		}
+	]
+}
+{% endschema %}

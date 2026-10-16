@@ -1,0 +1,198 @@
+{% comment %}
+  Usage:
+  {% render 'card-product',
+    product: product,
+    size: 'sm',
+    button: true
+  %}
+{% endcomment %}
+
+{%- liquid
+  # Safety measure to only show placeholder when on request.design_mode
+  assign enable_placeholder_product = false
+  if settings.placeholder_mode or request.design_mode
+    assign enable_placeholder_product = true
+  endif
+
+  assign siblings_metafield_namespace = null
+  assign siblings_metafield_key = null
+  if settings.metafield_siblings != blank
+    assign siblings_metafield_namespace = settings.metafield_siblings | split: '.' | first
+    assign siblings_metafield_key = settings.metafield_siblings | split: '.' | last
+  endif
+
+  assign url = url | default: product.url, allow_false: true | default: false, allow_false: true
+  assign button = button | default: false
+  assign button_icon_only = button_icon_only | default: false
+  assign image = product.featured_media.preview_image
+  assign title = product.title | strip_html
+  assign aspect_ratio = aspect_ratio | default: settings.card_aspect_ratio
+
+  capture product_price
+    render 'card-price', product: product
+  endcapture
+
+  # When price is 0, show "0" on "lg' cards, otherwise - show "Free"
+  if product.price == 0 and product.price_varies == false and size != 'lg'
+    assign product_price = 'other.free' | t
+  endif
+
+  # Disable placeholder when we need to show the loader - for example, when we are ajaxing the products
+  if loader == true
+    assign placeholder = false
+  endif
+  # Disable placeholder outside of design mode
+  if enable_placeholder_product == false
+    assign placeholder = false
+  endif
+  # Hide filler when not on design mode and image is null
+  if enable_placeholder_product == false and image == null
+    assign media = false
+  endif
+
+  # In case we're on the product page where `product` will be the PAGE product, not the passed in param
+  if enable_placeholder_product == true and placeholder == true
+    assign product = null
+  endif
+
+  assign cover = false
+
+  case settings.product_card_image_fit
+    when 'scale'
+      assign cover = false
+    when 'crop'
+      assign cover = true
+    when 'uneven'
+      assign cover = true
+  endcase
+-%}
+
+{% if placeholder %}
+  {% liquid
+    # Use 'product' SVG placeholder
+    assign placeholder_image_type = 'product'
+    assign placeholder_image_index = placeholder_image_index | strip | default: 1
+    assign placeholder_image = placeholder_image_type | append: '-' | append: placeholder_image_index
+    capture media
+      render 'core-image', placeholder: placeholder_image, aspect_ratio: aspect_ratio, class: 'h-full'
+    endcapture
+  %}
+
+  {% if size == 'lg' %}
+    {% capture content %}
+      {% comment %} Use custom 'content' to handle both 'left' and 'center' alignments of the product-card {% endcomment %}
+      <div class="flex justify-between gap-x-r4 text-r4 items-start text-start">
+        <span class="line-clamp-2 font-bold">{{ 'homepage.placeholder.product_card_title' | t }}</span>
+        <span>{{ 'homepage.placeholder.product_card_price' | t }}</span>
+      </div>
+    {% endcapture %}
+  {% else %}
+    {% liquid
+      assign title = 'homepage.placeholder.product_card_title' | t
+      assign product_price = 'homepage.placeholder.product_card_price' | t
+      assign image = null
+      assign url = '#'
+    %}
+
+    {% if button %}
+      {% assign button_text = 'product.add_to_cart' | t %}
+      {% capture product_button %}
+        {% render 'core-button',
+          type: 'submit',
+          label: button_text,
+          aria_label: button_text,
+          sizing: 'sm',
+          type_resize: 'sm',
+          color: 'primary',
+          appearance: 'soft'
+        %}
+      {% endcapture %}
+    {% endif %}
+  {% endif %}
+{% endif %}
+
+{% unless placeholder %}
+  {% if size == 'md' %}
+    {% if button %}
+      {% liquid
+        assign variant = product.selected_or_first_available_variant
+        assign is_instant_add_allowed = false
+
+        if product.variants.size == 1 or settings.enable_quickview == false
+          assign is_instant_add_allowed = true
+        elsif settings.enable_quickview
+          assign is_instant_add_allowed = false
+        endif
+
+        if is_instant_add_allowed and product.requires_selling_plan and product.selling_plan_groups.size == 1 and product.selling_plan_groups[0].selling_plans.size == 1
+          # one variant, one required subscription, no choices to make
+          assign simple_selling_plan = product.selected_or_first_available_selling_plan_allocation.selling_plan
+        elsif product.selling_plan_groups.size > 0 and settings.enable_quickview
+          assign is_instant_add_allowed = false
+        endif
+      %}
+      {% capture product_button %}
+        {% form 'product', product, x-product-form: '' %}
+          {% if simple_selling_plan %}
+            <input type="hidden" name="selling_plan" value="{{ simple_selling_plan.id }}">
+          {% endif %}
+
+          <input
+            type="hidden"
+            name="quantity"
+            value="{% if variant.quantity_rule.min %}{{ variant.quantity_rule.min }}{% else %}1{% endif %}"
+          >
+
+          {% if is_instant_add_allowed %}
+            {% render 'card-product-lg-instant-add-button', product: product, variant: variant, size: 'sm', type_resize: 'sm', color: 'primary', appearance: 'soft', icon_swap: false, icon_only: button_icon_only %}
+          {% else %}
+            {% render 'card-product-lg-quick-view-button', product: product, variant: variant, size: 'sm', type_resize: 'sm', color: 'primary', appearance: 'soft', icon_swap: false, icon_only: button_icon_only %}
+          {% endif %}
+
+          {% render 'product-preorder-properties', product: product %}
+          {% render 'product-line-item-properties', product: product %}
+        {% endform %}
+      {% endcapture %}
+    {% endif %}
+  {% endif %}
+{% endunless %}
+
+{% capture class %}
+  {% comment %} Darken photo {% endcomment %}
+  [&_img]:brightness-[--photo-correction]
+  {% comment %} Photo background {% endcomment %}
+  [&_img]:bg-[--photo-background]
+
+  {{ class }}
+{% endcapture %}
+
+{%- liquid
+  if product or placeholder
+    case size
+      when 'xs'
+        render 'card-layout-xs', url: url, image: image, title: title, class: class, image_loading: image_loading, image_fetchpriority: image_fetchpriority, attributes: attributes, details: product_price, media: media
+      when 'sm'
+        render 'card-layout-sm', url: url, image: image, title: title, class: class, style: style, image_loading: image_loading, image_fetchpriority: image_fetchpriority, attributes: attributes, details: product_price, media: media, aspect_ratio: aspect_ratio, cover: cover
+      when 'md'
+        render 'card-layout-md', url: url, image: image, title: title, class: class, style: style, image_loading: image_loading, image_fetchpriority: image_fetchpriority, attributes: attributes, details: product_price, media: media, aspect_ratio: aspect_ratio, cover: cover, button: product_button
+      when 'lg'
+        if product != blank
+          assign has_siblings = false
+          if siblings_metafield_namespace != blank
+            assign siblings_metafield = product.metafields[siblings_metafield_namespace][siblings_metafield_key]
+            if siblings_metafield != blank
+              assign has_siblings = true
+            endif
+          endif
+
+          if has_siblings
+            render 'card-product-lg-siblings', product: product, class: class, image_loading: image_loading, image_fetchpriority: image_fetchpriority, attributes: attributes, appearance: appearance, aspect_ratio: aspect_ratio, image_widths: image_widths, image_sizes: image_sizes
+          else
+            render 'card-product-lg-variants', product: product, class: class, image_loading: image_loading, image_fetchpriority: image_fetchpriority, attributes: attributes, appearance: appearance, aspect_ratio: aspect_ratio, image_widths: image_widths, image_sizes: image_sizes
+          endif
+        elsif placeholder
+          render 'card-layout-lg', media: media, content: content, class: class, image_loading: image_loading, image_fetchpriority: image_fetchpriority, attributes: attributes, appearance: appearance, aspect_ratio: aspect_ratio, image_sizes: image_sizes, image_widths: image_widths
+        endif
+    endcase
+  endif
+-%}

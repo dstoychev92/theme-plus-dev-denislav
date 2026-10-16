@@ -1,0 +1,42 @@
+{% assign placeholder = placeholder | default: 'image', allow_false: true %}
+
+{% if video_type and video_id %}
+  {% case video_type %}
+    {% when 'youtube' %}
+      {% render 'video-youtube',
+        video_id: video_id,
+        placeholder: placeholder,
+        aspect_ratio: aspect_ratio,
+        lazy: lazy,
+        autoplay: autoplay,
+        class: class,
+        attributes: attributes,
+        on_init: on_init,
+        on_load_video: on_load_video
+      %}
+    {% when 'vimeo' %}
+      {% render 'video-vimeo',
+        video_id: video_id,
+        placeholder: placeholder,
+        aspect_ratio: aspect_ratio,
+        lazy: lazy,
+        autoplay: autoplay,
+        class: class,
+        attributes: attributes,
+        on_init: on_init,
+        on_load_video: on_load_video
+      %}
+  {% endcase %}
+{% elsif placeholder %}
+  {% capture style %}
+    --aspect-ratio: {{ aspect_ratio | default: '16 / 9' }};
+  {% endcapture %}
+
+  {% comment %} Placeholder {% endcomment %}
+  {% render 'image-placeholder',
+    placeholder: placeholder,
+    class: 'h-auto max-w-full',
+    style: style,
+    attributes: attributes
+  %}
+{% endif %}

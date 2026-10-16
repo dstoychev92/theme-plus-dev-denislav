@@ -1,0 +1,76 @@
+{%- comment -%}
+  Build product/variant URL with optional base URL override (combined listings) and selling plan parameter
+
+  Accepts:
+  - product
+  - variant
+  - base_url (Optional) - when provided, used as the base URL instead of `variant.url` / `product.url`
+  - selling_plan (Optional)
+  - option_position (Optional) - used in "product-form-option-buttons.liquid" and "product-form-option-select.liquid"
+  - value_id (Optional)        - used in "product-form-option-buttons.liquid" and "product-form-option-select.liquid"
+{%- endcomment -%}
+
+{%- liquid
+  assign selling_plan = selling_plan | default: null, allow_false: true
+  assign base_url = base_url | default: null, allow_false: true
+
+  if selling_plan == null
+    # Select current selling plan if it's specified in the URL
+    assign selling_plan = product.selected_selling_plan
+
+    if selling_plan == null and product.requires_selling_plan
+      # Fallback to the first available selling plan
+      assign selling_plan = product.selected_or_first_available_selling_plan_allocation.selling_plan | default: product.selling_plan_groups[0].selling_plans[0]
+    endif
+  endif
+
+  assign option_values_ids = null
+
+  if variant
+    # Available variant
+    assign url = variant.url
+  else
+    # Unavailable variant
+    assign selected_values_ids = product.options_with_values | map: 'selected_value' | map: 'id'
+    capture unavailable_variant_option_values_ids
+      for id in selected_values_ids
+        if forloop.index == option_position and value_id
+          # Handle product-form variant selector
+          echo value_id
+        else
+          # Handle everything else
+          echo id
+        endif
+        unless forloop.last
+          echo ','
+        endunless
+      endfor
+    endcapture
+
+    assign option_values_ids = unavailable_variant_option_values_ids
+    assign url = product.url
+  endif
+
+  # Support combined listings (or any other consumer that needs to override the base URL)
+  if base_url
+    assign url = base_url
+  endif
+
+  if option_values_ids
+    assign joiner = '?'
+    if url contains '?'
+      assign joiner = '&'
+    endif
+    assign url = url | append: joiner | append: 'option_values=' | append: option_values_ids
+  endif
+
+  if selling_plan
+    assign joiner = '?'
+    if url contains '?'
+      assign joiner = '&'
+    endif
+    assign url = url | append: joiner | append: 'selling_plan=' | append: selling_plan.id
+  endif
+
+  echo url
+-%}

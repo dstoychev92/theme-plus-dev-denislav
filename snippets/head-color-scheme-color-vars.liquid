@@ -1,0 +1,9 @@
+--{{ scheme_id }}-{{ color_name }}-oklch: {{ color.oklch }};
+{% if contrast_color -%}
+  --{{ scheme_id }}-{{ color_name }}-contrast-oklch: {{ contrast_color.oklch }};
+{%- endif %}
+/* oklch-fallback */
+--{{ scheme_id }}-{{ color_name }}-fallback: {{ color.rgb }};
+{% if contrast_color -%}
+  --{{ scheme_id }}-{{ color_name }}-contrast-fallback: {{ contrast_color.rgb }};
+{%- endif %}

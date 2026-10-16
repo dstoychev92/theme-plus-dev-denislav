@@ -1,0 +1,129 @@
+{% liquid
+  if expand_dropdowns != null and expand_dropdowns != false
+    assign expand_dropdowns = true
+  endif
+
+  if submenu_placeholder and request.design_mode
+    assign placeholder = true
+    assign menu_id = 'placeholder'
+    assign menu_item_label = ''
+  else
+    assign menu_id = link.title | downcase | strip_html | escape | handleize
+    assign menu_item_label = menu_id
+  endif
+
+  assign link_label = menu_item_label
+  assign menu_label = 'header.accessibility.menu_item' | t: label: menu_item_label
+  assign has_sub_links = false
+
+  # Globally unique identifier for this particular menu for this particular link
+  # This allows the same custom submenu to be registered to multiple header links
+  assign unique_menu_id = section.id | append: '-' | append: menu_id
+
+  if link.links.size > 1
+    assign has_sub_links = true
+  endif
+
+  assign aria_label = 'header.accessibility.menu_item' | t: label: link.title | strip_html
+-%}
+
+{% capture item_class %}
+  animate-in fade-in slide-in-from-left-[10px] stagger-animation
+  animate-transform-duration-400 animate-opacity-duration-700
+  stagger-75 animate-delay-[calc(var(--drawer-enter-duration)/4)]
+{% endcapture %}
+
+{% capture chevron_right %}
+  {% render 'core-icon', icon: 'stroke-chevron-right', class: 'rtl:rotate-180' %}
+  <span class="sr-only">{{ aria_label }}</span>
+{% endcapture %}
+
+{% capture item_style %}
+  --stagger-order: {{ index }};
+{% endcapture %}
+
+{% if link.levels == 0 %}
+  {% comment %} Link without a dropdown {% endcomment %}
+  <li class="{{ item_class }}" style="{{ item_style }}">
+    {% render 'header-drawer-link', link: link %}
+  </li>
+{% elsif link.levels == 1 %}
+  {% comment %} Link with 1 level dropdown {% endcomment %}
+  {% capture accessory_attributes %}
+    x-disclosure:button
+  {% endcapture %}
+
+  {% capture disclosure_arrows %}
+    {% render 'core-icon', icon: 'stroke-bare-plus', attributes: 'x-show="!$disclosure.isExpanded"' %}
+    {% render 'core-icon', icon: 'stroke-bare-minus', attributes: 'x-show="$disclosure.isExpanded"' %}
+    <span class="sr-only" x-show="!$disclosure.isExpanded">{{ aria_label }} - {{ 'other.accessibility.expand' | t }}</span>
+    <span class="sr-only" x-show="$disclosure.isExpanded">{{ aria_label }} - {{ 'other.accessibility.collapse' | t }}</span>
+  {% endcapture %}
+
+  <li
+    {% if expand_dropdowns %}
+      x-disclosure.expand
+    {% else %}
+      x-disclosure
+    {% endif %}
+    class="{{ item_class }}"
+    style="{{ item_style }}"
+  >
+    {% render 'header-drawer-link',
+      link: link,
+      accessory: 'button',
+      accessory_attributes: accessory_attributes,
+      accessory_icon: disclosure_arrows
+    %}
+
+    {% comment %} We need this extra div to ensure the panel is properly hidden when the disclosure is collapsed and so it doesn't "jump" {% endcomment %}
+    <div
+      class="!ease-in-out relative overflow-hidden w-full nojs:!block"
+      x-disclosure:panel
+      x-collapse.duration.400ms
+      {% unless expand_dropdowns %}
+        x-cloak
+      {% endunless %}
+    >
+      <ul class="flex flex-col px-[--drawer-padding] mb-[--drawer-padding] ms-[--drawer-padding] border-s border-s-line-subtle">
+        {% for child_link in link.links %}
+          <li>
+            {% capture link_text %}
+              {{ child_link.title | strip_html }}
+            {% endcapture %}
+            {% capture link_attributes %}
+              href="{{ child_link.url }}"
+            {% endcapture %}
+            {% render 'core-link',
+              class: 'w-full min-h-row-sm',
+              href: child_link.url,
+              text: link_text,
+              appearance: 'clean',
+              type_resize: 'sm',
+              settings_suffix: 'main_link',
+              attributes: link_attributes,
+              _settings: section.settings
+            %}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </li>
+{% else %}
+  {% comment %} Link with 2 level dropdown {% endcomment %}
+  <li class="{{ item_class }}" style="{{ item_style }}">
+    {% capture accessory_attributes %}
+      id="header-drawer-link-{{ menu_id }}"
+      @click="activeSubmenuOverlay = '{{ menu_id }}'"
+      aria-haspopup="true"
+      aria-controls="header-drawer-linklist-sublinks-overlay-{{ menu_id }}"
+      :aria-expanded="activeSubmenuOverlay == '{{ menu_id }}'"
+    {% endcapture %}
+    {% render 'header-drawer-link',
+      link: link,
+      accessory: 'button',
+      accessory_attributes: accessory_attributes,
+      accessory_icon: chevron_right
+    %}
+  </li>
+{% endif %}

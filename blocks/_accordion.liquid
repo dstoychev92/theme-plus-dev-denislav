@@ -1,0 +1,259 @@
+<!-- blocks/_accordion.liquid -->
+
+
+{% liquid
+  assign expanded = block.settings.expand
+  assign button_style = settings.accordion_button_style
+%}
+
+{% capture blocks %}
+  {% content_for 'blocks' %}
+{% endcapture %}
+
+{% capture class %}
+  group/accordion w-full
+  {% comment %} Disable entrance animations in visual preview mode to prevent "No preview available" error {% endcomment %}
+  {% unless request.visual_preview_mode %}
+    entrance-item entrance-fade no-children-entrance
+  {% endunless %}
+  {{ class }}
+{% endcapture %}
+
+{% comment %} Show counter when enabled {% endcomment %}
+{% capture button_text_class %}
+  group-[[data-has-counter]]/accordions:before:[content:counter(accordion-group)_'.']
+{% endcapture %}
+{% assign button_text_style = 'counter-increment: accordion-group' %}
+
+<div
+  {% if section.settings.enable_ensemble %}
+    x-disclosure
+    x-slideshow:slide
+    x-data="
+      {
+        get ellapsedTimePercentage() {
+          return ($slideshow.currentSlideElapsedTime / $slideshow.slideDuration) * 100
+        }
+      }
+    "
+  {% else %}
+    {% if expanded %}
+      x-disclosure.expand
+    {% else %}
+      x-disclosure
+    {% endif %}
+  {% endif %}
+
+  :data-accordion="$disclosure.isInGroup ? $disclosure.groupIndex : null"
+  class="{{ class }}"
+
+  {% if request.design_mode %}
+    x-effect="
+      if ($containsSelectedBlock) {
+        $disclosure.expand()
+      }
+    "
+  {% endif %}
+
+  role="group"
+
+  :id="$disclosure.isInGroup ? `{{section.id}}-element-${$disclosure.groupIndex}` : null"
+  {{ block.shopify_attributes }}
+>
+  <button
+    class="
+      keyboard-focus:outline-offset-[-2px]
+      flex items-center justify-between gap-x-r6 min-h-row-lg w-full py-r8
+      text-start text-content whitespace-normal transition-opacity duration-200
+    "
+    x-disclosure:button
+    :id="$disclosure.isInGroup ? `{{section.id}}-element-${$disclosure.groupIndex}-label` : `{{block.id}}-disclosure-button`"
+    :class="!$disclosure.isExpanded && mutedTitle ? 'opacity-50' : 'opacity-100'"
+  >
+    {% render 'core-text-preset',
+      _settings: block.settings,
+      text: block.settings.title,
+      class: button_text_class,
+      style: button_text_style
+    %}
+
+    {% capture icon_class %}
+      shrink-0
+      group-[&:not([data-has-icon])]/accordions:hidden
+    {% endcapture %}
+
+    {% capture chevron_icon_class %}
+      transition-transform {% if expanded %}-rotate-180{% endif %}
+      {{ icon_class }}
+    {% endcapture %}
+
+    {% capture chevron_icon_attributes %}
+      :class="{ '-rotate-180': $disclosure.isExpanded }"
+    {% endcapture %}
+
+    {% if button_style == 'chevron' %}
+      {% render 'core-icon',
+        icon: 'stroke-chevron-down',
+        size: 'sm',
+        attributes: chevron_icon_attributes,
+        class: chevron_icon_class
+      %}
+    {% elsif button_style == 'plus-minus' %}
+      {% render 'core-icon',
+        icon: 'stroke-bare-plus',
+        class: icon_class,
+        attributes: 'x-show="!$disclosure.isExpanded"'
+      %}
+      {% render 'core-icon',
+        icon: 'stroke-bare-minus',
+        class: icon_class,
+        attributes: 'x-show="$disclosure.isExpanded" x-cloak'
+      %}
+    {% endif %}
+  </button>
+  <div
+    x-collapse.duration.400ms
+    class="!ease-in-out w-full nojs:!block"
+    {% unless expanded %}
+      x-cloak
+    {% endunless %}
+    x-disclosure:panel
+    :id="$disclosure.isInGroup ? `{{section.id}}-element-${$disclosure.groupIndex}-panel` : `{{block.id}}-disclosure-panel`"
+  >
+    {% if blocks != blank %}
+      <div class="pb-r8 vars-content-align-start text-start text-content flex flex-col gap-layout">
+        {{ blocks }}
+      </div>
+    {% endif %}
+  </div>
+  <svg role="presentation" class="w-full h-px">
+    {% if section.settings.enable_ensemble and section.settings.autoplay %}
+      <rect width="100%" height="1" class="fill-line-subtle stroke-none"></rect>
+      <rect
+        width="0%" height="1"
+        class="
+          w-[--ellapsed-time-percentage] fill-line stroke-none
+          {% comment %} Hide timer indicator element when disabled on "accordion group" level {% endcomment %}
+          group-[&:not([data-enable-timer-indicator])]/accordions:hidden
+        "
+
+        :style="{
+          '--ellapsed-time-percentage': $slideshow.currentSlideIndex == $disclosure.groupIndex ? `${ellapsedTimePercentage}%` : '0%'
+        }"
+      ></rect>
+    {% else %}
+      <rect width="100%" height="1" class="fill-line-subtle"></rect>
+    {% endif %}
+  </svg>
+</div>
+
+{% schema %}
+{
+	"name": "Accordion Item",
+	"tag": null,
+	"settings": [
+		{
+			"type": "text",
+			"id": "title",
+			"label": "Title",
+			"default": "Your clickable title"
+		},
+		{
+			"type": "checkbox",
+			"id": "expand",
+			"label": "Expand initially",
+			"default": false,
+			"visible_if": "{{ section.settings.enable_ensemble != true }}"
+		},
+		{
+			"type": "select",
+			"id": "type_preset",
+			"label": "Text style",
+			"default": "accordion",
+			"options": [
+				{
+					"value": "accordion",
+					"label": "Accordion"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_font",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 4,
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+	],
+	"blocks": [
+		{
+			"type": "@app"
+		},
+		{
+			"type": "@theme"
+		},
+		{
+			"type": "_group-grid"
+		},
+		{
+			"type": "_card-grid"
+		},
+		{
+			"type": "_card-showcase"
+		}
+	],
+	"presets": [
+		{
+			"name": "Accordion Item",
+			"blocks": [
+				{
+					"type": "theme-richtext",
+					"settings": {
+						"text": "<p>Use this accordion to share simple text or unleash your creativity with buttons, images, and layout blocks. Experiment with custom designs to make your content stand out and engage your customers</p>"
+					}
+				}
+			]
+		}
+	]
+}
+{% endschema %}
+

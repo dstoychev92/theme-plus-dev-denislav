@@ -1,0 +1,75 @@
+{% doc %}
+  A layout container for text content that is meant to be displayed over top of background media
+{% enddoc %}
+
+{%- liquid
+  assign vertical_placement = vertical_placement | default: _settings.vertical_placement, allow_false: true
+  assign horizontal_placement = horizontal_placement | default: _settings.horizontal_placement, allow_false: true
+  assign padding = padding | default: _settings.padding, allow_false: true
+  assign padding_custom = padding_custom | default: _settings.padding_custom, allow_false: true
+
+  # If vertical placement is 'bottom' or 'full' the placement of the controls automatic to ensure they dont overlap the content
+  if vertical_placement != 'bottom' and vertical_placement != 'full'
+    assign controls_alignment = controls_alignment | default: _settings.controls_alignment, allow_false: true
+  endif
+
+  if id == blank
+    assign id_prefix = id | default: id_prefix | default: block.id | default: section.id
+    assign id = id_prefix | append: '-content'
+  endif
+-%}
+
+{% if content != blank or controls != blank %}
+  {% capture content %}
+    {% if content != blank %}
+      <placement-content
+        class="
+          placement-content-flex text-content text-content-align gap-layout min-w-0
+          pointer-events-none *:pointer-events-auto
+          {% if controls != blank %}
+            area-[content]
+          {% else %}
+            {% comment %} Take the whole area {% endcomment %}
+            area-[1/1/-1/-1]
+          {% endif %}
+
+          {% if horizontal_placement %}
+            vars-content-align-{{ horizontal_placement }}
+          {% endif %}
+          *:auto-set-stagger-order
+        "
+        id="{{ id }}"
+        {{ content_attributes }}
+      >
+        {{ content }}
+      </placement-content>
+    {% endif %}
+
+    {% if controls != blank %}
+      <div
+        class="
+          placement-controls-flex gap-r4 area-[controls] pointer-events-none *:pointer-events-auto
+          {% # Add top margin to all children rather than using grip gap so that there is no extra gap at the bottom of the grid when controls don't exist or are hidden  %}
+          {% # Hopefully replace with something like https://github.com/w3c/csswg-drafts/issues/5813 when it's implemented %}
+          *:mt-lg
+        "
+        data-controls
+      >
+        {{ controls }}
+      </div>
+    {% endif %}
+  {% endcapture %}
+{% endif %}
+
+{% render 'core-placement-grid-wrapper',
+  class: class,
+  style: style,
+  attributes: attributes,
+  content: content,
+  _settings: _settings,
+  horizontal_placement: horizontal_placement,
+  vertical_placement: vertical_placement,
+  controls_alignment: controls_alignment,
+  padding: padding,
+  padding_custom: padding_custom
+%}

@@ -1,0 +1,793 @@
+<!-- sections/section-slideshow.liquid -->
+
+{% liquid
+  assign autoplay = section.settings.autoplay
+  assign duration = section.settings.duration | times: 1000
+%}
+
+<script type="module">
+  import Alpine from 'alpinejs';
+
+  {% comment %} Bind all interactive elements inside the slideshow as custom cursor snap points. Stop propagation so slide doesn't navigate by being clicked {% endcomment %}
+  document.addEventListener('alpine:initialized', () => {
+    document.querySelectorAll('#shopify-section-{{ section.id }} a,button,input,textarea,[data-interactive]').forEach((child) => {
+      Alpine.bind(child, {
+        'x-custom-cursor:snap-point': '',
+        '@click.stop': ''
+      })
+    })
+  });
+</script>
+
+{% if section.blocks.size > 1 %}
+  {% comment %} Enable custom-cursor when more than 1 slide {% endcomment %}
+  {% capture custom_cursor_attributes %}
+    x-custom-cursor
+    x-data="{ width: null }"
+    x-resize="width = $width"
+    @click="
+      {% comment %} On desktop intercept click events on the left hand or right hand side of the screen to pause and scroll to the next or previous slide {% endcomment %}
+      if ($media.matches.touch) return
+      if (!$customCursor.targetPosition || !width) return
+      $slideshow.pause();
+      if ($customCursor.targetPosition?.x > width / 2) {
+        document.dir == 'rtl' ? $slideshow.prev() : $slideshow.next();
+      } else {
+        document.dir == 'rtl' ? $slideshow.next() : $slideshow.prev();
+      }
+    "
+  {% endcapture %}
+
+  {%- capture custom_cursor -%}
+    {% comment %} Cursor arrow {% endcomment %}
+    <svg
+      x-cloak x-custom-cursor:element.speed.16%
+      class="
+        [--cursor-size:52px] fixed top-0 left-0
+        size-[--cursor-size]
+        overflow-visible
+        pointer-events-none
+        cursor-pointer
+        touch:hidden
+        motion-reduce:hidden
+      "
+      viewBox="0 0 52 52"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <g
+        class="
+          transition origin-center duration-400 scale-100 rotate-0
+          translate-x-[--cursor-offset]
+        "
+        :class="{
+          '!scale-0 !opacity-0': $customCursor.isSnapped,
+          '[--cursor-offset:6px] !rotate-180': $customCursor.targetPosition?.x < width / 2
+        }"
+      >
+        <path d="M24 32L29.5 26.5L24 21" stroke="white" stroke-width="1.5" />
+      </g>
+    </svg>
+    {% comment %} Cursor blur background circle {% endcomment %}
+    <div x-cloak x-custom-cursor:element.speed.14% class="size-fit fixed top-0 left-0 overflow-visible pointer-events-none cursor-pointer motion-reduce:hidden">
+      <div
+        :class="{
+          '!scale-0 !opacity-0': $customCursor.isSnapped,
+          '[--cursor-offset:6px]': $customCursor.targetPosition?.x < width / 2
+        }"
+        class="
+          [--cursor-size:42px]
+          size-[--cursor-size]
+          translate-x-[--cursor-offset]
+          touch:hidden
+          rounded-full frosted-glass border-highlight
+          transition origin-center duration-400 scale-100 rotate-0
+        "
+      >
+      </div>
+    </div>
+  {%- endcapture -%}
+
+  {% capture slideshow_attributes %}
+    x-slideshow-mobile-swipe
+  {% endcapture %}
+{% endif %}
+
+{% capture attributes %}
+  {% if autoplay %}
+    x-ensemble.autoplay
+  {% else %}
+    x-ensemble
+  {% endif %}
+  x-ensemble:slideshow.duration.{{ duration }}ms
+  x-slideshow:viewport
+  {% if request.design_mode %}
+    {% if autoplay %}
+      @shopify:block:select="$ensemble.autoplay = false"
+      @shopify:block:deselect="$ensemble.autoplay = true"
+    {% endif %}
+  {% endif %}
+  role="region"
+  aria-label="{{ 'homepage.slideshow.label' | t }}"
+  {{ slideshow_attributes }}
+  {{ custom_cursor_attributes }}
+{% endcapture %}
+
+{% capture content %}
+  {{ custom_cursor }}
+
+  {% content_for 'blocks' %}
+  {% if section.settings.height == 'screen' %}
+    {% render 'scroll-button', attributes: 'x-custom-cursor:snap-point' %}
+  {% endif %}
+{% endcapture %}
+
+{% capture class %}
+  relative entrance-container
+  {% comment %} Prevent browser from interfering with the horizontal panning because we are handling it ourselves with x-slideshow-mobile-swipe {% endcomment %}
+  touch-pan-y
+{% endcapture %}
+
+{% render 'core-section-wrapper',
+  tag: 'slideshow',
+  _settings: section.settings,
+  content: content,
+  attributes: attributes,
+  contain_controls_rhythm: true,
+  contain_disables_transparent_header: true,
+  class: class
+%}
+
+{% schema %}
+{
+	"name": "Slideshow",
+	"tag": "section",
+	"settings": [
+		{
+			"type": "checkbox",
+			"id": "autoplay",
+			"label": "Auto-rotate slides",
+			"default": true
+		},
+		{
+			"type": "range",
+			"id": "duration",
+			"min": 4,
+			"max": 15,
+			"step": 1,
+			"unit": "sec",
+			"label": "Change slides every",
+			"default": 8,
+			"visible_if": "{{ section.settings.autoplay }}"
+		},
+		{
+			"type": "header",
+			"content": "Section layout"
+		},
+		{
+			"type": "select",
+			"id": "height",
+			"label": "Height",
+			"default": "screen-one-third",
+			"options": [
+				{
+					"value": "screen",
+					"label": "Full screen height"
+				},
+				{
+					"value": "screen-five-sixths",
+					"label": "Five sixths screen"
+				},
+				{
+					"value": "screen-three-quarters",
+					"label": "Three quarters screen"
+				},
+				{
+					"value": "screen-one-half",
+					"label": "One half screen"
+				},
+				{
+					"value": "screen-one-third",
+					"label": "One third screen"
+				},
+				{
+					"value": "screen-one-quarter",
+					"label": "One quarter screen"
+				},
+				{
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "custom_height_type",
+			"label": "Height type",
+			"default": "percentage",
+			"options": [
+				{
+					"value": "percentage",
+					"label": "%"
+				},
+				{
+					"value": "px",
+					"label": "px"
+				}
+			],
+			"visible_if": "{{ section.settings.height == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "custom_height_percentage",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"unit": "%",
+			"label": "Custom height",
+			"default": 33,
+			"visible_if": "{{ section.settings.height == 'custom' and section.settings.custom_height_type == 'percentage' }}",
+			"info": "Percentage of screen height"
+		},
+		{
+			"type": "range",
+			"id": "custom_height_px",
+			"min": 0,
+			"max": 1000,
+			"step": 50,
+			"unit": "px",
+			"label": "Custom height",
+			"default": 350,
+			"visible_if": "{{ section.settings.height == 'custom' and section.settings.custom_height_type == 'px' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_height_mobile",
+			"label": "Set mobile height",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "height_mobile",
+			"label": "Mobile height",
+			"default": "screen-one-half",
+			"visible_if": "{{ section.settings.set_height_mobile == true }}",
+			"options": [
+				{
+					"value": "screen",
+					"label": "Full screen height"
+				},
+				{
+					"value": "screen-five-sixths",
+					"label": "Five sixths screen"
+				},
+				{
+					"value": "screen-three-quarters",
+					"label": "Three quarters screen"
+				},
+				{
+					"value": "screen-one-half",
+					"label": "One half screen"
+				},
+				{
+					"value": "screen-one-third",
+					"label": "One third screen"
+				},
+				{
+					"value": "screen-one-quarter",
+					"label": "One quarter screen"
+				},
+				{
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "custom_height_type_mobile",
+			"label": "Mobile height type",
+			"default": "percentage",
+			"options": [
+				{
+					"value": "percentage",
+					"label": "%"
+				},
+				{
+					"value": "px",
+					"label": "px"
+				}
+			],
+			"visible_if": "{{ section.settings.height_mobile == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "custom_height_percentage_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"unit": "%",
+			"label": "Mobile custom height",
+			"default": 33,
+			"visible_if": "{{ section.settings.height_mobile == 'custom' and section.settings.custom_height_type_mobile == 'percentage' }}"
+		},
+		{
+			"type": "range",
+			"id": "custom_height_px_mobile",
+			"min": 0,
+			"max": 1000,
+			"step": 50,
+			"unit": "px",
+			"label": "Mobile custom height",
+			"default": 350,
+			"visible_if": "{{ section.settings.height_mobile == 'custom' and section.settings.custom_height_type_mobile == 'px' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "contain_section",
+			"label": "Contain section",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "section_width",
+			"label": "Width",
+			"visible_if": "{{ section.settings.contain_section }}",
+			"default": "full",
+			"options": [
+				{
+					"value": "full",
+					"label": "Full"
+				},
+				{
+					"value": "page",
+					"label": "Page"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "section_padding_top",
+			"label": "Spacing top",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 40,
+			"visible_if": "{{ section.settings.contain_section }}"
+		},
+		{
+			"type": "range",
+			"id": "section_padding_bottom",
+			"label": "Spacing bottom",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 40,
+			"visible_if": "{{ section.settings.contain_section }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_rounding",
+			"label": "Set rounding",
+			"default": false,
+			"visible_if": "{{ section.settings.contain_section }}"
+		},
+		{
+			"type": "select",
+			"id": "rounding_radius",
+			"label": "Radius",
+			"default": "lg",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			],
+			"visible_if": "{{ section.settings.set_rounding }}"
+		},
+		{
+			"type": "range",
+			"id": "rounding_radius_custom",
+			"label": "Radius",
+			"unit": "px",
+			"min": 0,
+			"max": 50,
+			"step": 1,
+			"default": 20,
+			"visible_if": "{{ section.settings.set_rounding and section.settings.rounding_radius == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_border",
+			"label": "Set border",
+			"default": false,
+			"visible_if": "{{ section.settings.contain_section }}"
+		},
+		{
+			"type": "range",
+			"id": "border_width",
+			"label": "Thickness",
+			"unit": "px",
+			"min": 0,
+			"max": 10,
+			"step": 0.5,
+			"default": 1,
+			"visible_if": "{{ section.settings.set_border }}"
+		},
+		{
+			"type": "color",
+			"id": "border_color",
+			"label": "Color",
+			"alpha": true,
+			"default": "#000000",
+			"visible_if": "{{ section.settings.set_border }}"
+		},
+		{
+			"type": "header",
+			"content": "Content layout"
+		},
+		{
+			"type": "select",
+			"id": "content_width",
+			"label": "Content Width",
+			"default": "page",
+			"visible_if": "{{ section.settings.contain_section == false or section.settings.section_width == 'full' }}",
+			"options": [
+				{
+					"value": "full",
+					"label": "Full"
+				},
+				{
+					"value": "page",
+					"label": "Page"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "vertical_placement",
+			"label": "Placement",
+			"default": "middle",
+			"options": [
+				{
+					"value": "full",
+					"label": "↕"
+				},
+				{
+					"value": "top",
+					"label": "⤒"
+				},
+				{
+					"value": "middle",
+					"label": "—"
+				},
+				{
+					"value": "bottom",
+					"label": "⤓"
+				}
+			]
+		},
+		{
+			"type": "text_alignment",
+			"id": "horizontal_placement",
+			"label": "Alignment",
+			"default": "left"
+		},
+		{
+			"type": "select",
+			"id": "content_padding",
+			"label": "Padding",
+			"default": "lg",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "content_padding_custom",
+			"label": "Custom padding",
+			"default": 0,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ section.settings.content_padding == 'custom'  }}"
+		},
+		{
+			"type": "header",
+			"content": "Appearance"
+		},
+		{
+			"type": "color_scheme",
+			"id": "color_scheme",
+			"label": "Color scheme",
+			"default": "scheme-opposite"
+		},
+		{
+			"type": "select",
+			"id": "background",
+			"label": "Background",
+			"default": "transparent",
+			"options": [
+				{
+					"value": "canvas",
+					"label": "Default"
+				},
+				{
+					"value": "tint",
+					"label": "Tint"
+				},
+				{
+					"value": "transparent",
+					"label": "∅"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			],
+			"visible_if": "{{ section.settings.contain_section }}"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background color",
+			"default": "#ffffff",
+			"alpha": false,
+			"visible_if": "{{ section.settings.background == 'custom' }}"
+		},
+		{
+			"type": "header",
+			"content": "Transparent header",
+			"info": "Applies when the header has transparency enabled, and this section is first.",
+			"visible_if": "{{ section.settings.contain_section == false and section.settings.enable_transparent == true }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_transparent",
+			"label": "Enable transparent header",
+			"default": true,
+			"visible_if": "{{ section.settings.contain_section == false }}"
+		},
+		{
+			"type": "select",
+			"id": "transparent_style",
+			"visible_if": "{{ section.settings.contain_section == false and section.settings.enable_transparent == true }}",
+			"label": "Transparent style",
+			"info": "Note: Section content will be pushed down by the header height.",
+			"default": "auto",
+			"options": [
+				{
+					"value": "auto",
+					"label": "Auto"
+				},
+				{
+					"value": "light",
+					"label": "Light"
+				},
+				{
+					"value": "dark",
+					"label": "Dark"
+				}
+			]
+		},
+		{
+			"type": "header",
+			"content": "Navigation"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_controls",
+			"label": "Show pagination",
+			"default": true
+		},
+		{
+			"type": "text_alignment",
+			"id": "controls_alignment",
+			"label": "Controls alignment",
+			"default": "left",
+			"visible_if": "{{ section.settings.show_controls and section.settings.vertical_placement != 'bottom' and section.settings.vertical_placement != 'full' }}"
+		},
+		{
+			"type": "paragraph",
+			"content": "Controls will be aligned automatically if vertical placement is 'bottom' or 'full'",
+			"visible_if": "{{ section.settings.show_controls and section.settings.vertical_placement == 'bottom' or section.settings.vertical_placement == 'full' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_pagination_style",
+			"label": "Set pagination style",
+			"default": true,
+			"visible_if": "{{ section.settings.show_controls }}"
+		},
+		{
+			"type": "select",
+			"id": "overlay_controls_background_style",
+			"label": "Background",
+			"default": "blur",
+			"options": [
+				{
+					"value": "blur",
+					"label": "Blur"
+				},
+				{
+					"value": "solid",
+					"label": "Solid"
+				},
+				{
+					"value": "bare",
+					"label": "∅"
+				}
+			],
+			"visible_if": "{{ section.settings.show_controls and section.settings.set_pagination_style }}"
+		},
+		{
+			"type": "select",
+			"id": "pagination_style",
+			"label": "Indicator Style",
+			"default": "counter",
+			"options": [
+				{
+					"value": "counter",
+					"label": "Counter"
+				},
+				{
+					"value": "dots",
+					"label": "Dots"
+				},
+				{
+					"value": "lines",
+					"label": "Lines"
+				}
+			],
+			"visible_if": "{{ section.settings.show_controls and section.settings.set_pagination_style }}"
+		},
+		{
+			"type": "header",
+			"content": "Target device",
+			"visible_if": "{{ settings.show_target_device_settings == true }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_target_device",
+			"label": "Set target device",
+			"visible_if": "{{ settings.show_target_device_settings == true }}",
+			"default": false
+		},
+		{
+			"type": "select",
+			"label": "Show on",
+			"id": "target_device",
+			"default": "desktop",
+			"visible_if": "{{ settings.show_target_device_settings == true and section.settings.set_target_device == true }}",
+			"options": [
+				{
+					"value": "mobile",
+					"label": "Mobile"
+				},
+				{
+					"value": "desktop",
+					"label": "Desktop"
+				}
+			]
+		},
+	],
+	"blocks": [
+		{
+			"type": "_slide"
+		}
+	],
+	"presets": [
+		{
+			"name": "Slideshow",
+			"category": "Banner",
+			"settings": {
+				"vertical_placement": "bottom",
+				"horizontal_placement": "left"
+			},
+			"blocks": [
+				{
+					"type": "_slide",
+					"blocks": [
+						{
+							"type": "theme-text",
+							"settings": {
+								"text": "Your First Title",
+								"type_preset": "h2"
+							}
+						},
+						{
+							"type": "theme-richtext",
+							"settings": {
+								"text": "<p>Use this text to share information about your brand with your customers. Describe a product, share news, or welcome customers to your store.</p>",
+								"limit_width": true,
+								"max_width": 500
+							}
+						}
+					]
+				},
+				{
+					"type": "_slide",
+					"blocks": [
+						{
+							"type": "theme-text",
+							"settings": {
+								"text": "Your Second Title",
+								"type_preset": "h2"
+							}
+						},
+						{
+							"type": "theme-richtext",
+							"settings": {
+								"text": "<p>Use this text to share information about your brand with your customers. Describe a product, share news, or welcome customers to your store.</p>",
+								"limit_width": true,
+								"max_width": 500
+							}
+						}
+					]
+				},
+				{
+					"type": "_slide",
+					"blocks": [
+						{
+							"type": "theme-text",
+							"settings": {
+								"text": "Your Third Title",
+								"type_preset": "h2"
+							}
+						},
+						{
+							"type": "theme-richtext",
+							"settings": {
+								"text": "<p>Use this text to share information about your brand with your customers. Describe a product, share news, or welcome customers to your store.</p>",
+								"limit_width": true,
+								"max_width": 500
+							}
+						}
+					]
+				}
+			]
+		}
+	],
+	"disabled_on": {
+		"groups": [
+			"header",
+			"custom.overlays",
+			"custom.drawers"
+		]
+	}
+}
+{% endschema %}

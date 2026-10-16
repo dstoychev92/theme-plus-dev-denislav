@@ -1,0 +1,74 @@
+<!-- snippets/pair-slide.liquid -->
+
+
+{% assign total_slides = total_slides | default: section.blocks.size, allow_false: true %}
+
+{% capture class %}
+  relative z-0 transition !duration-[--slide-transition-duration] will-change-opacity
+  {{ class }}
+{% endcapture %}
+
+{% capture content_attributes %}
+  x-show="$slide.isCurrentSlide"
+  x-transition:leave="!duration-[calc(--slide-transition-duration/2)] transition-opacity"
+  x-transition:leave-start="opacity-100"
+  x-transition:leave-end="opacity-0"
+{% endcapture %}
+
+{% capture placement_class %}
+  pair-padding
+{% endcapture %}
+
+{% capture background_class %}
+  max-md:blur-[calc(var(--slideshow-mobile-swipe-progress,0.0)*10px)] will-change-filter
+{% endcapture %}
+
+{% capture controls %}
+  <div
+    class="flex items-center gap-r6"
+    {% comment %} Disable custom cursor for this element {% endcomment %}
+    x-custom-cursor:snap-point
+    {% comment %} Prevent changing the slide when clicking on the controls {% endcomment %}
+    @click.prevent.stop
+  >
+    {% # Conditionally rendered based using a data attribute since there's no way to access parent block settings %}
+    {% render 'slideshow-controls', _settings: _settings, initial_slide: block_position, total_slides: total_slides, class: 'group-[:not([data-needs-controls])]/slideshow:hidden' %}
+  </div>
+{% endcapture %}
+
+{% capture placement %}
+  {% render 'core-placement-grid', content: content, _settings: _settings, class: placement_class, padding: false, controls: controls, content_attributes: content_attributes %}
+{% endcapture %}
+
+{% capture attributes %}
+  {% if request.design_mode %}
+    x-effect="
+      if ($containsSelectedBlock) {
+        $slideshow.currentSlideIndex = $slide.slideIndex;
+      }
+    "
+  {% endif %}
+  role="group"
+  :aria-label="`${$slide.slideIndex + 1} {{ 'product.gallery.index_indicator_separator' | t }} ${$slideshow.totalSlides}`"
+  x-slideshow:slide
+  x-show="$slide.isCurrentSlide"
+  x-transition:enter="!duration-[--slide-transition-duration] transition-opacity"
+  x-transition:enter-start="opacity-0"
+  x-transition:enter-end="opacity-100"
+  x-transition:leave="!duration-[--slide-transition-duration] transition-opacity"
+  x-transition:leave-start="opacity-100"
+  x-transition:leave-end="opacity-0"
+
+  aria-atomic="true"
+  {{ attributes }}
+{% endcapture %}
+
+{% render 'core-banner',
+  id: block.id,
+  _settings: _settings,
+  content: placement,
+  attributes: attributes,
+  background_class: background_class,
+  class: class,
+  set_height: false
+%}

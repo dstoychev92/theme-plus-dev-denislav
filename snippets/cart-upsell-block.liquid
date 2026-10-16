@@ -1,0 +1,77 @@
+{% comment %}
+  * Renders a list of upsell products
+  * Won't show upsell products that are already in the cart
+  * It works with both List and Single product reference for the "metafield_upsell_list" setting
+
+  Usage:
+  {% render 'cart-upsell-block', block: block %}
+{% endcomment %}
+
+{% liquid
+  assign upsell_list = block.settings.product_list | reject: 'available', false
+
+  if block.settings.include_line_item_upsells
+    assign upsell_list_metafield_namespace = settings.metafield_upsell_list | split: '.' | first
+    assign upsell_list_metafield_key = settings.metafield_upsell_list | split: '.' | last
+    assign upsell_list_metafield = null
+
+    for line_item in cart.items
+      # The reject filter always returns an array, which handles for us the case in which the metafield is "single product reference"
+      assign line_item_upsell_list = line_item.product.metafields[upsell_list_metafield_namespace][upsell_list_metafield_key].value | reject: 'available', false
+      # First cart item is most recently added, those upsells go first
+      assign upsell_list_metafield = upsell_list_metafield | concat: line_item_upsell_list
+    endfor
+
+    assign upsell_list_size_count = upsell_list_metafield.size | default: upsell_list_metafield.count
+
+    if upsell_list_size_count > 0
+      # Reverse concat mimics push, cart specific upsells go first
+      assign upsell_list = upsell_list_metafield | concat: upsell_list
+    endif
+  endif
+
+  # Remove any duplicates from the concatenated list
+  assign upsell_list = upsell_list | uniq
+
+  # filter-out products that are already in the cart
+  for line_item in cart.items
+    assign upsell_list = upsell_list | reject: 'id', line_item.product_id
+  endfor
+
+  if section.settings.set_free_shipping_message
+    capture fsl_raw
+      render 'free-shipping-threshold', base: section.settings.free_shipping_limit
+    endcapture
+    assign free_shipping_limit = fsl_raw | remove: ' ' | remove: ',' | remove: '.'
+
+    if block.settings.prioritize_shipping_upsell and free_shipping_limit != blank
+      # Promotes a single "best match" shipping upsell product to the first position in the upsell list
+
+      assign cart_total_price = cart.total_price
+      assign amount_to_free_shipping = free_shipping_limit | times: 100 | minus: cart_total_price | at_least: 0
+      # Get free shipping limit and do nothing if threshold is met or exceeded
+      if amount_to_free_shipping > 0
+        # Sort the products by "ascending price" - most expensive first
+        assign shipping_upsell_list = upsell_list | uniq | sort: 'price' | reverse
+        assign best_upsell = shipping_upsell_list.first
+
+        for candidate in shipping_upsell_list
+          # Find the cheapest products that will bring the total price to the free shipping threshold
+          if candidate.price >= amount_to_free_shipping and candidate.price <= best_upsell.price
+            assign best_upsell = candidate
+          else
+            # Stop when products get too cheap to satisfy the free shipping threshold
+            break
+          endif
+        endfor
+
+        # Use reject hack to force the product object into an array
+        assign best_upsell_arrayed = best_upsell | reject: 'available', false
+        # Reverse concat mimics push, uniq removes the later instance of the same product
+        assign upsell_list = best_upsell_arrayed | concat: upsell_list | uniq
+      endif
+    endif
+  endif
+%}
+
+{% render 'product-upsell-list', _settings: block.settings, products: upsell_list, attributes: attributes, ignore_placeholder_mode: true %}

@@ -1,0 +1,56 @@
+{%- liquid
+  # Media that will be shown on initial page render
+  assign initial_media = product.featured_media
+
+  assign media_limit = media_limit | default: settings.product_card_media_limit | default: 2
+  assign media_size = product.media.size | at_most: media_limit
+
+  # Amount of time after user hovers card to delay before activating card, playing slideshow, etc.
+  assign hover_delay = hover_delay | default: 150
+
+  # Amount of time after user unhovers card to delay before deactivating card, pausing slideshow, etc.
+  assign unhover_delay = unhover_delay | default: 200
+-%}
+
+<div
+  class="relative size-full"
+  {{ attributes }}
+>
+  {% if media_size == 1 %}
+    {% render 'card-product-lg-image',
+      image: initial_media.preview_image,
+      class: 'absolute inset-0 size-full',
+      loading: initial_image_loading,
+      fetchpriority: initial_image_fetchpriority,
+      image_widths: image_widths,
+      image_sizes: image_sizes
+    %}
+  {% elsif media_size > 2 %}
+    {% render 'card-product-lg-slideshow',
+      class: 'absolute inset-0 size-full',
+      initial_media: initial_media,
+      media_size: media_size,
+      product: product,
+      initial_image_loading: initial_image_loading,
+      initial_image_fetchpriority: initial_image_fetchpriority,
+      hover_delay: hover_delay,
+      unhover_delay: hover_delay,
+      image_widths: image_widths,
+      image_sizes: image_sizes
+    %}
+  {% elsif media_size == 2 %}
+    {% render 'card-product-lg-reveal',
+      class: 'absolute inset-0 size-full',
+      initial_media: initial_media,
+      product: product,
+      initial_image_loading: initial_image_loading,
+      initial_image_fetchpriority: initial_image_fetchpriority,
+      hover_delay: hover_delay,
+      unhover_delay: unhover_delay,
+      image_widths: image_widths,
+      image_sizes: image_sizes
+    %}
+  {% else %}
+    {% render 'image-filler' %}
+  {% endif %}
+</div>

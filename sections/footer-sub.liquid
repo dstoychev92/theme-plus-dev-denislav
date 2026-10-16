@@ -1,0 +1,511 @@
+<!-- sections/footer-sub.liquid -->
+
+{% liquid
+  assign enable_footer_payment = section.settings.enable_footer_payment
+  assign enable_footer_social = section.settings.enable_footer_social
+%}
+
+{%- capture content -%}
+  <div class="flex flex-col gap-lg md:gap-md">
+    <div
+      class="
+        {% render 'props-class-type-preset', _settings: section.settings %}
+        flex flex-col-reverse gap-lg
+        md:flex-row md:items-center md:justify-between
+      "
+    >
+      {% comment %} Copyright and Linklist {% endcomment %}
+      <div class="flex flex-wrap gap-x-r5 gap-y-r4 text-content">
+        <span>
+          &copy; {{ shop.name | link_to: routes.root_url }} {{ 'now' | date: "%Y" }}
+        </span>
+
+        {% for link in linklists[section.settings.footer_secondary_linklist].links %}
+          {% render 'core-link', href: link.url, text: link.title, appearance: 'clean', type_preset: 'apply' %}
+        {% endfor %}
+
+        {% assign powered_by_href = powered_by_link | split: 'href="' | last | split: '"' | first %}
+        {% assign powered_by_temp = powered_by_link | split: '>' %}
+        {% assign powered_by_text = powered_by_temp[1] | split: '<' | first %}
+        {% capture powered_by_link %}
+          {% comment %} The rel="noopener" fixes Lighthouse security warnings on the Shopify link {% endcomment %}
+          {% render 'core-link', href: powered_by_href, text: powered_by_text, appearance: 'clean', type_preset: 'apply', attribute: 'rel="noopener"' %}
+        {% endcapture %}
+
+      </div>
+
+      {% comment %} Locale/Currency selectors {% endcomment %}
+      {% if section.settings.show_language or section.settings.show_country %}
+        {% assign localization_popup_class = 'min-w-fit max-w-screen' %}
+        {% capture localization_select_class %}
+          border border-line-subtle type-apply
+          h-control px-control keyboard-active:focus-within:border-focus-outline
+          max-md:w-full min-w-[150px]
+          rounded-form-field
+        {% endcapture %}
+
+        {%- form 'localization', id: 'localization-form-subfooter', class: 'flex shrink-0' -%}
+          <div class="
+            flex flex-col gap-r6 md:flex-row md:flex-nowrap overflow-hidden max-md:w-full
+            [--control-height:--row-md]
+            [--control-padding:theme(space.r6)]
+            [--control-font-size:var(--font-size-calc)]
+            "
+          >
+            {% if section.settings.show_language %}
+              {%- if localization.available_languages.size > 1 -%}
+                {%- render 'localization-locale-select',
+                  placement: 'top-start',
+                  offset: '10px',
+                  size: false,
+                  flip: false,
+                  language_style: section.settings.language_style,
+                  button_class: localization_select_class,
+                  popup_class: localization_popup_class
+                -%}
+              {%- endif -%}
+            {%- endif -%}
+            {% if section.settings.show_country %}
+              {%- if localization.available_countries.size > 1 -%}
+                {% render 'localization-country-select',
+                  placement: 'top-start',
+                  offset: '10px',
+                  size: false,
+                  flip: false,
+                  currency_display_style: section.settings.currency_display_style,
+                  country_display_style: section.settings.country_display_style,
+                  button_class: localization_select_class,
+                  popup_class: localization_popup_class
+                %}
+              {%- endif -%}
+            {%- endif -%}
+          </div>
+        {% endform %}
+      {% endif %}
+    </div>
+
+    {% if enable_footer_payment or enable_footer_social %}
+      <div
+        class="
+          flex flex-wrap gap-lg
+          md:flex-row md:items-center md:justify-between
+        "
+      >
+        {% comment %} Payment icons {% endcomment %}
+        {% if enable_footer_payment %}
+          {% unless shop.enabled_payment_types == empty %}
+            <div class="flex flex-wrap gap-r3">
+              {% for type in shop.enabled_payment_types %}
+                <span>
+                  {{ type | payment_type_svg_tag }}
+                  <span class="sr-only">{{ type | capitalize | replace: '_', ' ' }}</span>
+                </span>
+              {% endfor %}
+            </div>
+          {% endunless %}
+        {% endif %}
+
+        {% comment %} Social icons {% endcomment %}
+        {%- if enable_footer_social -%}
+          {% capture social_style %}
+            {% render 'props-style-gap', _settings: section.settings %}
+          {% endcapture %}
+          {% render 'social-icons',
+            size: section.settings.social_sizing,
+            custom_width: section.settings.social_width_custom,
+            gap_class: 'gap-layout',
+            style: social_style,
+            class: 'md:justify-end'
+          %}
+        {%- endif -%}
+      </div>
+    {% endif %}
+  </div>
+{%- endcapture -%}
+
+{%- render 'core-section', _settings: section.settings, content: content, photoswipe: false -%}
+
+{% schema %}
+{
+  "name": "Subfooter",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-footer-sub"
+    },
+    {
+      "type": "select",
+      "id": "background",
+      "label": "Background",
+      "default": "canvas",
+      "options": [
+        {
+          "value": "canvas",
+          "label": "Default"
+        },
+        {
+          "value": "tint",
+          "label": "Tint"
+        },
+        {
+          "value": "custom",
+          "label": "⋯"
+        }
+      ]
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#f2f2f2",
+      "alpha": false,
+      "visible_if": "{{ section.settings.background == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "type_preset",
+      "label": "Text style",
+      "default": "p",
+      "options": [
+        {
+          "value": "p",
+          "label": "Paragraph"
+        },
+        {
+          "value": "btn",
+          "label": "Button"
+        },
+        {
+          "value": "custom",
+          "label": "⋯"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "type_resize",
+      "label": "Text size",
+      "default": "sm",
+      "options": [
+        {
+          "value": "xs",
+          "label": "XS"
+        },
+        {
+          "value": "sm",
+          "label": "S"
+        },
+        {
+          "value": "md",
+          "label": "M"
+        },
+        {
+          "value": "lg",
+          "label": "L"
+        },
+        {
+          "value": "xl",
+          "label": "XL"
+        }
+      ],
+      "visible_if": "{{ section.settings.type_preset != 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "type_font",
+      "label": "Font",
+      "default": "body",
+      "options": [
+        {
+          "value": "heading",
+          "label": "Heading"
+        },
+        {
+          "value": "subheading",
+          "label": "Subheading"
+        },
+        {
+          "value": "accent",
+          "label": "Accent"
+        },
+        {
+          "value": "body",
+          "label": "Body"
+        }
+      ],
+      "visible_if": "{{ section.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "range",
+      "id": "type_size",
+      "label": "Size",
+      "min": 1,
+      "max": 15,
+      "step": 1,
+      "default": 3,
+      "visible_if": "{{ section.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "type_uppercase",
+      "label": "Uppercase",
+      "default": false,
+      "visible_if": "{{ section.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "header",
+      "content": "Links"
+    },
+    {
+      "type": "link_list",
+      "id": "footer_secondary_linklist",
+      "label": "Link List",
+      "info": "This menu won't show dropdown items"
+    },
+    {
+      "type": "header",
+      "content": "Payment types"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_footer_payment",
+      "label": "Show payment types"
+    },
+    {
+      "type": "header",
+      "content": "Social links"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_footer_social",
+      "label": "Show social icons"
+    },
+    {
+      "type": "select",
+      "id": "social_sizing",
+      "label": "Icon size",
+      "default": "md",
+      "visible_if": "{{ section.settings.enable_footer_social == true }}",
+      "options": [
+        {
+          "value": "sm",
+          "label": "S"
+        },
+        {
+          "value": "md",
+          "label": "M"
+        },
+        {
+          "value": "lg",
+          "label": "L"
+        },
+        {
+          "value": "custom",
+          "label": "⋯"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "social_width_custom",
+      "label": "Custom width",
+      "unit": "px",
+      "min": 10,
+      "max": 60,
+      "step": 2,
+      "default": 20,
+      "visible_if": "{{ section.settings.enable_footer_social == true and section.settings.social_sizing == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "gap",
+      "label": "Gap",
+      "default": "md",
+      "visible_if": "{{ section.settings.enable_footer_social == true }}",
+      "options": [
+        {
+          "value": "sm",
+          "label": "S"
+        },
+        {
+          "value": "md",
+          "label": "M"
+        },
+        {
+          "value": "lg",
+          "label": "L"
+        },
+        {
+          "value": "custom",
+          "label": "⋯"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "gap_custom",
+      "label": "Custom gap",
+      "default": 0,
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "visible_if": "{{ section.settings.gap == 'custom'  and section.settings.enable_footer_social == true }}"
+    },
+    {
+      "type": "header",
+      "content": "Language selector",
+      "info": "To add a language, go to your [language settings](/admin/settings/languages).",
+      "visible_if": "{{ section.settings.show_language == true }}"
+    },
+    {
+      "type": "header",
+      "content": "Language selector",
+      "visible_if": "{{ section.settings.show_language != true }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_language",
+      "label": "Show language selector",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "language_style",
+      "label": "Style",
+      "default": "long",
+      "options": [
+        {
+          "value": "long",
+          "label": "Long"
+        },
+        {
+          "value": "short",
+          "label": "Short"
+        }
+      ],
+      "visible_if": "{{ section.settings.show_language == true }}"
+    },
+    {
+      "type": "header",
+      "content": "Country/Region selector",
+      "info": "To add a currency, go to your [markets settings](/admin/settings/markets).",
+      "visible_if": "{{ section.settings.show_country == true }}"
+    },
+    {
+      "type": "header",
+      "content": "Country/Region selector",
+      "visible_if": "{{ section.settings.show_country != true }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_country",
+      "label": "Show country selector",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "country_display_style",
+      "label": "Country display",
+      "default": "name",
+      "options": [
+        {
+          "value": "name",
+          "label": "Country name"
+        },
+        {
+          "value": "symbol",
+          "label": "Country symbol"
+        },
+        {
+          "value": "flag_name",
+          "label": "Flag + Country name"
+        },
+        {
+          "value": "flag_symbol",
+          "label": "Flag + Country symbol"
+        },
+        {
+          "value": "flag",
+          "label": "Flag"
+        }
+      ],
+      "visible_if": "{{ section.settings.show_country == true }}"
+    },
+    {
+      "type": "select",
+      "id": "currency_display_style",
+      "label": "Currency display",
+      "default": "short",
+      "options": [
+        {
+          "value": "long",
+          "label": "Name"
+        },
+        {
+          "value": "short",
+          "label": "Symbol"
+        },
+        {
+          "value": "none",
+          "label": "None"
+        }
+      ],
+      "visible_if": "{{ section.settings.show_country == true }}"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_rhythm",
+      "label": "Custom rhythm",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "section_padding_top",
+      "label": "Spacing top",
+      "min": 0,
+      "max": 200,
+      "step": 2,
+      "unit": "px",
+      "default": 40,
+      "visible_if": "{{ section.settings.set_rhythm == true  }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding_bottom",
+      "label": "Spacing bottom",
+      "min": 0,
+      "max": 200,
+      "step": 2,
+      "unit": "px",
+      "default": 40,
+      "visible_if": "{{ section.settings.set_rhythm == true  }}"
+    },
+    {
+      "type": "select",
+      "id": "content_width",
+      "label": "Width",
+      "default": "full",
+      "options": [
+        {
+          "value": "full",
+          "label": "Full"
+        },
+        {
+          "value": "page",
+          "label": "Page"
+        }
+      ]
+    }
+  ],
+  "enabled_on": {
+    "groups": ["footer"]
+  }
+}
+{% endschema %}

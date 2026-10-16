@@ -1,0 +1,33 @@
+{%- assign gap = gap | default: _settings.gap | default: 'custom' -%}
+{%- assign gap_custom = gap_custom | default: _settings.gap_custom | default: 0 -%}
+
+{%- if gap -%}
+  {%- case gap -%}
+    {%- when 'sm' -%}
+      --custom-gutter-x: var(--root-space-sm);
+      --custom-gutter-y: var(--raw-space-sm);
+    {%- when 'md' -%}
+      --custom-gutter-x: var(--root-space-md);
+      --custom-gutter-y: var(--raw-space-md);
+    {%- when 'lg' -%}
+      --custom-gutter-x: var(--root-space-lg);
+      --custom-gutter-y: var(--raw-space-lg);
+    {%- when 'custom' -%}
+      --custom-gutter-x: calc({{- gap_custom -}}px * var(--r-multiplier));
+      --custom-gutter-y: calc({{- gap_custom -}}px);
+  {%- endcase -%}
+  {% unless vars == false %}
+    --layout-gutter: var(--custom-gutter-x);
+    --layout-gutter-x: var(--custom-gutter-x);
+    --layout-gutter-y: var(--custom-gutter-y);
+  {% endunless %}
+  {% if card_vars == true %}
+    --layout-gutter-card: var(--custom-gutter-x);
+    --layout-gutter-card-x: var(--custom-gutter-x);
+    --layout-gutter-card-y: var(--custom-gutter-y);
+  {% endif %}
+  {% unless apply == false %}
+    row-gap: var(--layout-gutter-y);
+    column-gap: var(--layout-gutter-x);
+  {% endunless %}
+{%- endif -%}

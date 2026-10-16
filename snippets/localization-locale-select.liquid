@@ -1,0 +1,57 @@
+{% liquid
+  assign label = 'other.accessibility.localization_locale_select' | t
+  assign initial_locale = localization.language
+
+  assign offset = offset | default: '0px'
+%}
+
+{% capture options %}
+  {% for language in localization.available_languages %}
+    {% if language_style == 'short' %}
+      {% assign option_display_value = language.iso_code | upcase %}
+    {% else %}
+      {% assign option_display_value = language.endonym_name %}
+    {% endif %}
+
+    {% if initial_locale.iso_code == language.iso_code %}
+      {% assign initial_display = option_display_value %}
+    {% endif %}
+
+    {% render 'custom-select-option',
+      label: language.endonym_name,
+      display_value: option_display_value,
+      value: language.iso_code
+    %}
+  {% endfor %}
+{% endcapture %}
+
+{% capture attributes %}
+  {% comment %} When the custom select value changes, autosubmit the associated form {% endcomment %}
+  @change="$el.closest('form').requestSubmit()"
+{% endcapture %}
+
+{% render 'custom-select',
+  name: 'language_code',
+  size: size,
+  options: options,
+  label: label,
+  value: initial_locale.iso_code,
+  attributes: attributes,
+  disabled: disabled,
+  start_icon: start_icon,
+  end_icon: end_icon,
+  class: class,
+  button_class: button_class,
+  button_style: button_style,
+  popup_class: popup_class,
+  popup_list_class: popup_list_class,
+  placement: placement,
+  offset: offset,
+  flip: flip,
+  popover: popover,
+  match: match,
+  edge_padding: edge_padding,
+  initial_display: initial_display,
+  _settings: _settings,
+  settings_suffix: settings_suffix
+%}

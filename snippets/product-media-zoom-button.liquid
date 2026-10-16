@@ -1,0 +1,39 @@
+{% comment %}
+  Renders the zoom-in and ruler buttons on the product-media
+{% endcomment %}
+{% liquid
+  assign enable_zoom = enable_zoom | default: _settings.enable_zoom, allow_false: true
+  assign image_url = media.preview_image.src | image_url
+%}
+
+{% if enable_zoom %}
+  <a
+    href="{{ image_url }}"
+    aria-label="{{ 'product.gallery.zoom_title' | t }}"
+    class="absolute inset-0 z-10 touch:hidden"
+    target="_blank"
+    x-photoswipe:button="{{ media.id }}"
+    :role="'button'"
+    aria-controls="photoswipe"
+    {{ zoom_attributes }}
+  >
+  </a>
+
+  <a
+    href="{{ image_url }}"
+    aria-label="{{ 'product.gallery.zoom_title' | t }}"
+    class="
+      absolute top-auto bottom-[--media-overlay-inset] start-[--media-overlay-inset] end-[--media-overlay-inset] z-10 vars-control-md
+      hidden touch:flex
+      flex-center aspect-square rounded-full w-row-sm h-row-sm
+      vars-scheme-light bg-canvas outline outline-1 outline-black/5 shadow
+    "
+    target="_blank"
+    x-photoswipe:button="{{ media.id }}"
+    :role="'button'"
+    aria-controls="photoswipe"
+    {{ zoom_attributes }}
+  >
+    {% render 'core-icon', icon: 'fill-corners-out', size: 'md' %}
+  </a>
+{% endif %}

@@ -1,0 +1,209 @@
+{% doc %}
+  Renders a range slider with two input fields for the min and max values and 2 overlapping sliders for the range.
+
+  @param {string} id - The id of the range slider
+  @param {string} min_name - The name of the min input field
+  @param {string} max_name - The name of the max input field
+  @param {number} min_limit - The minimum value that can be selected for min input and min range slider
+  @param {number} max_limit - The maximum value that can be selected for max input and max range slider
+  @param {number} min_value - Optional current value for min input and min range slider
+  @param {number} max_value - Optional current value for max input and max range slider
+  @param {number} step - The step of the range slider
+{% enddoc %}
+
+{% liquid
+  assign min_limit = min_limit | default: 0
+  assign max_limit = max_limit | default: 99999
+  assign step = step | default: 1
+  assign id = id | default: 'field-range'
+  assign default_min_name = id | append: '-from'
+  assign default_max_name = id | append: '-to'
+  assign min_name = min_name | default: default_min_name
+  assign max_name = max_name | default: default_max_name
+
+  if min_value != blank
+    assign min_offset = min_value | minus: min_limit | times: 1.0
+  else
+    assign min_offset = min_limit | minus: min_limit | times: 1.0
+  endif
+
+  if max_value != blank
+    assign max_offset = max_value | minus: min_limit | times: 1.0
+  else
+    assign max_offset = max_limit | minus: min_limit | times: 1.0
+  endif
+
+  assign limit_range = max_limit | minus: min_limit | times: 1.0
+
+  assign min_value_percentage = min_offset | divided_by: limit_range | times: 100 | at_most: 100
+  assign max_value_percentage = max_offset | divided_by: limit_range | times: 100 | at_most: 100
+%}
+
+<div
+  x-range
+  style="
+    --range-min-value-percentage: {{ min_value_percentage }}%;
+    --range-max-value-percentage: {{ max_value_percentage }}%;
+  "
+  :style="
+    {
+      '--range-min-value-percentage': `max(calc(${(($range.minValue ?? $range.minLimit) - $range.minLimit) / ($range.maxLimit - $range.minLimit)} * 100%), 0%)`,
+      '--range-max-value-percentage': `min(calc(${(($range.maxValue ?? $range.maxLimit) - $range.minLimit) / ($range.maxLimit - $range.minLimit)} * 100%), 100%)`
+    }
+  "
+  class="
+    {{ class }}
+    min-w-[120px]
+
+    [--range-bar-height:4px]
+    [--range-thumb-size:24px]
+    md:[--range-thumb-size:18px]
+
+    [--range-color:var(--content)]
+    [--range-thumb-color-bottom:var(--content-mix-80)]
+    [--range-thumb-color-top:--range-color]
+    data-[dormant]:[--range-color:var(--content-mix-20)]
+    data-[dormant]:[--range-thumb-color-bottom:var(--content-mix-60)]
+    data-[dormant]:[--range-thumb-color-top:var(--content-mix-70)]
+  "
+  data-dormant
+  :data-dormant="$range.isDormant"
+  aria-label="{{ label }}"
+  role="group"
+  {{ attributes }}
+>
+  {% comment %} Range slider {% endcomment %}
+  <div class="text-body relative my-r3 flex h-[--range-thumb-size] w-full select-none text-content items-center nojs:hidden">
+    {% capture range_input_class %}
+      absolute start-0 end-0 appearance-none pointer-events-none
+      h-[--range-thumb-size] bg-transparent overscroll-contain
+
+      [--thumb-offset:calc(((var(--range-bar-height))_/_2)_-_(var(--range-thumb-size)_/_2))]
+      track:h-[--range-bar-height]
+
+      thumb:pointer-events-auto thumb:appearance-none thumb:cursor-pointer
+      thumb:size-[--range-thumb-size] thumb:rounded-full
+      thumb:bg-gradient-to-b thumb:from-[--range-thumb-color-bottom] thumb:to-[--range-thumb-color-top] thumb:ring-2 thumb:ring-canvas
+      thumb:transition-colors thumb:duration-300
+      thumb:border-none
+      thumb:mt-[--thumb-offset]
+    {% endcapture %}
+
+    {% comment %} Range Inputs {% endcomment %}
+
+    {% assign min_range_label = 'product.general.price_range_from' | t %}
+    {% assign min_range_id = id | append: '-min-range' %}
+    <label class="sr-only" for="{{ min_range_id }}">{{ min_range_label }}</label>
+
+    <input
+      id="{{ min_range_id }}"
+      class="
+        {{ range_input_class }} z-[2]
+        track:bg-transparent
+      "
+      type="range"
+      min="{{ min_limit }}"
+      max="{{ max_limit | minus: step }}"
+      step="{{ step }}"
+      value="{{ min_value | default: min_limit }}"
+      x-range:range-min
+      tabindex="-1"
+    >
+
+    {% assign max_range_label = 'product.general.price_range_to' | t %}
+    {% assign max_range_id = id | append: '-max-range' %}
+    <label class="sr-only" for="{{ max_range_id }}">{{ max_range_label }}</label>
+    <input
+      id="{{ max_range_id }}"
+      class="
+        {{ range_input_class }}
+        z-[1] rounded-form-field
+        track:bg-gradient-to-r
+        track:from-content/20
+        track:from-[percentage:0%_var(--range-min-value-percentage)]
+        track:via-[--range-color]
+        track:via-[percentage:var(--range-min-value-percentage)_var(--range-max-value-percentage)]
+        track:to-content/20
+        track:to-[percentage:var(--range-max-value-percentage)_100%]
+      "
+      type="range"
+      min="{{ min_limit | plus: step }}"
+      max="{{ max_limit }}"
+      step="{{ step }}"
+      value="{{ max_value | default: max_limit }}"
+      x-range:range-max
+      tabindex="-1"
+    >
+  </div>
+
+  {% comment %} Inputs {% endcomment %}
+  <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-x-r6 pt-r3 text-r5">
+    {% capture field_class %}
+      border-b border-line flex-row-center
+      vars-scheme-error-if-invalid
+      vars-control-md
+    {% endcapture %}
+
+    {% capture input_class %}
+      text-end text-content
+      py-control min-h-control
+      leading-control
+      text-size-input
+      bg-transparent
+      w-full
+    {% endcapture %}
+
+    {% comment %} Min input {% endcomment %}
+    {% assign min_label = 'product.general.price_from' | t %}
+    {% assign min_id = id | append: '-min' %}
+
+    <div class="{{ field_class }}">
+      {% if prefix %}
+        <span class="flex-none pe-r2 text-size-control font-bold text-muted">{{ prefix }}</span>
+      {% endif %}
+      <label class="sr-only" for="{{ min_id }}">{{ min_label }}</label>
+      <input
+        id="{{ min_id }}"
+        type="number"
+        name="{{ min_name }}"
+        class="{{ input_class }}"
+        value="{{ min_value }}"
+        min="{{- min_limit -}}"
+        max="{{- max_limit | minus: step -}}"
+        placeholder="{{ min_placeholder }}"
+        x-range:number-min
+      >
+      {% if suffix %}
+        <span class="flex-none ps-r2 text-size-control">{{ suffix }}</span>
+      {% endif %}
+    </div>
+
+    {% comment %} Dash {% endcomment %}
+    <span aria-hidden="true">-</span>
+
+    {% comment %} Max input {% endcomment %}
+    {% assign max_label = 'product.general.price_to' | t %}
+    {% assign max_id = id | append: '-max' %}
+
+    <div class="{{ field_class }}">
+      {% if prefix %}
+        <span class="flex-none pe-r2 text-size-control font-bold text-muted">{{ prefix }}</span>
+      {% endif %}
+      <label class="sr-only" for="{{ max_id }}">{{ max_label }}</label>
+      <input
+        id="{{ max_id }}"
+        type="number"
+        name="{{ max_name }}"
+        class="{{ input_class }}"
+        value="{{ max_value }}"
+        placeholder="{{ max_placeholder }}"
+        min="{{- min_limit | plus: step -}}"
+        max="{{- max_limit -}}"
+        x-range:number-max
+      >
+      {% if suffix %}
+        <span class="flex-none ps-r2 text-size-control">{{ suffix }}</span>
+      {% endif %}
+    </div>
+  </div>
+</div>

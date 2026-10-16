@@ -1,0 +1,56 @@
+<!-- snippets/marquee.liquid -->
+
+
+{% liquid
+  assign font_family = font_family | default: _settings.font_family | default: 'accent'
+  assign text_size = text_size | default: _settings.text_size | default: 7
+  assign block_alignment = block_alignment | default: _settings.block_alignment | default: 'left'
+  assign speed = speed | default: _settings.speed | default: 2
+  assign gap = gap | default: _settings.gap | default: 'lg'
+  assign gap_custom = gap_custom | default: _settings.gap_custom | default: 0
+%}
+
+{% capture content_class %}
+  vars-placement-grid-{{ block_alignment }}-left
+  flex flex-row justify-start [align-items:--placement-content-vertical] shrink-0 transition-opacity duration-500 opacity-0
+  {% comment %} Gap between each block, and then gap after the source element to allow for the target element to be positioned correctly {% endcomment %}
+  gap-x-[--layout-gutter] pr-[--layout-gutter]
+  {% comment %} Initial container width should be the max width of the content so that the width can be measured and the elements can be cloned to fit screen {% endcomment %}
+  w-max
+{% endcapture %}
+
+<div
+  x-data
+  x-marquee.speed.{{- speed | times: 15 -}}.fill
+  class="
+    flex-row-center overflow-hidden
+    text-custom bg-custom
+    pt-[--marquee-pt,4px] pb-[--marquee-pb,4px]
+    {% render 'props-class-type-preset', _settings: _settings %}
+    {{ class }}
+  "
+  style="
+    {% if gap %}
+      {% render 'props-style-gap', gap: gap, gap_custom: gap_custom, apply: false %}
+    {% endif %}
+    {{ style }}
+  "
+  @focusin="if($isKeyboardActive) { $marquee.pause(); $marquee.scrollTo(event.target) }"
+  @focusout="$marquee.play()"
+  {{ attributes }}
+>
+  <div
+    x-marquee:source
+    class="{{ content_class }}"
+    :class="$marquee.isReady ? 'opacity-100' : 'opacity-0'"
+  >
+    {{ content }}
+  </div>
+
+  <div
+    x-marquee:target
+    class="{{ content_class }}"
+    :class="$marquee.isReady ? 'opacity-100' : 'opacity-0'"
+    aria-hidden="true"
+  ></div>
+</div>

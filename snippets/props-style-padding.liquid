@@ -1,0 +1,23 @@
+{%- assign padding = padding | default: _settings.padding | default: 'custom' -%}
+{%- assign custom_var = custom_var | default: '--custom-buffer' -%}
+{%- assign padding_custom = padding_custom | default: _settings.padding_custom | default: 0 -%}
+{%- if padding -%}
+  {%- case padding -%}
+    {%- when 'sm' -%}
+      {{ custom_var }}: var(--root-space-sm);
+    {%- when 'md' -%}
+      {{ custom_var }}: var(--root-space-md);
+    {%- when 'lg' -%}
+      {{ custom_var }}: var(--root-space-lg);
+    {%- when 'custom' -%}
+      {{ custom_var }}: calc({{- padding_custom -}}px * var(--r-multiplier));
+  {%- endcase -%}
+  {% unless vars == false %}
+    --layout-buffer: var({{ custom_var }});
+    --layout-buffer-x: var({{ custom_var }});
+    --layout-buffer-y: var({{ custom_var }});
+  {% endunless %}
+  {% unless apply == false %}
+    padding: var({{ custom_var }});
+  {% endunless %}
+{%- endif -%}

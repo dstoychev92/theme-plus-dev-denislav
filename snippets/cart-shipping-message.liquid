@@ -1,0 +1,56 @@
+{% capture limit_raw %}{% render 'free-shipping-threshold', base: _settings.free_shipping_limit %}{% endcapture %}
+{% assign limit = limit_raw | remove: ' ' | remove: ',' | remove: '.' | plus: 0 %}
+{% assign progress_message = _settings.free_shipping_progress_message %}
+{% assign success_message = _settings.free_shipping_success_message %}
+{% assign show_line = show_line | default: false %}
+
+{%- if limit > 0 and progress_message != blank -%}
+  {%- liquid
+    assign limit_currency = limit | times: 100
+    assign cart_total_price = cart.total_price
+    assign subtotal_without_currency = cart_total_price | plus: 0 | divided_by: 100
+    assign message_price_difference = limit_currency | minus: cart_total_price | at_least: 0
+    assign amount = message_price_difference | money_without_trailing_zeros
+    assign percent = limit | minus: subtotal_without_currency | times: 100 | divided_by: limit
+    assign percent = 100 | minus: percent | at_most: 100
+  -%}
+
+  {% capture line %}
+    <div class="relative rounded-sm overflow-clip w-full h-[4px] bg-content-mix-5">
+      <span
+        role="presentation"
+        class="absolute top-0 left-0 h-full w-[--limit-percent] bg-gradient-to-l to-primary from-[--to-color] transition-[width,background-color]"
+        style="
+          --limit-percent: {{ percent | at_most: 100 }}%;
+        "
+      ></span>
+    </div>
+  {% endcapture %}
+
+  <div
+    class="relative flex flex-col gap-r4 {{ class }}"
+    {{ attributes }}
+    style="--to-color: oklch(from var(--primary) calc(l + 0.15) c calc(h - 20))"
+  >
+    {%- if message_price_difference > 0 -%}
+      <p class="text-r3">
+        {% capture styled_amount %}
+          <span class="font-bold">
+            {{ amount }}
+          </span>
+        {% endcapture %}
+        {{ progress_message | replace: '||amount||', styled_amount }}
+      </p>
+    {%- else -%}
+      <div class="flex items-center gap-r4 animate-in fade-in duration-800 slide-in-from-bottom-full">
+        {% render 'core-icon', icon: 'fill-circle-check', class: 'size-r6 text-primary', stroke_weight: 'bold' %}
+        <p class="text-r3">
+          {{ success_message }}
+        </p>
+      </div>
+    {%- endif -%}
+    {% if show_line %}
+      {{ line }}
+    {% endif %}
+  </div>
+{%- endif -%}

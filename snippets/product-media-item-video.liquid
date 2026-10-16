@@ -1,0 +1,63 @@
+{% liquid
+  assign id = id | default: block.id | default: section.id
+  assign video_id = id | append: '-' | append: media.id
+  assign show_custom_controls = show_custom_controls | default: _settings.custom_controls | default: false, allow_false: true
+  assign autoplay = autoplay | default: _settings.video_autoplay | default: false, allow_false: true
+
+  assign enable_zoom = false
+
+  assign layout_desktop = layout_desktop | default: _settings.layout_desktop | default: 'showcase'
+  assign media_index = media.position | minus: 1
+%}
+
+{% comment %}
+  Drive the video off the gallery's current item (current slide on desktop,
+  centered item on mobile) rather than relying solely on the viewport
+  IntersectionObserver. The observer can fail to fire the first time a hidden
+  slide is revealed, which left an autoplaying video stuck on its poster until
+  you navigated away and back. Setting hasIntersected forces the <video> to
+  render; playVideo/pauseVideo are no-ops until it exists, so non-autoplay
+  videos are unaffected.
+{% endcomment %}
+{% capture on_init %}
+  {% if layout_desktop == 'showcase' %}
+    $watch('$slide?.isCurrentSlide', (isCurrentSlide) => {
+      if ($media.matches.sm) return;
+      if (isCurrentSlide) {
+        hasIntersected = true;
+        playVideo();
+      } else {
+        pauseVideo();
+      }
+    });
+    if (!$media.matches.sm && $slide?.isCurrentSlide) hasIntersected = true;
+  {% endif %}
+
+  if ($media.matches.sm) {
+    $watch('$scrollList?.centeredIndex', (centeredIndex) => {
+      if (!$media.matches.sm) return;
+      if (centeredIndex === {{ media_index }}) {
+        hasIntersected = true;
+        playVideo();
+      } else {
+        pauseVideo();
+      }
+    });
+    if ($scrollList?.centeredIndex === {{ media_index }}) hasIntersected = true;
+  }
+{% endcapture %}
+
+{% render 'core-video',
+  id: video_id,
+  video: media,
+  aspect_ratio: aspect_ratio,
+  autoplay: autoplay,
+  controls: controls,
+  show_custom_controls: false,
+  preload: preload,
+  placeholder: false,
+  is_product_video: true,
+  on_init: on_init
+%}
+
+{% render 'product-media-zoom-button', _settings: _settings, media: media, enable_zoom: enable_zoom %}

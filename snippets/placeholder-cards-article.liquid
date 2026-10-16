@@ -1,0 +1,32 @@
+{% liquid
+  assign limit = limit | default: 10
+  assign enable_placeholder_article = false
+
+  if settings.placeholder_mode or request.design_mode
+    assign enable_placeholder_article = true
+  endif
+%}
+
+{% if enable_placeholder_article %}
+  {% for i in (1..limit) %}
+    {% if forloop.first %}
+      {% capture attributes %}
+        {{ block_attributes }}
+        {{ attributes }}
+      {% endcapture %}
+    {% endif %}
+
+    {% capture placeholder_index %}
+      {% cycle 1, 2, 3, 4, 5, 6 %}
+    {% endcapture %}
+
+    {% render 'card-article',
+      size: 'lg',
+      placeholder: true,
+      placeholder_image_index: placeholder_index,
+      aspect_ratio: aspect_ratio,
+      attributes: attributes,
+      appearance: appearance
+    %}
+  {% endfor %}
+{% endif %}

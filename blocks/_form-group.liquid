@@ -1,0 +1,260 @@
+<!-- blocks/_form-group.liquid -->
+
+{% capture blocks %}
+  {% content_for "blocks" %}
+{% endcapture %}
+
+{% capture class %}
+  flex flex-row items-content-gravity *:auto-stagger-animations-[--entrance-animation-stagger]
+  md:flex-wrap
+
+  {% if block.settings.full_width %}
+    w-full
+
+    {% if block.settings.style == 'even' %}
+      *:flex-1 *:min-w-fit
+    {% elsif block.settings.style == 'packed' %}
+      {% case block.settings.justify_packed %}
+        {% when 'start' %}
+          justify-start
+        {% when 'center' %}
+          justify-center
+        {% when 'end' %}
+          justify-end
+      {% endcase %}
+    {% elsif block.settings.style == 'spread' %}
+      {% case block.settings.justify_spread %}
+        {% when 'between' %}
+          justify-between
+        {% when 'around' %}
+          justify-around
+        {% when 'evenly' %}
+          justify-evenly
+      {% endcase %}
+    {% endif %}
+  {% endif %}
+
+
+  {% if block.settings.wrap_mobile == 'wrap' %}
+    max-md:flex-wrap
+  {% elsif block.settings.wrap_mobile == 'shrink' %}
+    max-md:flex-nowrap max-md:scrollbar-hide max-md:max-w-full max-md:overflow-x-auto max-md:overflow-y-hidden
+    {% comment %} Make sure the scrolling container won't cut-off the form field labels {% endcomment %}
+    max-md:py-r4 max-md:-my-r4
+  {% elsif block.settings.wrap_mobile == 'stack' %}
+    max-md:flex-nowrap max-md:flex-col max-md:*:flex-1
+  {% endif %}
+{% endcapture %}
+
+{% capture style %}
+  {% render 'props-style-gap', _settings: block.settings %}
+  --content-gravity: center;
+{% endcapture %}
+
+<div
+  class="{{ class }}"
+  style="{{ style }}"
+  {{ block.shopify_attributes }}
+>
+  {{ blocks }}
+</div>
+
+{% schema %}
+{
+	"name": "Row",
+	"tag": null,
+	"settings": [
+		{
+			"type": "select",
+			"id": "gap",
+			"label": "Gap",
+			"default": "md",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "gap_custom",
+			"label": "Custom gap",
+			"default": 0,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ block.settings.gap == 'custom'  }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "full_width",
+			"label": "Full width",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "style",
+			"label": "Items",
+			"default": "even",
+			"options": [
+				{
+					"value": "even",
+					"label": "Even"
+				},
+				{
+					"value": "packed",
+					"label": "Packed"
+				},
+				{
+					"value": "spread",
+					"label": "Spread"
+				}
+			],
+			"visible_if": "{{ block.settings.full_width == true }}"
+		},
+		{
+			"type": "select",
+			"id": "justify_spread",
+			"label": "Distribute space",
+			"default": "between",
+			"options": [
+				{
+					"value": "between",
+					"label": "Between"
+				},
+				{
+					"value": "around",
+					"label": "Around"
+				},
+				{
+					"value": "evenly",
+					"label": "Evenly"
+				}
+			],
+			"visible_if": "{{ block.settings.full_width == true and block.settings.style == 'spread' }}"
+		},
+		{
+			"type": "select",
+			"id": "justify_packed",
+			"label": "Placement",
+			"default": "start",
+			"options": [
+				{
+					"value": "start",
+					"label": "|←"
+				},
+				{
+					"value": "center",
+					"label": "|"
+				},
+				{
+					"value": "end",
+					"label": "→|"
+				}
+			],
+			"visible_if": "{{ block.settings.full_width == true and block.settings.style == 'packed' }}"
+		},
+		{
+			"type": "select",
+			"id": "wrap_mobile",
+			"label": "Mobile",
+			"default": "wrap",
+			"options": [
+				{
+					"value": "wrap",
+					"label": "Wrap"
+				},
+				{
+					"value": "shrink",
+					"label": "Shrink"
+				},
+				{
+					"value": "stack",
+					"label": "Stack"
+				}
+			]
+		}
+	],
+	"blocks": [
+		{
+			"type": "@app"
+		},
+		{
+			"type": "theme-badge"
+		},
+		{
+			"type": "theme-button"
+		},
+		{
+			"type": "theme-decoration"
+		},
+		{
+			"type": "theme-image"
+		},
+		{
+			"type": "theme-link"
+		},
+		{
+			"type": "theme-liquid-code"
+		},
+		{
+			"type": "theme-spacer"
+		},
+		{
+			"type": "theme-text"
+		},
+		{
+			"type": "theme-richtext"
+		},
+		{
+			"type": "theme-group-text"
+		},
+		{
+			"type": "_form-input-email"
+		},
+		{
+			"type": "_form-input-name"
+		},
+		{
+			"type": "_form-input-text"
+		},
+		{
+			"type": "_form-select"
+		},
+		{
+			"type": "_form-radio-group"
+		},
+		{
+			"type": "_form-checkbox"
+		},
+	],
+	"presets": [
+		{
+			"name": "Row",
+			"category": "Layout",
+			"settings": {
+				"gap": "sm",
+				"full_width": true,
+				"style": "even",
+				"wrap_mobile": "stack"
+			},
+			"blocks": []
+		}
+	]
+}
+{% endschema %}
+

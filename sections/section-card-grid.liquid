@@ -1,0 +1,345 @@
+<!-- sections/section-card-grid.liquid -->
+
+{% capture header %}
+  {% content_for 'block', type: '_section-title', id: 'header' %}
+{% endcapture %}
+
+{% capture list_items %}
+  {% content_for 'blocks' %}
+{% endcapture %}
+
+{% render 'core-section-card-list',
+  _settings: section.settings,
+  list_items: list_items,
+  header: header,
+  layout_desktop: 'grid',
+  layout_tablet: 'grid',
+  class: 'entrance-container'
+%}
+
+{% schema %}
+{
+	"name": "Card grid",
+	"tag": "section",
+	"settings": [
+		{
+			"type": "header",
+			"content": "Columns"
+		},
+		{
+			"type": "range",
+			"id": "columns_lg",
+			"min": 2,
+			"max": 5,
+			"step": 1,
+			"label": "Desktop",
+			"default": 4
+		},
+		{
+			"type": "range",
+			"id": "columns_md",
+			"min": 2,
+			"max": 5,
+			"step": 1,
+			"label": "Tablet",
+			"default": 3
+		},
+		{
+			"type": "select",
+			"id": "layout_mobile",
+			"label": "Mobile Layout",
+			"default": "slider",
+			"options": [
+				{
+					"value": "slider",
+					"label": "Slider"
+				},
+				{
+					"value": "grid",
+					"label": "Grid"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "columns_sm_grid",
+			"label": "Mobile columns",
+			"default": "2",
+			"options": [
+				{
+					"value": "1",
+					"label": "1"
+				},
+				{
+					"value": "2",
+					"label": "2"
+				}
+			],
+			"visible_if": "{{ section.settings.layout_mobile == 'grid' }}"
+		},
+		{
+			"type": "select",
+			"label": "Progress bar",
+			"id": "progress_bar_visibility",
+			"default": "mobile",
+			"options": [
+				{
+					"value": "mobile",
+					"label": "Mobile"
+				},
+				{
+					"value": "never",
+					"label": "Never"
+				}
+			],
+			"visible_if": "{{ section.settings.layout_mobile == 'slider' }}"
+		},
+		{
+			"type": "header",
+			"content": "Section layout"
+		},
+		{
+			"type": "select",
+			"id": "content_width",
+			"label": "Content width",
+			"default": "page",
+			"options": [
+				{
+					"value": "full",
+					"label": "Full"
+				},
+				{
+					"value": "page",
+					"label": "Page"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "content_width_custom",
+			"label": "Desktop width",
+			"visible_if": "{{ section.settings.content_width == 'custom' }}",
+			"min": 25,
+			"max": 100,
+			"step": 5,
+			"default": 65,
+			"unit": "%"
+		},
+		{
+			"type": "paragraph",
+			"visible_if": "{{ section.settings.content_width == 'custom' and section.settings.layout_mobile != 'grid' }}",
+			"content": "Mobile width is unavailable for slider layout."
+		},
+		{
+			"type": "range",
+			"id": "content_width_custom_mobile",
+			"label": "Mobile width",
+			"visible_if": "{{ section.settings.content_width == 'custom'  and section.settings.layout_mobile == 'grid'  }}",
+			"min": 25,
+			"max": 100,
+			"step": 5,
+			"default": 100,
+			"unit": "%"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_rhythm",
+			"label": "Custom rhythm",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "section_padding_top",
+			"label": "Spacing top",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 40,
+			"visible_if": "{{ section.settings.set_rhythm == true  }}"
+		},
+		{
+			"type": "range",
+			"id": "section_padding_bottom",
+			"label": "Spacing bottom",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 40,
+			"visible_if": "{{ section.settings.set_rhythm == true  }}"
+		},
+		{
+			"type": "header",
+			"content": "Content layout"
+		},
+		{
+			"type": "text_alignment",
+			"id": "title_placement",
+			"label": "Title alignment",
+			"default": "center"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_gap_tab_y",
+			"label": "Set vertical gap",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "gap_tab_y",
+			"label": "Vertical gap",
+			"default": "sm",
+			"visible_if": "{{ section.settings.set_gap_tab_y }}",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "gap_custom_tab_y",
+			"label": "Custom",
+			"default": 0,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ section.settings.gap_tab_y == 'custom'  and section.settings.set_gap_tab_y }}"
+		},
+		{
+			"type": "header",
+			"content": "Appearance"
+		},
+		{
+			"type": "color_scheme",
+			"id": "color_scheme",
+			"label": "Color scheme"
+		},
+		{
+			"type": "select",
+			"id": "background",
+			"label": "Background",
+			"default": "canvas",
+			"options": [
+				{
+					"value": "canvas",
+					"label": "Default"
+				},
+				{
+					"value": "tint",
+					"label": "Tint"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background color",
+			"default": "#f2f2f2",
+			"alpha": false,
+			"visible_if": "{{ section.settings.background == 'custom' }}"
+		},
+		{
+			"type": "header",
+			"content": "Target device",
+			"visible_if": "{{ settings.show_target_device_settings == true }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_target_device",
+			"label": "Set target device",
+			"visible_if": "{{ settings.show_target_device_settings == true }}",
+			"default": false
+		},
+		{
+			"type": "select",
+			"label": "Show on",
+			"id": "target_device",
+			"default": "desktop",
+			"visible_if": "{{ settings.show_target_device_settings == true and section.settings.set_target_device == true }}",
+			"options": [
+				{
+					"value": "mobile",
+					"label": "Mobile"
+				},
+				{
+					"value": "desktop",
+					"label": "Desktop"
+				}
+			]
+		},
+	],
+	"blocks": [
+		{
+			"type": "_cards-products"
+		},
+		{
+			"type": "_cards-collections"
+		},
+		{
+			"type": "_cards-articles"
+		},
+		{
+			"type": "_tile"
+		},
+		{
+			"type": "_card-custom"
+		},
+		{
+			"type": "_grid-group-frame"
+		},
+	],
+	"presets": [
+		{
+			"name": "Card grid",
+			"category": "Cards",
+			"blocks": [
+				{
+					"id": "header",
+					"type": "_section-title",
+					"static": true,
+					"settings": {
+						"text": "Featured Products"
+					}
+				},
+				{
+					"type": "_cards-products",
+					"settings": {
+						"source": "collection"
+					}
+				}
+			]
+		}
+	],
+	"disabled_on": {
+		"groups": [
+			"header",
+			"custom.overlays",
+			"custom.drawers"
+		]
+	}
+}
+{% endschema %}

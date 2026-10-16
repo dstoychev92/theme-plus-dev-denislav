@@ -1,0 +1,1149 @@
+<!-- blocks/_product-quantity-alt.liquid -->
+<!-- Alternative quantity selector: Card grid with gift thresholds -->
+
+{% liquid
+  assign current_variant = product.selected_or_first_available_variant
+  assign min_quantity = current_variant.quantity_rule.min | default: 1
+  assign variant_price = current_variant.price
+  assign doses_per_bag = product.metafields.custom.doses_per_bag | default: block.settings.doses_per_bag | default: 20
+
+  # Accent color: 'primary' (orange) for Protein, 'secondary' (blue) for Brain.
+  # Drives the active-state colors below (selected card border, best-deal badge,
+  # discounted total, radio dot fill).
+  assign accent_color_name = block.settings.accent_color | default: 'primary'
+%}
+
+{% assign product_form_id = 'product-form-' | append: product.handle | append: '-' | append: section.id %}
+
+{% comment %} Volume discount calculations {% endcomment %}
+{% liquid
+  assign discount_pct_1 = block.settings.discount_pct_1 | default: 0
+  assign discount_pct_2 = block.settings.discount_pct_2 | default: 0
+  assign discount_pct_3 = block.settings.discount_pct_3 | default: 0
+  assign discount_pct_4 = block.settings.discount_pct_4 | default: 0
+
+  # A compare-at price means the variant price is ALREADY the sale price.
+  # Strike through compare_at × qty and show its % in the badge, but never
+  # discount the variant price again for it. Volume % (if any) stacks on top.
+  assign full_unit = variant_price
+  assign sale_pct = 0
+  if current_variant.compare_at_price > variant_price
+    assign full_unit = current_variant.compare_at_price
+    assign sale_pct = full_unit | minus: variant_price | times: 100.0 | divided_by: full_unit | round
+  endif
+
+  # Badge % per card = compare-at sale % combined with that card's volume %
+  assign rem_1 = 100 | minus: discount_pct_1
+  assign badge_pct_1 = 100 | minus: sale_pct | times: rem_1 | divided_by: 100.0 | round
+  assign badge_pct_1 = 100 | minus: badge_pct_1 | round
+  assign rem_2 = 100 | minus: discount_pct_2
+  assign badge_pct_2 = 100 | minus: sale_pct | times: rem_2 | divided_by: 100.0 | round
+  assign badge_pct_2 = 100 | minus: badge_pct_2 | round
+  assign rem_3 = 100 | minus: discount_pct_3
+  assign badge_pct_3 = 100 | minus: sale_pct | times: rem_3 | divided_by: 100.0 | round
+  assign badge_pct_3 = 100 | minus: badge_pct_3 | round
+  assign rem_4 = 100 | minus: discount_pct_4
+  assign badge_pct_4 = 100 | minus: sale_pct | times: rem_4 | divided_by: 100.0 | round
+  assign badge_pct_4 = 100 | minus: badge_pct_4 | round
+
+  assign price_1_full = full_unit
+  if discount_pct_1 > 0
+    assign discount_1_amount = variant_price | times: discount_pct_1 | divided_by: 100
+    assign price_1 = variant_price | minus: discount_1_amount
+  else
+    assign price_1 = variant_price
+  endif
+  assign price_1_per_dose = price_1 | divided_by: doses_per_bag
+
+  assign price_2_full = full_unit | times: 2
+  assign price_2_base = variant_price | times: 2
+  if discount_pct_2 > 0
+    assign discount_2_amount = price_2_base | times: discount_pct_2 | divided_by: 100
+    assign price_2 = price_2_base | minus: discount_2_amount
+  else
+    assign price_2 = price_2_base
+  endif
+  assign price_2_per_dose = price_2 | divided_by: doses_per_bag | divided_by: 2
+
+  assign price_3_full = full_unit | times: 3
+  assign price_3_base = variant_price | times: 3
+  if discount_pct_3 > 0
+    assign discount_3_amount = price_3_base | times: discount_pct_3 | divided_by: 100
+    assign price_3 = price_3_base | minus: discount_3_amount
+  else
+    assign price_3 = price_3_base
+  endif
+  assign price_3_per_dose = price_3 | divided_by: doses_per_bag | divided_by: 3
+
+  assign price_4_full = full_unit | times: 4
+  assign price_4_base = variant_price | times: 4
+  if discount_pct_4 > 0
+    assign discount_4_amount = price_4_base | times: discount_pct_4 | divided_by: 100
+    assign price_4 = price_4_base | minus: discount_4_amount
+  else
+    assign price_4 = price_4_base
+  endif
+  assign price_4_per_dose = price_4 | divided_by: doses_per_bag | divided_by: 4
+%}
+
+{% comment %}
+  Gift product variant IDs.
+  Per design: gifts unlock on qty 3 and 4 (qty 2 = discount only).
+  gift_product_3 → unlocked at qty ≥ 3
+  gift_product_4 → unlocked at qty ≥ 4 (stacks with gift_product_3)
+{% endcomment %}
+{% liquid
+  assign gift_3_variant_id = ''
+  assign gift_4_variant_id = ''
+  if block.settings.gift_product_3 != blank
+    assign gift_3_variant_id = block.settings.gift_product_3.selected_or_first_available_variant.id
+  endif
+  if block.settings.gift_product_4 != blank
+    assign gift_4_variant_id = block.settings.gift_product_4.selected_or_first_available_variant.id
+  endif
+%}
+
+{% comment %} Pre-render formatted volume prices using | money filter (plain text, no HTML) {% endcomment %}
+{%- liquid
+  if settings.hide_trailing_zeros
+    assign fmt_p1 = price_1 | money_without_trailing_zeros
+    assign fmt_p2 = price_2 | money_without_trailing_zeros
+    assign fmt_p3 = price_3 | money_without_trailing_zeros
+    assign fmt_p4 = price_4 | money_without_trailing_zeros
+    assign fmt_full_1 = price_1_full | money_without_trailing_zeros
+    assign fmt_full_2 = price_2_full | money_without_trailing_zeros
+    assign fmt_full_3 = price_3_full | money_without_trailing_zeros
+    assign fmt_full_4 = price_4_full | money_without_trailing_zeros
+  else
+    assign fmt_p1 = price_1 | money
+    assign fmt_p2 = price_2 | money
+    assign fmt_p3 = price_3 | money
+    assign fmt_p4 = price_4 | money
+    assign fmt_full_1 = price_1_full | money
+    assign fmt_full_2 = price_2_full | money
+    assign fmt_full_3 = price_3_full | money
+    assign fmt_full_4 = price_4_full | money
+  endif
+
+  if settings.show_currency
+    assign currency_iso = cart.currency.iso_code
+    assign fmt_p1 = fmt_p1 | append: ' ' | append: currency_iso
+    assign fmt_p2 = fmt_p2 | append: ' ' | append: currency_iso
+    assign fmt_p3 = fmt_p3 | append: ' ' | append: currency_iso
+    assign fmt_p4 = fmt_p4 | append: ' ' | append: currency_iso
+    assign fmt_full_1 = fmt_full_1 | append: ' ' | append: currency_iso
+    assign fmt_full_2 = fmt_full_2 | append: ' ' | append: currency_iso
+    assign fmt_full_3 = fmt_full_3 | append: ' ' | append: currency_iso
+    assign fmt_full_4 = fmt_full_4 | append: ' ' | append: currency_iso
+  endif
+
+  comment
+    Pre-render a known price (100.00) so JS can derive the money format template
+  endcomment
+  if settings.hide_trailing_zeros
+    assign money_fmt_sample = 10000 | money_without_trailing_zeros
+  else
+    assign money_fmt_sample = 10000 | money
+  endif
+  if settings.show_currency
+    assign money_fmt_sample = money_fmt_sample | append: ' ' | append: cart.currency.iso_code
+  endif
+
+  comment
+    Same but WITHOUT currency suffix (used for per-dose display)
+  endcomment
+  if settings.hide_trailing_zeros
+    assign money_fmt_no_cur = 10000 | money_without_trailing_zeros
+  else
+    assign money_fmt_no_cur = 10000 | money
+  endif
+-%}
+
+{%- comment -%} Store-wide discount % (0 when disabled) — applied last, on top of volume + subscription {%- endcomment -%}
+{%- liquid
+  assign storewide_pct = 0
+  if settings.storewide_discount_enabled and settings.storewide_discount_pct > 0
+    assign storewide_pct = settings.storewide_discount_pct
+  endif
+-%}
+
+{% capture content %}
+  {% comment %} Volume price data for JS {% endcomment %}
+  <script id="vol-prices-{{ section.id }}" type="application/json">
+    {
+      "1": { "total": {{ price_1 }}, "unit": {{ variant_price }}, "pct": {{ discount_pct_1 }}, "fmt": {{ fmt_p1 | json }}, "fmtFull": {{ fmt_full_1 | json }} },
+      "2": { "total": {{ price_2 }}, "unit": {{ price_2 | divided_by: 2 }}, "pct": {{ discount_pct_2 }}, "fmt": {{ fmt_p2 | json }}, "fmtFull": {{ fmt_full_2 | json }} },
+      "3": { "total": {{ price_3 }}, "unit": {{ price_3 | divided_by: 3 }}, "pct": {{ discount_pct_3 }}, "fmt": {{ fmt_p3 | json }}, "fmtFull": {{ fmt_full_3 | json }} },
+      "4": { "total": {{ price_4 }}, "unit": {{ price_4 | divided_by: 4 }}, "pct": {{ discount_pct_4 }}, "fmt": {{ fmt_p4 | json }}, "fmtFull": {{ fmt_full_4 | json }} },
+      "fullUnit": {{ full_unit }},
+      "salePct": {{ sale_pct }},
+      "moneyFmt": {{ money_fmt_sample | json }},
+      "moneyFmtNoCur": {{ money_fmt_no_cur | json }}
+    }
+  </script>
+
+  <div
+    class="flex flex-col gap-y-r3"
+    x-data="{
+      selectedQty: 1,
+      dosesPerBag: {{ doses_per_bag }},
+      gift3VariantId: '{{ gift_3_variant_id }}',
+      gift4VariantId: '{{ gift_4_variant_id }}',
+      giftSingular: {{ block.settings.gift_singular_label | default: 'подарък' | json | escape }},
+      giftPlural: {{ block.settings.gift_plural_label | default: 'подаръка' | json | escape }},
+      volPrices: {},
+      moneyFmt: '',
+      moneyFmtNoCur: '',
+      subPct: 0,
+      storewidePct: {{ storewide_pct }},
+      fullUnit: 0,
+      salePct: 0,
+      discountTpl: {{ 'product.discount_amount_html' | t: amount: '__AMT__' | json | escape }},
+      _bGuard: false,
+      _morphTimer: null,
+      get totalDoses() { return this.selectedQty * this.dosesPerBag },
+      /* ── Gift count for the selected qty (qty 3 → 1 gift, qty 4 → 2 gifts) ── */
+      giftCount(q) {
+        var n = 0;
+        if (q >= 3 && this.gift3VariantId) n++;
+        if (q >= 4 && this.gift4VariantId) n++;
+        return n;
+      },
+      hasGifts(q) { return this.giftCount(q) > 0; },
+      giftCountText(q) {
+        var n = this.giftCount(q);
+        return n + ' ' + (n === 1 ? this.giftSingular : this.giftPlural);
+      },
+
+      /* ── Money formatting ── */
+      fmtMoney(cents) {
+        var amt = (cents / 100).toFixed(2);
+        var tpl = this.moneyFmt;
+        if (!tpl) return amt;
+        if (tpl.indexOf('100,00') > -1) amt = amt.replace('.', ',');
+        return tpl.replace(/[\d.,]+/, amt);
+      },
+
+      /* ── Money formatting without currency (per-dose display) ── */
+      fmtMoneyNoCur(cents) {
+        var amt = (cents / 100).toFixed(2);
+        var tpl = this.moneyFmtNoCur;
+        if (!tpl) return amt;
+        if (tpl.indexOf('100,00') > -1) amt = amt.replace('.', ',');
+        return tpl.replace(/[\d.,]+/, amt);
+      },
+
+      /* ── Per-line total, matching the Shopify cart rounding ──
+         Cart applies the selling-plan (subscription) % per unit, then the volume
+         automatic discount % per unit, each rounded to the cent, then × qty. */
+      lineTotal(baseUnit, volPct, subPct, qty) {
+        var unit = baseUnit;
+        /* Selling-plan (subscription) adjustment: per unit, rounded */
+        if (subPct > 0) unit = Math.round(unit * (100 - subPct) / 100);
+        /* Volume automatic discount: Shopify allocates it per-unit (each) and floors
+           the per-unit discount amount. */
+        if (volPct > 0) unit = unit - Math.floor(unit * volPct / 100);
+        var total = unit * qty;
+        /* Store-wide discount is a cart-level across discount: applied ONCE to the line
+           subtotal (not per unit), flooring the amount, to match Shopify checkout. */
+        if (this.storewidePct > 0) total = total - Math.floor(total * this.storewidePct / 100);
+        return total;
+      },
+
+      /* ── Card price helpers (volume + subscription combined) ── */
+      cardTotal(q) {
+        var d = this.volPrices[String(q)];
+        if (!d) return 0;
+        return this.lineTotal(this.baseUnit(), d.pct || 0, this.subPct, q);
+      },
+      cardFull(q) {
+        return this.fullUnit * q;
+      },
+      /* Variant unit price (already the sale price when a compare-at exists) —
+         the base every tier's volume/subscription/store-wide % is applied to. */
+      baseUnit() {
+        return this.volPrices['1'] ? this.volPrices['1'].unit : 0;
+      },
+      hasDiscount(q) {
+        var d = this.volPrices[String(q)];
+        return (d && d.pct > 0) || this.subPct > 0 || this.storewidePct > 0 || this.salePct > 0;
+      },
+      cardPerDose(q) {
+        return Math.round(this.cardTotal(q) / (this.dosesPerBag * q));
+      },
+
+      init() {
+        var el = document.getElementById('vol-prices-{{ section.id }}');
+        if (el) {
+          try {
+            var data = JSON.parse(el.textContent);
+            this.volPrices = { '1': data['1'], '2': data['2'], '3': data['3'], '4': data['4'] };
+            this.fullUnit = data.fullUnit || this.baseUnit();
+            this.salePct = data.salePct || 0;
+            this.moneyFmt = data.moneyFmt || '';
+            this.moneyFmtNoCur = data.moneyFmtNoCur || this.moneyFmt;
+          } catch(e) {}
+        }
+        /* Restore persisted state across section morphs */
+        if (window.__boomQty) { this.selectedQty = window.__boomQty; this.quantity = window.__boomQty; }
+        if (window.__boomSubPct !== undefined) this.subPct = window.__boomSubPct;
+        this.$watch('selectedQty', function(val) { this.quantity = val; }.bind(this));
+
+        var self = this;
+        /* Expose broadcastVolume globally so subscription block can also trigger it */
+        window.__boomBroadcast = function() { self.broadcastVolume(self.selectedQty); };
+
+        /* MutationObserver on product-price: whenever a section morph replaces
+           its content (e.g. after a subscription frequency change), we debounce
+           150 ms then re-apply volume+sub adjusted pricing to the fresh DOM. */
+        var ppEl = document.querySelector('product-price');
+        if (ppEl) {
+          new MutationObserver(function() {
+            if (self._bGuard) return;
+            if (self._morphTimer) clearTimeout(self._morphTimer);
+            self._morphTimer = setTimeout(function() {
+              self.broadcastVolume(self.selectedQty);
+            }, 150);
+          }).observe(ppEl, { childList: true, subtree: true });
+        }
+
+        this.broadcastVolume(this.selectedQty);
+        this.syncGiftItems();
+      },
+      selectQty(qty) {
+        this.selectedQty = qty;
+        this.quantity = qty;
+        window.__boomQty = qty;
+        this.broadcastVolume(qty);
+        this.syncGiftItems();
+      },
+      broadcastVolume(qty) {
+        /* Guard: prevent MutationObserver from re-triggering when we change the DOM */
+        this._bGuard = true;
+        var self = this;
+
+        var d = this.volPrices[qty] || this.volPrices['1'] || { total: 0, unit: 0, pct: 0, fmt: '', fmtFull: '' };
+        var base = this.baseUnit();
+
+        /* Final total matches the cart: subscription % per unit, then volume % per unit. */
+        var finalTotal = this.lineTotal(base, d.pct || 0, this.subPct, qty);
+        var hasAnyDiscount = d.pct > 0 || this.subPct > 0 || this.storewidePct > 0 || this.salePct > 0;
+
+        /* Event carries the base (variant) unit price + volume % so the subscription
+           block can reproduce the exact same per-unit rounding. unitCents kept for compat. */
+        var detail = { qty: qty, totalCents: d.total, unitCents: d.unit, baseCents: base, volPct: d.pct || 0, discountPct: d.pct, fmtTotal: this.fmtMoney(finalTotal) };
+        window.__boomVolume = detail;
+        window.dispatchEvent(new CustomEvent('boom:volume-change', { detail: detail }));
+
+        /* Update <product-price> DOM */
+        var ppEl = document.querySelector('product-price');
+        if (!ppEl) { this._bGuard = false; return; }
+        var moneyEls = ppEl.querySelectorAll('.money');
+        var mainMoney = moneyEls[0];
+        var compareWrap = ppEl.querySelector('.line-through');
+        var compareMoney = compareWrap ? compareWrap.querySelector('.money') : null;
+
+        if (mainMoney) mainMoney.textContent = this.fmtMoney(finalTotal);
+
+        if (hasAnyDiscount) {
+          /* Sale color (var(--sale)), consistent across Protein/Brain and the cards. */
+          if (mainMoney) mainMoney.style.color = 'var(--sale)';
+          if (compareWrap) {
+            compareWrap.style.display = '';
+            if (compareMoney) compareMoney.textContent = d.fmtFull;
+          }
+        } else {
+          if (mainMoney) mainMoney.style.color = '';
+          if (compareWrap && qty === 1) compareWrap.style.display = '';
+        }
+
+        /* ── Discount amount: absolute money saved (volume + subscription + store-wide), live ── */
+        var fullCents = self.fullUnit * qty;
+        var savedCents = hasAnyDiscount ? fullCents - finalTotal : 0;
+
+        /* Update the discount-amount element rendered by product-form-price.liquid.
+           Create it if the server render had no discount (e.g. discount only appears
+           once a volume/subscription tier is selected). */
+        var discountEl = ppEl.querySelector('[data-boom-discount-amount]');
+        if (savedCents > 0) {
+          var amtText = self.fmtMoney(savedCents);
+          var badgeText = self.discountTpl ? self.discountTpl.replace('__AMT__', amtText) : amtText;
+          if (!discountEl) {
+            discountEl = document.createElement('div');
+            discountEl.setAttribute('data-boom-discount-amount', '');
+            discountEl.setAttribute('data-boom-created', '');
+            discountEl.className = 'text-[color:var(--sale-color)]';
+            ppEl.appendChild(discountEl);
+          }
+          discountEl.textContent = badgeText;
+          discountEl.style.display = '';
+        } else if (discountEl && discountEl.hasAttribute('data-boom-created')) {
+          /* Only hide badges we created; leave a genuine server-rendered sale intact */
+          discountEl.style.display = 'none';
+        }
+
+        /* Release guard after a tick so observer ignores our own mutations */
+        setTimeout(function() { self._bGuard = false; }, 300);
+      },
+      /* ── Keep gift list in sync for the fetch interceptor ──
+         Gifts carry the `_boom_gift: 'true'` line-item property so that the
+         cart-tier-bar sync engine (custom.boom-gift-sync.js) recognizes them
+         as already-present gifts and does not try to add a second one.
+         Gifts unlock at qty 3 and 4 (qty 2 = discount only). */
+      syncGiftItems() {
+        var gifts = [];
+        if (this.selectedQty >= 3 && this.gift3VariantId) {
+          gifts.push({ id: parseInt(this.gift3VariantId), quantity: 1, properties: { '_boom_gift': 'true' } });
+        }
+        if (this.selectedQty >= 4 && this.gift4VariantId) {
+          gifts.push({ id: parseInt(this.gift4VariantId), quantity: 1, properties: { '_boom_gift': 'true' } });
+        }
+        window.__boomQtyGifts = gifts;
+      }
+    }"
+    @boom:sub-change.window="subPct = $event.detail.subPct; broadcastVolume(selectedQty)"
+  >
+    {% comment %} ── Section label ── {% endcomment %}
+    {% if block.settings.show_label %}
+      <div class="flex items-center gap-x-r2 text-size-control vars-control-sm my-r3">
+        <span class="font-bold text-content">
+          {{ block.settings.label | default: 'Количество' }}
+        </span>
+        {% if block.settings.show_gift_hint %}
+          <span class="text-muted">
+            {{ block.settings.gift_hint_text | default: '· избери и отключи подаръци' }}
+          </span>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {% comment %} ── Quantity selector: 2×2 grid + animated gifts panel ── {% endcomment %}
+    <style>
+      .boom-qty-tile {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        min-height: 168px;
+        padding: 14px 12px;
+        border: 1.5px solid var(--line-bold);
+        border-radius: 14px;
+        background: #fff;
+        cursor: pointer;
+        transition: border-color .15s, box-shadow .15s;
+        text-align: left;
+        font: inherit;
+        color: inherit;
+      }
+      .boom-qty-tile--has-ribbon { padding-top: 18px; }
+      .boom-qty-tile--active {
+        border-color: var(--sale);
+        border-width: 2px;
+        padding: 13px 11px;
+      }
+      .boom-qty-tile--active.boom-qty-tile--has-ribbon { padding-top: 17px; }
+      .boom-qty-tile:focus-visible {
+        outline: 2px solid var(--sale);
+        outline-offset: 2px;
+      }
+
+      .boom-qty-ribbon {
+        position: absolute;
+        top: -10px; left: 50%;
+        transform: translateX(-50%);
+        background: var(--sale);
+        color: #fff;
+        font-size: 10.5px; font-weight: 700;
+        letter-spacing: 0.08em; text-transform: uppercase;
+        padding: 4px 12px; border-radius: 999px;
+        white-space: nowrap;
+        line-height: 1.2;
+        z-index: 1;
+      }
+
+      .boom-qty-save-badge {
+        position: absolute;
+        top: 10px; right: 10px;
+        background: var(--sale);
+        color: #fff;
+        font-size: 10px; font-weight: 700;
+        letter-spacing: 0.06em; text-transform: uppercase;
+        padding: 3px 8px; border-radius: 999px;
+        white-space: nowrap;
+        line-height: 1.2;
+      }
+
+      .boom-qty-save-pill {
+        display: inline-block;
+        background: var(--sale);
+        color: #fff;
+        font-size: 10px; font-weight: 700;
+        letter-spacing: 0.06em; text-transform: uppercase;
+        padding: 2px 6px; border-radius: 999px;
+        white-space: nowrap;
+        line-height: 1.3;
+      }
+
+      .boom-qty-radio {
+        width: 22px; height: 22px;
+        border-radius: 999px;
+        border: 1.5px solid var(--line-bold);
+        background: #fff;
+        display: grid; place-items: center;
+        flex-shrink: 0;
+        transition: border-color .15s, background .15s;
+      }
+      .boom-qty-tile--active .boom-qty-radio {
+        border-color: var(--sale);
+        background: var(--sale);
+      }
+      .boom-qty-radio-dot {
+        width: 7px; height: 7px;
+        border-radius: 999px;
+        background: #fff;
+        transform: scale(0);
+        transition: transform .15s;
+      }
+      .boom-qty-tile--active .boom-qty-radio-dot { transform: scale(1); }
+
+      .boom-qty-gift-indicator {
+        margin-top: 8px; padding-top: 8px;
+        border-top: 1px dashed var(--line-subtle);
+        display: flex; align-items: center; gap: 6px;
+        color: var(--sale);
+        font-size: 11px; font-weight: 700;
+        letter-spacing: 0.03em;
+      }
+
+      /* Animated gifts panel slides open below the grid */
+      .boom-qty-gifts-panel {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows .28s ease, margin-top .28s ease;
+        margin-top: 0;
+      }
+      .boom-qty-gifts-panel--open {
+        grid-template-rows: 1fr;
+        margin-top: 22px;
+      }
+      .boom-qty-gifts-panel-inner { overflow: hidden; }
+
+      .boom-qty-gifts-card {
+        position: relative;
+        border: 1.5px solid var(--sale);
+        border-radius: 14px;
+        padding: 14px 14px 12px;
+        background: #fff;
+      }
+
+      .boom-qty-gifts-header-label {
+        font-size: 10.5px; font-weight: 700;
+        letter-spacing: 0.14em; text-transform: uppercase;
+        color: var(--sale);
+      }
+      .boom-qty-gifts-count {
+        font-size: 10.5px; font-weight: 700;
+        color: var(--sale);
+      }
+      .boom-qty-gift-row {
+        display: flex; align-items: center; gap: 10px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        background: var(--canvas);
+      }
+
+      /* Drop secondary labels below 320px wide screens (keep icons) */
+      @media (max-width: 319px) {
+        .boom-qty-tile .boom-qty-doses-label,
+        .boom-qty-tile .boom-qty-gift-text { display: none; }
+      }
+    </style>
+
+    <div class="grid grid-cols-2 gap-r3 gap-y-r6" role="radiogroup" aria-label="{{ block.settings.label | default: 'Количество' }}">
+
+      {%- comment -%} ━━ Tile 1: 1 пакет ━━ {%- endcomment -%}
+      <button
+        type="button"
+        @click="selectQty(1)"
+        role="radio"
+        :aria-checked="selectedQty === 1"
+        class="boom-qty-tile"
+        :class="selectedQty === 1 ? 'boom-qty-tile--active' : ''"
+      >
+        {% if badge_pct_1 > 0 %}
+          <div class="boom-qty-save-badge">-{{ badge_pct_1 }}%</div>
+        {% endif %}
+        <div class="flex items-center gap-x-r2">
+          <span class="boom-qty-radio"><span class="boom-qty-radio-dot"></span></span>
+          <span class="font-bold type-resize-md uppercase leading-none">1 {{ 'cart.quantity_one_label' | t | default: 'пакет' }}</span>
+        </div>
+        <div class="text-muted type-resize-xs boom-qty-doses-label" style="padding-left: 30px; margin-top: -2px;">
+          {{ doses_per_bag }} {{ block.settings.dose_plural_label | default: 'дози' }}
+        </div>
+        <div style="margin-top: auto;">
+          <div class="text-muted type-resize-xs line-through" :class="hasDiscount(1) ? '' : 'hidden'" style="margin-bottom: 1px;" x-text="fmtMoney(cardFull(1))"></div>
+          <div class="font-bold type-resize-md leading-none"
+            :style="hasDiscount(1) ? 'color: var(--sale)' : ''"
+            x-text="fmtMoney(cardTotal(1))"
+          >{% render 'money', price: price_1 %}</div>
+          {% if block.settings.show_price_per_dose %}
+            <div class="text-muted type-resize-xs" style="margin-top: 3px;">
+              <span x-text="fmtMoneyNoCur(cardPerDose(1))">{% render 'money', price: price_1_per_dose, show_currency: false %}</span>/{{ block.settings.dose_label | default: 'доза' }}
+            </div>
+          {% endif %}
+        </div>
+        <input type="radio" class="sr-only" name="boom_qty_{{ section.id }}" value="1" :checked="selectedQty === 1">
+      </button>
+
+      {%- comment -%} ━━ Tile 2: 2 пакета (discount only, no gift) ━━ {%- endcomment -%}
+      <button
+        type="button"
+        @click="selectQty(2)"
+        role="radio"
+        :aria-checked="selectedQty === 2"
+        class="boom-qty-tile"
+        :class="selectedQty === 2 ? 'boom-qty-tile--active' : ''"
+      >
+        {% if badge_pct_2 > 0 %}
+          <div class="boom-qty-save-badge">-{{ badge_pct_2 }}%</div>
+        {% endif %}
+        <div class="flex items-center gap-x-r2">
+          <span class="boom-qty-radio"><span class="boom-qty-radio-dot"></span></span>
+          <span class="font-bold type-resize-md uppercase leading-none">2 {{ 'cart.quantity_many_label' | t | default: 'пакета' }}</span>
+        </div>
+        <div class="text-muted type-resize-xs boom-qty-doses-label" style="padding-left: 30px; margin-top: -2px;">
+          {{ doses_per_bag | times: 2 }} {{ block.settings.dose_plural_label | default: 'дози' }}
+        </div>
+        <div style="margin-top: auto;">
+          <div class="text-muted type-resize-xs line-through" :class="hasDiscount(2) ? '' : 'hidden'" style="margin-bottom: 1px;" x-text="fmtMoney(cardFull(2))"></div>
+          <div class="font-bold type-resize-md leading-none"
+            :style="hasDiscount(2) ? 'color: var(--sale)' : ''"
+            x-text="fmtMoney(cardTotal(2))"
+          >{% render 'money', price: price_2 %}</div>
+          {% if block.settings.show_price_per_dose %}
+            <div class="text-muted type-resize-xs" style="margin-top: 3px;">
+              <span x-text="fmtMoneyNoCur(cardPerDose(2))">{% render 'money', price: price_2_per_dose, show_currency: false %}</span>/{{ block.settings.dose_label | default: 'доза' }}
+            </div>
+          {% endif %}
+        </div>
+        <input type="radio" class="sr-only" name="boom_qty_{{ section.id }}" value="2" :checked="selectedQty === 2">
+      </button>
+
+      {%- comment -%} ━━ Tile 3: 3 пакета (ribbon: Най-популярна, +1 gift) ━━ {%- endcomment -%}
+      <button
+        type="button"
+        @click="selectQty(3)"
+        role="radio"
+        :aria-checked="selectedQty === 3"
+        class="boom-qty-tile{% if block.settings.show_ribbon_3 %} boom-qty-tile--has-ribbon{% endif %}"
+        :class="selectedQty === 3 ? 'boom-qty-tile--active' : ''"
+      >
+        {% if block.settings.show_ribbon_3 %}
+          <div class="boom-qty-ribbon">{{ block.settings.ribbon_3_text | default: 'Най-популярна' }}</div>
+        {% elsif badge_pct_3 > 0 %}
+          <div class="boom-qty-save-badge">-{{ badge_pct_3 }}%</div>
+        {% endif %}
+        <div class="flex items-center gap-x-r2">
+          <span class="boom-qty-radio"><span class="boom-qty-radio-dot"></span></span>
+          <span class="font-bold type-resize-md uppercase leading-none">3 {{ 'cart.quantity_many_label' | t | default: 'пакета' }}</span>
+        </div>
+        <div class="text-muted type-resize-xs boom-qty-doses-label" style="padding-left: 30px; margin-top: -2px;">
+          {{ doses_per_bag | times: 3 }} {{ block.settings.dose_plural_label | default: 'дози' }}
+        </div>
+        <div style="margin-top: auto;">
+          <div class="flex items-center gap-x-r2" style="margin-bottom: 1px;">
+            <span class="text-muted type-resize-xs line-through" :class="hasDiscount(3) ? '' : 'hidden'" x-text="fmtMoney(cardFull(3))"></span>
+            {% if block.settings.show_ribbon_3 and badge_pct_3 > 0 %}
+              <span class="boom-qty-save-pill" :class="hasDiscount(3) ? '' : 'hidden'">-{{ badge_pct_3 }}%</span>
+            {% endif %}
+          </div>
+          <div class="font-bold type-resize-md leading-none"
+            :style="hasDiscount(3) ? 'color: var(--sale)' : ''"
+            x-text="fmtMoney(cardTotal(3))"
+          >{% render 'money', price: price_3 %}</div>
+          {% if block.settings.show_price_per_dose %}
+            <div class="text-muted type-resize-xs" style="margin-top: 3px;">
+              <span x-text="fmtMoneyNoCur(cardPerDose(3))">{% render 'money', price: price_3_per_dose, show_currency: false %}</span>/{{ block.settings.dose_label | default: 'доза' }}
+            </div>
+          {% endif %}
+        </div>
+        {% if block.settings.show_gifts and gift_3_variant_id != '' %}
+          <div class="boom-qty-gift-indicator">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="8" width="18" height="4" rx="0.5"/>
+              <path d="M12 8v13"/>
+              <path d="M5 12v9h14v-9"/>
+              <path d="M12 8S10 3 7.5 3a2.5 2.5 0 0 0 0 5H12z"/>
+              <path d="M12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5H12z"/>
+            </svg>
+            <span class="boom-qty-gift-text">1 {{ block.settings.gift_singular_label | default: 'подарък' }}</span>
+          </div>
+        {% endif %}
+        <input type="radio" class="sr-only" name="boom_qty_{{ section.id }}" value="3" :checked="selectedQty === 3">
+      </button>
+
+      {%- comment -%} ━━ Tile 4: 4 пакета (ribbon: Най-изгодна, +2 gifts) ━━ {%- endcomment -%}
+      <button
+        type="button"
+        @click="selectQty(4)"
+        role="radio"
+        :aria-checked="selectedQty === 4"
+        class="boom-qty-tile{% if block.settings.show_ribbon_4 %} boom-qty-tile--has-ribbon{% endif %}"
+        :class="selectedQty === 4 ? 'boom-qty-tile--active' : ''"
+      >
+        {% if block.settings.show_ribbon_4 %}
+          <div class="boom-qty-ribbon">{{ block.settings.ribbon_4_text | default: 'Най-изгодна' }}</div>
+        {% elsif badge_pct_4 > 0 %}
+          <div class="boom-qty-save-badge">-{{ badge_pct_4 }}%</div>
+        {% endif %}
+        <div class="flex items-center gap-x-r2">
+          <span class="boom-qty-radio"><span class="boom-qty-radio-dot"></span></span>
+          <span class="font-bold type-resize-md uppercase leading-none">4 {{ 'cart.quantity_many_label' | t | default: 'пакета' }}</span>
+        </div>
+        <div class="text-muted type-resize-xs boom-qty-doses-label" style="padding-left: 30px; margin-top: -2px;">
+          {{ doses_per_bag | times: 4 }} {{ block.settings.dose_plural_label | default: 'дози' }}
+        </div>
+        <div style="margin-top: auto;">
+          <div class="flex items-center gap-x-r2" style="margin-bottom: 1px;">
+            <span class="text-muted type-resize-xs line-through" :class="hasDiscount(4) ? '' : 'hidden'" x-text="fmtMoney(cardFull(4))"></span>
+            {% if block.settings.show_ribbon_4 and badge_pct_4 > 0 %}
+              <span class="boom-qty-save-pill" :class="hasDiscount(4) ? '' : 'hidden'">-{{ badge_pct_4 }}%</span>
+            {% endif %}
+          </div>
+          <div class="font-bold type-resize-md leading-none"
+            :style="hasDiscount(4) ? 'color: var(--sale)' : ''"
+            x-text="fmtMoney(cardTotal(4))"
+          >{% render 'money', price: price_4 %}</div>
+          {% if block.settings.show_price_per_dose %}
+            <div class="text-muted type-resize-xs" style="margin-top: 3px;">
+              <span x-text="fmtMoneyNoCur(cardPerDose(4))">{% render 'money', price: price_4_per_dose, show_currency: false %}</span>/{{ block.settings.dose_label | default: 'доза' }}
+            </div>
+          {% endif %}
+        </div>
+        {%- liquid
+          assign tier_4_gift_count = 0
+          if gift_3_variant_id != ''
+            assign tier_4_gift_count = tier_4_gift_count | plus: 1
+          endif
+          if gift_4_variant_id != ''
+            assign tier_4_gift_count = tier_4_gift_count | plus: 1
+          endif
+        -%}
+        {% if block.settings.show_gifts and tier_4_gift_count > 0 %}
+          <div class="boom-qty-gift-indicator">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="8" width="18" height="4" rx="0.5"/>
+              <path d="M12 8v13"/>
+              <path d="M5 12v9h14v-9"/>
+              <path d="M12 8S10 3 7.5 3a2.5 2.5 0 0 0 0 5H12z"/>
+              <path d="M12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5H12z"/>
+            </svg>
+            <span class="boom-qty-gift-text">
+              {{ tier_4_gift_count }}
+              {%- if tier_4_gift_count == 1 %} {{ block.settings.gift_singular_label | default: 'подарък' }}
+              {%- else %} {{ block.settings.gift_plural_label | default: 'подаръка' }}
+              {%- endif -%}
+            </span>
+          </div>
+        {% endif %}
+        <input type="radio" class="sr-only" name="boom_qty_{{ section.id }}" value="4" :checked="selectedQty === 4">
+      </button>
+
+    </div>
+
+    {%- comment -%} ── Animated gifts panel: slides open below grid when selected tile has gifts (tier 3 or 4) ── {%- endcomment -%}
+    {% if block.settings.show_gifts %}
+      <div
+        class="boom-qty-gifts-panel"
+        :class="hasGifts(selectedQty) ? 'boom-qty-gifts-panel--open' : ''"
+        aria-live="polite"
+      >
+        <div class="boom-qty-gifts-panel-inner">
+          <div class="boom-qty-gifts-card">
+            <div class="flex items-center justify-between" style="margin-bottom: 10px;">
+              <div class="boom-qty-gifts-header-label">
+                {{ block.settings.gifts_panel_header | default: 'С твоята поръчка получаваш' }}
+              </div>
+              <span class="boom-qty-gifts-count" x-text="giftCountText(selectedQty)"></span>
+            </div>
+
+            <div class="flex flex-col gap-y-r2">
+              {%- comment -%} Gift unlocked at qty ≥ 3 (visible when selectedQty in [3, 4]) {%- endcomment -%}
+              {% if block.settings.gift_product_3 != blank %}
+                {% assign gp3 = block.settings.gift_product_3 %}
+                <div class="boom-qty-gift-row"
+                  x-show="selectedQty >= 3"
+                  x-transition.opacity.duration.200ms
+                >
+                  {% if gp3.featured_image != blank %}
+                    <img
+                      src="{{ gp3.featured_image | image_url: width: 72, format: 'webp' }}"
+                      alt="{{ gp3.title | escape }}"
+                      width="36" height="36"
+                      loading="lazy"
+                      class="rounded-md shrink-0 object-cover"
+                      style="width: 36px; height: 36px;"
+                    >
+                  {% endif %}
+                  <div class="font-bold flex-1 min-w-0 truncate text-left" style="font-size: 12.5px;">{{ gp3.title }}</div>
+                  <div class="flex items-center gap-x-r2 shrink-0">
+                    {% if gp3.price > 0 %}
+                      {% render 'money',
+                        price: gp3.price,
+                        class: 'text-muted line-through',
+                        style: 'font-size: 11.5px;'
+                      %}
+                    {% endif %}
+                    <span class="font-bold" style="font-size: 11.5px; color: var(--sale);">
+                      {{ block.settings.gift_free_label | default: 'Подарък' }}
+                    </span>
+                  </div>
+                </div>
+              {% endif %}
+
+              {%- comment -%} Gift unlocked at qty ≥ 4 (visible only when selectedQty === 4) {%- endcomment -%}
+              {% if block.settings.gift_product_4 != blank %}
+                {% assign gp4 = block.settings.gift_product_4 %}
+                <div class="boom-qty-gift-row"
+                  x-show="selectedQty >= 4"
+                  x-transition.opacity.duration.200ms
+                >
+                  {% if gp4.featured_image != blank %}
+                    <img
+                      src="{{ gp4.featured_image | image_url: width: 72, format: 'webp' }}"
+                      alt="{{ gp4.title | escape }}"
+                      width="36" height="36"
+                      loading="lazy"
+                      class="rounded-md shrink-0 object-cover"
+                      style="width: 36px; height: 36px;"
+                    >
+                  {% endif %}
+                  <div class="font-bold flex-1 min-w-0 truncate text-left" style="font-size: 12.5px;">{{ gp4.title }}</div>
+                  <div class="flex items-center gap-x-r2 shrink-0">
+                    {% if gp4.price > 0 %}
+                      {% render 'money',
+                        price: gp4.price,
+                        class: 'text-muted line-through',
+                        style: 'font-size: 11.5px;'
+                      %}
+                    {% endif %}
+                    <span class="font-bold" style="font-size: 11.5px; color: var(--sale);">
+                      {{ block.settings.gift_free_label | default: 'Подарък' }}
+                    </span>
+                  </div>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    {% comment %} ── Summary bar ── {% endcomment %}
+    {% if block.settings.show_total_doses %}
+      <div class="flex items-center justify-between p-r4 mt-r3 rounded-lg bg-canvas-mix-5 border border-line-subtle type-resize-sm">
+        <div class="flex items-center gap-x-r2">
+          <span class="type-resize-sm font-bold bg-content text-canvas rounded-md flex items-center justify-center shrink-0" style="width: 28px; height: 28px;" x-text="selectedQty"></span>
+          <span class="font-medium" x-text="selectedQty + ' × ' + fmtMoney(cardTotal(1))">
+            1 × {% render 'money', price: price_1 %}
+          </span>
+        </div>
+        <span class="type-h4 leading-none" x-text="fmtMoney(cardTotal(selectedQty))">
+          {% render 'money', price: price_1 %}
+        </span>
+      </div>
+    {% endif %}
+
+    {% comment %} ── Hidden qty input for form sync ── {% endcomment %}
+    <input
+      type="hidden"
+      name="quantity"
+      :value="selectedQty"
+      x-model.number="quantity"
+      form="{{ product_form_id }}"
+      data-morph-skip
+    >
+  </div>
+
+  {% comment %} ── Fetch interceptor: merge main product + gifts into one /cart/add.js call ── {% endcomment %}
+  <script>
+    (function() {
+      if (window.__boomQtyFetchPatched) return;
+      var origFetch = window.fetch;
+      window.fetch = function(url, opts) {
+        var gifts = window.__boomQtyGifts;
+        if (gifts && gifts.length > 0 && !window.__boomSkipIntercept && opts &&
+            typeof url === 'string' && url.indexOf('/cart/add') > -1) {
+          /* Theme sends FormData — extract the main product variant + quantity,
+             then rebuild as JSON { items: [...] } with gifts appended */
+          var body = opts.body;
+          var mainItem = null;
+          if (body instanceof FormData) {
+            mainItem = {
+              id: parseInt(body.get('id')),
+              quantity: parseInt(body.get('quantity')) || 1
+            };
+            var sp = body.get('selling_plan');
+            if (sp) mainItem.selling_plan = parseInt(sp);
+            /* Preserve sections param for cart drawer updates */
+            var sections = body.get('sections');
+            var items = [mainItem].concat(gifts);
+            var payload = { items: items };
+            if (sections) payload.sections = sections;
+            opts = Object.assign({}, opts);
+            opts.headers = {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest'
+            };
+            opts.body = JSON.stringify(payload);
+          } else {
+            /* JSON body (e.g. from bundle builder) — append gifts to items array */
+            try {
+              var parsed = JSON.parse(body);
+              if (parsed.items && Array.isArray(parsed.items)) {
+                parsed.items = parsed.items.concat(gifts);
+              } else if (parsed.id) {
+                parsed = { items: [{ id: parsed.id, quantity: parsed.quantity || 1, selling_plan: parsed.selling_plan }].concat(gifts) };
+              }
+              opts = Object.assign({}, opts);
+              opts.body = JSON.stringify(parsed);
+            } catch(e) {}
+          }
+        }
+        return origFetch.call(window, url, opts);
+      };
+      window.__boomQtyFetchPatched = true;
+    })();
+  </script>
+{% endcapture %}
+
+{% render 'product-block',
+  _settings: block.settings,
+  content: content,
+  attributes: block.shopify_attributes,
+  class: 'flex flex-col w-full'
+%}
+
+{% schema %}
+{
+  "name": "Quantity cards (alt)",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Labels"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_label",
+      "label": "Show section label",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "label",
+      "label": "Label text",
+      "default": "Количество"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_gift_hint",
+      "label": "Show gift hint next to label",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "gift_hint_text",
+      "label": "Gift hint text",
+      "default": "· избери и отключи подаръци"
+    },
+    {
+      "type": "header",
+      "content": "Doses"
+    },
+    {
+      "type": "number",
+      "id": "doses_per_bag",
+      "label": "Doses per bag (fallback)",
+      "default": 20,
+      "info": "Used if product metafield custom.doses_per_bag is not set"
+    },
+    {
+      "type": "text",
+      "id": "dose_label",
+      "label": "Dose unit label",
+      "default": "доза"
+    },
+    {
+      "type": "text",
+      "id": "dose_plural_label",
+      "label": "Dose plural label",
+      "default": "дози"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_price_per_dose",
+      "label": "Show price per dose",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_total_doses",
+      "label": "Show total doses indicator",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "total_doses_label",
+      "label": "Total doses label",
+      "default": "Общо в поръчката:"
+    },
+    {
+      "type": "header",
+      "content": "Ribbons (cards 3 & 4)"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_ribbon_3",
+      "label": "Show ribbon on card 3",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "ribbon_3_text",
+      "label": "Card 3 ribbon text",
+      "default": "Най-популярна"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_ribbon_4",
+      "label": "Show ribbon on card 4",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "ribbon_4_text",
+      "label": "Card 4 ribbon text",
+      "default": "Най-изгодна"
+    },
+    {
+      "type": "header",
+      "content": "Volume discounts",
+      "info": "Card 2 = discount only. Cards 3 & 4 = discount + gift. If the variant has a compare-at price, that sale % is shown on every card automatically; the percentages below are EXTRA volume discounts on top (keep at 0 unless a matching Shopify volume discount is active)."
+    },
+    {
+      "type": "range",
+      "id": "discount_pct_1",
+      "label": "Discount % for 1 pack",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "%",
+      "default": 0,
+      "info": "For promos that also discount a single pack. Shows as a -X% badge at top-right of card 1"
+    },
+    {
+      "type": "range",
+      "id": "discount_pct_2",
+      "label": "Discount % for 2 packs",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "%",
+      "default": 5,
+      "info": "Shows as a -X% badge at top-right of card 2"
+    },
+    {
+      "type": "range",
+      "id": "discount_pct_3",
+      "label": "Discount % for 3 packs",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "%",
+      "default": 10,
+      "info": "Shows as a -X% pill next to the strikethrough price (if ribbon is on)"
+    },
+    {
+      "type": "range",
+      "id": "discount_pct_4",
+      "label": "Discount % for 4 packs",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "%",
+      "default": 15,
+      "info": "Shows as a -X% pill next to the strikethrough price (if ribbon is on)"
+    },
+    {
+      "type": "header",
+      "content": "Gifts (cards 3 & 4)",
+      "info": "Gifts stack. Card 4 includes both gifts when both are set."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_gifts",
+      "label": "Show gift indicators and gifts panel",
+      "default": true
+    },
+    {
+      "type": "product",
+      "id": "gift_product_3",
+      "label": "Gift unlocked at qty ≥ 3",
+      "info": "Auto-added to cart on qty 3 and 4"
+    },
+    {
+      "type": "product",
+      "id": "gift_product_4",
+      "label": "Additional gift unlocked at qty ≥ 4",
+      "info": "Auto-added to cart on qty 4 (stacks with the qty ≥ 3 gift)"
+    },
+    {
+      "type": "text",
+      "id": "gifts_panel_header",
+      "label": "Gifts panel header",
+      "default": "С твоята поръчка получаваш"
+    },
+    {
+      "type": "text",
+      "id": "gift_singular_label",
+      "label": "Gift word (singular)",
+      "default": "подарък"
+    },
+    {
+      "type": "text",
+      "id": "gift_plural_label",
+      "label": "Gift word (plural, 2-4)",
+      "default": "подаръка"
+    },
+    {
+      "type": "text",
+      "id": "gift_free_label",
+      "label": "Gift tag (right side of each row)",
+      "default": "Подарък"
+    },
+    {
+      "type": "header",
+      "content": "Color"
+    },
+    {
+      "type": "select",
+      "id": "accent_color",
+      "label": "Accent color (legacy)",
+      "default": "primary",
+      "info": "Kept for compatibility with other blocks on the page. The quantity selector itself uses var(--sale) for all active states and badges.",
+      "options": [
+        { "label": "Primary (orange)",   "value": "primary" },
+        { "label": "Secondary (blue)",   "value": "secondary" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Quantity cards (alt)",
+      "category": "Product"
+    }
+  ]
+}
+{% endschema %}

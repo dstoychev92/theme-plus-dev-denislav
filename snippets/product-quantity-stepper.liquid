@@ -1,0 +1,32 @@
+{% liquid
+  assign min = min | default: 0
+
+  # Max out the amount that quantity can be increased by in a single request in order to
+  # prevent snooping on remaining stock from shop competitors (e.g. typing 10000 into the quantity input)
+  assign max_quantity_diff = 50
+
+  # Shops can customize this value with theme.max_quantity_increase metafield
+  if shop.metafields.theme.max_quantity_increase
+    assign max_quantity_diff = shop.metafields.theme.max_quantity_increase.value
+  endif
+
+  # Double check that the max quantity diff is at least 1
+  assign max_quantity_diff = max_quantity_diff | at_least: 1
+
+  assign max_quantity = value | plus: max_quantity_diff
+%}
+
+{% render 'field-stepper',
+  id: id,
+  label: label,
+  name: name,
+  size: size,
+  value: value,
+  min: min,
+  max: max_quantity,
+  stepper_attributes: stepper_attributes,
+  stepper_input_attributes: stepper_input_attributes,
+  hide_label: true,
+  form: form,
+  style: style
+%}

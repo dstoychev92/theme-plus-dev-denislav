@@ -1,0 +1,46 @@
+{%- if namespace and namespace != '' -%}
+  {%- assign namespace = namespace | append: '-' -%}
+{%- else -%}
+  {%- assign namespace = '' -%}
+{%- endif -%}
+
+{%- if _settings.spacing_control_level == 'basic' -%}
+
+  {%- if _settings.padding_y -%}
+    {%- case _settings.padding_y -%}
+      {%- when 'sm' -%}
+        --{{- namespace -}}buffer-y: var(--root-space-sm);
+      {%- when 'md' -%}
+        --{{- namespace -}}buffer-y: var(--root-space-md);
+      {%- when 'lg' -%}
+        --{{- namespace -}}buffer-y: var(--root-space-lg);
+      {%- when 'custom' -%}
+        --{{- namespace -}}buffer-y: calc({{- _settings.padding_custom_y | default: 0 -}}px * var(--r-multiplier));
+    {%- endcase -%}
+  {%- endif -%}
+
+  {%- if _settings.padding_x -%}
+    {%- case _settings.padding_x -%}
+      {%- when 'sm' -%}
+        --{{- namespace -}}buffer-x: var(--root-space-sm);
+      {%- when 'md' -%}
+        --{{- namespace -}}buffer-x: var(--root-space-md);
+      {%- when 'lg' -%}
+        --{{- namespace -}}buffer-x: var(--root-space-lg);
+      {%- when 'custom' -%}
+        --{{- namespace -}}buffer-x: calc({{- _settings.padding_custom_x | default: 0 -}}px * var(--r-multiplier));
+    {%- endcase -%}
+  {%- endif -%}
+{%- elsif _settings.spacing_control_level == 'pro' -%}
+
+  {%# Desktop vars need to scale slightly for tablet/md query, mobile vars do not need additional scaling %}
+  --{{- namespace -}}buffer-t-lg: calc({{- _settings.buffer_lg_top | default: 0 -}}px * var(--r-multiplier));
+  --{{- namespace -}}buffer-b-lg: calc({{- _settings.buffer_lg_bottom | default: 0 -}}px * var(--r-multiplier));
+  --{{- namespace -}}buffer-s-lg: calc({{- _settings.buffer_lg_left | default: 0 -}}px * var(--r-multiplier));
+  --{{- namespace -}}buffer-e-lg: calc({{- _settings.buffer_lg_right | default: 0 -}}px * var(--r-multiplier));
+
+  --{{- namespace -}}buffer-t-sm: {{- _settings.buffer_sm_top | default: 0 -}}px;
+  --{{- namespace -}}buffer-b-sm: {{- _settings.buffer_sm_bottom | default: 0 -}}px;
+  --{{- namespace -}}buffer-s-sm: {{- _settings.buffer_sm_left | default: 0 -}}px;
+  --{{- namespace -}}buffer-e-sm: {{- _settings.buffer_sm_right | default: 0 -}}px;
+{%- endif -%}

@@ -1,0 +1,485 @@
+<!-- sections/section-timeline.liquid -->
+<!-- BOOM! "How it works over time" timeline.
+     Native composition: a `_section-title` block for the header (standard title
+     settings) and repeatable `_timeline-step` blocks for the cards (standard
+     appearance settings). Wrapped in `core-section-wrapper` for the theme's
+     standard color scheme / padding / width controls.
+     Connector rail: horizontal across the top on desktop (a dot above each card);
+     a vertical rail threaded between the stacked cards on mobile. The rail fill
+     animates with scroll progress. -->
+
+{% liquid
+  # Columns drive both the grid and the rail edge geometry. They come from
+  # settings (not block counting) because theme blocks report type '@theme',
+  # so counting '_timeline-step' is unreliable.
+  assign cols = section.settings.columns_lg | default: 3
+  assign cols_md = section.settings.columns_md | default: 2
+
+  if section.settings.accent == 'secondary'
+    assign accent_var = 'var(--secondary, #10069F)'
+  else
+    assign accent_var = 'var(--primary, #FF6900)'
+  endif
+
+  assign title_align = section.settings.title_placement | default: 'center'
+%}
+
+{% capture header %}
+  {% content_for 'block', type: '_section-title', id: 'header' %}
+{% endcapture %}
+
+{% capture steps %}
+  {% content_for 'blocks' %}
+{% endcapture %}
+
+{% capture inner %}
+  <div
+    class="boom-tl"
+    style="--boom-cols: {{ cols }}; --boom-cols-md: {{ cols_md }}; --boom-accent: {{ accent_var }};"
+  >
+    {% if header != blank %}
+      <div class="boom-tl__head vars-content-align-{{ title_align }}">
+        {{ header }}
+      </div>
+    {% endif %}
+
+    {% if steps != blank %}
+      <div
+        class="boom-tl__list{% if section.settings.show_connector %} boom-tl__list--rail{% endif %}"
+        data-boom-tl-list
+      >
+        {% if section.settings.show_connector %}
+          <span class="boom-tl__rail" aria-hidden="true"></span>
+          <span class="boom-tl__rail-fill" aria-hidden="true"></span>
+        {% endif %}
+        {{ steps }}
+      </div>
+    {% endif %}
+  </div>
+{% endcapture %}
+
+{% capture content %}
+  {% render 'core-section-content', content: inner, _settings: section.settings %}
+{% endcapture %}
+
+{% render 'core-section-wrapper',
+  _settings: section.settings,
+  content: content,
+  class: 'entrance-container'
+%}
+
+<style>
+  #shopify-section-{{ section.id }} .boom-tl__head {
+    max-width: 680px;
+    margin-bottom: 40px;
+  }
+  #shopify-section-{{ section.id }} .boom-tl__head.vars-content-align-center { margin-inline: auto; }
+  #shopify-section-{{ section.id }} .boom-tl__head.vars-content-align-right { margin-inline-start: auto; }
+
+  #shopify-section-{{ section.id }} .boom-tl__list {
+    display: grid;
+    grid-template-columns: repeat(var(--boom-cols, 3), minmax(0, 1fr));
+    gap: var(--boom-gap, 24px);
+    --boom-gap: 24px;
+  }
+
+  /* Tablet: fall back to the tablet column count */
+  @media (min-width: 750px) and (max-width: 989px) {
+    #shopify-section-{{ section.id }} .boom-tl__list { --boom-cols: var(--boom-cols-md, 2); }
+  }
+
+  /* ── Desktop rail: horizontal, a dot above each card ── */
+  #shopify-section-{{ section.id }} .boom-tl__list--rail {
+    position: relative;
+    padding-top: 34px;
+  }
+  /* Track + fill share the same geometry. Edges land exactly on the centre of
+     the first/last card: card centre = ((100% - 2*gap) / cols) / 2. */
+  #shopify-section-{{ section.id }} .boom-tl__rail,
+  #shopify-section-{{ section.id }} .boom-tl__rail-fill {
+    position: absolute;
+    top: 15px;
+    left: calc((100% - (var(--boom-cols) - 1) * var(--boom-gap)) / var(--boom-cols) / 2);
+    height: 2px;
+    border-radius: 2px;
+    pointer-events: none;
+  }
+  /* Desktop rail is a static gradient line (no scroll animation) */
+  #shopify-section-{{ section.id }} .boom-tl__rail {
+    right: calc((100% - (var(--boom-cols) - 1) * var(--boom-gap)) / var(--boom-cols) / 2);
+    background: linear-gradient(90deg, var(--content, #3B2121), var(--boom-accent));
+    z-index: 0;
+  }
+  /* Fill is only used for the mobile scroll animation */
+  #shopify-section-{{ section.id }} .boom-tl__rail-fill {
+    display: none;
+    background: var(--boom-accent);
+    z-index: 0;
+  }
+
+  #shopify-section-{{ section.id }} .boom-tl-step {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  /* Cards stretch to the tallest in the row (grid stretches the item; the card
+     fills it) */
+  #shopify-section-{{ section.id }} .boom-tl-step__card {
+    flex: 1 1 auto;
+  }
+  #shopify-section-{{ section.id }} .boom-tl-step__dot { display: none; }
+  #shopify-section-{{ section.id }} .boom-tl__list--rail .boom-tl-step__dot {
+    display: block;
+    position: absolute;
+    top: -26px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 14px;
+    height: 14px;
+    border-radius: 999px;
+    background: var(--canvas, #fff);
+    border: 2px solid var(--boom-accent);
+    box-sizing: border-box;
+    z-index: 1;
+  }
+
+  /* ── Card content ── */
+  #shopify-section-{{ section.id }} .boom-tl-step__head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  #shopify-section-{{ section.id }} .boom-tl-step__badge {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 11px;
+    border: 1.5px solid var(--content, #3B2121);
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--content, #3B2121);
+    line-height: 1;
+  }
+  #shopify-section-{{ section.id }} .boom-tl-step__title {
+    font-weight: 700;
+    font-size: 21px;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    color: var(--boom-accent);
+    line-height: 1.1;
+  }
+  #shopify-section-{{ section.id }} .boom-tl-step__body {
+    color: var(--content, #3B2121);
+    font-size: 15.5px;
+    line-height: 1.5;
+  }
+  #shopify-section-{{ section.id }} .boom-tl-step__body ul { list-style: none; margin: 0; padding: 0; }
+  #shopify-section-{{ section.id }} .boom-tl-step__body li {
+    position: relative;
+    padding-left: 22px;
+    margin-bottom: 12px;
+  }
+  #shopify-section-{{ section.id }} .boom-tl-step__body li:last-child { margin-bottom: 0; }
+  #shopify-section-{{ section.id }} .boom-tl-step__body li::before {
+    content: "";
+    position: absolute;
+    left: 2px;
+    top: 9px;
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: var(--boom-accent);
+  }
+  #shopify-section-{{ section.id }} .boom-tl-step__body p { margin: 0 0 12px; }
+  #shopify-section-{{ section.id }} .boom-tl-step__body > :last-child { margin-bottom: 0; }
+
+  /* ── Mobile: stack + vertical rail threaded between the cards ── */
+  @media (max-width: 749px) {
+    #shopify-section-{{ section.id }} .boom-tl__list {
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+    #shopify-section-{{ section.id }} .boom-tl__list--rail {
+      padding-top: 0;
+      padding-left: 32px;
+    }
+    /* Vertical track + fill run down the left gutter through every card */
+    #shopify-section-{{ section.id }} .boom-tl__rail,
+    #shopify-section-{{ section.id }} .boom-tl__rail-fill {
+      top: 8px;
+      bottom: 8px;
+      left: 15px;
+      right: auto;
+      width: 2px;
+      height: auto;
+    }
+    /* Neutral vertical track + animated accent fill on mobile */
+    #shopify-section-{{ section.id }} .boom-tl__rail {
+      background: var(--line-bold, #e3ded9);
+    }
+    #shopify-section-{{ section.id }} .boom-tl__rail-fill {
+      display: block;
+      bottom: auto;
+      height: calc((100% - 16px) * var(--boom-progress, 0));
+      transition: height 0.1s linear;
+    }
+    #shopify-section-{{ section.id }} .boom-tl__list--rail .boom-tl-step__dot {
+      top: 26px;
+      left: -24px;
+      transform: none;
+    }
+    /* Badge stacks above the step title on mobile */
+    #shopify-section-{{ section.id }} .boom-tl-step__head {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+  }
+</style>
+
+<script>
+  (function () {
+    var root = document.getElementById('shopify-section-{{ section.id }}');
+    if (!root) return;
+    var list = root.querySelector('[data-boom-tl-list]');
+    if (!list) return;
+
+    var ticking = false;
+    function update() {
+      ticking = false;
+      var rect = list.getBoundingClientRect();
+      var vh = window.innerHeight || document.documentElement.clientHeight;
+      /* Progress: 0 when the list top reaches the viewport's lower third,
+         1 by the time its bottom passes the upper third. */
+      var start = vh * 0.85;
+      var end = vh * 0.25;
+      var p = (start - rect.top) / (rect.height + (start - end));
+      p = Math.max(0, Math.min(1, p));
+      list.style.setProperty('--boom-progress', p.toFixed(3));
+    }
+    function onScroll() {
+      if (!ticking) {
+        ticking = true;
+        window.requestAnimationFrame(update);
+      }
+    }
+
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) {
+          window.addEventListener('scroll', onScroll, { passive: true });
+          window.addEventListener('resize', onScroll, { passive: true });
+          update();
+        } else {
+          window.removeEventListener('scroll', onScroll);
+          window.removeEventListener('resize', onScroll);
+        }
+      });
+    }, { rootMargin: '0px' });
+    io.observe(list);
+    update();
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "BOOM! Timeline",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Timeline"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_connector",
+      "label": "Show connector rail",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "accent",
+      "label": "Accent",
+      "default": "primary",
+      "info": "Primary = Protein orange, Secondary = Brain blue. Uses the active color scheme tokens.",
+      "options": [
+        { "value": "primary", "label": "Primary (orange)" },
+        { "value": "secondary", "label": "Secondary (blue)" }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Columns"
+    },
+    {
+      "type": "range",
+      "id": "columns_lg",
+      "label": "Desktop",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "columns_md",
+      "label": "Tablet",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "content_width",
+      "label": "Content width",
+      "default": "page",
+      "options": [
+        { "value": "full", "label": "Full" },
+        { "value": "page", "label": "Page" },
+        { "value": "custom", "label": "⋯" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "content_width_custom",
+      "label": "Desktop width",
+      "visible_if": "{{ section.settings.content_width == 'custom' }}",
+      "min": 25,
+      "max": 100,
+      "step": 5,
+      "default": 75,
+      "unit": "%"
+    },
+    {
+      "type": "text_alignment",
+      "id": "title_placement",
+      "label": "Title alignment",
+      "default": "center"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_rhythm",
+      "label": "Custom rhythm",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "section_padding_top",
+      "label": "Spacing top",
+      "min": 0,
+      "max": 200,
+      "step": 2,
+      "unit": "px",
+      "default": 40,
+      "visible_if": "{{ section.settings.set_rhythm == true }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding_bottom",
+      "label": "Spacing bottom",
+      "min": 0,
+      "max": 200,
+      "step": 2,
+      "unit": "px",
+      "default": 40,
+      "visible_if": "{{ section.settings.set_rhythm == true }}"
+    },
+    {
+      "type": "header",
+      "content": "Appearance"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme"
+    },
+    {
+      "type": "select",
+      "id": "background",
+      "label": "Background",
+      "default": "canvas",
+      "options": [
+        { "value": "canvas", "label": "Default" },
+        { "value": "tint", "label": "Tint" },
+        { "value": "custom", "label": "⋯" }
+      ]
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#f2f2f2",
+      "alpha": false,
+      "visible_if": "{{ section.settings.background == 'custom' }}"
+    },
+    {
+      "type": "header",
+      "content": "Shadow"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_shadow",
+      "label": "Set shadow",
+      "info": "Adds a soft shadow to every card",
+      "default": false
+    }
+  ],
+  "blocks": [
+    { "type": "_section-title" },
+    { "type": "_timeline-step" }
+  ],
+  "presets": [
+    {
+      "name": "BOOM! Timeline",
+      "category": "BOOM!",
+      "blocks": [
+        {
+          "id": "header",
+          "type": "_section-title",
+          "static": true,
+          "settings": {
+            "text": "Какво се променя с BOOM!?"
+          }
+        },
+        {
+          "type": "_timeline-step",
+          "settings": {
+            "badge": "ДЕН 1",
+            "title": "СЪЩИЯТ РИТУАЛ",
+            "body": "<ul><li>Разбъркваш и пиеш. Същото кафе, само че надградено.</li><li>10g протеин и 11 витамина влизат с първата чаша.</li><li>Без добавена захар и без излишни калории.</li><li>Енергията ти държи, без срив към обяд.</li></ul>"
+          }
+        },
+        {
+          "type": "_timeline-step",
+          "settings": {
+            "badge": "СЕДМИЦА 2",
+            "title": "НАВИКЪТ",
+            "body": "<ul><li>Тялото ти свиква да получава протеин и магнезий всяка сутрин.</li><li>Закуската става по-лесна, а апетитът по-овладян.</li><li>По-малко посягане към снакове преди обяд.</li><li>Започваш да усещаш разликата, не само да я четеш.</li></ul>"
+          }
+        },
+        {
+          "type": "_timeline-step",
+          "settings": {
+            "badge": "СЕДМИЦА 4",
+            "title": "РЕЗУЛТАТЪТ",
+            "body": "<ul><li>Един ритуал, който покрива нуждите ти всеки ден.</li><li>Стабилна енергия, фокус и по-добро възстановяване след тренировка.</li><li>Навикът работи за теб, без усилие.</li><li>Продължаваш, защото е по-добрата версия на нещо, което вече правиш.</li></ul>"
+          }
+        }
+      ]
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  }
+}
+{% endschema %}

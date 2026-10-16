@@ -1,0 +1,81 @@
+{% liquid
+  assign base_id = id | default: 'collection-filters'
+  assign expanded_filters_count = section.settings.expanded_filters_count
+  assign filter_menu = section.settings.filter_menu
+  assign filter_menu_title = section.settings.filter_menu_title
+  assign visible_filter_options_limit = section.settings.visible_filter_options_limit | default: 6
+
+  assign sort_by = sort_by | default: collection.sort_by
+  assign default_sort_by = default_sort_by | default: collection.default_sort_by
+  assign products_count = products_count | default: collection.products_count
+  assign all_products_count = all_products_count | default: collection.all_products_count
+%}
+
+<form
+  action="{{ filter_url }}"
+  id="{{ base_id }}"
+  class="flex flex-col gap-y-r7 {{ class }}"
+  aria-label="{{ 'collection.filters.filters' | t }}"
+  x-section-api:form
+  x-ref="collectionFiltersForm"
+  {% unless autosubmit == false %}
+    {% comment %} Autosubmit when any form input changes {% endcomment %}
+    @input.debounce.1500ms="$el.requestSubmit()"
+  {% endunless %}
+>
+  {% if show_filter_tags %}
+    {% render 'collection-filter-tags',
+      url: filter_url,
+      filters: filters,
+      sort_by: sort_by,
+      default_sort_by: default_sort_by,
+      products_count: products_count,
+      all_products_count: all_products_count
+    %}
+  {% endif %}
+
+  {% if q %}
+    <input type="hidden" name="q" value="{{ q }}">
+  {% endif %}
+
+  {% if filters.size > 0 or filter_menu.count > 0 %}
+    <div
+      class="
+        [--filter-row-height:--row-sm]
+        [--filter-row-gap:--r1]
+        [--filter-group-gap:--r5]
+        flex flex-col text-r2
+        gap-y-[--filter-group-gap]
+      "
+    >
+      {% liquid
+        if filter_menu.count > 0
+          assign expanded = false
+          if expanded_filters_count > 0
+            assign expanded = true
+            assign expanded_filters_count = expanded_filters_count | minus: 1 | at_least: 0
+          endif
+          render 'filter-list-links', filter_menu: filter_menu, label: filter_menu_title, expanded: expanded, visible_limit: visible_filter_options_limit
+        endif
+
+        for filter in filters
+          assign base_id = base_id | append: '-' | append: forloop.index0
+          assign expanded = false
+          if forloop.index0 < expanded_filters_count
+            assign expanded = true
+          endif
+          render 'filter', filter: filter, base_id: base_id, index: forloop.index0, form: form, expanded: expanded, visible_limit: visible_filter_options_limit
+        endfor
+      %}
+
+      <button type="submit" class="sr-only" tabindex="-1">
+        {{ 'collection.filters.filter' | t }}
+      </button>
+    </div>
+
+    <noscript>
+      {% assign no_js_button_label = 'other.no_js.submit' | t %}
+      {% render 'core-button', type: 'submit', label: no_js_button_label %}
+    </noscript>
+  {% endif %}
+</form>

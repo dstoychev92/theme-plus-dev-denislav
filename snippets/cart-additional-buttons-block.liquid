@@ -1,0 +1,17 @@
+{% comment %}
+  * Renders additional checkout buttons
+
+  Usage:
+  {% render 'cart-additional-buttons-block' %}
+{% endcomment %}
+
+{% if additional_checkout_buttons %}
+  <div
+    class="{{ class }}"
+    {% comment %} Dont morph this element when cart is updated to avoid issues {% endcomment %}
+    data-morph-skip
+    {{ attributes }}
+  >
+    {{ content_for_additional_checkout_buttons }}
+  </div>
+{% endif %}

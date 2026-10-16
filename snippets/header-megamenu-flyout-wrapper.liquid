@@ -1,0 +1,58 @@
+{% capture section_wrapper_attributes %}
+{% endcapture %}
+
+{% capture section_wrapper_inner_attributes %}
+  x-overflow:viewport
+  :class="
+    {
+      'edge-mask-t-[5%]': $overflow.start,
+      'edge-mask-b-[5%]': $overflow.end
+    }
+  "
+{% endcapture %}
+
+{% capture section_wrapper_class %}
+{% endcapture %}
+
+{% capture section_wrapper_inner_class %}
+  relative origin-top overflow-y-auto overscroll-contain edge-mask overflow-contain [--section-setting-space:--r10]
+  max-h-[70vh] supports-svh:max-h-[70svh]
+{% endcapture %}
+
+{% capture content %}
+  <div x-overflow:start class="w-full h-px" aria-hidden="true" role="presentation"></div>
+  {{ content }}
+  <div x-overflow:end class="w-full h-px relative -top-px" aria-hidden="true" role="presentation"></div>
+{% endcapture %}
+
+<mega-menu
+  x-init="$store.headerMenu.popups.set('{{ menu_id }}', {type: '{{ menu_type }}', el: $el})"
+  x-scroll-lock="$store.headerMenu.activePopupId == '{{ menu_id }}'"
+  popover="manual"
+  hidden
+  aria-label="{{ menu_label | escape }}"
+  x-cloak
+  {{ attributes }}
+
+  class="{{ class }} transition-none bg-canvas block inset-x-0 top-[--header-bottom] border-b border-line-subtle"
+
+  {% comment %} Prevent morphing from messing with the state of open megamenus {% endcomment %}
+  data-morph-skip
+
+  x-overflow
+>
+  {% render 'core-section',
+    _settings: section.settings,
+    tag: 'div',
+    content: content,
+    padding: false,
+    class: section_wrapper_class,
+    inner_class: section_wrapper_inner_class,
+    attributes: section_wrapper_attributes,
+    inner_attributes: section_wrapper_inner_attributes,
+    color_scheme: color_scheme,
+    style: style,
+    content_width: content_width,
+    photoswipe: false
+  %}
+</mega-menu>

@@ -1,0 +1,70 @@
+{%- liquid
+  assign title = title | default: _settings.title
+  assign limit = limit | default: _settings.limit
+  assign products = products | default: _settings.upsell_product_list
+
+  if single_product != blank
+    assign products = null
+  endif
+
+  if products != blank
+    assign single_product = null
+    # filter-out sold out products
+    assign products = products | reject: 'available', false
+    assign products_size_count = products.size | default: products.count
+  endif
+
+  # enable/disable the placeholder products based on request.design_mode
+  # placeholders always show while editing/previewing the theme; the "show placeholders on
+  # live store" setting can be suppressed per-context via ignore_placeholder_mode (e.g. the
+  # cart upsell, where an empty/filtered-down list should just hide rather than show slots)
+  assign enable_placeholder_product = false
+  if request.design_mode or request.visual_preview_mode
+    assign enable_placeholder_product = true
+  elsif settings.placeholder_mode and ignore_placeholder_mode != true
+    assign enable_placeholder_product = true
+  endif
+-%}
+
+{% if products_size_count > 0 or single_product or loader or enable_placeholder_product %}
+  <style>
+    .boom-upsell-icon-btn .btn {
+      background-color: var(--sale) !important;
+      color: #ffffff !important;
+      border-color: var(--sale) !important;
+      min-width: 0 !important;
+      width: 2.5rem !important;
+      height: 2.5rem !important;
+      padding: 0 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+  </style>
+  <fieldset
+    class="boom-upsell-icon-btn relative flex flex-col gap-y-r4 py-r4"
+    {{ attributes }}
+  >
+    {% if title != blank %}
+      <legend
+        class="font-bold text-content"
+      >
+        {{ title }}
+      </legend>
+    {% endif %}
+
+    {% if loader %}
+      {% render 'card-layout-md', loader: true, aspect_ratio: settings.card_aspect_ratio %}
+    {% elsif products_size_count > 0 %}
+      {% for product in products limit: limit %}
+        {% render 'card-product', size: 'md', product: product, button: true, button_icon_only: true %}
+      {% endfor %}
+    {% elsif single_product %}
+      {% render 'card-product', size: 'md', product: single_product, button: true, button_icon_only: true %}
+    {% elsif enable_placeholder_product %}
+      {% for i in (1..limit) %}
+        {% render 'card-product', size: 'md', placeholder: true, button: true, button_icon_only: true %}
+      {% endfor %}
+    {% endif %}
+  </fieldset>
+{% endif %}

@@ -1,0 +1,130 @@
+<!-- blocks/_marquee-image.liquid -->
+
+{% render 'marquee-image', _settings: block.settings, attributes: block.shopify_attributes %}
+
+{% schema %}
+{
+	"name": "Image",
+	"tag": null,
+	"settings": [
+		{
+			"type": "image_picker",
+			"id": "image",
+			"label": "Image"
+		},
+		{
+			"type": "range",
+			"id": "image_scaling",
+			"min": 50,
+			"max": 200,
+			"step": 10,
+			"label": "Height",
+			"default": 100,
+			"unit": "%",
+			"info": "Relative to the surrounding text"
+		},
+		{
+			"type": "checkbox",
+			"id": "crop_image",
+			"label": "Crop image",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "shape",
+			"label": "Shape",
+			"default": "none",
+			"options": [
+				{
+					"value": "none",
+					"label": "None"
+				},
+				{
+					"value": "rounded",
+					"label": "Rounded"
+				},
+				{
+					"value": "keyhole",
+					"label": "Keyhole"
+				},
+				{
+					"value": "circle",
+					"label": "Circle"
+				},
+				{
+					"value": "sunburst",
+					"label": "Sunburst"
+				},
+				{
+					"value": "hexagon",
+					"label": "Hexagon"
+				},
+				{
+					"value": "octagon",
+					"label": "Octagon"
+				},
+				{
+					"value": "parallelogram",
+					"label": "Parallelogram"
+				},
+				{
+					"value": "blob-1",
+					"label": "Blob 1"
+				},
+				{
+					"value": "blob-2",
+					"label": "Blob 2"
+				},
+				{
+					"value": "blob-3",
+					"label": "Blob 3"
+				},
+				{
+					"value": "blob-4",
+					"label": "Blob 4"
+				},
+				{
+					"value": "stamp-sharp",
+					"label": "Stamp sharp"
+				},
+				{
+					"value": "stamp-rounded",
+					"label": "Stamp rounded"
+				},
+				{
+					"value": "ticket",
+					"label": "Ticket"
+				}
+			],
+			"visible_if": "{{ block.settings.crop_image == true }}"
+		},
+		{
+			"type": "range",
+			"id": "aspect_ratio",
+			"min": 0.5,
+			"max": 3,
+			"step": 0.1,
+			"unit": ":1",
+			"label": "Aspect Ratio",
+			"default": 1,
+			"visible_if": "{{ block.settings.crop_image == true }}"
+		},
+		{
+			"type": "url",
+			"id": "href",
+			"label": "Link"
+		},
+		{
+			"type": "checkbox",
+			"id": "open_in_new_window",
+			"label": "Open link in new window",
+			"default": false
+		},
+	],
+	"presets": [
+		{
+			"name": "Image"
+		}
+	]
+}
+{% endschema %}

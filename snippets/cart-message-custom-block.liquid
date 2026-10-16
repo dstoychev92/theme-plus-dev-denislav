@@ -1,0 +1,12 @@
+{% comment %}
+  * Renders a custom message block
+
+  Usage:
+  {% render 'cart-message-custom-block', block: block %}
+{% endcomment %}
+
+{%- if block.settings.cart_custom_message_text != blank -%}
+  <p class="text-r4 text-center {{ class }}" {{ attributes }}>
+    {{ block.settings.cart_custom_message_text }}
+  </p>
+{%- endif -%}

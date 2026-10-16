@@ -1,0 +1,41 @@
+{% liquid
+  if parent_link != blank
+    assign links = parent_link.links
+    assign levels = parent_link.levels
+  else
+    assign links = linklist.links
+    assign levels = linklist.levels
+  endif
+%}
+
+{% comment %} Collection image {% endcomment %}
+{% if _settings.show_collection_images
+  and parent_link.type == 'collection_link'
+  and parent_link.object.image != blank
+%}
+  {%- render 'core-image',
+    cover: true,
+    image: parent_link.object.image,
+    aspect_ratio: _settings.collection_images_aspect_ratio,
+    sizes: '400px,800px,100vw',
+    width: '400px',
+    loading: 'lazy',
+    class: 'w-full animate-in fade-in animate-opacity-duration-2000 animate-duration-800 scale-in-110'
+  -%}
+{% endif %}
+
+{% if links.size > 0 %}
+  <ul
+    class="
+      font-family-body text-r3
+      {% # Force a composited layer; fixing iOS Safari hairline border artifacts %}
+      translate-z-0
+      {{ class }}
+    "
+    {% # Make sure the overlay menu is hidden and unfocusable when we focus out the menu container %}
+  >
+    {% for link in links %}
+      {% render 'header-drawer-menu-item', link: link, expand_dropdowns: expand_dropdowns, index: forloop.index %}
+    {% endfor %}
+  </ul>
+{% endif %}

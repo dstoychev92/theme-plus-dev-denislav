@@ -1,0 +1,154 @@
+{% liquid
+  assign url = url | default: sibling.url
+
+  # Default image to the product's featured image as a fallback doesn't have a color-pattern metafield or image metafield
+  assign swatch_image = sibling.featured_image
+
+  # Default label to the product's title as a fall back in case product doesn't have a color-pattern metafield or label metafield
+  assign swatch_label = sibling.title
+
+  # Default color to null
+  assign swatch_color = null
+  assign darken_photos_class = 'brightness-[--photo-correction]'
+
+  assign sibling_image_metafield = null
+  assign sibling_label_metafield = null
+  assign swatch_metafield = sibling.metafields.shopify['color-pattern'].value | first
+
+  if swatch_metafield != blank
+    # Swatch image, color, and label comes from the native Shopify color-pattern metafield if set
+    assign swatch_color = swatch_metafield.color.value
+    assign darken_photos_class = ''
+
+    if swatch_metafield.image != blank
+      assign swatch_image = swatch_metafield.image.value
+    else
+      # If swatch has no image, we only want to show the color swatch
+      assign swatch_image = null
+    endif
+
+    if swatch_metafield.label != blank
+      assign swatch_label = swatch_metafield.label.value
+    endif
+  endif
+
+  if settings.enable_sibling_custom_swatch == true
+    # Allow overriding the swatch image with a product metafield
+    if settings.metafield_sibling_image != blank
+      assign sibling_image_metafield_namespace = settings.metafield_sibling_image | split: '.' | first
+      assign sibling_image_metafield_key = settings.metafield_sibling_image | split: '.' | last
+      assign sibling_image_metafield = sibling.metafields[sibling_image_metafield_namespace][sibling_image_metafield_key]
+      assign swatch_image = sibling_image_metafield.value | default: sibling.featured_image
+      if sibling_image_metafield.value != blank
+        assign darken_photos_class = ''
+      endif
+    endif
+
+    # Allow overriding the swatch label with a product metafield
+    if settings.metafield_sibling_label != blank
+      assign sibling_label_metafield_namespace = settings.metafield_sibling_label | split: '.' | first
+      assign sibling_label_metafield_key = settings.metafield_sibling_label | split: '.' | last
+      assign sibling_label_metafield = sibling.metafields[sibling_label_metafield_namespace][sibling_label_metafield_key]
+      if sibling_label_metafield
+        assign swatch_label = sibling_label_metafield.value
+      endif
+    endif
+  endif
+-%}
+
+{% capture class %}
+  {{ darken_photos_class }}
+  {{ class }}
+{% endcapture %}
+
+{% if tag == 'input' %}
+  <div
+    class="
+      group/swatch-radio-button relative flex overflow-clip
+      hover:brightness-75 focus-within:brightness-75
+      {{ class }}
+    "
+    x-id="['swatch', 'swatch-input']"
+    {{ attributes }}
+  >
+    {% comment %} Render a link as a fallback in case JS hasn't loaded. Once it loads, prevent the link from navigating {% endcomment %}
+    <a
+      @click.prevent.stop=""
+      class="peer absolute inset-0 z-40 opacity-0 has-[[data-selected=true]]:pointer-events-none"
+      :hidden="true"
+      href="{{ url }}"
+      aria-label="{{ swatch_label | escape }}"
+    >
+    </a>
+
+    <input
+      type="radio"
+      name="siblingId"
+      value="{{ sibling.id }}"
+      class="peer sr-only absolute inset-0 z-0"
+      :id="$id('swatch-input')"
+      {{ input_attributes }}
+      {% if selected %}
+        checked
+      {% endif %}
+    >
+    <label
+      :for="$id('swatch-input')"
+      class="
+        hit-area-[4px] md:hit-area-[2px] cursor-pointer
+        group-focus-within/swatch-radio-button:brightness-75
+        group-hover/swatch-radio-button:brightness-75
+      "
+      title="{{ swatch_label | escape }}"
+      {{ label_attributes }}
+    >
+      <span class="sr-only">{{ swatch_label }}</span>
+
+      {% capture swatch_attributes %}
+        role="presentation"
+        aria-hidden="true"
+        {{ swatch_attributes }}
+      {% endcapture %}
+
+      {% render 'swatch',
+        color: swatch_color,
+        image: swatch_image,
+        available: sibling.available,
+        size: size,
+        custom_size: custom_size,
+        attributes: swatch_attributes
+      %}
+    </label>
+  </div>
+{% else %}
+  <a
+    class="
+      {% comment %} Display block fixes the focus outline {% endcomment %}
+      block
+      transition-[filter]
+      group-focus/swatch-link:brightness-75
+      group-hover/swatch-link:brightness-75
+      has-[[data-selected=true]]:pointer-events-none
+      {% if settings.swatch_shape == 'circle' %}
+        rounded-full
+      {% endif %}
+      {{ class }}
+    "
+    href="{{ url }}"
+    title="{{ swatch_label | escape }}"
+    {% if selected %}
+      aria-current="true"
+    {% endif %}
+    {{ attributes }}
+  >
+    {% render 'swatch',
+      color: swatch_color,
+      image: swatch_image,
+      available: sibling.available,
+      selected: selected,
+      size: size,
+      custom_size: custom_size,
+      attributes: swatch_attributes
+    %}
+  </a>
+{% endif %}

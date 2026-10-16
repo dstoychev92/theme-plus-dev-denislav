@@ -1,0 +1,134 @@
+<!-- blocks/_background-image.liquid -->
+
+{% assign target_device = block.settings.target_device | default: 'both' %}
+
+{% capture class %}
+  size-full relative
+  {% render 'props-class-target-device', target_device: target_device %}
+{% endcapture %}
+
+{% capture media_attributes %}
+  {% if block.settings.media_type == 'video' and block.settings.show_image_on_mobile == true %}
+    data-has-mobile-image
+  {% endif %}
+{% endcapture %}
+
+<div class="{{ class }}" {{ block.shopify_attributes }}>
+  <!-- background overlay -->
+  {% render 'core-background-overlay', _settings: block.settings, class: 'z-20' %}
+
+  <!-- background content -->
+  {% render 'core-background-media', _settings: block.settings, attributes: media_attributes %}
+</div>
+
+{% schema %}
+{
+	"name": "Banner image",
+	"tag": null,
+	"settings": [
+		{
+			"type": "select",
+			"id": "media_type",
+			"label": "Type",
+			"options": [
+				{
+					"value": "image",
+					"label": "Image"
+				},
+				{
+					"value": "video",
+					"label": "Video"
+				}
+			],
+			"default": "image"
+		},
+		{
+			"type": "image_picker",
+			"id": "image",
+			"label": "Image",
+			"visible_if": "{{ block.settings.media_type == 'image' }}"
+		},
+		{
+			"type": "video",
+			"id": "video_bg",
+			"label": "Video",
+			"visible_if": "{{ block.settings.media_type == 'video' }}"
+		},
+		{
+			"type": "paragraph",
+			"content": "Background videos autoplay and are muted",
+			"visible_if": "{{ block.settings.media_type == 'video' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_image_on_mobile",
+			"label": "Show image on mobile",
+			"default": false,
+			"visible_if": "{{ block.settings.media_type == 'video' }}"
+		},
+		{
+			"type": "image_picker",
+			"id": "image_mobile",
+			"label": "Image mobile",
+			"visible_if": "{{ block.settings.media_type == 'image' or block.settings.media_type == 'video' and block.settings.show_image_on_mobile == true }}"
+		},
+		{
+			"type": "header",
+			"content": "Overlay"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_overlay",
+			"label": "Set overlay",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "overlay_opacity",
+			"label": "Opacity",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"visible_if": "{{ block.settings.set_overlay == true }}",
+			"default": 8
+		},
+		{
+			"type": "color",
+			"id": "overlay_color",
+			"label": "Color",
+			"visible_if": "{{ block.settings.set_overlay == true }}",
+			"default": "#000000"
+		},
+		{
+			"type": "header",
+			"content": "Target device"
+		},
+		{
+			"type": "select",
+			"label": "Show on",
+			"id": "target_device",
+			"default": "both",
+			"options": [
+				{
+					"value": "mobile",
+					"label": "Mobile"
+				},
+				{
+					"value": "desktop",
+					"label": "Desktop"
+				},
+				{
+					"value": "both",
+					"label": "Both"
+				}
+			]
+		},
+	],
+	"blocks": [],
+	"presets": [
+		{
+			"name": "Banner image"
+		}
+	]
+}
+{% endschema %}

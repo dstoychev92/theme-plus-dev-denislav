@@ -1,0 +1,484 @@
+<!-- sections/related.liquid -->
+
+{% capture header %}
+  {% content_for 'block', type: '_section-title', id: 'header' %}
+{% endcapture %}
+
+{% for block in section.blocks %}
+  {% capture tabs %}
+    {{ tabs }}
+    <template x-clone="tabTemplates[{{ forloop.index0 }}]"></template>
+  {% endcapture %}
+
+  {% capture tab_panels %}
+    {{ tab_panels }}
+    {% render block %}
+  {% endcapture %}
+{% endfor %}
+
+{% if header != blank and section.blocks.size != 1 %}
+  {% capture title_row_content %}
+    {{ header }}
+  {% endcapture %}
+{% endif %}
+
+{% if section.blocks.size > 2 %}
+  {% capture header_area_content %}
+    {% render 'core-tablist', tabs: tabs, _settings: section.settings, class: 'z-20 self-center' %}
+  {% endcapture %}
+{% elsif section.blocks.size == 2 %}
+  {% comment %}
+    We need special handling for the case of having 2 tabs (when one of them could be the "recent products" tab) since
+    if recent products tab has no products we want to hide the entire tablist so we're not just showing a single tab
+  {% endcomment %}
+  {% capture header_area_content %}
+    {% capture tablist_attributes %}
+      :hidden="$sectionRelated.hasRecentProductsTab && !$sectionRelated.canShowRecentProducts"
+    {% endcapture %}
+    {% render 'core-tablist', tabs: tabs, _settings: section.settings, class: 'z-20 self-center', attributes: tablist_attributes %}
+  {% endcapture %}
+{% else %}
+  {% capture header_area_content %}
+    {{ header }}
+  {% endcapture %}
+{% endif %}
+
+{% capture attributes %}
+  x-section-related="{{ product.id }}"
+  x-tabs
+  x-data="{
+    sidePrevInView: false,
+    sideNextInView: false,
+    get overflowButtonPlacement() {
+      return (this.sidePrevInView && this.sideNextInView) ? 'side' : 'top'
+    },
+    get tabTemplates() {
+      const templates = Array.from($el.querySelectorAll('[data-tab-template]'));
+      return templates.sort((a, b) => {
+        const indexA = parseInt(a.getAttribute('data-tab-template') ?? '0', 10);
+        const indexB = parseInt(b.getAttribute('data-tab-template') ?? '0', 10);
+        return indexA - indexB;
+      });
+    }
+  }"
+  {% if section.blocks.size == 2 %}
+    {% comment %}
+      In the case of 2 tabs, if the recent tab is hidden then we want to change the layout so that it doesn't leave space for tablist which we've hidden above
+    {% endcomment %}
+    :class="{
+      'vars-section-grid-layout-card-list-rows-extended': $sectionRelated.hasRecentProductsTab && !$sectionRelated.canShowRecentProducts
+    }"
+  {% elsif section.blocks.size == 1 %}
+    {% comment %} Hide the entire section if recent products is the only tab and there are no recent products {% endcomment %}
+    :hidden="$sectionRelated.hasRecentProductsTab && !$sectionRelated.canShowRecentProducts"
+  {% endif %}
+{% endcapture %}
+
+{% render 'core-section-card-slider-tabs-layout',
+  _settings: section.settings,
+  title_row_content: title_row_content,
+  header_area_content: header_area_content,
+  tab_panels: tab_panels,
+  attributes: attributes,
+  tab_count: section.blocks.size
+%}
+
+{% schema %}
+{
+	"name": "Related products",
+	"tag": "section",
+	"class": "no-sibling-autoupdate",
+	"settings": [
+		{
+			"type": "range",
+			"id": "columns_lg",
+			"min": 2,
+			"max": 5,
+			"step": 1,
+			"label": "Desktop",
+			"default": 4
+		},
+		{
+			"type": "range",
+			"id": "columns_md",
+			"min": 2,
+			"max": 5,
+			"step": 1,
+			"label": "Tablet",
+			"default": 3
+		},
+		{
+			"type": "paragraph",
+			"content": "Mobile layout is determined by [Visible cards](/editor?context=theme&category=Cards) in global settings"
+		},
+		{
+			"type": "header",
+			"content": "Section layout"
+		},
+		{
+			"type": "select",
+			"id": "content_width",
+			"label": "Content width",
+			"default": "page",
+			"options": [
+				{
+					"value": "full",
+					"label": "Full"
+				},
+				{
+					"value": "page",
+					"label": "Page"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "content_width_custom",
+			"label": "Desktop width",
+			"visible_if": "{{ section.settings.content_width == 'custom' }}",
+			"min": 25,
+			"max": 100,
+			"step": 5,
+			"default": 65,
+			"unit": "%"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_rhythm",
+			"label": "Custom rhythm",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "section_padding_top",
+			"label": "Spacing top",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 40,
+			"visible_if": "{{ section.settings.set_rhythm == true  }}"
+		},
+		{
+			"type": "range",
+			"id": "section_padding_bottom",
+			"label": "Spacing bottom",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 40,
+			"visible_if": "{{ section.settings.set_rhythm == true  }}"
+		},
+		{
+			"type": "header",
+			"content": "Content layout"
+		},
+		{
+			"type": "text_alignment",
+			"id": "title_placement",
+			"label": "Title alignment",
+			"default": "center"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_gap_tab_x",
+			"label": "Set tab spacing",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "gap_tab_x",
+			"label": "Tab",
+			"default": "sm",
+			"visible_if": "{{ section.settings.set_gap_tab_x }}",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "gap_custom_tab_x",
+			"label": "Custom",
+			"default": 0,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ section.settings.gap_tab_x == 'custom'  and section.settings.set_gap_tab_x }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_gap_tab_y",
+			"label": "Set vertical gap",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "gap_tab_y",
+			"label": "Vertical gap",
+			"default": "sm",
+			"visible_if": "{{ section.settings.set_gap_tab_y }}",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "gap_custom_tab_y",
+			"label": "Custom",
+			"default": 0,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ section.settings.gap_tab_y == 'custom'  and section.settings.set_gap_tab_y }}"
+		},
+		{
+			"type": "header",
+			"content": "Appearance"
+		},
+		{
+			"type": "color_scheme",
+			"id": "color_scheme",
+			"label": "Color scheme"
+		},
+		{
+			"type": "select",
+			"id": "background",
+			"label": "Background",
+			"default": "canvas",
+			"options": [
+				{
+					"value": "canvas",
+					"label": "Default"
+				},
+				{
+					"value": "tint",
+					"label": "Tint"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background color",
+			"default": "#f2f2f2",
+			"alpha": false,
+			"visible_if": "{{ section.settings.background == 'custom' }}"
+		},
+		{
+			"type": "header",
+			"content": "Typography"
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_typography",
+			"label": "Set tab typography",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "type_font",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ section.settings.enable_typography == true }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 4,
+			"visible_if": "{{ section.settings.enable_typography == true }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ section.settings.enable_typography == true }}"
+		},
+		{
+			"type": "header",
+			"content": "Navigation"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_pagination_style",
+			"label": "Set button style",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "slider_control_style",
+			"label": "Background style",
+			"default": "tint",
+			"options": [
+				{
+					"value": "tint",
+					"label": "Tint"
+				},
+				{
+					"value": "outline",
+					"label": "Outline"
+				},
+				{
+					"value": "bare",
+					"label": "∅"
+				}
+			],
+			"visible_if": "{{ section.settings.set_pagination_style }}"
+		},
+		{
+			"type": "select",
+			"label": "Progress bar",
+			"id": "progress_bar_visibility",
+			"default": "desktop",
+			"options": [
+				{
+					"value": "mobile",
+					"label": "Mobile"
+				},
+				{
+					"value": "desktop",
+					"label": "Desktop"
+				},
+				{
+					"value": "both",
+					"label": "Both"
+				},
+				{
+					"value": "never",
+					"label": "Never"
+				}
+			]
+		},
+		{
+			"type": "header",
+			"content": "Target device",
+			"visible_if": "{{ settings.show_target_device_settings == true }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_target_device",
+			"label": "Set target device",
+			"visible_if": "{{ settings.show_target_device_settings == true }}",
+			"default": false
+		},
+		{
+			"type": "select",
+			"label": "Show on",
+			"id": "target_device",
+			"default": "desktop",
+			"visible_if": "{{ settings.show_target_device_settings == true and section.settings.set_target_device == true }}",
+			"options": [
+				{
+					"value": "mobile",
+					"label": "Mobile"
+				},
+				{
+					"value": "desktop",
+					"label": "Desktop"
+				}
+			]
+		},
+	],
+	"blocks": [
+		{
+			"type": "_related-tab-related-products"
+		},
+		{
+			"type": "_related-tab-recent-products"
+		},
+		{
+			"type": "_cards-tab"
+		}
+	],
+	"presets": [
+		{
+			"name": "Related products",
+			"category": "Cards",
+			"blocks": [
+				{
+					"id": "header",
+					"type": "_section-title",
+					"static": true,
+					"settings": {
+						"text": "You may also like"
+					}
+				},
+				{
+					"type": "_related-tab-related-products"
+				},
+				{
+					"type": "_related-tab-recent-products"
+				}
+			]
+		}
+	],
+	"enabled_on": {
+		"templates": [
+			"product"
+		]
+	}
+}
+{% endschema %}

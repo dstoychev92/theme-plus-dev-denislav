@@ -1,0 +1,103 @@
+{%- liquid
+  # Slot-based layout shell. Callers pass pre-built title_row_content, header_area_content, and tab_panels.
+  # Optional tab_count: when set, core adds grid layout class (rows-extended for 1, rows-tabs for >1).
+  # When tab_count is not set (e.g. related section with dynamic tab count), caller adds layout via attributes.
+
+  case _settings.title_placement
+    when 'right'
+      assign content_align = 'right'
+    when 'left'
+      assign content_align = 'left'
+    when 'center'
+      assign content_align = 'center'
+  endcase
+
+  assign set_gap_tab_y = _settings.set_gap_tab_y
+  assign gap_tab_y = _settings.gap_tab_y
+  assign gap_custom_tab_y = _settings.gap_custom_tab_y
+%}
+
+{% capture tabs_class %}
+  {% if set_gap_tab_y %}
+    gap-y-layout
+  {% else %}
+    gap-y-r8
+  {% endif %}
+{% endcapture %}
+
+{% if set_gap_tab_y %}
+  {% capture tabs_style %}
+    {% render 'props-style-gap', gap: gap_tab_y, gap_custom: gap_custom_tab_y, vars: false, apply: false %}
+    --layout-gutter-y: var(--custom-gutter-y);
+  {% endcapture %}
+{% endif %}
+
+{% capture style %}
+  {{ style }}
+  {{ tabs_style }}
+{% endcapture %}
+
+{% capture section_card_list_elements %}
+  {% if title_row_content != blank %}
+    <div class="
+      row-[section-title-start/section-title-end]
+      col-[section-title-start/section-title-end]
+      flex items-center min-w-fit
+      {% if content_align == 'center' %}
+        justify-center
+        vars-content-align-center
+      {% elsif content_align == 'left' %}
+        justify-start
+        vars-content-align-start
+      {% elsif content_align == 'right' %}
+        justify-end
+        vars-content-align-end
+      {% endif %}
+    ">
+      {{ title_row_content }}
+    </div>
+  {% endif %}
+
+  <div class="
+    flex
+    row-[header-start/header-end] col-[header-start/header-end]
+    max-md:col-[card-list-start/card-list-end]
+
+    {% if content_align == 'center' %}
+      justify-center
+      vars-content-align-center
+    {% elsif content_align == 'left' %}
+      justify-start
+      vars-content-align-start
+    {% elsif content_align == 'right' %}
+      justify-end
+      vars-content-align-end
+    {% endif %}
+  ">
+    {{ header_area_content }}
+  </div>
+
+  {{ tab_panels }}
+{% endcapture %}
+
+{% capture class %}
+  {{ class }} {{ tabs_class }} grid-flow-col
+
+  {% comment %} Ensure overflow buttons don't ... cause overflow {% endcomment %}
+  overflow-x-clip
+
+  {% if tab_count == 1 %}vars-section-grid-layout-card-list-rows-extended
+  {% elsif tab_count != blank and tab_count > 1 %}
+    vars-section-grid-layout-card-list-rows-tabs
+  {% endif %}
+  vars-section-grid-layout-card-list-title-{{ _settings.title_placement }}
+{% endcapture %}
+
+{% render 'core-section-wrapper',
+  _settings: _settings,
+  content: section_card_list_elements,
+  class: class,
+  attributes: attributes,
+  style: style,
+  content_align: content_align
+%}

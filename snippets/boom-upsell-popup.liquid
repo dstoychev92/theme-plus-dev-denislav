@@ -1,0 +1,194 @@
+{% comment %}
+  Boom: post add-to-cart upsell popup (promo: Brain Coffee −20%).
+
+  Shows a modal (desktop) / bottom sheet (mobile) offering the upsell
+  product at a discount whenever a triggering product is added to cart.
+
+  Wiring:
+    • snippets/head-scripts.liquid  — early event interceptor + asset tags
+    • assets/custom.boom-upsell.js  — behavior (open/close, timer, CTA add)
+    • assets/custom.boom-upsell.css — styles per the BOOM! popup design
+
+  Display only — the checkout price is whatever Shopify applies, so pair
+  the popup with a matching automatic discount (same as the store-wide
+  discount setting). If the product has a compare-at price higher than
+  its price, the real prices/percent are shown instead of the computed ones.
+{% endcomment %}
+
+{% liquid
+  assign upsell_product = settings.boom_upsell_product
+  if upsell_product == blank
+    assign upsell_product = all_products['brain-coffee']
+  endif
+
+  assign upsell_variant = blank
+  if upsell_product != blank and upsell_product.available
+    assign upsell_variant = upsell_product.selected_or_first_available_variant
+  endif
+%}
+
+{% if settings.boom_upsell_enabled and upsell_variant != blank %}
+  {% liquid
+    assign percent = settings.boom_upsell_percent | default: 20
+    if upsell_variant.compare_at_price > upsell_variant.price
+      assign price_final = upsell_variant.price
+      assign price_original = upsell_variant.compare_at_price
+      assign price_ratio = price_final | times: 100 | divided_by: price_original
+      assign percent = 100 | minus: price_ratio
+    else
+      assign price_keep = 100 | minus: percent
+      assign price_final = upsell_variant.price | times: price_keep | divided_by: 100
+      assign price_original = upsell_variant.price
+    endif
+
+    assign trigger_collection = settings.boom_upsell_trigger_collection
+    if trigger_collection == blank
+      assign trigger_collection = collections['protein-coffee']
+    endif
+    assign trigger_handles = trigger_collection.products | map: 'handle'
+
+    case settings.boom_upsell_accent
+      when 'orange'
+        assign accent = '#FF6900'
+      when 'blue'
+        assign accent = '#10069F'
+      when 'purple'
+        assign accent = '#87189D'
+      else
+        assign accent = '#EF3340'
+    endcase
+
+    assign price_final_formatted = price_final | money
+  %}
+
+  <div
+    id="boom-upsell-popup"
+    class="boom-upsell"
+    style="--boom-upsell-accent: {{ accent }};"
+    aria-hidden="true"
+  >
+    <div class="boom-upsell__scrim" data-upsell-close></div>
+
+    <div
+      class="boom-upsell__dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="boom-upsell-headline"
+      data-upsell-dialog
+    >
+      <button
+        type="button"
+        class="boom-upsell__x"
+        aria-label="{{ 'other.accessibility.close' | t }}"
+        data-upsell-close
+      >
+        {% render 'core-icon', icon: 'stroke-bare-x', size: 'md' %}
+      </button>
+
+      <div class="boom-upsell__grabber" aria-hidden="true"></div>
+
+      <div class="boom-upsell__media">
+        <span class="boom-upsell__badge" aria-hidden="true">&minus;{{ percent }}%</span>
+        {% if upsell_product.featured_image != blank %}
+          <img
+            class="boom-upsell__image"
+            src="{{ upsell_product.featured_image | image_url: width: 480, height: 600, crop: 'center' }}"
+            srcset="{{ upsell_product.featured_image | image_url: width: 480, height: 600, crop: 'center' }} 1x, {{ upsell_product.featured_image | image_url: width: 960, height: 1200, crop: 'center' }} 2x"
+            width="240"
+            height="300"
+            alt="{{ upsell_product.featured_image.alt | default: upsell_product.title | escape }}"
+          >
+        {% endif %}
+      </div>
+
+      <div class="boom-upsell__body">
+        <p class="boom-upsell__eyebrow">{{ upsell_product.title }}</p>
+        <h2 class="boom-upsell__headline" id="boom-upsell-headline">
+          {{- 'boom.upsell.headline' | t -}}
+        </h2>
+
+        <ul class="boom-upsell__benefits" role="list">
+          <li>
+            {% render 'core-icon', icon: 'stroke-bare-check', class: 'boom-upsell__benefit-check' %}
+            <span>{{ 'boom.upsell.benefit_1' | t }}</span>
+          </li>
+          <li>
+            {% render 'core-icon', icon: 'stroke-bare-check', class: 'boom-upsell__benefit-check' %}
+            <span>{{ 'boom.upsell.benefit_2' | t }}</span>
+          </li>
+          <li>
+            {% render 'core-icon', icon: 'stroke-bare-check', class: 'boom-upsell__benefit-check' %}
+            <span>{{ 'boom.upsell.benefit_3' | t }}</span>
+          </li>
+        </ul>
+
+        <div class="boom-upsell__prices">
+          <span class="boom-upsell__price">{{ price_final | money }}</span>
+          <s class="boom-upsell__price-was">{{ price_original | money }}</s>
+        </div>
+
+        {% liquid
+          assign rating_value = upsell_product.metafields.reviews.rating.value.rating | round: 1
+          assign rating_count = upsell_product.metafields.reviews.rating_count
+          assign rating_max = upsell_product.metafields.reviews.rating.value.scale_max | default: 5
+        %}
+        {% if rating_value != blank and rating_count != blank and rating_count > 0 %}
+          {% assign full_stars = rating_value | round %}
+          <div
+            class="boom-upsell__rating"
+            role="group"
+            aria-label="{{ 'other.accessibility.star_reviews_info' | t: rating_value: rating_value, rating_max: rating_max }}, {{ rating_count }} {{ 'other.accessibility.total_reviews' | t }}"
+          >
+            <span class="boom-upsell__stars" aria-hidden="true">
+              {% for i in (1..5) %}
+                {% if i <= full_stars %}
+                  {% render 'core-icon', icon: 'fill-star', class: 'boom-upsell__star' %}
+                {% else %}
+                  {% render 'core-icon', icon: 'fill-star', class: 'boom-upsell__star boom-upsell__star--empty' %}
+                {% endif %}
+              {% endfor %}
+            </span>
+            <span aria-hidden="true">
+              {{ rating_value }} · {{ 'boom.upsell.reviews' | t: count: rating_count }}
+            </span>
+          </div>
+        {% endif %}
+
+        {% if settings.boom_upsell_show_timer %}
+          <p class="boom-upsell__timer" data-upsell-timer hidden>
+            <span class="boom-upsell__timer-dot" aria-hidden="true"></span>
+            <span>
+              {{ 'boom.upsell.expires' | t }}
+              <span class="boom-upsell__timer-time" data-upsell-time>0:30</span>
+            </span>
+          </p>
+        {% endif %}
+      </div>
+
+      <div class="boom-upsell__actions">
+        <button type="button" class="boom-upsell__cta" data-upsell-add>
+          <span data-upsell-cta-label>
+            {{- 'boom.upsell.cta' | t: percent: percent, price: price_final_formatted -}}
+          </span>
+        </button>
+        <button type="button" class="boom-upsell__decline" data-upsell-close>
+          {{ 'boom.upsell.decline' | t }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  {% # prettier-ignore %}
+  <script type="application/json" id="boom-upsell-config">
+    {
+      "enabled": true,
+      "designMode": {{ request.design_mode | json }},
+      "variantId": {{ upsell_variant.id | json }},
+      "productHandle": {{ upsell_product.handle | json }},
+      "triggerHandles": {{ trigger_handles | json }},
+      "showTimer": {{ settings.boom_upsell_show_timer | json }},
+      "timerSeconds": 30,
+      "addedLabel": {{ 'boom.upsell.cta_added' | t | json }}
+    }
+  </script>
+{% endif %}

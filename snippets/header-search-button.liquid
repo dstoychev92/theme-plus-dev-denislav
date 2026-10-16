@@ -1,0 +1,52 @@
+{% liquid
+  assign default_id = section.id | append: '-' | append: block.id | append: '-predictive-search-flyout'
+  assign id = id | default: default_id
+  assign search_content = 'search.header_label' | t
+  assign button_attributes = 'x-popover:button'
+  assign label_style = label_style | default: _settings.label_style
+
+  assign target_device = target_device | default: _settings.target_device
+%}
+
+{% capture class %}
+  keyboard-focus:outline-offset-[-2px]
+  px-[calc(var(--header-row-gap-x)/2)]
+  {% render 'props-class-target-device', target_device: target_device %}
+  focus-group-item
+  {{ class }}
+{% endcapture %}
+
+<div
+  x-popup="
+    {
+      get isOpen() {
+        return $store.headerMenu.activePopupId == '{{ id }}';
+      },
+      set isOpen(value) {
+        if (value) {
+          $store.headerMenu.activePopupId = '{{ id }}';
+        } else {
+          if ($store.headerMenu.activePopupId == '{{ id }}') {
+            $store.headerMenu.activePopupId = null;
+          }
+        }
+      }
+    }
+  "
+  class="h-full flex items-center"
+>
+  {% render 'header-link',
+    aria_label: search_content,
+    href: routes.search_url,
+    label: search_content,
+    icon: 'stroke-header-search',
+    class: class,
+    attributes: button_attributes,
+    _settings: _settings,
+    label_style: label_style,
+    icon_type_class: icon_type_class
+  %}
+
+  {% comment %} Full height flyout on mobile, but auto height on desktop {% endcomment %}
+  {% render 'predictive-search-flyout', menu_id: id, color_scheme: section.settings.color_scheme %}
+</div>

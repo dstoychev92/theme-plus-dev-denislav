@@ -1,0 +1,126 @@
+{% liquid
+  assign drawer_id = section.id | append: '-filter-drawer'
+  assign filters_title = 'collection.filters.filters' | t
+  assign collection_form_id = 'filter-drawer'
+
+  assign sort_by = sort_by | default: collection.sort_by
+  assign default_sort_by = default_sort_by | default: collection.default_sort_by
+
+  assign collection_sort = sort_by | default: default_sort_by
+  assign url_parts = filter_url | split: '?'
+  assign base_id = base_id | default: 'filter'
+
+  # If the url contains a query string, append the sort_by parameter with an ampersand
+  if url_parts.size > 1
+    assign base_url = filter_url | append: '&sort_by='
+  else
+    assign base_url = filter_url | append: '?sort_by='
+  endif
+
+  assign clear_all_url = base_url | append: collection_sort
+  assign clear_all_label = 'collection.filters.clear_all' | t
+%}
+
+{% capture attributes %}
+  x-data="{ showViewResultsButton: false }"
+  @change="showViewResultsButton = true"
+  x-effect="
+    if (!$dialog.isOpen) {
+      showViewResultsButton = false;
+    }
+  "
+{% endcapture %}
+
+{% capture footer_attributes %}
+  x-show="showViewResultsButton"
+  x-transition:enter="animate-in slide-in-from-bottom fade-in animate-duration-300"
+  x-transition:leave="animate-out slide-out-to-bottom fade-out animate-duration-300"
+{% endcapture %}
+
+{% capture drawer_title %}
+  <div
+    class="relative flex-row-center gap-x-r3"
+    x-data="{
+      get isLoading() {
+        return $sectionApi.state === 'loading'
+      }
+    }"
+  >
+    {{ filters_title }}
+    <div
+      x-transition.opacity
+      x-show="isLoading"
+    >
+      {% render 'spinner', class: 'flex-none' %}
+    </div>
+  </div>
+{% endcapture %}
+
+{% capture drawer_content %}
+  <div class="w-full p-r6">
+    {% render 'collection-filters',
+      filter_url: filter_url,
+      id: collection_form_id,
+      filters: filters,
+      form: form,
+      q: q,
+      show_filter_tags: true
+    %}
+  </div>
+{% endcapture %}
+
+{% capture drawer_footer %}
+  {% capture show_results_label %}
+    {{ 'collection.filters.show_results' | t }}
+  {% endcapture %}
+
+  {% capture button_class %}
+    flex-1
+  {% endcapture %}
+
+  {% capture submit_button_label_class %}
+    [--shimmer-btn-text-color:color-mix(in_srgb,_var(--btn-text-color)_80%,_black)]
+    [:not(:hover)>&]:text-shimmer-[--shimmer-btn-text-color] [:not(:hover)>&]:animate-text-shimmer
+    repeat-infinite animate-ease-linear
+  {% endcapture %}
+
+  {% render 'core-button',
+    label: clear_all_label,
+    tag: 'a',
+    href: clear_all_url,
+    appearance: 'outline',
+    color: 'content',
+    sizing: 'lg',
+    class: button_class,
+    icon: 'stroke-bare-x',
+    attributes: button_attributes
+  %}
+
+  {% capture submit_button_attributes %}
+    {{ button_attributes }}
+    @click="$dialog.close()"
+  {% endcapture %}
+
+  {% render 'core-button',
+    label: show_results_label,
+    type: 'submit',
+    appearance: 'solid',
+    color: 'content',
+    sizing: 'lg',
+    class: button_class,
+    label_class: submit_button_label_class,
+    form: collection_form_id,
+    attributes: submit_button_attributes
+  %}
+{% endcapture %}
+
+{% render 'drawer',
+  side: 'left',
+  title: drawer_title,
+  aria_label: filters_title,
+  id: drawer_id,
+  content: drawer_content,
+  footer: drawer_footer,
+  attributes: attributes,
+  footer_attributes: footer_attributes
+%}

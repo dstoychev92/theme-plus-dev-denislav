@@ -1,0 +1,499 @@
+<!-- sections/product.liquid -->
+
+{% comment %}
+  Product page section displaying product media and the product form.
+  This section uses the section rendering API to update itself when the variant, quantity or selling plan changes. Any changes made in this file
+  or any sub blocks or snippets will be reflected in the product page for the current product, variant, and selling plan when the user changes the variant, quantity, or selling plan.
+{% endcomment %}
+
+{% comment %}
+  Other sections on the product page update when siblings change (theme.product.js);
+  they update on intersect, interact, or after a timeout to avoid 400s from too many section requests.
+{% endcomment %}
+
+{% capture content_media %}
+  {% content_for 'block', type: '_product-layout-media', id: 'media', class_static: 'md:col-[media-start/media-end]' %}
+{% endcapture %}
+
+{% capture content_details %}
+  {% content_for 'block', type: '_product-layout-details', id: 'details', class_static: 'md:col-[details-start/details-end]' %}
+{% endcapture %}
+
+{% render 'product-section',
+  _settings: section.settings,
+  content_media: content_media,
+  content_details: content_details,
+  attributes: attributes,
+  style: style,
+  lazy_alpine: false
+%}
+
+{% # Enhanced product schema.org markup with nutrition, ingredients, and functional benefits. %}
+{% render 'schema-product-enhanced' %}
+
+{% if section.settings.enable_sticky_atc %}
+  {% render 'product-sticky-add-to-cart', _settings: section.settings %}
+{% endif %}
+
+{% schema %}
+{
+	"name": "Product page",
+	"tag": "section",
+	"class": "main-product",
+	"settings": [
+		{
+			"type": "checkbox",
+			"id": "enable_history",
+			"label": "Enable history",
+			"info": "Preserve URL history when navigating between product variants and subscription options",
+			"default": true,
+			"visible_if": "{{ false }}"
+		},
+		{
+			"type": "color_scheme",
+			"id": "color_scheme",
+			"label": "Color scheme"
+		},
+		{
+			"type": "header",
+			"content": "Sticky add to cart"
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_sticky_atc",
+			"label": "Show sticky add to cart bar",
+			"info": "Pins a bar to the bottom of the screen once the product form scrolls out of view. Tapping it scrolls back up to the quantity selector.",
+			"default": false
+		},
+		{
+			"type": "text",
+			"id": "sticky_atc_label",
+			"label": "Button label",
+			"info": "Leave blank to use the default \"Add to cart\" translation.",
+			"visible_if": "{{ section.settings.enable_sticky_atc }}"
+		},
+		{
+			"type": "select",
+			"id": "sticky_atc_appearance",
+			"label": "Style",
+			"default": "solid",
+			"options": [
+				{
+					"value": "solid",
+					"label": "Solid"
+				},
+				{
+					"value": "outline",
+					"label": "Outline"
+				},
+				{
+					"value": "soft",
+					"label": "Soft"
+				}
+			],
+			"visible_if": "{{ section.settings.enable_sticky_atc }}"
+		},
+		{
+			"type": "select",
+			"id": "sticky_atc_color",
+			"label": "Color",
+			"default": "primary",
+			"options": [
+				{
+					"value": "content",
+					"label": "Text default"
+				},
+				{
+					"value": "primary",
+					"label": "Primary accent"
+				},
+				{
+					"value": "secondary",
+					"label": "Link accent"
+				},
+				{
+					"value": "sale",
+					"label": "Sale"
+				}
+			],
+			"visible_if": "{{ section.settings.enable_sticky_atc }}"
+		},
+		{
+			"type": "select",
+			"id": "sticky_atc_sizing",
+			"label": "Height",
+			"default": "lg",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			],
+			"visible_if": "{{ section.settings.enable_sticky_atc }}"
+		},
+		{
+			"type": "range",
+			"id": "sticky_atc_desktop_width",
+			"label": "Button width (desktop)",
+			"info": "On mobile the button is always full width. Capped at the bar width.",
+			"min": 160,
+			"max": 640,
+			"step": 10,
+			"unit": "px",
+			"default": 320,
+			"visible_if": "{{ section.settings.enable_sticky_atc }}"
+		},
+		{
+			"type": "header",
+			"content": "Transparent header",
+			"info": "Applies when the header has transparency enabled, and this section is first."
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_transparent",
+			"label": "Enable transparent header",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "transparent_style",
+			"label": "Transparent style",
+			"default": "auto",
+			"info": "Note: Product details will be pushed down by the header height.",
+			"options": [
+				{
+					"value": "auto",
+					"label": "Auto"
+				},
+				{
+					"value": "light",
+					"label": "Light"
+				},
+				{
+					"value": "dark",
+					"label": "Dark"
+				}
+			],
+			"visible_if": "{{ section.settings.enable_transparent == true }}"
+		},
+		{
+			"type": "header",
+			"content": "Desktop layout"
+		},
+		{
+			"type": "checkbox",
+			"id": "contain_section",
+			"label": "Contain section",
+			"default": true
+		},
+		{
+			"type": "select",
+			"id": "section_width",
+			"label": "Width",
+			"visible_if": "{{ section.settings.contain_section }}",
+			"default": "page",
+			"options": [
+				{
+					"value": "full",
+					"label": "Full"
+				},
+				{
+					"value": "page",
+					"label": "Page"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "pt_desktop",
+			"label": "Spacing top",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ section.settings.enable_transparent == false }}",
+			"default": 40
+		},
+		{
+			"type": "range",
+			"id": "pb_desktop",
+			"label": "Spacing bottom",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 40
+		},
+		{
+			"type": "header",
+			"content": "Desktop columns"
+		},
+		{
+			"type": "select",
+			"id": "media_col_order",
+			"label": "Media placement",
+			"default": "first",
+			"options": [
+				{
+					"value": "first",
+					"label": "First"
+				},
+				{
+					"value": "second",
+					"label": "Second"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "media_col_width",
+			"label": "Media width",
+			"default": "even",
+			"options": [
+				{
+					"value": "slim",
+					"label": "Slim"
+				},
+				{
+					"value": "even",
+					"label": "Even"
+				},
+				{
+					"value": "wide",
+					"label": "Wide"
+				},
+				{
+					"value": "fill",
+					"label": "Fill"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "details_width",
+			"label": "Details width",
+			"unit": "px",
+			"min": 450,
+			"max": 1000,
+			"step": 50,
+			"default": 450,
+			"visible_if": "{{ section.settings.media_col_width == 'fill' }}"
+		},
+		{
+			"type": "header",
+			"content": "Mobile layout"
+		},
+		{
+			"type": "range",
+			"id": "pt_mobile",
+			"label": "Spacing top",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 16
+		},
+		{
+			"type": "range",
+			"id": "pb_mobile",
+			"label": "Spacing bottom",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 40
+		},
+		{
+			"type": "header",
+			"content": "Breadcrumbs"
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_breadcrumbs",
+			"label": "Enable breadcrumbs",
+			"default": false
+		},
+		{
+			"type": "collection_list",
+			"id": "product_breadcrumbs_list",
+			"label": "Breadcrumb collections",
+			"info": "Use metafields for unique breadcrumbs on each product. [Learn more](https://groupthought.com/link/pipeline/v9/docs/breadcrumbs)"
+		},
+		{
+			"type": "select",
+			"id": "breadcrumbs_position",
+			"label": "Desktop position",
+			"info": "Breadcrumbs will always position above Media on Mobile.",
+			"default": "content",
+			"options": [
+				{
+					"value": "content",
+					"label": "Above content"
+				},
+				{
+					"value": "media",
+					"label": "Above media"
+				}
+			],
+			"visible_if": "{{ section.settings.enable_breadcrumbs == true }}"
+		},
+		{
+			"type": "select",
+			"id": "type_preset_breadcrumbs",
+			"label": "Text style",
+			"default": "btn",
+			"visible_if": "{{ section.settings.enable_breadcrumbs == true }}",
+			"options": [
+				{
+					"value": "p",
+					"label": "Paragraph"
+				},
+				{
+					"value": "btn",
+					"label": "Button"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_resize_breadcrumbs",
+			"label": "Text size",
+			"default": "sm",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			],
+			"visible_if": "{{ section.settings.enable_breadcrumbs == true and section.settings.type_preset_breadcrumbs != 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_font_breadcrumbs",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ section.settings.enable_breadcrumbs == true and section.settings.type_preset_breadcrumbs == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size_breadcrumbs",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 4,
+			"visible_if": "{{ section.settings.enable_breadcrumbs == true and section.settings.type_preset_breadcrumbs == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase_breadcrumbs",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ section.settings.enable_breadcrumbs == true and section.settings.type_preset_breadcrumbs == 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "appearance_breadcrumbs",
+			"label": "Link style",
+			"default": "clean",
+			"visible_if": "{{ section.settings.enable_breadcrumbs == true }}",
+			"options": [
+				{
+					"value": "clean",
+					"label": "Clean"
+				},
+				{
+					"value": "line",
+					"label": "Line"
+				},
+				{
+					"value": "icon",
+					"label": "Arrow"
+				},
+				{
+					"value": "both",
+					"label": "Both"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"label": "Show on",
+			"id": "target_device_breadcrumbs",
+			"default": "both",
+			"visible_if": "{{ section.settings.enable_breadcrumbs == true }}",
+			"options": [
+				{
+					"value": "mobile",
+					"label": "Mobile"
+				},
+				{
+					"value": "desktop",
+					"label": "Desktop"
+				},
+				{
+					"value": "both",
+					"label": "Both"
+				}
+			]
+		},
+		{
+			"type": "number",
+			"id": "img_columns_lg",
+			"label": "Image columns",
+			"default": 2,
+			"visible_if": "{{ false }}"
+		},
+	]
+}
+{% endschema %}

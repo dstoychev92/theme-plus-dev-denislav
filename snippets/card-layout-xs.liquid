@@ -1,0 +1,59 @@
+{% comment %}
+  Usage:
+  {% render 'card-layout-xs', url: url, image: image, title: "Title", details: "Details", class: "any-css-class" %}
+{% endcomment %}
+
+{% liquid
+  assign url = url | default: false
+  assign tag = 'div'
+%}
+
+{% if url != false %}
+  {% assign tag = 'a' %}
+  {% capture href %}href="{{ url }}"{% endcapture %}
+{% endif %}
+
+<article
+  class="vars-card-xs flex gap-x-r4 w-full [word-break:break-word] {{ class }}"
+  style="{{ style }}"
+  {% if aria_label %}
+    aria-label="{{ aria_label }}"
+  {% endif %}
+  {{ attributes }}
+>
+  {% comment %} Allow media to be hidden when passing 'false' {% endcomment %}
+  {% if media != false %}
+    <{{ tag }}
+      {{ href }}
+      class="flex size-r9 shrink-0 flex-center overflow-hidden rounded-[--card-xs-media-radius]"
+    >
+      {% if media %}
+        {{ media }}
+      {% elsif image %}
+        {%- render 'core-image', cover: true, image: image, sizes: '32px', class: 'size-full relative' -%}
+      {% elsif icon %}
+        <div class="flex size-full flex-none flex-center bg-content-mix-5">
+          {% render 'core-icon', icon: icon %}
+        </div>
+      {% else %}
+        {% render 'image-filler', size_class: 'size-full' %}
+      {% endif %}
+    </{{ tag }}>
+  {% endif %}
+
+  <div class="grow flex gap-r4 self-center text-r4">
+    {% if content %}
+      {{ content }}
+    {% else %}
+      {%- if title -%}
+        <{{ tag }} {{ href }} class="flex self-center">{{ title }}</{{ tag }}>
+      {%- endif -%}
+
+      {%- if details -%}
+        <div class="self-start shrink-0 inline-block max-w-1/2 px-r3 py-r1 border border-solid border-line rounded-full text-r3 truncate">
+          {{ details }}
+        </div>
+      {%- endif -%}
+    {% endif %}
+  </div>
+</article>

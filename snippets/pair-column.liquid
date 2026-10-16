@@ -1,0 +1,217 @@
+{% liquid
+  assign block_index = section.blocks | find_index: 'id', block.id
+
+  # Media block flag - allows rounding/border without background
+  assign is_media_block = is_media_block | default: false
+
+  # Colors
+  assign color_scheme = color_scheme | default: _settings.color_scheme
+  assign set_color_scheme = set_color_scheme | default: _settings.set_color_scheme | default: true, allow_false: true
+  assign background = background | default: _settings.background
+
+  # Spacing
+  assign enable_spacing = enable_spacing | default: _settings.set_spacing | default: false
+  assign padding_horizontal = padding_horizontal | default: _settings.padding_horizontal, allow_false: true
+  assign padding_vertical = padding_vertical | default: _settings.padding_vertical, allow_false: true
+  assign padding_custom_horizontal = padding_custom_horizontal | default: _settings.padding_custom_horizontal, allow_false: true
+  assign padding_custom_vertical = padding_custom_vertical | default: _settings.padding_custom_vertical, allow_false: true
+
+  # Sticky
+  assign enable_sticky = enable_sticky | default: section.settings.enable_sticky | default: false
+
+  # Alignment
+  assign align_self = align_self | default: section.settings.align_self, allow_false: true
+
+  # Gap - within pair block, not section-level pair gap
+  assign enable_gap = enable_gap | default: _settings.set_gap | default: false
+  assign gap = gap | default: _settings.gap, allow_false: true
+  assign gap_custom = gap_custom | default: _settings.gap_custom, allow_false: true
+
+  # Height
+  assign height = height | default: _settings.height, allow_false: true
+  assign set_height = set_height | default: _settings.set_height | default: true, allow_false: true
+  assign custom_height_type = custom_height_type | default: _settings.custom_height_type
+  assign custom_height_percentage = custom_height_percentage | default: _settings.custom_height_percentage
+  assign custom_height_px = custom_height_px | default: _settings.custom_height_px
+
+  # Border
+  assign set_border = set_border | default: _settings.set_border | default: false
+  assign border_width = border_width | default: _settings.border_width | default: 0
+  assign border_color = border_color | default: _settings.border_color | default: '#ffffff00'
+
+  # Rounding - only enabled if there's a background or border (except for media blocks)
+  assign set_rounding = set_rounding | default: _settings.set_rounding | default: false
+  assign rounding_radius = rounding_radius | default: _settings.rounding_radius | default: 'none'
+  assign rounding_radius_custom = rounding_radius_custom | default: _settings.rounding_radius_custom | default: 0
+
+  # Only allow rounding if there's a background or border (media blocks can always have rounding)
+  if set_rounding
+    unless is_media_block
+      if set_color_scheme == false or background == 'none'
+        if set_border == false or border_width == 0
+          assign set_rounding = false
+        endif
+      endif
+    endunless
+  endif
+
+  # Default rounding — desktop only so pair-column-rounded doesn't prevent full-bleed on mobile
+  assign has_default_rounding = false
+  unless set_rounding
+    if settings.banner_default_rounding != 'none'
+      assign has_default_rounding = true
+    endif
+  endunless
+
+  if set_color_scheme == false or background == 'none'
+    if set_border == false or border_width == 0
+      assign background_transparent = true
+    endif
+  endif
+
+  # Contain class - set when there's a background or border (similar to section-contain) or when spacing is enabled
+  assign pair_column_contain = false
+  if set_color_scheme == true and background != 'none'
+    assign pair_column_contain = true
+  elsif set_border == true and border_width > 0
+    assign pair_column_contain = true
+  elsif enable_spacing
+    assign pair_column_contain = true
+  endif
+
+  if section.settings.height_mode == 'column'
+    # Height
+    assign height = height | default: _settings.height | default: false
+
+    assign set_height = set_height | default: _settings.set_height | default: true, allow_false: true
+    assign custom_height_type = custom_height_type | default: _settings.custom_height_type
+  else
+    assign set_height = true
+    assign height = height | default: section.settings.height
+    assign custom_height_type = custom_height_type | default: section.settings.custom_height_type
+  endif
+
+  assign height_mobile = height_mobile | default: _settings.height_mobile | default: false
+  assign custom_height_type_mobile = custom_height_type_mobile | default: _settings.custom_height_type_mobile
+  assign custom_height_percentage_mobile = custom_height_percentage_mobile | default: _settings.custom_height_percentage_mobile
+  assign custom_height_px_mobile = custom_height_px_mobile | default: _settings.custom_height_px_mobile
+-%}
+
+{% capture style %}
+  {% if enable_spacing %}
+    {% render 'props-style-buffer', _settings: _settings, namespace: 'pair' %}
+  {% endif %}
+
+  {% if enable_gap %}
+    {% if gap %}
+      {% render 'props-style-gap', gap: gap, gap_custom: gap_custom, apply: false, card_vars: true %}
+    {% endif %}
+  {% endif %}
+
+  {{ style }}
+
+  {% render 'props-style-background', _settings: _settings %}
+
+  {% if set_border %}
+    {% render 'props-style-border', border_width: border_width, border_color: border_color %}
+  {% endif %}
+
+  {% if set_rounding %}
+    {% render 'props-style-radius', rounding_radius: rounding_radius, rounding_radius_custom: rounding_radius_custom %}
+  {% elsif has_default_rounding %}
+    --custom-radius: var(--radius-banner-default);
+    --layout-radius: var(--custom-radius);
+  {% endif %}
+
+  {% if section.settings.height_mode == 'column' %}
+    {% render 'props-style-custom-height', _settings: _settings, set_height_mobile: true %}
+  {% else %}
+    {% render 'props-style-custom-height', _settings: section.settings, set_height_mobile: true, height_mobile: height_mobile, custom_height_type_mobile: custom_height_type_mobile, custom_height_percentage_mobile: custom_height_percentage_mobile, custom_height_px_mobile: custom_height_px_mobile %}
+  {% endif %}
+{% endcapture %}
+
+{% capture class %}
+  {% if set_rounding and rounding_radius != 'none' %}
+    {% # Secret sauce - use set_rounding with rounding_radius_custom:0 for inset without rounding %}
+    overflow-hidden pair-column-rounded
+  {% elsif has_default_rounding %}
+    md:overflow-hidden md:rounded-[--custom-radius]
+  {% endif %}
+
+  w-full max-w-screen group/pair-column
+
+  {% if enable_spacing %}
+    pair-column-custom-spacing
+  {% endif %}
+
+  {%- if set_height -%}
+    {% if height == 'custom' and custom_height_type == 'percentage' %}
+      vars-custom-height-svh-support
+    {% endif %}
+  {%- endif -%}
+
+  {% if height_mobile == 'custom' and custom_height_type_mobile == 'percentage' %}
+    vars-mobile-custom-height-svh-support
+  {% endif %}
+
+  max-md:min-h-[--mobile-custom-height]
+
+  {% if section.settings.height_mode == 'column' %}
+    {% if align_self != blank %}
+      {% if enable_sticky %}
+        md:sticky
+      {% endif %}
+      {% case align_self %}
+        {% when 'start' %}
+          self-start {% if enable_sticky %} md:top-[--header-bottom] {% endif %}
+        {% when 'center' %}
+          self-center {% if enable_sticky %} md:top-[--header-bottom] {% endif %}
+        {% when 'end' %}
+          self-end {% if enable_sticky %} md:bottom-0 {% endif %}
+      {% endcase %}
+      md:min-h-[calc(var(--custom-height)-var(--header-bottom))]
+    {% else %}
+      md:min-h-[--custom-height]
+    {% endif %}
+  {% else %}
+    md:min-h-[--custom-height]
+  {% endif %}
+
+  {% render 'props-class-background', _settings: _settings %}
+
+  {% if background_transparent %}
+    pair-bg-transparent
+  {% else %}
+    pair-bg-opaque
+  {% endif %}
+
+  {% if pair_column_contain %}
+    pair-column-contain
+  {% endif %}
+
+  {% if set_border == true and border_width > 0 %}
+    pair-column-border
+  {% endif %}
+
+  {% unless section.settings.gap == 'custom' and section.settings.gap_custom == 0 %}
+    pair-gap
+  {% endunless %}
+
+  {% case block_index %}
+    {% when 0 %}
+      pair-column-1
+    {% when 1 %}
+      pair-column-2
+  {% endcase %}
+
+  {{ class }}
+{% endcapture %}
+
+<pair-column
+  x-parallax
+  class="{{ class }}"
+  style="{{ style }}"
+  {{ attributes }}
+>
+  {{ content }}
+</pair-column>

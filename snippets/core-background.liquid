@@ -1,0 +1,74 @@
+<!-- snippets/core-background.liquid -->
+
+
+{% doc %}
+  A container for "background" content like images, videos, and other media that is meant to be displayed behind the
+content of a section.
+{% enddoc %}
+
+{% liquid
+  if parallax == blank
+    if _settings.set_parallax
+      assign parallax = _settings.parallax
+    else
+      assign parallax = settings.parallax
+    endif
+  endif
+
+  if id == blank
+    assign id_prefix = id | default: id_prefix | default: block.id | default: section.id
+    assign id = id_prefix | append: '-background'
+  endif
+%}
+
+<background
+  id="{{ id }}"
+  class="
+    size-full grid-stack relative reverse-z-stack overflow-hidden z-0 {{ class }}
+    {% render 'props-class-custom-height',
+      _settings: _settings,
+      set_height: set_height, height: height, custom_height_type: custom_height_type, custom_height_percentage: custom_height_percentage, custom_height_px: custom_height_px,
+      set_height_mobile: set_height_mobile, height_mobile: height_mobile, custom_height_type_mobile: custom_height_type_mobile, custom_height_percentage_mobile: custom_height_percentage_mobile, custom_height_px_mobile: custom_height_px_mobile
+    %}
+    {% comment %} vh units are breaking the visual preview on some screen sizes, so we are using a aspect-ratio to set the height instead {% endcomment %}
+    {% if request.visual_preview_mode %}
+      aspect-video !min-h-0
+    {% endif %}
+  "
+
+  data-parallax-amount="{{ parallax }}"
+  style="
+    {% if parallax != 0 %}
+      --parallax-height: calc({{ 0 | plus: parallax | abs | times: 2 }} * 1%);
+      --parallax-top: calc(var(--parallax-height) * -0.5);
+    {% endif %}
+    {% render 'props-style-custom-height',
+      _settings: _settings,
+      set_height: set_height, height: height, custom_height_type: custom_height_type, custom_height_percentage: custom_height_percentage, custom_height_px: custom_height_px,
+      set_height_mobile: set_height_mobile, height_mobile: height_mobile, custom_height_type_mobile: custom_height_type_mobile, custom_height_percentage_mobile: custom_height_percentage_mobile, custom_height_px_mobile: custom_height_px_mobile
+    %}
+    {{ style }}
+  "
+  {{ attributes }}
+>
+  <div
+    class="
+      block relative reverse-z-stack
+      {% if parallax != 0 %}
+        h-[calc(100%+var(--parallax-height))]
+        top-[--parallax-top]
+      {% else %}
+        h-full
+      {% endif %}
+    "
+
+    {% if parallax > 0 %}
+      x-parallax:background
+    {% elsif parallax < 0 %}
+      x-parallax:background.reverse
+    {% endif %}
+  >
+    {% render 'core-background-overlay', _settings: _settings %}
+    {{ content }}
+  </div>
+</background>

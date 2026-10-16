@@ -1,0 +1,70 @@
+<!-- blocks/_product-upsell.liquid -->
+
+{% liquid
+  assign product = closest.product
+  assign upsell_list_metafield = product.metafields[settings.metafield_ns][settings.metafield_upsell]
+  assign upsell_list = block.settings.product_list | default: upsell_list_metafield.value
+%}
+
+{% capture content %}
+  {% if upsell_list == blank and request.visual_preview_mode %}
+    {% render 'product-upsell-list', limit: 2 %}
+  {% elsif upsell_list %}
+    {% if upsell_list.count > 0 %}
+      {% comment %} List reference {% endcomment %}
+      {%- render 'product-upsell-list', _settings: block.settings, products: upsell_list -%}
+    {% else %}
+      {% comment %} Single reference {% endcomment %}
+      {%- render 'product-upsell-list', _settings: block.settings, single_product: upsell_list -%}
+    {% endif %}
+  {% endif %}
+{% endcapture %}
+
+{% render 'product-block',
+  _settings: block.settings,
+  content: content,
+  attributes: block.shopify_attributes,
+  class: 'w-full'
+%}
+
+{% schema %}
+{
+  "name": "Upsell",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "Pair with"
+    },
+    {
+      "type": "paragraph",
+      "content": "Upsell is best as a one-click add to cart, so upsell products should have no variants. Upsell products with variants will open a quick-view window. [Learn more](https://groupthought.com/link/pipeline/v9/docs/upsell-products)"
+    },
+    {
+      "type": "product_list",
+      "id": "product_list",
+      "label": "Product"
+    },
+    {
+      "type": "range",
+      "id": "limit",
+      "label": "Product limit",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "default": 1
+    },
+    {
+      "type": "paragraph",
+      "content": "Recommendation: create a metafield called 'theme.upsell_list' and add it as a dynamic source."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Upsell"
+    }
+  ]
+}
+{% endschema %}

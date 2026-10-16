@@ -1,0 +1,879 @@
+<!-- sections/header-menu.liquid -->
+
+{% liquid
+  assign icon_size = section.settings.icon_size | plus: 110.0 | divided_by: 130.0
+  assign icon_stroke_weight = section.settings.icon_stroke_weight
+
+  assign left_items = ''
+  assign center_items = ''
+  assign right_items = ''
+
+  assign left_items_class = ''
+  assign center_items_class = ''
+  assign right_items_class = ''
+
+  if section.settings.color_scheme.settings.color_canvas.lightness < 50
+    assign header_menu_style = 'dark'
+  else
+    assign header_menu_style = 'light'
+  endif
+%}
+
+{% capture class %}
+  group/header-menu vars-control-xs md:vars-control-sm
+  [--control-font-size:--font-size-calc]
+  [--header-menu-link-hit-area-x:calc(var(--header-row-gap-x)/2)]
+  {% comment %} We use a 'shadow' so that the mega menu covers the line except when header menu is transparent and thus the header menu will appear to have one continous background {% endcomment %}
+  shadow-[0_1px_0px_0px_oklch(var(--content-oklch)/var(--header-section-border-opacity))]
+{% endcapture %}
+
+{% capture style %}
+  {% render 'props-style-gap', _settings: section.settings, vars: false, apply: false %}
+  --header-row-gap-x:var(--custom-gutter-x);
+  --icon-size: {{ icon_size }}em;
+  {% case icon_stroke_weight %}
+    {% when 'light' %}
+      --icon-stroke-weight: var(--icon-stroke-weight-light);
+    {% when 'bold' %}
+      --icon-stroke-weight: var(--icon-stroke-weight-bold);
+  {% endcase %}
+{% endcapture %}
+
+{% capture attributes %}
+  aria-label="{{ 'header.accessibility.global' | t }}"
+
+  {% comment %} Update this section when the cart API is called so the cart icon is updated {% endcomment %}
+  x-cart-api-section
+
+  data-header-menu-style="{{ header_menu_style }}"
+{% endcapture %}
+
+{% comment %} Always add drawer button to left {% endcomment %}
+{% capture left_items %}
+  {% render 'header-drawer-button', _settings: section.settings, target_device: section.settings.target_device_drawer_button %}
+{% endcapture %}
+
+{% comment %} Handle logo positioning {% endcomment %}
+
+{% if section.settings.logo_position == 'left' %}
+  {% capture left_items %}
+    {{ left_items }}
+    {% render 'header-logo', _settings: section.settings, target_device: 'desktop' %}
+  {% endcapture %}
+  {% capture center_items %}
+    {% render 'header-logo', _settings: section.settings, target_device: 'mobile' %}
+  {% endcapture %}
+{% elsif section.settings.logo_position == 'center' %}
+  {% capture center_items %}
+    {% render 'header-logo', _settings: section.settings %}
+  {% endcapture %}
+{% endif %}
+
+{% comment %} Handle navigation positioning {% endcomment %}
+{% if section.settings.target_device_drawer_button == 'mobile' %}
+  {% capture navigation %}
+    {% render 'header-menu-navigation', _settings: section.settings, target_device: 'desktop' %}
+  {% endcapture %}
+{% endif %}
+
+{% if section.settings.logo_position == 'left' %}
+  {% if section.settings.logo_position_left_menu_position == 'left' %}
+    {% comment %} The group containing the navigation should be allowed to shrink so that the content can overflow {% endcomment %}
+    {% assign left_items_class = 'md:min-w-0 md:grow-1' %}
+    {% assign center_items_class = 'md:hidden' %}
+    {% capture left_items %}
+      {{ left_items }}
+      {{ navigation }}
+    {% endcapture %}
+  {% elsif section.settings.logo_position_left_menu_position == 'center' %}
+    {% comment %} The group containing the navigation should be allowed to shrink so that the content can overflow {% endcomment %}
+    {% assign center_items_class = 'md:min-w-0 md:grow-1' %}
+    {% capture center_items %}
+      {{ center_items }}
+      {{ navigation }}
+    {% endcapture %}
+  {% elsif section.settings.logo_position_left_menu_position == 'right' %}
+    {% assign center_items_class = 'md:hidden' %}
+    {% comment %} The group containing the navigation should be allowed to shrink so that the content can overflow {% endcomment %}
+    {% assign right_items_class = 'md:min-w-0 md:grow-1' %}
+    {% capture right_items %}
+      {{ navigation }}
+    {% endcapture %}
+  {% endif %}
+{% elsif section.settings.logo_position == 'center' %}
+  {% comment %} Navigation is always in the left group when logo is centered so the group content should be allowed to overflow {% endcomment %}
+  {% assign left_items_class = 'md:min-w-0 md:grow-1' %}
+  {% assign right_items_class = 'md:grow-1' %}
+  {% capture left_items %}
+    {{ left_items }}
+    {{ navigation }}
+  {% endcapture %}
+{% endif %}
+
+{% comment %} Handle action buttons (always go to right) {% endcomment %}
+{% if section.settings.show_search_button
+  or section.settings.show_account_button
+  or section.settings.show_cart_button
+%}
+  {% assign has_right_items_on_desktop = false %}
+  {% assign has_right_items_on_mobile = false %}
+
+  {% if section.settings.show_cart_button %}
+    {% assign has_right_items_on_desktop = true %}
+    {% assign has_right_items_on_mobile = true %}
+  {% else %}
+    {% if section.settings.show_account_button and section.settings.target_device_account_button != 'mobile' %}
+      {% assign has_right_items_on_desktop = true %}
+    {% endif %}
+
+    {% if section.settings.show_search_button and section.settings.target_device_search_button != 'mobile' %}
+      {% assign has_right_items_on_desktop = true %}
+    {% endif %}
+
+    {% if section.settings.show_account_button and section.settings.target_device_account_button != 'desktop' %}
+      {% assign has_right_items_on_mobile = true %}
+    {% endif %}
+
+    {% if section.settings.show_search_button and section.settings.target_device_search_button != 'desktop' %}
+      {% assign has_right_items_on_mobile = true %}
+    {% endif %}
+  {% endif %}
+
+  {% capture right_items %}
+    {{ right_items }}
+    <div
+      class="
+        flex-row-center h-full
+        {% comment %} Padding is only really needed when the menu is positioned to the right and it's not the last item in the group on Desktop {% endcomment %}
+        {% if section.settings.logo_position_left_menu_position == 'right' and has_right_items_on_desktop %}
+          md:ps-[calc(var(--header-row-gap-x)/2)]
+        {% endif %}
+
+        {% comment %} Trim right padding on last item so it's flush with the grid {% endcomment %}
+        last:*:pe-0
+        last:*:hit-area-e-[--last-item-hit-area]
+      "
+      style="
+        --last-item-hit-area: min(calc(var(--header-row-gap-x) / 2 + var(--section-content-margin)), 50px);
+      "
+    >
+      {% capture nav_link_icon_type_class %}
+        {%- render 'props-class-type-preset', _settings: section.settings, settings_suffix: 'nav_link' -%}
+      {% endcapture %}
+
+      {% if section.settings.show_search_button %}
+        {% render 'header-phone-button', _settings: section.settings, target_device: section.settings.target_device_search_button, icon_type_class: nav_link_icon_type_class %}
+      {% endif %}
+
+      {% if section.settings.show_account_button %}
+        {% render 'header-account-button', _settings: section.settings, target_device: section.settings.target_device_account_button, icon_type_class: nav_link_icon_type_class %}
+      {% endif %}
+
+      {% if section.settings.show_cart_button %}
+        {% render 'header-cart-button', _settings: section.settings, icon_type_class: nav_link_icon_type_class %}
+      {% endif %}
+    </div>
+  {% endcapture %}
+{% endif %}
+
+{% capture content %}
+  <div
+    class="
+      focus-group
+      flex-row-center
+      min-w-fit shrink-1 basis-0 justify-start
+      gap-[--header-row-gap-x]
+
+      {% comment %} Trim left padding on first item so it's flush with the grid {% endcomment %}
+      first:*:ps-0
+      first:*:hit-area-s-[--first-item-hit-area]
+      only:*:!hit-area-x-[--first-item-hit-area]
+      {% comment %} Equalize left and right groups width on Mobile {% endcomment %}
+      max-md:grow-1
+      {{ left_items_class }}
+    "
+    style="
+      --first-item-hit-area: min(calc(var(--header-row-gap-x) / 2 + var(--section-content-margin)), 50px);
+    "
+  >
+    {{ left_items }}
+  </div>
+  <div
+    class="
+      focus-group
+      flex-row-center
+      min-w-min flex-initial justify-center
+      {{ center_items_class }}
+    "
+  >
+    {{ center_items }}
+  </div>
+  <div
+    class="
+      focus-group
+      flex-row-center
+      min-w-fit shrink-1 basis-0 justify-end
+
+      {% comment %} Equalize left and right groups width on Mobile {% endcomment %}
+      max-md:grow-1
+      {{ right_items_class }}
+    "
+  >
+    {{ right_items }}
+  </div>
+{% endcapture %}
+
+{% render 'header-section',
+  _settings: section.settings,
+  class: class,
+  inner_class: 'justify-between',
+  attributes: attributes,
+  style: style,
+  tag: 'nav',
+  content: content
+%}
+
+{% comment %} Megamenus get rendered outside of the header menu as they use <template> tags who's content is cloned into the correct parent menu item{% endcomment %}
+{% content_for 'blocks' %}
+
+{% # Help Google show a brand name and logo in search results or knowledge panels %}
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": {{ shop.name | json }},
+    {% if section.settings.logo %}
+    "logo": {{ section.settings.logo | image_url: width: section.settings.logo.width | prepend: "https:" | json }},
+    {% endif %}
+    "url": {{ shop.url | json }},
+    "sameAs": [
+      "https://www.instagram.com/boomcoffee.bg",
+      "https://www.facebook.com/boomcoffee.bg",
+      "https://www.tiktok.com/@boomcoffee.bg"
+    ],
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "contactType": "customer service",
+      "availableLanguage": ["Bulgarian", "English"]
+    }
+  }
+</script>
+
+{% schema %}
+{
+	"name": "Menu",
+	"tag": "section",
+	"limit": 1,
+	"settings": [
+		{
+			"type": "link_list",
+			"label": "Links",
+			"id": "linklist",
+			"default": "main-menu"
+		},
+		{
+			"type": "color_scheme",
+			"id": "color_scheme",
+			"label": "Color scheme",
+			"default": "scheme-default"
+		},
+		{
+			"type": "select",
+			"id": "background",
+			"label": "Background",
+			"default": "canvas",
+			"options": [
+				{
+					"value": "canvas",
+					"label": "Default"
+				},
+				{
+					"value": "tint",
+					"label": "Tint"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background color",
+			"default": "#f2f2f2",
+			"alpha": false,
+			"visible_if": "{{ section.settings.background == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "transparent",
+			"label": "Allow transparent header",
+			"default": false,
+			"info": "First section must support transparent headers and have transparent header options enabled."
+		},
+		{
+			"type": "header",
+			"content": "Logo"
+		},
+		{
+			"type": "image_picker",
+			"id": "logo",
+			"label": "Image"
+		},
+		{
+			"type": "range",
+			"id": "logo_max_limit",
+			"label": "Width",
+			"min": 5,
+			"max": 495,
+			"step": 5,
+			"unit": "px",
+			"default": 120,
+			"visible_if": "{{ section.settings.logo != blank }}"
+		},
+		{
+			"type": "range",
+			"id": "logo_font_size",
+			"label": "Font size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 5,
+			"info": "If you do not select a logo image your store name will be used instead at this font size",
+			"visible_if": "{{ section.settings.logo == blank }}"
+		},
+		{
+			"type": "paragraph",
+			"content": "The transparent header detects the darkness of the section beneath. The colors switch between the light mode and dark mode palettes in your global settings. Your default logo is assumed to be dark.",
+			"visible_if": "{{ section.settings.transparent == true and section.settings.logo != blank }}"
+		},
+		{
+			"type": "image_picker",
+			"id": "transparent_white_logo",
+			"label": "White logo",
+			"visible_if": "{{ section.settings.transparent == true and section.settings.logo != blank }}"
+		},
+		{
+			"type": "paragraph",
+			"content": "This will be used for dark section overlays. If you do not select a white logo, default logo will be used.",
+			"visible_if": "{{ section.settings.transparent == true and section.settings.logo != blank }}"
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "logo_position",
+			"label": "Logo",
+			"default": "left",
+			"options": [
+				{
+					"value": "left",
+					"label": "Left"
+				},
+				{
+					"value": "center",
+					"label": "Center"
+				},
+			]
+		},
+		{
+			"type": "select",
+			"id": "logo_position_left_menu_position",
+			"label": "Menu",
+			"default": "center",
+			"options": [
+				{
+					"value": "left",
+					"label": "Left"
+				},
+				{
+					"value": "center",
+					"label": "Center"
+				},
+				{
+					"value": "right",
+					"label": "Right"
+				},
+			],
+			"visible_if": "{{ section.settings.logo_position == 'left' }}"
+		},
+		{
+			"type": "select",
+			"id": "content_width",
+			"label": "Width",
+			"default": "full",
+			"options": [
+				{
+					"value": "full",
+					"label": "Full"
+				},
+				{
+					"value": "page",
+					"label": "Page"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "padding_y",
+			"label": "Padding",
+			"min": 0,
+			"max": 40,
+			"step": 2,
+			"unit": "px",
+			"default": 16
+		},
+		{
+			"type": "select",
+			"id": "gap",
+			"label": "Gap",
+			"default": "md",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "gap_custom",
+			"label": "Custom gap",
+			"default": 30,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ section.settings.gap == 'custom'  }}"
+		},
+		{
+			"type": "header",
+			"content": "Typography"
+		},
+		{
+			"type": "select",
+			"id": "type_preset_nav_link",
+			"label": "Main menu",
+			"default": "btn",
+			"options": [
+				{
+					"value": "p",
+					"label": "Paragraph"
+				},
+				{
+					"value": "btn",
+					"label": "Button"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_resize_nav_link",
+			"label": "Size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			],
+			"visible_if": "{{ section.settings.type_preset_nav_link != 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_font_nav_link",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ section.settings.type_preset_nav_link == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size_nav_link",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 4,
+			"visible_if": "{{ section.settings.type_preset_nav_link == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase_nav_link",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ section.settings.type_preset_nav_link == 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_preset_dropdown",
+			"label": "Dropdown",
+			"default": "p",
+			"options": [
+				{
+					"value": "p",
+					"label": "Paragraph"
+				},
+				{
+					"value": "btn",
+					"label": "Button"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_resize_dropdown",
+			"label": "Size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			],
+			"visible_if": "{{ section.settings.type_preset_dropdown != 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_font_dropdown",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ section.settings.type_preset_dropdown == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size_dropdown",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 4,
+			"visible_if": "{{ section.settings.type_preset_dropdown == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase_dropdown",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ section.settings.type_preset_dropdown == 'custom' }}"
+		},
+		{
+			"type": "header",
+			"content": "Sticky"
+		},
+		{
+			"type": "select",
+			"id": "sticky_style",
+			"label": "Sticky scroll",
+			"default": "never",
+			"options": [
+				{
+					"value": "always",
+					"label": "Sticky"
+				},
+				{
+					"value": "scroll",
+					"label": "Scroll up"
+				},
+				{
+					"value": "never",
+					"label": "None"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "sticky_background_style",
+			"label": "Background",
+			"default": "solid",
+			"visible_if": "{{ section.settings.sticky_style != 'never' }}",
+			"options": [
+				{
+					"value": "solid",
+					"label": "Solid"
+				},
+				{
+					"value": "blur",
+					"label": "Blur"
+				}
+			]
+		},
+		{
+			"type": "header",
+			"content": "Buttons"
+		},
+		{
+			"type": "select",
+			"label": "Menu Drawer",
+			"id": "target_device_drawer_button",
+			"default": "mobile",
+			"options": [
+				{
+					"value": "mobile",
+					"label": "Mobile"
+				},
+				{
+					"value": "both",
+					"label": "Both"
+				}
+			]
+		},
+		{
+			"type": "checkbox",
+			"id": "show_cart_button",
+			"label": "Cart",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "show_search_button",
+			"label": "Search",
+			"default": false
+		},
+		{
+			"type": "select",
+			"label": "Show on",
+			"id": "target_device_search_button",
+			"default": "both",
+			"visible_if": "{{ section.settings.show_search_button == true }}",
+			"options": [
+				{
+					"value": "mobile",
+					"label": "Mobile"
+				},
+				{
+					"value": "desktop",
+					"label": "Desktop"
+				},
+				{
+					"value": "both",
+					"label": "Both"
+				}
+			]
+		},
+		{
+			"type": "checkbox",
+			"id": "show_account_button",
+			"label": "Account",
+			"default": false
+		},
+		{
+			"type": "select",
+			"label": "Show on",
+			"id": "target_device_account_button",
+			"default": "both",
+			"visible_if": "{{ section.settings.show_account_button == true }}",
+			"options": [
+				{
+					"value": "mobile",
+					"label": "Mobile"
+				},
+				{
+					"value": "desktop",
+					"label": "Desktop"
+				},
+				{
+					"value": "both",
+					"label": "Both"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "label_style",
+			"label": "Desktop Style",
+			"default": "text",
+			"options": [
+				{
+					"value": "text",
+					"label": "Text"
+				},
+				{
+					"value": "icon",
+					"label": "Icon"
+				},
+				{
+					"value": "both",
+					"label": "Both"
+				}
+			],
+			"info": "Buttons are always icons on mobile"
+		},
+		{
+			"type": "range",
+			"id": "icon_size",
+			"label": "Icon size",
+			"min": 50,
+			"max": 200,
+			"step": 10,
+			"default": 110,
+			"unit": "%",
+			"info": "Percentage of text size"
+		},
+		{
+			"type": "select",
+			"id": "icon_stroke_weight",
+			"label": "Icon stroke weight",
+			"default": "regular",
+			"options": [
+				{
+					"value": "light",
+					"label": "Light"
+				},
+				{
+					"value": "regular",
+					"label": "Regular"
+				},
+				{
+					"value": "bold",
+					"label": "Bold"
+				}
+			]
+		},
+		{
+			"type": "header",
+			"content": "Collection images",
+			"info": "Displays collection images as headers in the mega menu.",
+			"visible_if": "{{ section.settings.show_collection_images == true }}"
+		},
+		{
+			"type": "header",
+			"content": "Collection images",
+			"visible_if": "{{ section.settings.show_collection_images == false }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_collection_images",
+			"label": "Show collection images",
+			"default": true
+		},
+		{
+			"type": "range",
+			"id": "collection_images_aspect_ratio",
+			"min": 0.5,
+			"max": 5,
+			"step": 0.1,
+			"unit": ":1",
+			"label": "Collection image aspect ratio",
+			"default": 2.5,
+			"visible_if": "{{ section.settings.show_collection_images == true }}"
+		},
+		{
+			"type": "header",
+			"content": "Links"
+		},
+		{
+			"type": "checkbox",
+			"id": "underline_current_page",
+			"label": "Underline current page",
+			"default": true
+		},
+	],
+	"blocks": [
+		{
+			"type": "_megamenu"
+		}
+	],
+	"presets": [
+		{
+			"name": "Menu",
+			"blocks": []
+		}
+	],
+	"enabled_on": {
+		"groups": [
+			"header"
+		]
+	}
+}
+{% endschema %}

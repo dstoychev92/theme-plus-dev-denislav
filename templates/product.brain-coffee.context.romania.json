@@ -1,0 +1,125 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "context": {
+    "market": "romania"
+  },
+  "parent": "product.brain-coffee.json",
+  "sections": {
+    "section_ugc_video_slider_a3e6ej": {
+      "type": "section-ugc-video-slider",
+      "disabled": false,
+      "settings": {
+        "header-c4655559574c4e3d0361b611acb2ab31": null,
+        "color_scheme": "",
+        "show_rating": false,
+        "header-d71cf5b0581fc74c0724d8ffdc230c5d": null,
+        "hide_on_markets": "greece"
+      },
+      "blocks": {
+        "ugc_video_testimonial_gRzXeC": {
+          "type": "_ugc-video-testimonial",
+          "disabled": false,
+          "settings": {
+            "video": "",
+            "poster": null,
+            "name": "",
+            "role": "",
+            "quote": "",
+            "rating": 5,
+            "gradient_1": "#e0c0a0",
+            "gradient_2": "#8b5a2b",
+            "header-3df4cf63e3e5cb9d869c6d83ca297ff2": null,
+            "product": ""
+          }
+        },
+        "ugc_video_testimonial_UrChVN": {
+          "type": "_ugc-video-testimonial",
+          "disabled": false,
+          "settings": {
+            "video": "",
+            "poster": null,
+            "name": "",
+            "role": "",
+            "quote": "",
+            "rating": 5,
+            "gradient_1": "#d4b896",
+            "gradient_2": "#7a5230",
+            "header-3df4cf63e3e5cb9d869c6d83ca297ff2": null,
+            "product": ""
+          }
+        },
+        "ugc_video_testimonial_L7pfgM": {
+          "type": "_ugc-video-testimonial",
+          "disabled": false,
+          "settings": {
+            "video": "",
+            "poster": null,
+            "name": "",
+            "role": "",
+            "quote": "",
+            "rating": 5,
+            "gradient_1": "#e0c0a0",
+            "gradient_2": "#8b5a2b",
+            "header-3df4cf63e3e5cb9d869c6d83ca297ff2": null,
+            "product": ""
+          }
+        },
+        "header": {
+          "type": "_section-title",
+          "disabled": false,
+          "static": true,
+          "blocks": {},
+          "block_order": [],
+          "settings": {
+            "text": "<em>BOOM!</em> В ТВОЯ ДЕН",
+            "type_preset": "section",
+            "type_resize": "lg",
+            "type_font": "heading",
+            "type_size": 8,
+            "type_uppercase": false,
+            "header-1532a73cc92977a6d651b68b3911f5c6": null,
+            "set_color": false,
+            "color": "content",
+            "color_custom": "#000000",
+            "header-c05d1ee3ee0c31c822836b55357cff0c": null,
+            "set_spacing": false,
+            "buffer_bottom": 0,
+            "gap": "sm",
+            "gap_custom": 0,
+            "header-feddc523522ce7eaac8639b9af6682c6": null,
+            "set_heading_tag": false,
+            "heading_tag": "h2"
+          }
+        }
+      },
+      "block_order": [
+        "ugc_video_testimonial_gRzXeC",
+        "ugc_video_testimonial_UrChVN",
+        "ugc_video_testimonial_L7pfgM"
+      ],
+      "name": "UGC Video Slider"
+    }
+  },
+  "order": [
+    "main",
+    "section_custom_fLFbUq",
+    "section_ugc_video_slider_a3e6ej",
+    "section_timeline_aePaFe",
+    "section_pair_BpFcYU",
+    "section_custom_FriAEX",
+    "section_custom_mYMU6x",
+    "section_custom_khXwkE",
+    "section_custom_E3nLMY",
+    "apps_P8YhEM",
+    "section_accordion_dKFjpd",
+    "section_pair_kJyawd"
+  ]
+}

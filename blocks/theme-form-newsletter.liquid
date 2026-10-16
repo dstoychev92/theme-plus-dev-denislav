@@ -1,0 +1,59 @@
+<!-- blocks/theme-form-newsletter.liquid -->
+
+{% assign form_id = 'form-newsletter-' | append: block.id %}
+
+{% render 'newsletter-form',
+  _settings: block.settings,
+  id: form_id,
+  attributes: block.shopify_attributes,
+  class: 'w-full max-w-[420px]'
+%}
+
+{% schema %}
+{
+	"name": "Newsletter signup form",
+	"tag": null,
+	"settings": [
+		{
+			"type": "paragraph",
+			"content": "Subscribers are added to your [customer admin](/admin/customers) and marked as 'subscribed'."
+		},
+		{
+			"type": "select",
+			"id": "newsletter_appearance",
+			"label": "Style",
+			"default": "box",
+			"options": [
+				{
+					"value": "box",
+					"label": "Box"
+				},
+				{
+					"value": "line",
+					"label": "Line"
+				}
+			]
+		},
+		{
+			"type": "textarea",
+			"id": "success_message",
+			"label": "Success message",
+			"default": "Thank you for joining our mailing list",
+			"info": "The success message can contain an optional discount code to be applied at checkout."
+		},
+		{
+			"type": "checkbox",
+			"id": "show_captcha_terms",
+			"label": "Captcha message",
+			"info": "Enable if spam protection is turned on in [online store preferences](/admin/online_store/preferences) to show hCaptcha terms inline and prevent sticky terms button.",
+			"default": true
+		},
+	],
+	"presets": [
+		{
+			"name": "Newsletter signup form",
+			"category": "Form"
+		}
+	]
+}
+{% endschema %}

@@ -1,0 +1,286 @@
+{% liquid
+  assign layout_desktop = layout_desktop | default: 'slider'
+  assign layout_tablet = layout_tablet | default: layout_desktop
+  assign layout_mobile = layout_mobile | default: 'slider'
+
+  assign pagination_style = pagination_style | default: 'lines'
+
+  assign slider_control_style = slider_control_style | default: settings.slider_control_style
+
+  if _settings.set_pagination_style
+    assign slider_control_style = _settings.slider_control_style
+  endif
+
+  assign progress_bar_visibility = progress_bar_visibility | default: _settings.progress_bar_visibility | default: 'desktop'
+%}
+
+{% assign header_has_slider_arrows = false %}
+
+{% if layout_desktop == 'slider' %}
+  {% assign header_has_slider_arrows = true %}
+
+  {% capture overflow_button_wrapper_class %}
+    pointer-events-auto
+    max-md:hidden
+  {% endcapture %}
+
+  {% capture overflow_side_button_wrapper_class %}
+    self-center row-[2] px-r4 max-md:hidden {{ overflow_button_wrapper_class }}
+  {% endcapture %}
+
+  {% capture overflow_side_button_attributes %}
+    :aria-hidden="!(overflowButtonPlacement === 'side' && $carousel.isEnabled)"
+    role="presentation"
+  {% endcapture %}
+
+  {% unless _settings.content_width == 'full' %}
+    {% capture prev_overflow_side_button %}
+      <div
+        class="justify-self-end col-[1/card-list-start] {{ overflow_side_button_wrapper_class }}"
+        x-intersect:enter.full="if ($el.offsetParent !== null) sidePrevInView = true"
+        x-intersect:leave.full="if ($el.offsetParent !== null) sidePrevInView = false"
+        {{ overflow_side_button_attributes }}
+      >
+        <div
+          class="opacity-0 entrance-item entrance-standard pointer-events-none transition-opacity duration-700"
+          :class="{
+            '!opacity-100 !pointer-events-auto': overflowButtonPlacement === 'side' && $carousel.isEnabled
+          }"
+        >
+          {% capture prev_overflow_button_attributes %}
+            :class="{ '!opacity-50': !$overflow.start, '!opacity-100': $overflow.start }"
+          {% endcapture %}
+          {% render 'slider-overflow-button', type: 'prev', attributes: prev_overflow_button_attributes, background_style: slider_control_style %}
+        </div>
+      </div>
+    {% endcapture %}
+  {% endunless %}
+
+  {% unless _settings.content_width == 'full' %}
+    {% capture next_overflow_side_button %}
+      <div
+        class="justify-self-start col-[card-list-end/fullbleed-end] {{ overflow_side_button_wrapper_class }}"
+        x-intersect:enter.full="if ($el.offsetParent !== null) sideNextInView = true"
+        x-intersect:leave.full="if ($el.offsetParent !== null) sideNextInView = false"
+        {{ overflow_side_button_attributes }}
+      >
+        <div
+          class="opacity-0 entrance-item entrance-standard pointer-events-none transition-opacity duration-700"
+          :class="{
+            '!opacity-100 !pointer-events-auto': overflowButtonPlacement === 'side' && $carousel.isEnabled
+          }"
+        >
+          {% capture next_overflow_button_attributes %}
+            :class="{ '!opacity-50': !$overflow.end, '!opacity-100': $overflow.end }"
+          {% endcapture %}
+          {% render 'slider-overflow-button', type: 'next', attributes: next_overflow_button_attributes, background_style: slider_control_style %}
+        </div>
+      </div>
+    {% endcapture %}
+  {% endunless %}
+
+  {% capture prev_overflow_top_button %}
+    <div class="entrance-item entrance-standard {{ overflow_button_wrapper_class }}">
+      <div
+        {% if _settings.content_width == 'full' %}
+          class="opacity-100 transition-opacity duration-700"
+          :class="{
+            '!opacity-0': $carousel.isEnabled == false
+          }"
+        {% else %}
+          class="opacity-0 pointer-events-none transition-opacity duration-700"
+          :class="{
+            '!opacity-100 !pointer-events-auto': overflowButtonPlacement === 'top' && $carousel.isEnabled
+          }"
+        {% endif %}
+      >
+        {% capture prev_overflow_button_attributes %}
+          :class="{
+            '!opacity-50': !$overflow.start,
+            '!opacity-100': $overflow.end
+          }"
+          tabindex="-1"
+        {% endcapture %}
+        {% render 'slider-overflow-button', type: 'prev', attributes: prev_overflow_button_attributes, background_style: slider_control_style %}
+      </div>
+    </div>
+  {% endcapture %}
+
+  {% capture next_overflow_top_button %}
+    <div class="entrance-item entrance-standard {{ overflow_button_wrapper_class }}">
+      <div
+        {% if _settings.content_width == 'full' %}
+          class="opacity-100 transition-opacity duration-700"
+          :class="{
+            '!opacity-0': $carousel.isEnabled == false
+          }"
+        {% else %}
+          class="opacity-0 pointer-events-none transition-opacity duration-700"
+          :class="{
+            '!opacity-100 !pointer-events-auto': overflowButtonPlacement === 'top' && $carousel.isEnabled
+          }"
+        {% endif %}
+      >
+        {% capture next_overflow_button_attributes %}
+          :class="{
+            '!opacity-50': !$overflow.end,
+            '!opacity-100': $overflow.end
+          }"
+          tabindex="-1"
+        {% endcapture %}
+        {% render 'slider-overflow-button', type: 'next', attributes: next_overflow_button_attributes, background_style: slider_control_style %}
+      </div>
+    </div>
+  {% endcapture %}
+
+  {% if _settings.title_placement == 'center' %}
+    <div class="entrance-container row-[btns-start/btns-end] col-[btn-prev-start/btn-prev-end] flex items-center justify-start pe-layout-gutter-x">
+      {{ prev_overflow_top_button }}
+    </div>
+    <div class="entrance-container row-[btns-start/btns-end] col-[btn-next-start/btn-next-end] flex items-center justify-end ps-layout-gutter-x">
+      {{ next_overflow_top_button }}
+    </div>
+  {% else %}
+    <div
+      class="
+        flex-row-center gap-x-r6 w-fit row-[btns-start/btns-end] col-[btns-start/btns-end]
+        entrance-container *:entrance-standard *:auto-stagger-animations-500
+        {% if _settings.title_placement == 'left' %}
+          justify-end ps-layout-gutter-x
+        {% elsif _settings.title_placement == 'right' %}
+          justify-start pe-layout-gutter-x
+        {% endif %}
+      "
+    >
+      {{ prev_overflow_top_button }}
+      {{ next_overflow_top_button }}
+    </div>
+  {% endif %}
+
+  {% unless _settings.content_width == 'full' %}
+    <div class="max-md:hidden row-[card-list-start/card-list-end] col-[1/card-list-start] flex flex-col justify-self-end pe-r10 justify-center">
+      {{ prev_overflow_side_button }}
+    </div>
+  {% endunless %}
+
+  {% unless _settings.content_width == 'full' %}
+    <div class="max-md:hidden row-[card-list-start/card-list-end] col-[card-list-end/-1] flex flex-col justify-self-start ps-r10 justify-center">
+      {{ next_overflow_side_button }}
+    </div>
+  {% endunless %}
+{% endif %}
+
+{% if header != blank %}
+  <div
+    class="
+      empty:hidden flex items-center min-w-fit
+      row-[header-start/header-end] col-[header-start/header-end]
+      max-md:col-[card-list-start/card-list-end]
+
+      {% if _settings.title_placement == 'center' %}
+        justify-center
+        vars-content-align-center
+      {% elsif _settings.title_placement == 'left' %}
+        justify-start
+        vars-content-align-start
+      {% elsif _settings.title_placement == 'right' %}
+        justify-end
+        vars-content-align-end
+      {% endif %}
+    "
+  >
+    {{- header -}}
+  </div>
+{% endif %}
+
+{% liquid
+  assign show_progress_bar_mobile = false
+  assign show_progress_bar_desktop = false
+
+  if progress_bar_visibility == 'mobile' or progress_bar_visibility == 'both'
+    assign show_progress_bar_mobile = true
+  endif
+
+  if progress_bar_visibility == 'desktop' or progress_bar_visibility == 'both'
+    assign show_progress_bar_desktop = true
+  endif
+
+  if progress_bar_visibility == 'never'
+    assign show_progress_bar_mobile = false
+    assign show_progress_bar_desktop = false
+  endif
+%}
+
+{% if show_progress_bar_mobile or show_progress_bar_desktop %}
+  {% liquid
+    unless show_progress_bar_mobile
+      assign progress_bar_class = progress_bar_class | append: ' max-md:hidden'
+      # Hide footer if it only has progress-bar and its hidden on mobile
+      if footer == null
+        assign footer_class = footer_class | append: ' max-md:hidden'
+      endif
+    endunless
+    unless show_progress_bar_desktop
+      assign progress_bar_class = progress_bar_class | append: ' md:hidden'
+      # Hide footer if it only has progress-bar and its hidden on desktop
+      if footer == null
+        assign footer_class = footer_class | append: ' md:hidden'
+      endif
+    endunless
+  %}
+  {% capture footer %}
+    {% render 'slider-progress-bar', class: progress_bar_class %}
+    {{- footer -}}
+  {% endcapture %}
+{% endif %}
+
+{% capture card_list_class %}
+  vars-card-list-full-width-desktop-card-{{ layout_desktop }}
+  vars-card-list-full-width-tablet-card-{{ layout_tablet }}
+  vars-card-list-full-width-mobile-card-{{ layout_mobile }}
+{% endcapture %}
+
+<div
+  class="
+    {% if header != blank or header_has_slider_arrows %}
+      row-[card-list-start/card-list-end]
+    {% else %}
+      row-[section-title-start/card-list-end]
+    {% endif %}
+    {% if layout_mobile == 'grid' and layout_tablet == 'grid' and layout_desktop == 'grid' %}
+      col-[content-start/content-end]
+    {% else %}
+      col-[fullbleed-start/fullbleed-end]
+      {% if layout_mobile == 'slider' %}
+        {% # Avoids iOS scroll reset when the track is nested inside grid, like in section-card-grid %}
+        overflow-hidden
+      {% endif %}
+    {% endif %}
+
+    md:col-[card-list-start/card-list-end]
+  "
+  style="
+    --card-list-columns-desktop: {{ columns_lg }};
+    --card-list-columns-tablet: {{ columns_md }};
+    --card-list-columns-mobile: {{ columns_sm }};
+  "
+>
+  {% if layout_mobile == 'grid' and layout_tablet == 'grid' and layout_desktop == 'grid' %}
+    {% render 'card-grid', items: list_items, columns_sm: columns_sm, columns_md: columns_md, columns_lg: columns_lg %}
+  {% else %}
+    {% render 'core-card-slider', items: list_items, class: card_list_class %}
+  {% endif %}
+</div>
+
+{% if footer != blank %}
+  <div
+    class="
+      empty:hidden
+      row-[footer-start/footer-end] col-[card-list-start/card-list-end]
+      entrance-item entrance-fade
+      {{ footer_class }}
+    "
+  >
+    {{- footer -}}
+  </div>
+{% endif %}

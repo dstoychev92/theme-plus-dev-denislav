@@ -1,0 +1,21 @@
+{% liquid
+  if form_id == null
+    assign form_id = 'cart-' | append: section.id
+  endif
+%}
+
+{% form 'cart', cart, id: form_id %}
+  <ul
+    class="{{ class }} group/items empty:hidden"
+    {{ attributes }}
+  >
+    {% for line_item in cart.items %}
+      {% render 'cart-line-item',
+        show_quantity_selector: show_quantity_selector,
+        quantity_size: quantity_size,
+        index: forloop.index0,
+        line_item: line_item
+      %}
+    {% endfor %}
+  </ul>
+{% endform %}

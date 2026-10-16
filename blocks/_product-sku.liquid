@@ -1,0 +1,228 @@
+<!-- blocks/_product-sku.liquid -->
+
+{% liquid
+  assign product = closest.product
+
+  if product == blank and request.visual_preview_mode
+    assign product = collections.all.products.first
+  endif
+
+  assign current_variant = product.selected_or_first_available_variant
+  assign sku = current_variant.sku
+%}
+
+{% capture sku_style %}
+  {% if block.settings.set_color and block.settings.color == 'custom' %}
+    --color-custom-text: {{ block.settings.color_custom }};
+  {% endif %}
+{% endcapture %}
+
+{% capture sku_class %}
+  {% if block.settings.set_color %}
+    text-{{ block.settings.color | default: 'content' }}
+  {% else %}
+    text-default
+  {% endif %}
+  inline-richtext
+{% endcapture %}
+
+{% assign sku_attributes = 'aria-live="polite"' %}
+
+{% if sku %}
+  {% capture content %}
+    {% render 'core-text-preset',
+      _settings: block.settings,
+      tag: 'div',
+      text: sku,
+      style: sku_style,
+      class: sku_class,
+      attributes: sku_attributes
+    %}
+  {% endcapture %}
+
+  {% render 'product-block', content: content, attributes: block.shopify_attributes, _settings: block.settings %}
+{% endif %}
+
+{% schema %}
+{
+	"name": "SKU",
+	"tag": null,
+	"settings": [
+		{
+			"type": "select",
+			"id": "type_preset",
+			"label": "Style",
+			"default": "p",
+			"options": [
+				{
+					"value": "section",
+					"label": "Section title"
+				},
+				{
+					"value": "kicker",
+					"label": "Kicker"
+				},
+				{
+					"value": "p",
+					"label": "Paragraph"
+				},
+				{
+					"value": "h1",
+					"label": "Heading 1"
+				},
+				{
+					"value": "h2",
+					"label": "Heading 2"
+				},
+				{
+					"value": "h3",
+					"label": "Heading 3"
+				},
+				{
+					"value": "h4",
+					"label": "Heading 4"
+				},
+				{
+					"value": "h5",
+					"label": "Heading 5"
+				},
+				{
+					"value": "h6",
+					"label": "Heading 6"
+				},
+				{
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_resize",
+			"label": "Text size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset != 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_font",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 4,
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "header",
+			"content": "Color"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_color",
+			"label": "Set color",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "color",
+			"label": "Color",
+			"default": "content",
+			"visible_if": "{{ block.settings.set_color == true  }}",
+			"options": [
+				{
+					"value": "content",
+					"label": "Text default"
+				},
+				{
+					"value": "muted",
+					"label": "Text muted"
+				},
+				{
+					"value": "primary",
+					"label": "Primary accent"
+				},
+				{
+					"value": "secondary",
+					"label": "Link accent"
+				},
+				{
+					"value": "sale",
+					"label": "Sale"
+				},
+				{
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "color",
+			"id": "color_custom",
+			"alpha": true,
+			"default": "#000000",
+			"visible_if": "{{ block.settings.color == 'custom' and block.settings.set_color == true  }}",
+			"label": "Custom color"
+		},
+	],
+	"presets": [
+		{
+			"name": "SKU"
+		}
+	]
+}
+{% endschema %}

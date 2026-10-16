@@ -1,0 +1,27 @@
+{% assign mix_names = "5,10,20,30,40,50,60,70,80,90,95,98" | split: ',' %}
+
+<div class="flex flex-col gap-x-r2 p-r2">
+  <span class="text-r3 font-bold font-family-accent">{{ name }}-mix-x</span>
+  <div class="mt-r4 flex flex-row gap-x-r2">
+    {% for mix in mix_names %}
+      {%- if forloop.index0 > 5 -%}
+        {%- assign contrast_name_smart = contrast_name -%}
+      {%- else -%}
+        {%- assign contrast_name_smart = name -%}
+      {%- endif -%}
+      {%- capture swatch -%}
+        <div class="flex flex-center size-r6 rounded-sm shadow bg-{{ name }}-mix-{{ mix }}">
+            {% comment %} <div class="absolute left-0 top-0 size-full {{ bg_contrast_class }} clip-path-shape-[polygon(100%_0,_100%_100%,_0_100%)]"></div> {% endcomment %}
+            <span class="text-r1 font-bold text-{{ contrast_name_smart }}">{{ mix }}</span>
+        </div>
+      {%- endcapture -%}
+      {%- capture tooltip -%}
+        <div class="text-r4">
+            <div >Background: bg-{{ name }}-mix-{{ mix }}</div>
+            <div class="text-r4">Text: text-{{ contrast_name_smart }}</div>
+        </div>
+      {%- endcapture -%}
+      {% render 'core-tooltip', trigger: swatch, content: tooltip %}
+    {% endfor %}
+  </div>
+</div>

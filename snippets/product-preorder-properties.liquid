@@ -1,0 +1,16 @@
+{% comment %} This will add a line item property with 'Sale type: Pre-order' to preorder products {% endcomment %}
+{% liquid
+  if settings.metafield_preorder != blank
+    assign preorder_metafield_namespace = settings.metafield_preorder | split: '.' | first
+    assign preorder_metafield_key = settings.metafield_preorder | split: '.' | last
+    assign preorder_metafield = product.metafields[preorder_metafield_namespace][preorder_metafield_key]
+  endif
+%}
+
+{%- if preorder_metafield.value == true -%}
+  <input
+    type="hidden"
+    name="properties[{{ 'product.pre_order.cart_line_label' | t }}]"
+    value="{{ 'product.pre_order.cart_line_value' | t }}"
+  >
+{% endif %}

@@ -1,0 +1,642 @@
+<!-- sections/popups.liquid -->
+
+{% comment %} Automatic trigger to show the dialog {% endcomment %}
+
+{% comment %}
+  Design mode wrapper to track section vs block selection state
+  - When section is selected: show all popups
+  - When a block is selected: show only that popup
+{% endcomment %}
+{% if request.design_mode %}
+  <div
+    x-data="{ selectedBlockId: null }"
+    @shopify:section:deselect.window="
+      if ($event.detail.sectionId === '{{ section.id }}') {
+        selectedBlockId = null;
+      }
+    "
+    @shopify:block:select.window="
+      if ($isSelectedSection) {
+        selectedBlockId = $event.detail.blockId;
+      }
+    "
+    @shopify:block:deselect.window="
+      if ($isSelectedSection) {
+        selectedBlockId = null;
+      }
+    "
+  >
+{% endif %}
+
+{% for block in section.blocks %}
+  {% liquid
+    assign position = block.settings.position
+    assign title = block.settings.title
+    assign text = block.settings.text
+    assign trigger = block.settings.trigger
+    assign cookie_name = block.id | append: '-' | append: section.id
+  %}
+
+  {% capture trigger_logic %}
+    {% comment %} Do not show the popup on the challenge page {% endcomment %}
+    if (window.location.pathname == '/challenge') return;
+
+    {% case trigger %}
+      {% when 'always' %}
+        {% comment %} On page load {% endcomment %}
+        $dialog.open();
+      {% when 'delayed' %}
+        {% comment %} After a period of time {% endcomment %}
+        const delay = 10000; // 10 seconds
+        setTimeout(() => {
+          $dialog.open();
+        }, delay);
+      {% when 'bottom' %}
+        {% comment %} When the bottom of the page is reached {% endcomment %}
+        let abortController = new AbortController();
+        const showAtBottom = () => {
+          let raf;
+          if (raf) window.cancelAnimationFrame(raf);
+          raf = window.requestAnimationFrame(() => {
+            window.requestIdleCallback(
+              () => {
+                const isAtBottom = Math.round(window.innerHeight + window.scrollY) >= Math.round(document.body.offsetHeight);
+                if (isAtBottom) {
+                  $dialog.open();
+                  abortController.abort();
+                }
+              },
+              {timeout: 300}
+            );
+          });
+        };
+        window.addEventListener('scroll', () => showAtBottom(), {
+          signal: abortController?.signal,
+          passive: true
+        })
+
+      {% when 'idle' %}
+        {% comment %} When the customer has been idle for a period of time {% endcomment %}
+        let timer;
+        const idleTime = 60000; // 1 minute
+        const abortController = new AbortController();
+        const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+        const resetTimer = () => {
+          clearTimeout(timer);
+          timer = setTimeout(() => {
+            $dialog.open();
+            abortController.abort();
+          }, idleTime);
+        }
+        events.forEach((name) => {
+          document.addEventListener(name, resetTimer, {
+            signal: abortController?.signal,
+            passive: true
+          });
+        });
+        resetTimer();
+    {% endcase %}
+  {% endcapture %}
+
+  {% capture cookie_logic %}
+    const cookieExists = $cookie.read('{{ cookie_name }}') != null;
+
+    {% comment %} Return if the user already closed it manually {% endcomment %}
+    if (cookieExists) return;
+
+    {% comment %} Add a Cookie on popup-close so it stays permanently closed {% endcomment %}
+    $watch('$dialog.isOpen', (value) => {
+      if (value == false) {
+        $cookie.write('{{ cookie_name }}', 'user_has_closed');
+      }
+    });
+  {% endcapture %}
+
+  {% capture dialog_content %}
+    <div class="relative flex flex-col gap-r5 text-r4">
+      <div class="flex flex-col gap-r5 pe-r9 text-r4">
+        {% if title != blank %}
+          <h3 class="type-h6">{{ title }}</h3>
+        {% endif %}
+        {% if text != blank %}
+          <p class="inline-richtext">{{ text }}</p>
+        {% endif %}
+      </div>
+
+      {% case block.type %}
+        {% when 'newsletter' %}
+          {% assign newsletter_form_id = 'popup-newsletter-form' %}
+
+          {% render 'newsletter-form', show_captcha_terms: true, class: 'first:pe-r10', id: newsletter_form_id %}
+          <button class="absolute top-0 end-0 hit-area-r3" x-dialog:close @click="sessionStorage.removeItem('submitted-newsletter-form');" aria-label="{{ 'other.accessibility.close' | t }}">
+            {% render 'core-icon', icon: 'stroke-bare-x' %}
+          </button>
+
+        {% when 'text' %}
+          {% liquid
+            assign button_text_one = block.settings.button_text_one
+            assign button_url_one = block.settings.button_url_one
+            assign button_text_two = block.settings.button_text_two
+            assign button_url_two = block.settings.button_url_two
+          %}
+          {% if button_text_one != blank or button_text_two != blank %}
+            <div class="flex gap-r5 first:pe-r10">
+              {% if button_text_two != blank %}
+                {% render 'core-button',
+                  sizing: 'sm',
+                  color: 'content',
+                  appearance: 'outline',
+                  class: 'w-full',
+                  tag: 'a',
+                  href: button_url_two,
+                  label: button_text_two
+                %}
+              {% endif %}
+              {% if button_text_one != blank %}
+                {% render 'core-button',
+                  sizing: 'sm',
+                  color: 'content',
+                  appearance: 'soft',
+                  class: 'w-full',
+                  tag: 'a',
+                  href: button_url_one,
+                  label: button_text_one
+                %}
+              {% endif %}
+            </div>
+          {% endif %}
+          <button class="absolute top-0 end-0 hit-area-r3" x-dialog:close aria-label="{{ 'other.accessibility.close' | t }}">
+            {% render 'core-icon', icon: 'stroke-bare-x' %}
+          </button>
+      {% endcase %}
+    </div>
+  {% endcapture %}
+
+  {% case block.type %}
+    {% when 'newsletter', 'text' %}
+      {% liquid
+        assign success_message = block.settings.success_message
+        assign show_popup = true
+
+        assign dialog_label = block.settings.title
+
+        case block.settings.target_device
+          when 'mobile'
+            assign target_device_class = 'md:hidden'
+          when 'desktop'
+            assign target_device_class = 'max-md:hidden'
+        endcase
+
+        if block.settings.set_target_url
+          assign show_popup = false
+          assign target_url = block.settings.target_url
+        endif
+        if block.settings.set_target_query_parameter
+          assign show_popup = true
+          assign target_query_parameter = block.settings.target_query_parameter
+        endif
+        if target_url == request.path
+          assign show_popup = true
+        endif
+
+        # Continue to next block if we do not need to render the popup on this page
+        unless show_popup
+          continue
+        endunless
+      %}
+      {% comment %} Hide dialog on Mobile initially {% endcomment %}
+      {% capture dialog_bind_class %}
+        'max-md:opacity-0 max-md:invisible max-md:pointer-events-none': !expandedOnMobile
+      {% endcapture %}
+  {% endcase %}
+
+  {% capture dialog_content_class %}
+    vars-{{ block.settings.color_scheme }}
+    max-w-[412px] p-r10 [--dialog-buffer:0]
+  {% endcapture %}
+
+  {% capture popup %}
+    {% render 'dialog',
+      position: position,
+      label: dialog_label,
+      content: dialog_content,
+      content_class: dialog_content_class,
+      scrollable: true,
+      animation: 'auto',
+      bind_class: dialog_bind_class
+    %}
+  {% endcapture %}
+
+  {% comment %} Render popup {% endcomment %}
+  <div
+    {% if target_device_class != blank %}
+      class="{{ target_device_class }}"
+    {% endif %}
+
+    {% if target_query_parameter != blank %}
+      {% comment %}
+        Edge-case where both target_query_parameter and target_url are enabled.
+          It is not the right page according to target_query_parameter,
+          but it is the right page according to target_url so we should not allow target_query_parameter to hide the popup
+        The next line makes sure target_url is not active
+      {% endcomment %}
+      {% if target_url != request.path %}
+        x-show="window.location.search.includes('{{ target_query_parameter }}')"
+      {% endif %}
+    {% endif %}
+
+    x-data="
+      {
+        expandedOnMobile: false,
+        isPopupOpen: false,
+        init() {
+          {% if block.type == 'newsletter' %}
+            {% comment %} Show newsletter-form popup after submit {% endcomment %}
+            const newsletterCookieExists = this.$cookie.read('{{ cookie_name }}') != null;
+            const lastSubmittedNewsletterForm = sessionStorage.getItem('submitted-newsletter-form');
+            if (window.location.pathname != '/challenge' && !newsletterCookieExists && lastSubmittedNewsletterForm == '{{ newsletter_form_id }}') {
+              this.isPopupOpen = true;
+            }
+          {% endif %}
+
+          $nextTick(() => {
+            {{ cookie_logic }}
+            {{ trigger_logic }}
+          })
+        }
+      }
+    "
+    x-dialog="
+      {
+        get isOpen() {
+          return isPopupOpen
+        },
+        set isOpen(value) {
+          isPopupOpen = value
+        }
+      }
+    "
+    {% if request.design_mode %}
+      x-effect="
+        if ($isSelectedBlock) selectedBlockId = '{{ block.id }}'
+
+        {% comment %} Make sure popup shows again if we accidentally click the close button {% endcomment %}
+        if ($isSelectedSection) isPopupOpen = true;
+      "
+      x-show="$isSelectedBlock || ($isSelectedSection && !selectedBlockId)"
+    {% endif %}
+
+    {{ block.shopify_attributes }}
+  >
+    {{ popup }}
+
+    {% if block.type == 'newsletter' or block.type == 'text' %}
+      {% capture expand_button_attributes %}
+        :class="{ 'opacity-0 pointer-events-none': expandedOnMobile }"
+        @click="expandedOnMobile = true"
+        x-transition.opacity
+        x-show="isPopupOpen"
+        x-cloak
+      {% endcapture %}
+      {% render 'core-button',
+        label: title,
+        type: 'button',
+        sizing: 'md',
+        color: 'canvas',
+        class: 'md:hidden !fixed bottom-root-buffer right-root-buffer z-40 transition-opacity duration-500 ease-out shadow',
+        attributes: expand_button_attributes
+      %}
+    {% endif %}
+  </div>
+{% endfor %}
+
+{% if request.design_mode %}
+  </div>
+{% endif %}
+
+{% schema %}
+{
+	"name": "Popups",
+	"settings": [
+		{
+			"type": "paragraph",
+			"content": "Create popups by adding a block."
+		}
+	],
+	"blocks": [
+		{
+			"type": "newsletter",
+			"name": "Newsletter popup",
+			"settings": [
+				{
+					"type": "color_scheme",
+					"id": "color_scheme",
+					"label": "Color scheme"
+				},
+				{
+					"type": "text",
+					"id": "title",
+					"label": "Title",
+					"default": "Join the club"
+				},
+				{
+					"type": "inline_richtext",
+					"id": "text",
+					"label": "Text",
+					"default": "Enter your email to save 10% on your next order"
+				},
+				{
+					"type": "textarea",
+					"id": "success_message",
+					"label": "Success message",
+					"default": "Success! Use code CLUB10 to save 10%",
+					"info": "The success message can contain an optional discount code to be applied at checkout."
+				},
+				{
+					"type": "header",
+					"content": "Popup behavior"
+				},
+				{
+					"type": "select",
+					"id": "position",
+					"label": "Position",
+					"default": "bottom right",
+					"options": [
+						{
+							"value": "center left",
+							"label": "Middle left"
+						},
+						{
+							"value": "center center",
+							"label": "Absolute center"
+						},
+						{
+							"value": "center right",
+							"label": "Middle right"
+						},
+						{
+							"value": "bottom left",
+							"label": "Bottom left"
+						},
+						{
+							"value": "bottom center",
+							"label": "Bottom center"
+						},
+						{
+							"value": "bottom right",
+							"label": "Bottom right"
+						}
+					]
+				},
+				{
+					"type": "select",
+					"id": "trigger",
+					"label": "Delay appearance",
+					"default": "always",
+					"options": [
+						{
+							"value": "always",
+							"label": "Show immediately"
+						},
+						{
+							"value": "delayed",
+							"label": "Show 10 seconds after page load"
+						},
+						{
+							"value": "bottom",
+							"label": "Show after user scrolls to page bottom"
+						},
+						{
+							"value": "idle",
+							"label": "Show after user has been idle for 1 minute"
+						}
+					]
+				},
+				{
+					"type": "header",
+					"content": "Target page"
+				},
+				{
+					"type": "checkbox",
+					"id": "set_target_url",
+					"label": "Limit to specific page"
+				},
+				{
+					"type": "url",
+					"id": "target_url",
+					"label": "Targeted page"
+				},
+				{
+					"type": "header",
+					"content": "Target page by URL query parameter"
+				},
+				{
+					"type": "checkbox",
+					"id": "set_target_query_parameter",
+					"label": "Limit to specific URL query parameter"
+				},
+				{
+					"type": "text",
+					"id": "target_query_parameter",
+					"label": "Query parameter",
+					"info": "Example: 'summersale', then add '?summersale' to the end of the link where you want this popup to appear"
+				},
+				{
+					"type": "header",
+					"content": "Target by screen size",
+					"info": "Limit this popup to desktop or mobile"
+				},
+				{
+					"type": "select",
+					"label": "Show on",
+					"id": "target_device",
+					"default": "both",
+					"options": [
+						{
+							"value": "mobile",
+							"label": "Mobile"
+						},
+						{
+							"value": "desktop",
+							"label": "Desktop"
+						},
+						{
+							"value": "both",
+							"label": "Both"
+						}
+					]
+				},
+			]
+		},
+		{
+			"type": "text",
+			"name": "Text popup",
+			"settings": [
+				{
+					"type": "color_scheme",
+					"id": "color_scheme",
+					"label": "Color scheme"
+				},
+				{
+					"type": "text",
+					"id": "title",
+					"label": "Title",
+					"default": "Get 10% off"
+				},
+				{
+					"type": "inline_richtext",
+					"id": "text",
+					"label": "Text",
+					"default": "Sign up to receive a discount on your first purchase"
+				},
+				{
+					"type": "header",
+					"content": "Button 1"
+				},
+				{
+					"type": "text",
+					"id": "button_text_one",
+					"label": "Text",
+					"default": "Take quiz"
+				},
+				{
+					"type": "url",
+					"id": "button_url_one",
+					"label": "Link"
+				},
+				{
+					"type": "header",
+					"content": "Button 2"
+				},
+				{
+					"type": "text",
+					"id": "button_text_two",
+					"label": "Text",
+					"default": "Learn More"
+				},
+				{
+					"type": "url",
+					"id": "button_url_two",
+					"label": "Link"
+				},
+				{
+					"type": "header",
+					"content": "Popup behavior"
+				},
+				{
+					"type": "select",
+					"id": "position",
+					"label": "Position",
+					"default": "bottom center",
+					"options": [
+						{
+							"value": "center left",
+							"label": "Middle left"
+						},
+						{
+							"value": "center center",
+							"label": "Absolute center"
+						},
+						{
+							"value": "center right",
+							"label": "Middle right"
+						},
+						{
+							"value": "bottom left",
+							"label": "Bottom left"
+						},
+						{
+							"value": "bottom center",
+							"label": "Bottom center"
+						},
+						{
+							"value": "bottom right",
+							"label": "Bottom right"
+						}
+					]
+				},
+				{
+					"type": "select",
+					"id": "trigger",
+					"label": "Delay appearance",
+					"default": "always",
+					"options": [
+						{
+							"value": "always",
+							"label": "Show immediately"
+						},
+						{
+							"value": "delayed",
+							"label": "Show 10 seconds after page load"
+						},
+						{
+							"value": "bottom",
+							"label": "Show after user scrolls to page bottom"
+						},
+						{
+							"value": "idle",
+							"label": "Show after user has been idle for 1 minute"
+						}
+					]
+				},
+				{
+					"type": "header",
+					"content": "Target page"
+				},
+				{
+					"type": "checkbox",
+					"id": "set_target_url",
+					"label": "Limit to specific page",
+					"default": false
+				},
+				{
+					"type": "url",
+					"id": "target_url",
+					"label": "Targeted page"
+				},
+				{
+					"type": "header",
+					"content": "Target page by URL query parameter"
+				},
+				{
+					"type": "checkbox",
+					"id": "set_target_query_parameter",
+					"label": "Limit to specific URL query parameter",
+					"default": false
+				},
+				{
+					"type": "text",
+					"id": "target_query_parameter",
+					"label": "Query parameter",
+					"info": "Example: 'summersale', then add '?summersale' to the end of the link where you want this popup to appear"
+				},
+				{
+					"type": "header",
+					"content": "Target by screen size",
+					"info": "Limit this popup to desktop or mobile"
+				},
+				{
+					"type": "select",
+					"label": "Show on",
+					"id": "target_device",
+					"default": "both",
+					"options": [
+						{
+							"value": "mobile",
+							"label": "Mobile"
+						},
+						{
+							"value": "desktop",
+							"label": "Desktop"
+						},
+						{
+							"value": "both",
+							"label": "Both"
+						}
+					]
+				},
+			]
+		}
+	]
+}
+{% endschema %}

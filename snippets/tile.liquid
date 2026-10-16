@@ -1,0 +1,91 @@
+{% doc %}
+  Tiles are images wrapped in a link that are designed to be used in a grid like layout. They are "strechy" and will
+  adjust to their container size by default but also having a minimum aspect ratio i.e. they never get super short and
+  skinny.
+{% enddoc %}
+
+{% liquid
+  assign set_aspect_ratio = set_aspect_ratio | default: _settings.set_aspect_ratio | default: false, allow_false: true
+  assign href = href | default: _settings.href
+
+  # Border
+  assign set_border = set_border | default: _settings.set_border | default: false
+
+  # Rounding
+  assign set_rounding = set_rounding | default: _settings.set_rounding | default: false
+  assign rounding_radius = rounding_radius | default: _settings.rounding_radius | default: 'none'
+  assign rounding_radius_custom = rounding_radius_custom | default: _settings.rounding_radius_custom | default: 0
+
+  # Aspect ratio
+  assign aspect_ratio = 1.5
+  if set_aspect_ratio
+    assign aspect_ratio = _settings.aspect_ratio
+  endif
+%}
+
+{% capture background_class %}
+  [--custom-height:calc(100cqw/var(--tile-min-aspect-ratio))]
+  entrance-item entrance-image-scale
+{% endcapture %}
+
+{% if sizes == blank or widths == blank %}
+  {%- capture sizes -%}
+    {%- render 'image-grid-sizes' -%}
+  {%- endcapture -%}
+{% endif %}
+
+{% if widths == blank %}
+  {%- capture widths -%}
+    {%- render 'image-grid-widths' -%}
+  {%- endcapture -%}
+{% endif %}
+
+{% if id == blank %}
+  id is required for tile
+{% endif %}
+
+<div
+  class="
+    group/tile @container/tile block w-full entrance-item entrance-fade
+    {% if set_aspect_ratio %}
+      h-fit
+    {% else %}
+      h-full
+    {% endif %}
+    overflow-clip
+    keyboard-active:has-[:focus]:ring-focus-outline
+    keyboard-active:has-[:focus]:ring-2
+    {{ class }}
+  "
+  style="
+    --tile-min-aspect-ratio: {{ aspect_ratio }};
+    {% if set_border %}
+      {% render 'props-style-border', _settings: _settings %}
+    {% endif %}
+    {% if set_rounding %}
+      {% render 'props-style-radius', rounding_radius: rounding_radius, rounding_radius_custom: rounding_radius_custom %}
+    {% else %}
+      border-radius: var(--radius-card);
+    {% endif %}
+    {{ style }}
+  "
+  id="{{ id }}-tile"
+  {{ attributes }}
+>
+  {% render 'core-banner',
+    _settings: _settings,
+    id: id,
+    image: image,
+    text: content,
+    background_class: background_class,
+    href: href,
+    class: banner_class,
+    content_class: content_class,
+    controls: controls,
+    sizes: sizes,
+    widths: widths,
+    placeholder: 'image',
+    set_height: false,
+    set_height_mobile: false
+  %}
+</div>

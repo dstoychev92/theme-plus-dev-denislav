@@ -1,0 +1,54 @@
+<div
+  class="
+    {{ class }}
+    [--transition-duration:550ms]
+    [--transition-exit-delay:var(--transition-duration)]
+  "
+  {{ attributes }}
+>
+  {% for variant in variants %}
+    {% assign media = variant.featured_media | default: product.featured_media %}
+    {% assign image = media.preview_image %}
+    {% capture slide_image_class %}
+      size-full
+    {% endcapture %}
+    {% capture slide_attributes %}
+      x-transition:enter="duration-[--slide-transition-duration]"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="duration-[--slide-transition-duration] delay-[calc(var(--slide-transition-duration)/4)]"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+      key="{{ image.id }}"
+      x-show="variantId == {{ variant.id }}"
+    {% endcapture %}
+
+    <div
+      class="absolute inset-0 z-0 size-full"
+      {{ slide_attributes }}
+    >
+      {% comment %} If there is a selected variant, render it's image right away otherwise wait until the card is hovered or focused or in view {% endcomment %}
+      {% if selected_variant and variant.id == selected_variant.id %}
+        {% render 'card-product-lg-image',
+          class: slide_image_class,
+          image: image,
+          alt: media.alt,
+          loading: 'eager',
+          image_widths: image_widths,
+          image_sizes: image_sizes
+        %}
+      {% else %}
+        <template x-if="$productCard.isActive || $productCard.wasActive">
+          {% render 'card-product-lg-image',
+            class: slide_image_class,
+            image: image,
+            alt: media.alt,
+            loading: 'lazy',
+            image_widths: image_widths,
+            image_sizes: image_sizes
+          %}
+        </template>
+      {% endif %}
+    </div>
+  {% endfor %}
+</div>

@@ -1,0 +1,38 @@
+{% liquid
+  assign tag = tag | default: 'span'
+  assign size = size | default: 'md'
+
+  case size
+    when 'sm'
+      assign padding_class = 'px-r2 py-r1'
+    when 'md'
+      assign padding_class = 'px-r4 py-r2'
+    when 'lg'
+      assign padding_class = 'px-r5 py-r2'
+  endcase
+%}
+
+{% capture class %}
+  {{ padding_class }}
+  {{ class }}
+{% endcapture %}
+
+<{{ tag }}
+  class="
+    block rounded-[--radius-badge] bg-[--badge-bg-color]
+    text-[color:var(--badge-text-color)]
+    whitespace-nowrap leading-none
+    {{ class }}
+  "
+  style="
+    {% if bg_color != blank %}
+      --badge-bg-color: {{ bg_color }};
+    {% endif %}
+    {% if text_color != blank %}
+      --badge-text-color: {{ text_color }};
+    {% endif %}
+    {{ style }}
+  "
+>
+  {{ content }}
+</{{ tag }}>

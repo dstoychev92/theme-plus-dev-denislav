@@ -1,0 +1,1208 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "page-default",
+      "disabled": true,
+      "settings": {
+        "content_align": "left",
+        "content_width": "page",
+        "content_width_custom": 65,
+        "content_width_custom_mobile": 100,
+        "set_rhythm": false,
+        "section_padding_top": 40,
+        "section_padding_bottom": 40,
+        "color_scheme": "",
+        "background": "canvas",
+        "background_color": "#f2f2f2",
+        "show_title": true,
+        "type_preset": "h3",
+        "type_font": "heading",
+        "type_size": 9,
+        "type_uppercase": false,
+        "show_content": true,
+        "content_richtext_size": "md"
+      }
+    },
+    "section_accordion_Qg7KiR": {
+      "type": "section-accordion",
+      "blocks": {
+        "accordion_CJqfBn": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Колко струва доставката?",
+            "expand": true,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "theme_richtext_6TxhtE": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Безплатна доставка за поръчки над 50€ За поръчки под тази сума доставката е 3€ до офис или автомат на Спиди, 2.5€ до автомат на BOX NOW и 4€ до адрес. Доставяме до офис, автомат или до адрес в рамките на 1-2 работни дни.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "theme_richtext_6TxhtE"
+          ]
+        },
+        "accordion_4zJxmn": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Как работи абонаментът?",
+            "expand": false,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "theme_richtext_icgtVN": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Избирате честота на доставка (на 2, 3 или 4 седмици за адаптогенното кафе и 3, 4 или 5 за протеиновото) и получавате автоматична доставка с отстъпка до 10%. Можете да промените, паузирате или спрете абонамента по всяко време от профила си, без неустойки.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "theme_richtext_icgtVN"
+          ]
+        },
+        "accordion_LYFRkM": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Какво получавам при по-голяма поръчка?",
+            "expand": false,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "theme_richtext_CrgQAf": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<ul><li>При 2 пакета - 5% отстъпка</li><li>При 3 пакета - 7% отстъпка</li></ul>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "theme_richtext_CrgQAf"
+          ]
+        },
+        "accordion_dTJeft": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Какви методи за плащане приемате?",
+            "expand": false,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "theme_richtext_gAQcVW": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Приемаме плащане с дебитна и кредитна карта (Visa, Mastercard), Apple Pay, Google Pay и наложен платеж при доставка.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "theme_richtext_gAQcVW"
+          ]
+        },
+        "accordion_e4fPyw": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Мога ли да върна продукт?",
+            "expand": false,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "theme_richtext_xwzX7y": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Да. Ако не сте доволни, имате 14 дни от получаването да върнете неотворен продукт за пълно възстановяване на сумата. Свържете се с нас на info@boom-coffee.com.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "theme_richtext_xwzX7y"
+          ]
+        },
+        "accordion_WMkF6e": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Подходящо ли е за бременни или кърмещи?",
+            "expand": false,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "theme_richtext_gEwXwp": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Препоръчваме консултация с лекар преди употреба по време на бременност или кърмене, тъй като продуктите съдържат кофеин и функционални добавки.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "theme_richtext_gEwXwp"
+          ]
+        },
+        "section-title": {
+          "type": "_section-title",
+          "static": true,
+          "settings": {
+            "text": "ЧЕСТО ЗАДАВАНИ ВЪПРОСИ",
+            "type_preset": "section",
+            "type_resize": "md",
+            "type_font": "heading",
+            "type_size": 8,
+            "type_uppercase": false,
+            "set_color": false,
+            "color": "content",
+            "color_custom": "#000000",
+            "set_spacing": false,
+            "buffer_bottom": 0,
+            "gap": "sm",
+            "gap_custom": 0,
+            "set_heading_tag": true,
+            "heading_tag": "h1"
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "accordion_CJqfBn",
+        "accordion_4zJxmn",
+        "accordion_LYFRkM",
+        "accordion_dTJeft",
+        "accordion_e4fPyw",
+        "accordion_WMkF6e"
+      ],
+      "name": "Accordion",
+      "settings": {
+        "content_align": "center",
+        "multiple": true,
+        "show_top_border": true,
+        "show_number": false,
+        "show_open_close_icon": true,
+        "enable_muted_title": true,
+        "enable_faq_schema": true,
+        "content_width": "custom",
+        "content_width_custom": 65,
+        "content_width_custom_mobile": 100,
+        "set_rhythm": false,
+        "section_padding_top": 40,
+        "section_padding_bottom": 40,
+        "set_target_device": false,
+        "target_device": "desktop",
+        "color_scheme": "scheme-default",
+        "background": "canvas",
+        "background_color": "#f2f2f2"
+      }
+    },
+    "section_accordion_qiV4cw": {
+      "type": "section-accordion",
+      "blocks": {
+        "accordion_M8H3FK": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Какво е протеиново кафе Boom?",
+            "expand": true,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "theme_richtext_PpGzie": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Boom Protein Coffee е функционално кафе, което съчетава висококачествено арабика кафе с 10g суроватъчен протеин, витамини от група B и магнезий. Всяка доза замества нуждата от отделни добавки. Получаваш енергия, протеин и хранителни вещества в една чаша.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "theme_richtext_PpGzie"
+          ]
+        },
+        "accordion_pKUpLx": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Колко протеин съдържа една доза?",
+            "expand": false,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "theme_richtext_btxDim": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Всяка доза съдържа 10g суроватъчен протеин. Това е достатъчно за допълване на дневния прием, особено след тренировка.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "theme_richtext_btxDim"
+          ]
+        },
+        "accordion_e9GRm8": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Как се приготвя?",
+            "expand": false,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "theme_richtext_EUxqUN": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Разбъркай 1 мерителна лъжичка с 100-150ml гореща или студена вода. Можеш да добавиш мляко по желание.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "theme_richtext_EUxqUN"
+          ]
+        },
+        "accordion_JnGcCP": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Колко кофеин съдържа?",
+            "expand": false,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "theme_richtext_nqx8k7": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Всяка доза съдържа 5g кафе, което е приблизително 150mg кофеин. Еквивалентно на едно стандартно еспресо. Достатъчно за енергия без неприятно сърцебиене.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "theme_richtext_nqx8k7"
+          ]
+        },
+        "accordion_GEihwm": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Има ли странични ефекти?",
+            "expand": false,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "theme_richtext_6DEgyY": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>При нормална употреба, не. Boom Protein Coffee не е лекарство.<br/><br/>10g протеин, 5g кафе и 11 витамина и минерала. Ако имаш чувствителност към кофеин, ограничи се до 1 доза дневно. При бременност или хронични заболявания, консултирай се с лекар.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "theme_richtext_6DEgyY"
+          ]
+        },
+        "accordion_LkEYkQ": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Колко дози има в един пакет?",
+            "expand": false,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "theme_richtext_En78bf": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Всеки пакет съдържа 22 дози. При ежедневна употреба един пакет стига за около 3 седмици.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "theme_richtext_En78bf"
+          ]
+        },
+        "accordion_dJxbeL": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Може ли да се пие студено?",
+            "expand": false,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "theme_richtext_9zm38m": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Да. Разбъркай с хладка вода или мляко за iced coffee вариант. През лятото можеш да добавиш лед. Разтваря се еднакво добре и с топла, и със студена течност.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "theme_richtext_9zm38m"
+          ]
+        },
+        "accordion_TEdidh": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Подходящо ли е за хора с лактозна непоносимост?",
+            "expand": false,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "theme_richtext_EHjAt3": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Протеинът е на база суроватка (whey), която съдържа минимални количества лактоза. Ако имаш тежка лактозна непоносимост, консултирай се с лекар. При лека непоносимост повечето хора го понасят без проблем.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "theme_richtext_EHjAt3"
+          ]
+        },
+        "accordion_7hJ9BY": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Кога е най-добре да се пие?",
+            "expand": false,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "theme_richtext_paaCeM": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Сутрин като заместител на обичайното кафе, преди или след тренировка, или като следобедна енергийна доза с протеин. Избягвай след 16:00 ако си чувствителен към кофеин.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "theme_richtext_paaCeM"
+          ]
+        },
+        "accordion_9XL4yG": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Може ли да се пие на гладно?",
+            "expand": false,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "theme_richtext_TE3BzP": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Да, и това е една от основните причини, поради които работи. Протеинът действа като буфер за кофеина: забавя усвояването му и предотвратява рязкия скок на кортизола, който идва от обикновено кафе на гладно. Резултатът е плавна енергия без нервност и без стомашен дискомфорт.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "theme_richtext_TE3BzP"
+          ]
+        },
+        "accordion_TPMDEc": {
+          "type": "_accordion",
+          "settings": {
+            "title": "По-изгодно ли е от кафе + протеин поотделно?",
+            "expand": false,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "theme_richtext_dU77Vn": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Да. Една доза Boom Protein Coffee съдържа кафе, протеин, <strong>B-комплекс</strong>, <strong>магнезий</strong>, <strong>калций </strong>и <strong>желязо</strong>. Всичко за <strong>€1.36</strong>. Ако купуваш поотделно: кафе от заведение (1.50-3€), протеинов шейк (2-3€), B-комплекс (~0.30€/ден), магнезий (~0.25€/ден). Общо <strong>€4-7 на ден</strong>. С Boom спестяваш до <strong>70%</strong>.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "theme_richtext_dU77Vn"
+          ]
+        },
+        "section-title": {
+          "type": "_section-title",
+          "static": true,
+          "settings": {
+            "text": "ПРОТЕИНОВО КАФЕ",
+            "type_preset": "section",
+            "type_resize": "md",
+            "type_font": "heading",
+            "type_size": 8,
+            "type_uppercase": false,
+            "set_color": false,
+            "color": "content",
+            "color_custom": "#000000",
+            "set_spacing": false,
+            "buffer_bottom": 0,
+            "gap": "sm",
+            "gap_custom": 0,
+            "set_heading_tag": false,
+            "heading_tag": "h2"
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "accordion_M8H3FK",
+        "accordion_pKUpLx",
+        "accordion_e9GRm8",
+        "accordion_JnGcCP",
+        "accordion_GEihwm",
+        "accordion_LkEYkQ",
+        "accordion_dJxbeL",
+        "accordion_TEdidh",
+        "accordion_7hJ9BY",
+        "accordion_9XL4yG",
+        "accordion_TPMDEc"
+      ],
+      "name": "Accordion",
+      "settings": {
+        "content_align": "center",
+        "multiple": true,
+        "show_top_border": true,
+        "show_number": false,
+        "show_open_close_icon": true,
+        "enable_muted_title": true,
+        "enable_faq_schema": true,
+        "content_width": "custom",
+        "content_width_custom": 65,
+        "content_width_custom_mobile": 100,
+        "set_rhythm": false,
+        "section_padding_top": 40,
+        "section_padding_bottom": 40,
+        "set_target_device": false,
+        "target_device": "desktop",
+        "color_scheme": "scheme-default",
+        "background": "canvas",
+        "background_color": "#f2f2f2"
+      }
+    },
+    "section_accordion_8qnCV9": {
+      "type": "section-accordion",
+      "blocks": {
+        "accordion_7QVYLQ": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Какво е Brain Coffee на Boom?",
+            "expand": true,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "theme_richtext_kbHJkA": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Boom Brain Coffee е функционално кафе с адаптогенни гъби: лъвска грива, кордицепс, рейши и чага. Комбинацията доставя фокус и концентрация без нервността на обикновеното кафе, заедно с витамини от група B и магнезий.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "theme_richtext_kbHJkA"
+          ]
+        },
+        "accordion_mRPrMN": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Какво са адаптогени и как работят?",
+            "expand": false,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "theme_richtext_7EjwdT": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Адаптогените са растения и гъби, които помагат на тялото да се справя със стрес (физически, психически и емоционален). Те не действат като стимуланти. Работят чрез балансиране на нервната система и хормоните на стреса (главно кортизола). Boom Brain Coffee комбинира четирите най-изследвани адаптогенни гъби за когнитивна функция: лъвска грива,   кордицепс, рейши и чага.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "theme_richtext_7EjwdT"
+          ]
+        },
+        "accordion_4pQ88Q": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Какво е лъвска грива и защо е в кафето?",
+            "expand": false,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "theme_richtext_hkQi7t": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Лъвска грива (Lion's Mane) е адаптогенна гъба, изследвана за ефекта си върху когнитивните функции: памет, фокус и концентрация. Тя е ключовата съставка, която прави Brain Coffee различно от обикновеното кафе.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "theme_richtext_hkQi7t"
+          ]
+        },
+        "accordion_zJti7k": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Колко гъби съдържа една доза?",
+            "expand": false,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "theme_richtext_NVHJT9": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Всяка доза съдържа 1,600mg смес от четири адаптогенни гъби, по 400mg всяка: лъвска грива, кордицепс, рейши и чага. Комбинацията е подбрана за синергичен ефект върху фокуса и имунната система.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "theme_richtext_NVHJT9"
+          ]
+        },
+        "accordion_cKf8jq": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Усеща ли се вкус на гъби?",
+            "expand": false,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "theme_richtext_zPVaf7": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Не. Вкусът е на пълноценно кафе с лек земист нюанс. Гъбите не доминират. Повечето хора не усещат разлика от обикновено качествено кафе.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "theme_richtext_zPVaf7"
+          ]
+        },
+        "accordion_3Lyajk": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Може ли да се пие на гладно?",
+            "expand": false,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "theme_richtext_xaxhRk": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Да. Brain Coffee съдържа само 80mg кофеин на чаша, около половината от обикновено еспресо. Адаптогенните гъби и магнезият допълнително успокояват нервната система, така че не получаваш рязкия скок на кортизола, който идва от обикновено кафе на гладно.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "theme_richtext_xaxhRk"
+          ]
+        },
+        "accordion_crVAh3": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Колко дози има в един пакет?",
+            "expand": false,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "theme_richtext_eNAU83": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Всеки пакет съдържа 16 дози. При ежедневна употреба стига за около 2 седмици. Избираш честота на абонамента (2, 3 или 4 седмици) според навика си.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "theme_richtext_eNAU83"
+          ]
+        },
+        "accordion_8F9aQh": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Как се приготвя?",
+            "expand": false,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "theme_richtext_JCPePQ": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Разбъркай 1 мерителна лъжичка с 100-150ml гореща или студена вода. За най-добър резултат използвай електрическата бъркалка, която получаваш безплатно при поръчка на 3+ пакета. Можеш да добавиш мляко по желание.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "theme_richtext_JCPePQ"
+          ]
+        },
+        "accordion_AH9hQC": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Безопасно ли е за ежедневна употреба?",
+            "expand": false,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "theme_richtext_JbKiNY": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Да. Адаптогенните гъби в Brain Coffee се използват от хиляди години в традиционната медицина. При препоръчителна доза от 1-2 чаши дневно са безопасни за повечето здрави възрастни.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "theme_richtext_JbKiNY"
+          ]
+        },
+        "accordion_LxeeWf": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Може ли да се пие следобед без да попречи на съня?",
+            "expand": false,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "theme_richtext_g99e86": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Да, ако спазваш препоръчителния прозорец. 80mg кофеин на чаша се разгражда наполовина за около 5 часа. Ако лягаш в 23:00, последна чаша до 16:00-17:00 е безопасна за повечето хора. Адаптогените не стимулират, а могат дори да подобрят качеството на съня при редовна употреба.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "theme_richtext_g99e86"
+          ]
+        },
+        "accordion_qmzaQG": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Може ли да се комбинира с протеиновото кафе?",
+            "expand": false,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "theme_richtext_bKGFGW": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Да. Много от нашите клиенти пият Protein Coffee сутрин за енергия и протеин, а Brain Coffee следобед за фокус. Двете се допълват, без да надвишаваш препоръчителния дневен кофеин.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "theme_richtext_bKGFGW"
+          ]
+        },
+        "accordion_7J8YRF": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Кога ще усетя ефект?",
+            "expand": false,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "theme_richtext_9kyLpn": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Кофеинът действа за 15-20 минути. Пълният ефект на адаптогенните гъби се натрупва с редовна употреба. Повечето хора усещат разлика във фокуса след една седмица ежедневна употреба.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "theme_richtext_9kyLpn"
+          ]
+        },
+        "section-title": {
+          "type": "_section-title",
+          "static": true,
+          "settings": {
+            "text": "АДАПТОГЕННО КАФЕ",
+            "type_preset": "section",
+            "type_resize": "md",
+            "type_font": "heading",
+            "type_size": 8,
+            "type_uppercase": false,
+            "set_color": false,
+            "color": "content",
+            "color_custom": "#000000",
+            "set_spacing": false,
+            "buffer_bottom": 0,
+            "gap": "sm",
+            "gap_custom": 0,
+            "set_heading_tag": false,
+            "heading_tag": "h2"
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "accordion_7QVYLQ",
+        "accordion_mRPrMN",
+        "accordion_4pQ88Q",
+        "accordion_zJti7k",
+        "accordion_cKf8jq",
+        "accordion_3Lyajk",
+        "accordion_crVAh3",
+        "accordion_8F9aQh",
+        "accordion_AH9hQC",
+        "accordion_LxeeWf",
+        "accordion_qmzaQG",
+        "accordion_7J8YRF"
+      ],
+      "name": "Accordion",
+      "settings": {
+        "content_align": "center",
+        "multiple": true,
+        "show_top_border": true,
+        "show_number": false,
+        "show_open_close_icon": true,
+        "enable_muted_title": true,
+        "enable_faq_schema": true,
+        "content_width": "custom",
+        "content_width_custom": 65,
+        "content_width_custom_mobile": 100,
+        "set_rhythm": false,
+        "section_padding_top": 40,
+        "section_padding_bottom": 40,
+        "set_target_device": false,
+        "target_device": "desktop",
+        "color_scheme": "scheme-default",
+        "background": "canvas",
+        "background_color": "#f2f2f2"
+      }
+    },
+    "section_card_slider_tabs_rHUrUE": {
+      "type": "section-card-slider-tabs",
+      "blocks": {
+        "cards_tab_6jF9dc": {
+          "type": "_cards-tab",
+          "settings": {
+            "title": "ВСИЧКИ"
+          },
+          "blocks": {
+            "cards_products_e3dHBc": {
+              "type": "_cards-products",
+              "settings": {
+                "source": "product_list",
+                "product_list": [
+                  "brain-coffee",
+                  "protein-coffee-hazelnut",
+                  "protein-coffee-original",
+                  "protein-coffee-vanilla",
+                  "protein-coffee-chocolate",
+                  "protein-coffee-raspberry"
+                ],
+                "collection": "",
+                "card_limit": 8,
+                "set_aspect_ratio": false,
+                "aspect_ratio": 1
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "cards_products_e3dHBc"
+          ]
+        },
+        "cards_tab_Qzeipc": {
+          "type": "_cards-tab",
+          "settings": {
+            "title": "ПРОТЕИНОВО"
+          },
+          "blocks": {
+            "cards_products_9PbNgd": {
+              "type": "_cards-products",
+              "settings": {
+                "source": "product_list",
+                "product_list": [
+                  "protein-coffee-hazelnut",
+                  "protein-coffee-original",
+                  "protein-coffee-chocolate",
+                  "protein-coffee-vanilla",
+                  "protein-coffee-raspberry"
+                ],
+                "collection": "",
+                "card_limit": 8,
+                "set_aspect_ratio": false,
+                "aspect_ratio": 1
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "cards_products_9PbNgd"
+          ]
+        },
+        "cards_tab_7FrpxY": {
+          "type": "_cards-tab",
+          "settings": {
+            "title": "АДАПТОГЕННО"
+          },
+          "blocks": {
+            "cards_products_X9XPBM": {
+              "type": "_cards-products",
+              "settings": {
+                "source": "product_list",
+                "product_list": [
+                  "brain-coffee"
+                ],
+                "collection": "",
+                "card_limit": 8,
+                "set_aspect_ratio": false,
+                "aspect_ratio": 1
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "cards_products_X9XPBM"
+          ]
+        },
+        "header": {
+          "type": "_section-title",
+          "static": true,
+          "settings": {
+            "text": "НАШИТЕ ПРОДУКТИ",
+            "type_preset": "section",
+            "type_resize": "md",
+            "type_font": "heading",
+            "type_size": 8,
+            "type_uppercase": false,
+            "set_color": false,
+            "color": "content",
+            "color_custom": "#000000",
+            "set_spacing": false,
+            "buffer_bottom": 0,
+            "gap": "sm",
+            "gap_custom": 0,
+            "set_heading_tag": false,
+            "heading_tag": "h2"
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "cards_tab_6jF9dc",
+        "cards_tab_Qzeipc",
+        "cards_tab_7FrpxY"
+      ],
+      "name": "Tabbed cards",
+      "settings": {
+        "columns_lg": 4,
+        "columns_md": 3,
+        "content_width": "page",
+        "set_rhythm": false,
+        "section_padding_top": 40,
+        "section_padding_bottom": 40,
+        "title_placement": "center",
+        "set_gap_tab_x": false,
+        "gap_tab_x": "sm",
+        "gap_custom_tab_x": 0,
+        "set_gap_tab_y": false,
+        "gap_tab_y": "md",
+        "gap_custom_tab_y": 0,
+        "color_scheme": "scheme-header",
+        "background": "canvas",
+        "background_color": "#f2f2f2",
+        "filled_tabs": true,
+        "enable_typography": false,
+        "type_font": "body",
+        "type_size": 4,
+        "type_uppercase": false,
+        "set_pagination_style": false,
+        "slider_control_style": "tint",
+        "progress_bar_visibility": "desktop",
+        "set_target_device": false,
+        "target_device": "desktop"
+      }
+    }
+  },
+  "order": [
+    "main",
+    "section_accordion_Qg7KiR",
+    "section_accordion_qiV4cw",
+    "section_accordion_8qnCV9",
+    "section_card_slider_tabs_rHUrUE"
+  ]
+}

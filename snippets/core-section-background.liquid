@@ -1,0 +1,49 @@
+<!-- snippets/core-section-background.liquid -->
+
+
+
+{% liquid
+  assign _settings = _settings | default: section.settings
+
+  if _settings.contain_section
+    # Rounding
+    assign set_rounding = set_rounding | default: _settings.set_rounding, allow_false: true | default: false
+    assign rounding_radius = rounding_radius | default: _settings.rounding_radius | default: 'none'
+    assign rounding_radius_custom = rounding_radius_custom | default: _settings.rounding_radius_custom | default: 0
+
+    # Border
+    assign set_border = set_border | default: _settings.set_border, allow_false: true | default: false
+    assign border_width = border_width | default: _settings.border_width | default: 0
+    assign border_color = border_color | default: _settings.border_color | default: '#ffffff00'
+  endif
+%}
+
+<section-background
+  class="
+    z-0 w-full grid-stack reverse-z-stack col-section-bg row-section-bg {{ class }}
+    {% if set_rounding %}
+      overflow-clip
+    {% else %}
+      {% comment %}
+        There's a bug on iOS where background elements with weird aspect-ratio, like 1.775,
+        will cause the page's horizontal scroll to unlock, causing the page to wobble left and right when scrolling up and down.
+        Applying overflow-hidden or equivalent (overflow-clip) fixes the issue.
+      {% endcomment %}
+      overflow-hidden
+    {% endif %}
+  "
+  style="
+    {{ style }}
+    {% if set_border %}
+      {% render 'props-style-border', border_width: border_width, border_color: border_color %}
+    {% endif %}
+    {% if set_rounding %}
+      {% render 'props-style-radius', rounding_radius: rounding_radius, rounding_radius_custom: rounding_radius_custom %}
+    {% elsif _settings.contain_section %}
+      border-radius: var(--radius-banner-default);
+    {% endif %}
+  "
+  {{ attributes }}
+>
+  {{ content }}
+</section-background>

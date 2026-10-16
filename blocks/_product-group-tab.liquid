@@ -1,0 +1,251 @@
+<!-- blocks/_product-group-tab.liquid -->
+
+{% liquid
+  assign set_gap = block.settings.set_gap
+  assign gap = block.settings.gap
+  assign gap_custom = block.settings.gap_custom
+
+  if block_index == blank
+    assign block_index = section.blocks | find_index: 'id', block.id
+  endif
+%}
+
+{% capture class %}
+  {% if set_gap %}
+    gap-y-layout
+  {% else %}
+    gap-y-r8
+  {% endif %}
+{% endcapture %}
+
+{% capture attributes %}
+  {% if set_gap %}
+    style="{% render 'props-style-gap', gap: gap, gap_custom: gap_custom, apply: false %}"
+  {% endif %}
+  {{ block.shopify_attributes }}
+{% endcapture %}
+
+{% if block_index != blank %}
+  {% capture tab_style %}
+    --stagger-order: {{ block_index }};
+  {% endcapture %}
+{% endif %}
+
+<div
+  class="flex flex-col text-content text-content-align transition duration-400 {{ class }}"
+  role="tabpanel"
+  x-tabs:tabpanel
+  {% if request.design_mode %}
+    x-effect="
+      if ($containsSelectedBlock || $isSelectedBlock) {
+        $tab.select()
+      }
+    "
+  {% endif %}
+  {{ attributes }}
+>
+  {% comment %} This tab is cloned into the tab list element using javascript {% endcomment %}
+  <template data-tab-template>
+    {% render 'core-tab',
+      type: 'button',
+      label: block.settings.title,
+      value: block.id,
+      class: tab_button_class,
+      style: tab_style
+    %}
+  </template>
+
+  {% content_for 'blocks' %}
+</div>
+
+{% schema %}
+{
+	"name": "Tab",
+	"tag": null,
+	"settings": [
+		{
+			"type": "text",
+			"id": "title",
+			"label": "Title",
+			"default": "Tab"
+		},
+		{
+			"type": "header",
+			"content": "Gap"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_gap",
+			"label": "Set gap",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "gap",
+			"label": "Gap",
+			"default": "md",
+			"visible_if": "{{ block.settings.set_gap }}",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "gap_custom",
+			"label": "Custom gap",
+			"default": 0,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ block.settings.gap == 'custom'  and block.settings.set_gap }}"
+		},
+	],
+	"blocks": [
+		{
+			"type": "theme-badge"
+		},
+		{
+			"type": "theme-button"
+		},
+		{
+			"type": "theme-countdown"
+		},
+		{
+			"type": "theme-decoration"
+		},
+		{
+			"type": "theme-form-newsletter"
+		},
+		{
+			"type": "theme-text"
+		},
+		{
+			"type": "theme-image"
+		},
+		{
+			"type": "theme-video"
+		},
+		{
+			"type": "theme-icon"
+		},
+		{
+			"type": "theme-link"
+		},
+		{
+			"type": "theme-liquid-code"
+		},
+		{
+			"type": "theme-social-links"
+		},
+		{
+			"type": "theme-spacer"
+		},
+		{
+			"type": "theme-richtext"
+		},
+		{
+			"type": "theme-video-button"
+		},
+		{
+			"type": "_product-title"
+		},
+		{
+			"type": "_product-price"
+		},
+		{
+			"type": "_product-description"
+		},
+		{
+			"type": "_product-pickup"
+		},
+		{
+			"type": "_product-rating"
+		},
+		{
+			"type": "_product-sku"
+		},
+		{
+			"type": "_product-stock-status"
+		},
+		{
+			"type": "_product-option-selectors"
+		},
+		{
+			"type": "_product-option-siblings"
+		},
+		{
+			"type": "_product-subscription"
+		},
+		{
+			"type": "_product-quantity"
+		},
+		{
+			"type": "_product-add-buttons"
+		},
+		{
+			"type": "_product-upsell"
+		},
+		{
+			"type": "_product-complementary"
+		},
+		{
+			"type": "_product-sharing"
+		},
+		{
+			"type": "_product-group-tabs"
+		},
+		{
+			"type": "_product-group-accordion-group"
+		},
+		{
+			"type": "_product-group-flex"
+		},
+		{
+			"type": "_product-group-row"
+		},
+		{
+			"type": "_product-group-inline"
+		},
+		{
+			"type": "_product-group-grid"
+		},
+		{
+			"type": "_product-group-frame"
+		},
+		{
+			"type": "_product-group-target"
+		},
+	],
+	"presets": [
+		{
+			"name": "Tab",
+			"category": "Interactive",
+			"blocks": [
+				{
+					"type": "theme-richtext",
+					"settings": {
+						"text": "<p>This tab is your playground. Keep it simple with plain text, or go wild with buttons, images, and layouts.</p>"
+					}
+				}
+			]
+		}
+	]
+}
+{% endschema %}
+

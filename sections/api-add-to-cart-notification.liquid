@@ -1,0 +1,125 @@
+<!-- sections/api-add-to-cart-notification.liquid -->
+
+{% liquid
+  assign is_cart_page = false
+  if routes.cart_url == request.path
+    assign is_cart_page = true
+  endif
+
+  # How long the notification should be visible for before automatically dismissing
+  assign notification_duration_in_ms = 5000
+%}
+
+{% capture content %}
+  <div class="group">
+    {% comment %} Content {% endcomment %}
+    <div class="flex flex-col gap-r5 p-r6">
+      <div class="flex-row-center justify-between gap-r6">
+        <p class="font-family-subheading text-r5">{{ 'product.added_to_cart' | t }}</p>
+
+        <button
+          class="relative hit-area-r4"
+          aria-label="{{ 'other.accessibility.close' | t }}"
+          @click.stop.prevent="$notification.dismiss()"
+        >
+          {% render 'core-icon', icon: 'stroke-bare-x', size: 'md' %}
+        </button>
+      </div>
+
+      {% comment %} Product {% endcomment %}
+      {% render 'cart-line-item-product', product: product, preload_image: true %}
+    </div>
+
+    {% comment %} Buttons {% endcomment %}
+    {% assign button_class = 'flex-1' %}
+    <div class="flex-row-center justify-between gap-x-r4 border-t border-line-subtle p-r6">
+      {% assign checkout_label = 'cart.check_out_button' | t %}
+      {% form 'cart', cart, class: 'contents' %}
+        {% render 'core-button',
+          label: checkout_label,
+          type: 'submit',
+          name: 'checkout',
+          appearance: 'outline',
+          color: 'content',
+          sizing: 'lg',
+          type_preset: 'btn',
+          class: button_class
+        %}
+      {% endform %}
+
+      {% capture view_cart_button_attributes %}
+        {% if settings.cart_button_action == 'show_drawer' and is_cart_page == false %}
+          role="button"
+          @click.stop.prevent="
+            $notification.dismiss();
+            await $waitForAnimations({ subtree: true })
+            $dispatch('theme:cart-drawer:open')
+          "
+        {% else %}
+          @click="$notification.dismiss();"
+        {% endif %}
+        autofocus
+      {% endcapture %}
+      {% assign view_cart_label = 'cart.view_cart' | t %}
+      {% render 'core-button',
+        label: view_cart_label,
+        type: 'a',
+        href: '/cart',
+        appearance: 'solid',
+        color: 'content',
+        sizing: 'lg',
+        type_preset: 'btn',
+        class: button_class,
+        attributes: view_cart_button_attributes
+      %}
+    </div>
+  </div>
+{% endcapture %}
+
+{% capture attributes %}
+{% endcapture %}
+
+<div
+  aria-live="polite"
+  role="alert"
+  class="
+    fixed top-[calc(var(--header-bottom,0px)+16px)] start-0 end-0 md:start-auto md:end-[--layout-buffer-x] z-60
+    bg-canvas text-content rounded-sm border border-line-subtle shadow
+    origin-top-right rtl:origin-top-left transition-[transform,opacity]
+    {{ class }}
+  "
+  :class="
+    {
+      'md:!start-[--float-x] md:!end-auto': window.headerCartButton && $float.isPositioned,
+    }
+  "
+  style="width: min(400px, var(--section-width-page));"
+  x-id="['notification']"
+  :aria-describedby="$id('notification')"
+  :data-dismissed="!$notification.visible"
+
+  x-float.css.bottom-end.update="window.headerCartButton"
+
+  {% comment %} If the user is using a keyboard to navigate, trap {% endcomment %}
+  x-trap.noautofocus.noreturn="$notification.visible"
+  @click.outside="$notification.dismiss()"
+  :id="$id('notification')"
+
+  x-notification.duration.{{ notification_duration_in_ms }}ms
+  x-effect="$store?.drawer?.isOpen && $notification.dismiss()"
+  @keydown.escape.prevent.stop.window="$notification.dismiss()"
+  @theme:cart-notification:show.window="$notification.dismiss()"
+  x-transition:enter="duration-[var(--notification-enter-duration),calc(var(--notification-enter-duration)*0.75)]"
+  x-transition:enter-start="-translate-y-[20px] translate-x-[10px] scale-90 opacity-0"
+  x-transition:enter-end="translate-y-0 translate-x-0 scale-100 opacity-100"
+  x-transition:leave="duration-[var(--notification-exit-duration),calc(var(--notification-exit-duration)*0.75)]"
+  x-transition:leave-start="translate-y-0 translate-x-0 scale-100 opacity-100"
+  x-transition:leave-end="-translate-y-[20px] translate-x-[10px] scale-90 opacity-0"
+  x-init="
+    $nextTick(() => {
+      $popover.open()
+    })
+  "
+>
+  {{ content }}
+</div>

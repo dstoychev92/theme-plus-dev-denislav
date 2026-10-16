@@ -1,0 +1,10 @@
+{% liquid
+  assign target_device = target_device | default: _settings.target_device | default: false
+%}
+
+{% case target_device %}
+  {% when 'mobile' %}
+    md:hidden
+  {% when 'desktop' %}
+    max-md:hidden
+{% endcase %}

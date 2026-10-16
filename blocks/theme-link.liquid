@@ -1,0 +1,194 @@
+<!-- blocks/theme-link.liquid -->
+
+{% capture attributes %}
+  {{ block.shopify_attributes }}
+{% endcapture %}
+
+{% capture class %}
+  entrance-item entrance-standard
+{% endcapture %}
+
+{% render 'core-link', _settings: block.settings, attributes: attributes, class: class %}
+
+{% schema %}
+{
+	"name": "Link",
+	"tag": null,
+	"settings": [
+		{
+			"type": "text",
+			"id": "text",
+			"label": "Text",
+			"default": "Link Text"
+		},
+		{
+			"type": "url",
+			"id": "href",
+			"label": "Link"
+		},
+		{
+			"type": "checkbox",
+			"id": "open_in_new_window",
+			"label": "Open link in new window",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "appearance",
+			"label": "Style",
+			"default": "line",
+			"options": [
+				{
+					"value": "clean",
+					"label": "Clean"
+				},
+				{
+					"value": "line",
+					"label": "Line"
+				},
+				{
+					"value": "icon",
+					"label": "Arrow"
+				},
+				{
+					"value": "both",
+					"label": "Both"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "color",
+			"label": "Color",
+			"default": "content",
+			"options": [
+				{
+					"value": "content",
+					"label": "Text default"
+				},
+				{
+					"value": "primary",
+					"label": "Primary accent"
+				},
+				{
+					"value": "secondary",
+					"label": "Link accent"
+				},
+				{
+					"value": "sale",
+					"label": "Sale"
+				},
+				{
+					"value": "canvas",
+					"label": "Background default"
+				},
+				{
+					"value": "black",
+					"label": "Black"
+				},
+				{
+					"value": "white",
+					"label": "White"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_preset",
+			"label": "Text style",
+			"default": "btn",
+			"options": [
+				{
+					"value": "btn",
+					"label": "Button"
+				},
+				{
+					"value": "p",
+					"label": "Paragraph"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_resize",
+			"label": "Text size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset != 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_font",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 4,
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+	],
+	"presets": [
+		{
+			"name": "Link",
+			"category": "Basic"
+		}
+	]
+}
+{% endschema %}

@@ -1,0 +1,33 @@
+{%- liquid
+  assign top = top | default: _settings.top
+  assign left = left | default: _settings.left
+  assign top_mobile = top_mobile | default: _settings.top_mobile
+  assign left_mobile = left_mobile | default: _settings.left_mobile
+  assign rotation = rotation | default: _settings.rotation | default: 0
+
+  # Allow passing "false" to disable mobile position from outside this snippet
+  if set_position_mobile == null
+    assign set_position_mobile = _settings.set_position_mobile | default: true, allow_false: true
+  endif
+-%}
+
+absolute -translate-x-1/2 -translate-y-1/2 origin-center
+
+{% if rotation %}
+  rotate-[--float-rotation]
+{% endif %}
+
+{% if set_position_mobile and top_mobile %}
+  top-[--float-top-mobile]
+  md:top-[--float-top]
+{% elsif top %}
+  top-[--float-top]
+{% endif %}
+
+{% if set_position_mobile and left_mobile %}
+  left-[--float-left-mobile]
+  md:left-[--float-left]
+{% elsif left %}
+  left-[--float-left]
+{% endif %}
+

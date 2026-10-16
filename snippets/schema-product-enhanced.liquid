@@ -1,0 +1,263 @@
+{% comment %}
+  Schema: Enhanced Product
+  Supplements Shopify's built-in product structured_data with nutrition info,
+  ingredients, brand, and functional benefits from custom metafields.
+
+  Rendered in sections/product.liquid INSTEAD of the default {{ product | structured_data }}.
+
+  Required metafields (custom namespace):
+    - custom.calories (integer)
+    - custom.protein_g (decimal)
+    - custom.caffeine_mg (integer)
+    - custom.serving_size (single_line_text)
+    - custom.ingredients_list (multi_line_text)
+    - custom.flavor_profile (single_line_text)
+    - custom.functional_benefits (list.single_line_text)
+    - custom.key_ingredient (single_line_text)
+
+  Optional metafields:
+    - custom.sugar_g (decimal)
+    - custom.fat_g (decimal)
+    - custom.carbs_g (decimal)
+    - custom.fiber_g (decimal)
+{% endcomment %}
+
+{%- liquid
+  assign has_nutrition = false
+  if product.metafields.custom.calories != blank or product.metafields.custom.protein_g != blank
+    assign has_nutrition = true
+  endif
+
+  assign has_ingredients = false
+  if product.metafields.custom.ingredients_list != blank
+    assign has_ingredients = true
+  endif
+-%}
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": {{ product.title | json }},
+    "description": {{ product.description | strip_html | truncate: 5000 | json }},
+    "url": {{ shop.url | append: '/products/' | append: product.handle | json }},
+    "brand": {
+      "@type": "Brand",
+      "name": {{ shop.name | json }}
+    },
+
+    {%- if product.featured_image -%}
+    "image": [
+      {%- for image in product.images -%}
+        {{ image | image_url: width: 1200 | prepend: "https:" | json }}{% unless forloop.last %},{% endunless %}
+      {%- endfor -%}
+    ],
+    {%- endif -%}
+
+    {%- if product.metafields.reviews.rating.value != blank -%}
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": {{ product.metafields.reviews.rating.value.rating | json }},
+      "bestRating": {{ product.metafields.reviews.rating.value.scale_max | json }},
+      "worstRating": {{ product.metafields.reviews.rating.value.scale_min | json }},
+      "reviewCount": {{ product.metafields.reviews.rating_count | json }}
+    },
+    {%- endif -%}
+
+    "additionalProperty": [
+      {%- assign prop_index = 0 -%}
+
+      {%- if product.metafields.custom.caffeine_mg != blank -%}
+        {%- if prop_index > 0 -%},{%- endif -%}
+        {
+          "@type": "PropertyValue",
+          "name": "Caffeine",
+          "value": "{{ product.metafields.custom.caffeine_mg }}mg",
+          "unitCode": "MGM"
+        }
+        {%- assign prop_index = prop_index | plus: 1 -%}
+      {%- endif -%}
+
+      {%- if product.metafields.custom.protein_g != blank -%}
+        {%- if prop_index > 0 -%},{%- endif -%}
+        {
+          "@type": "PropertyValue",
+          "name": "Protein",
+          "value": "{{ product.metafields.custom.protein_g }}g",
+          "unitCode": "GRM"
+        }
+        {%- assign prop_index = prop_index | plus: 1 -%}
+      {%- endif -%}
+
+      {%- if product.metafields.custom.calories != blank -%}
+        {%- if prop_index > 0 -%},{%- endif -%}
+        {
+          "@type": "PropertyValue",
+          "name": "Calories",
+          "value": "{{ product.metafields.custom.calories }}",
+          "unitText": "kcal"
+        }
+        {%- assign prop_index = prop_index | plus: 1 -%}
+      {%- endif -%}
+
+      {%- if product.metafields.custom.serving_size != blank -%}
+        {%- if prop_index > 0 -%},{%- endif -%}
+        {
+          "@type": "PropertyValue",
+          "name": "Serving Size",
+          "value": {{ product.metafields.custom.serving_size | json }}
+        }
+        {%- assign prop_index = prop_index | plus: 1 -%}
+      {%- endif -%}
+
+      {%- if product.metafields.custom.sugar_g != blank -%}
+        {%- if prop_index > 0 -%},{%- endif -%}
+        {
+          "@type": "PropertyValue",
+          "name": "Sugar",
+          "value": "{{ product.metafields.custom.sugar_g }}g",
+          "unitCode": "GRM"
+        }
+        {%- assign prop_index = prop_index | plus: 1 -%}
+      {%- endif -%}
+
+      {%- if product.metafields.custom.fat_g != blank -%}
+        {%- if prop_index > 0 -%},{%- endif -%}
+        {
+          "@type": "PropertyValue",
+          "name": "Fat",
+          "value": "{{ product.metafields.custom.fat_g }}g",
+          "unitCode": "GRM"
+        }
+        {%- assign prop_index = prop_index | plus: 1 -%}
+      {%- endif -%}
+
+      {%- if product.metafields.custom.carbs_g != blank -%}
+        {%- if prop_index > 0 -%},{%- endif -%}
+        {
+          "@type": "PropertyValue",
+          "name": "Carbohydrates",
+          "value": "{{ product.metafields.custom.carbs_g }}g",
+          "unitCode": "GRM"
+        }
+        {%- assign prop_index = prop_index | plus: 1 -%}
+      {%- endif -%}
+
+      {%- if product.metafields.custom.fiber_g != blank -%}
+        {%- if prop_index > 0 -%},{%- endif -%}
+        {
+          "@type": "PropertyValue",
+          "name": "Fiber",
+          "value": "{{ product.metafields.custom.fiber_g }}g",
+          "unitCode": "GRM"
+        }
+        {%- assign prop_index = prop_index | plus: 1 -%}
+      {%- endif -%}
+
+      {%- if has_ingredients -%}
+        {%- if prop_index > 0 -%},{%- endif -%}
+        {
+          "@type": "PropertyValue",
+          "name": "Ingredients",
+          "value": {{ product.metafields.custom.ingredients_list.value | json }}
+        }
+        {%- assign prop_index = prop_index | plus: 1 -%}
+      {%- endif -%}
+
+      {%- if product.metafields.custom.key_ingredient != blank -%}
+        {%- if prop_index > 0 -%},{%- endif -%}
+        {
+          "@type": "PropertyValue",
+          "name": "Key Ingredient",
+          "value": {{ product.metafields.custom.key_ingredient | json }}
+        }
+        {%- assign prop_index = prop_index | plus: 1 -%}
+      {%- endif -%}
+
+      {%- if product.metafields.custom.functional_benefits != blank -%}
+        {%- for benefit in product.metafields.custom.functional_benefits.value -%}
+          {%- if prop_index > 0 -%},{%- endif -%}
+          {
+            "@type": "PropertyValue",
+            "name": "Functional Benefit",
+            "value": {{ benefit | json }}
+          }
+          {%- assign prop_index = prop_index | plus: 1 -%}
+        {%- endfor -%}
+      {%- endif -%}
+    ],
+
+    {%- liquid
+      assign ship_currency = cart.currency.iso_code
+      assign free_ship_threshold = 50
+      assign current_year = 'now' | date: '%Y'
+      assign price_valid_until = current_year | plus: 1 | append: '-12-31'
+    -%}
+    {%- capture offer_extras -%}
+        ,"priceValidUntil": "{{ price_valid_until }}",
+        "hasMerchantReturnPolicy": {
+          "@type": "MerchantReturnPolicy",
+          "applicableCountry": "BG",
+          "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+          "merchantReturnDays": 14,
+          "returnMethod": "https://schema.org/ReturnByMail"
+        },
+        "shippingDetails": {
+          "@type": "OfferShippingDetails",
+          "shippingRate": {
+            "@type": "MonetaryAmount",
+            "value": "0",
+            "currency": "{{ ship_currency }}"
+          },
+          "shippingDestination": {
+            "@type": "DefinedRegion",
+            "addressCountry": "BG"
+          },
+          "eligibleTransactionVolume": {
+            "@type": "PriceSpecification",
+            "priceCurrency": "{{ ship_currency }}",
+            "minPrice": "{{ free_ship_threshold }}"
+          }
+        }
+    {%- endcapture -%}
+
+    "offers": {%- if product.variants.size > 1 -%}[
+      {%- for variant in product.variants -%}
+      {
+        "@type": "Offer",
+        "url": {{ shop.url | append: '/products/' | append: product.handle | append: '?variant=' | append: variant.id | json }},
+        "priceCurrency": {{ cart.currency.iso_code | json }},
+        "price": "{{ variant.price | divided_by: 100.0 }}",
+        "availability": "https://schema.org/{% if variant.available %}InStock{% else %}OutOfStock{% endif %}",
+        {%- if variant.sku != blank -%}
+        "sku": {{ variant.sku | json }},
+        {%- endif -%}
+        {%- if variant.barcode != blank -%}
+        "gtin": {{ variant.barcode | json }},
+        {%- endif -%}
+        "name": {{ variant.title | json }},
+        "seller": {
+          "@type": "Organization",
+          "name": {{ shop.name | json }}
+        }{{ offer_extras }}
+      }{% unless forloop.last %},{% endunless %}
+      {%- endfor -%}
+    ]{%- else -%}{
+      "@type": "Offer",
+      "url": {{ shop.url | append: '/products/' | append: product.handle | json }},
+      "priceCurrency": {{ cart.currency.iso_code | json }},
+      "price": "{{ product.price | divided_by: 100.0 }}",
+      "availability": "https://schema.org/{% if product.available %}InStock{% else %}OutOfStock{% endif %}",
+      {%- if product.selected_or_first_available_variant.sku != blank -%}
+      "sku": {{ product.selected_or_first_available_variant.sku | json }},
+      {%- endif -%}
+      {%- if product.selected_or_first_available_variant.barcode != blank -%}
+      "gtin": {{ product.selected_or_first_available_variant.barcode | json }},
+      {%- endif -%}
+      "seller": {
+        "@type": "Organization",
+        "name": {{ shop.name | json }}
+      }{{ offer_extras }}
+    }{%- endif -%}
+  }
+</script>

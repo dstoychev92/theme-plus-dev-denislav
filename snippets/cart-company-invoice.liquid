@@ -1,0 +1,97 @@
+{% comment %}
+  Company invoice opt-in for the cart.
+
+  Renders a checkbox above the checkout button. When ticked, it reveals two
+  fields — company name and ЕИК/tax number — whose values are written to cart
+  attributes and therefore appear on the order's additional details.
+
+  The inputs are associated with the main cart form via the `form` attribute
+  (form_id), so they submit together with the checkout button. While the
+  disclosure is collapsed the inputs are `:disabled` (excluded from submission
+  and validation); while expanded they are `:required`, which blocks checkout
+  until both are filled and dims the checkout button through the parent
+  `group-has-[:invalid]` rule.
+
+  Accepts:
+  - form_id: {String} id of the cart form the inputs should submit with
+{% endcomment %}
+
+{% liquid
+  assign show = section.settings.show_company_invoice
+  assign label = section.settings.company_invoice_label | default: 'Искам фактура за фирма'
+
+  if form_id == null
+    assign form_id = 'cart-' | append: section.id
+  endif
+
+  assign company_name = cart.attributes['Име на фирма']
+  assign company_eik = cart.attributes['ЕИК/Данъчен номер']
+
+  # Restore the expanded state after a cart re-render if either field is filled
+  assign initially_open = false
+  if company_name != blank or company_eik != blank
+    assign initially_open = true
+  endif
+%}
+
+{% if show and label != blank %}
+  <div class="flex flex-col gap-r4" x-data="{ open: {{ initially_open }} }">
+    {% render 'field-checkbox', id: form_id, append: '-company-invoice', name: 'attributes[Фирмена фактура]', value: 'Да', label: label, form: form_id, input_attributes: 'x-model="open"' %}
+
+    <div class="nojs:!block" x-show="open" x-collapse x-cloak>
+      <div class="flex flex-col gap-r4">
+        {% render 'field-input', id: form_id, append: '-company-name', name: 'attributes[Име на фирма]', label: 'boom.invoice.company_name', form: form_id, value: company_name, autocomplete: 'organization', input_attributes: ':required="open" :disabled="!open"' %}
+
+        {% render 'field-input', id: form_id, append: '-company-eik', name: 'attributes[ЕИК/Данъчен номер]', label: 'boom.invoice.company_id', form: form_id, value: company_eik, input_attributes: ':required="open" :disabled="!open"' %}
+      </div>
+    </div>
+  </div>
+{% endif %}
+{% comment %}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: |-
+    {% render 'field-checkbox',
+          id: form_id | append: '-company-invoice',
+          name: 'attributes[Фирмена фактура]',
+          value: 'Да',
+          label: label,
+          form: form_id,
+          input_attributes: 'x-model="open"'
+        %}
+  to: '{% render ''field-checkbox'', id: form_id, append: ''-company-invoice'', name:
+    ''attributes[Фирмена фактура]'', value: ''Да'', label: label, form: form_id, input_attributes:
+    ''x-model="open"'' %}'
+  position: 1466..1651
+- from: |-
+    {% render 'field-input',
+              id: form_id | append: '-company-name',
+              name: 'attributes[Име на фирма]',
+              label: 'boom.invoice.company_name' | t,
+              form: form_id,
+              value: company_name,
+              autocomplete: 'organization',
+              input_attributes: ':required="open" :disabled="!open"'
+            %}
+  to: '{% render ''field-input'', id: form_id, append: ''-company-name'', name: ''attributes[Име
+    на фирма]'', label: ''boom.invoice.company_name'', form: form_id, value: company_name,
+    autocomplete: ''organization'', input_attributes: '':required="open" :disabled="!open"''
+    %}'
+  position: 1765..2021
+- from: |-
+    {% render 'field-input',
+              id: form_id | append: '-company-eik',
+              name: 'attributes[ЕИК/Данъчен номер]',
+              label: 'boom.invoice.company_id' | t,
+              form: form_id,
+              value: company_eik,
+              input_attributes: ':required="open" :disabled="!open"'
+            %}
+  to: '{% render ''field-input'', id: form_id, append: ''-company-eik'', name: ''attributes[ЕИК/Данъчен
+    номер]'', label: ''boom.invoice.company_id'', form: form_id, value: company_eik,
+    input_attributes: '':required="open" :disabled="!open"'' %}'
+  position: 2031..2258
+{% endcomment %}

@@ -1,0 +1,101 @@
+<!-- snippets/core-banner.liquid -->
+
+{% doc %}
+  Renders a banner component with a background (image/video) and overlaid content.
+
+  This snippet follows the _settings pattern: most parameters can be provided either directly
+  or via the _settings object. Direct parameters take precedence over _settings values.
+{% enddoc %}
+
+{% liquid
+  assign color_scheme = color_scheme | default: _settings.color_scheme
+  assign set_height = set_height | default: _settings.set_height, allow_false: true | default: true, allow_false: true
+  assign set_height_mobile = set_height_mobile | default: _settings.set_height_mobile, allow_false: true | default: true, allow_false: true
+  assign height_mobile = height_mobile | default: _settings.height_mobile | default: false
+
+  assign alignment = _settings.content_align | default: _settings.alignment
+
+  assign image = image | default: _settings.image
+  assign video = _settings.video_bg
+  assign media_type = media_type | default: _settings.media_type | default: 'image'
+
+  if id == blank
+    assign id = id_prefix | default: block.id | default: section.id
+  endif
+  assign id = id | append: '-banner'
+%}
+
+<div
+  class="
+    group/banner
+    grid-stack reverse-z-stack
+    relative size-full overflow-hidden text-content-align
+
+    {% if alignment %}vars-content-align-{{ alignment }}{% endif %}
+    items-content-align
+
+    {% if color_scheme %}vars-{{ color_scheme }}{% endif %}
+
+    {{ class }}
+  "
+  id="{{ id }}"
+  style="{{ style }}"
+  {{ attributes }}
+>
+  {% if content %}
+    {{ content }}
+  {% else %}
+    {% render 'core-placement-grid',
+      id_prefix: id,
+      class: content_class,
+      padding: padding,
+      content: text,
+      controls: controls,
+      _settings: _settings
+    %}
+  {% endif %}
+
+  {% if href != blank %}
+    <a
+      aria-labelledby="{{ id }}"
+      href="{{ href }}"
+      class="z-0 absolute inset-0"
+      {% if _settings.open_in_new_window %}
+        target="_blank"
+      {% endif %}
+    ></a>
+  {% endif %}
+
+  {% if background %}
+    {{ background }}
+  {% elsif background_image %}
+    {% render 'core-background',
+      id_prefix: id,
+      class: background_class,
+      content: background_image,
+      _settings: _settings,
+      set_height: set_height,
+      height: height,
+      set_height_mobile: set_height_mobile,
+      height_mobile: height_mobile,
+      parallax: parallax,
+      attributes: background_attributes
+    %}
+  {% else %}
+    {% capture background_media %}
+      {% render 'core-background-media', id_prefix: id, image: image, image_mobile: image_mobile, aspect_ratio: aspect_ratio, video: video, _settings: _settings, placeholder: placeholder, set_height: set_height, height: height, set_height_mobile: set_height_mobile, height_mobile: height_mobile, sizes: sizes, widths: widths %}
+    {% endcapture %}
+    {% render 'core-background',
+      id_prefix: id,
+      class: background_class,
+      content: background_media,
+      _settings: _settings,
+      set_height: set_height,
+      height: height,
+      set_height_mobile: set_height_mobile,
+      height_mobile: height_mobile,
+      parallax: parallax,
+      attributes: background_attributes
+    %}
+  {% endif %}
+</div>

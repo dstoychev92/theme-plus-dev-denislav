@@ -1,0 +1,129 @@
+{% liquid
+  assign min = min | default: 0
+  assign value = value | default: min
+  assign step = step | default: 1
+  assign id = id | default: name | handleize
+%}
+
+{%- capture minus_icon_class -%}
+  min-h-full h-full
+  border border-transparent
+{%- endcapture -%}
+
+{%- capture plus_icon_class -%}
+  min-h-full h-full
+  border border-transparent
+{%- endcapture -%}
+
+<div
+  class="relative min-w-min flex-row-center justify-between h-control {{ class }}"
+  style="
+    {% case size %}
+      {% when 'sm' %}
+        --icon-size: 0.8em;
+        --stepper-outer: calc(var(--control-padding) * 2);
+        --stepper-inner: calc(var(--control-padding));
+      {% when 'md' %}
+        --icon-size: 0.9em;
+        --stepper-outer: calc(var(--control-padding) * 1.75);
+        --stepper-inner: calc(var(--control-padding) * 0.75);
+      {% when 'lg' %}
+        --icon-size: 1.0em;
+        --stepper-outer: calc(var(--control-padding) * 1.25);
+        --stepper-inner: calc(var(--control-padding) * 0.75);
+    {% endcase %}
+  "
+  x-data
+  x-stepper
+  x-animated-picker
+  {{ attributes }}
+>
+  <button
+    class="bg-transparent disabled:opacity-50 transition-transform duration-200 rounded-s-form-field nojs:hidden flex-row-center ps-[--stepper-outer] pe-[--stepper-inner] flex-0 h-full min-w-row-xs {{ button_class }}"
+    {{ button_attributes }}
+    aria-controls="{{ id }}"
+    aria-label="{{ 'product.accessibility.stepper_minus' | t | escape }}"
+    @click.prevent="$animatedPicker.updatePosition(() => $stepper.decrement())"
+    x-press
+    :class="
+      {
+        'scale-75': $isPressing,
+        {% if min != blank %}
+          'pointer-events-none opacity-30': $stepper.value <= {{ min }},
+        {% endif %}
+      }
+    "
+  >
+    {% render 'core-icon', icon: 'stroke-bare-minus' %}
+  </button>
+
+  <div class="relative h-full overflow-hidden edge-mask edge-mask-y-1/2">
+    <input
+      class="
+        size-full bg-transparent flex-row-center
+        min-w-[3ch] max-w-control
+        supports-[field-sizing:content]:[field-sizing:content]
+        supports-[field-sizing:content]:!max-w-[120px]
+        flex-1 text-center
+        {{ input_class }}
+      "
+      type="number"
+      {% if form %}
+        form="{{ form }}"
+      {% endif %}
+      id="{{ id }}"
+      name="{{ name }}"
+      min="{{ min }}"
+      {% if max %}
+        max="{{ max }}"
+      {% endif %}
+      value="{{ value }}"
+      step="{{ step }}"
+      {% if aria_label %}
+        aria-label="{{ aria_label | escape }}"
+      {% endif %}
+      {% if disabled %}
+        disabled
+      {% endif %}
+      {{ input_attributes }}
+      x-stepper:input
+      x-animated-picker:input
+    >
+
+    <div
+      x-animated-picker:track
+      x-cloak
+      class="absolute h-fit inset-0 bg-canvas block text-center pointer-events-none whitespace-pre-line leading-[--line-height]"
+      aria-hidden="true"
+      style="--line-height: var(--control-height);"
+      data-morph-ignore
+    ></div>
+  </div>
+
+  <button
+    class="bg-transparent disabled:opacity-50 transition-transform duration-200 rounded-e-form-field nojs:hidden flex-row-center ps-[--stepper-inner] pe-[--stepper-outer] flex-0 h-full min-w-row-xs {{ button_class }}"
+    {{ button_attributes }}
+    @click.prevent="$animatedPicker.updatePosition(() => $stepper.increment())"
+    aria-controls="{{ id }}"
+    aria-label="{{ 'product.accessibility.stepper_plus' | t | escape }}"
+    x-press
+    :class="
+      {
+        'scale-75': $isPressing,
+        {% if max != blank %}
+          'pointer-events-none opacity-30': $stepper.value >= {{ max }}
+        {% endif %}
+      }
+    "
+  >
+    {% render 'core-icon', icon: 'stroke-bare-plus' %}
+  </button>
+
+  <output
+    class="sr-only"
+    aria-live="assertive"
+    for="{{ id }}"
+    x-text="$stepper.value"
+  >
+  </output>
+</div>

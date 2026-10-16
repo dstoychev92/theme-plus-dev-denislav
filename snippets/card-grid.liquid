@@ -1,0 +1,32 @@
+<div
+  class="
+    vars-layout-gutter-card grid gap-layout
+    [--card-grid-cols:--card-grid-cols-sm]
+    md:[--card-grid-cols:--card-grid-cols-md]
+    lg:[--card-grid-cols:--card-grid-cols-lg]
+    grid-cols-[repeat(var(--card-grid-cols),minmax(0,1fr))]
+    entrance-container *:auto-set-stagger-order
+
+    {% if section.settings.mobile_dense_card_grid %}
+      max-md:[--layout-gutter-x:2px]
+      max-md:[--card-lg-radius:0px] max-md:[--card-lg-media-radius:0px]
+    {% endif %}
+
+    {{ class }}
+  "
+  style="
+    {% if columns_sm %}
+      --card-grid-cols-sm: {{ columns_sm }};
+    {%- endif -%}
+    {% if columns_md %}
+      --card-grid-cols-md: {{ columns_md }};
+    {%- endif -%}
+    {% if columns_lg %}
+      --card-grid-cols-lg: {{ columns_lg }};
+    {%- endif -%}
+    {{ style }}
+  "
+  {{ attributes }}
+>
+  {{ items }}
+</div>

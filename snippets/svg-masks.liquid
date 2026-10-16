@@ -1,0 +1,66 @@
+<svg width="0" height="0" style="position: absolute;" aria-hidden="true">
+  <!-- Safari requires masks to be width="100%" height="100%" not width="1" height="1" -->
+  <defs>
+    <!-- diamond -->
+    <mask id="mask-diamond" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox">
+      <rect width="100%" height="100%" fill="black" />
+      <polygon points="0.5,0 1,0.5 0.5,1 0,0.5" fill="white" />
+    </mask>
+
+    <!-- circle -->
+    <mask id="mask-circle" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox">
+      <rect width="100%" height="100%" fill="black" />
+      <circle cx="0.5" cy="0.5" r="0.5" fill="white" />
+    </mask>
+
+    <!-- triangle -->
+    <mask id="mask-triangle" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox">
+      <rect width="100%" height="100%" fill="black" />
+      <polygon points="0.5,0 1,1 0,1" fill="white" />
+    </mask>
+    <!-- swatch masks: shape × selected × available -->
+    <!-- circle -->
+    <mask id="swatch-circle" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox">
+      <circle cx="0.5" cy="0.5" r="0.5" fill="white" />
+    </mask>
+    <mask id="swatch-circle-selected" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox">
+      <circle cx="0.5" cy="0.5" r="0.5" fill="white" />
+      <circle cx="0.5" cy="0.5" r="0.4" fill="none" stroke="black" stroke-width="0.053" />
+    </mask>
+    <mask id="swatch-circle-unavailable" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox">
+      <circle cx="0.5" cy="0.5" r="0.5" fill="white" />
+      <line x1="1" y1="0" x2="0" y2="1" stroke="black" stroke-width="0.053" />
+    </mask>
+    <mask id="swatch-circle-selected-unavailable" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox">
+      <circle cx="0.5" cy="0.5" r="0.5" fill="white" />
+      <circle cx="0.5" cy="0.5" r="0.4" fill="none" stroke="black" stroke-width="0.053" />
+      <line x1="1" y1="0" x2="0" y2="1" stroke="black" stroke-width="0.053" clip-path="url(#swatch-clip-circle-ring)" />
+    </mask>
+
+    <!-- square -->
+    <mask id="swatch-square" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox">
+      <rect x="0" y="0" width="1" height="1" fill="white" />
+    </mask>
+    <mask id="swatch-square-selected" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox">
+      <rect x="0" y="0" width="1" height="1" fill="white" />
+      <rect x="0.1" y="0.1" width="0.8" height="0.8" fill="none" stroke="black" stroke-width="0.053" />
+    </mask>
+    <mask id="swatch-square-unavailable" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox">
+      <rect x="0" y="0" width="1" height="1" fill="white" />
+      <line x1="1" y1="0" x2="0" y2="1" stroke="black" stroke-width="0.053" />
+    </mask>
+    <mask id="swatch-square-selected-unavailable" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox">
+      <rect x="0" y="0" width="1" height="1" fill="white" />
+      <rect x="0.1" y="0.1" width="0.8" height="0.8" fill="none" stroke="black" stroke-width="0.053" />
+      <line x1="1" y1="0" x2="0" y2="1" stroke="black" stroke-width="0.053" clip-path="url(#swatch-clip-square-ring)" />
+    </mask>
+
+    <!-- swatch clip-paths for strikethrough clipping to ring area -->
+    <clipPath id="swatch-clip-circle-ring" clipPathUnits="objectBoundingBox">
+      <circle cx="0.5" cy="0.5" r="0.4" />
+    </clipPath>
+    <clipPath id="swatch-clip-square-ring" clipPathUnits="objectBoundingBox">
+      <rect x="0.1" y="0.1" width="0.8" height="0.8" />
+    </clipPath>
+  </defs>
+</svg>

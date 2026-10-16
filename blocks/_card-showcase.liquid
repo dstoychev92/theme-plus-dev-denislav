@@ -1,0 +1,309 @@
+<!-- blocks/_card-showcase.liquid -->
+
+{% liquid
+  # width settings
+  assign set_width = block.settings.set_width
+
+  if set_width
+    assign width_unit = block.settings.width_unit
+    assign width_px = block.settings.width_px
+    assign width_percent = block.settings.width_percent
+  endif
+
+  # Indicator style - use local override if set, otherwise global
+  if block.settings.set_pagination_style
+    assign pagination_style = block.settings.pagination_style
+    assign slider_control_style = block.settings.slider_control_style
+  else
+    assign pagination_style = settings.carousel_pagination_style | default: 'counter'
+  endif
+%}
+
+{% capture class %}
+  {% if block.settings.set_color_scheme %}
+    vars-{{ block.settings.color_scheme }}
+  {% endif %}
+  {% if block.settings.card_appearance == 'framed' %}
+    vars-card-lg-appearance-framed
+  {% else %}
+    vars-card-lg-appearance-normal
+  {% endif %}
+{% endcapture %}
+
+{% capture attributes %}
+  x-ensemble:carousel
+  x-overflow.autoregister
+  aria-label="{{ 'other.accessibility.card_carousel' | t }}"
+  aria-live="polite"
+  {{ block.shopify_attributes }}
+{% endcapture %}
+
+{% capture style %}
+  --card-list-columns-desktop: 1;
+  --card-list-columns-tablet: 1;
+  --card-list-columns-mobile: 1;
+
+  --card-list-overflow-x: auto;
+  --card-list-auto-flow: column;
+  --card-list-auto-columns: 100%;
+  --card-list-template-rows: minmax(0, 1fr);
+  --card-list-row-gap: var(--layout-gutter-y);
+  --card-list-max-width:  100%;
+
+  {% if block.settings.card_appearance == 'framed' %}
+    {% case block.settings.framed_card_bg %}
+      {% when 'canvas' %}
+        --card-lg-framed-bg-color: var(--canvas);
+      {% when 'tint' %}
+        --card-lg-framed-bg-color: var(--content-mix-5);
+      {% when 'custom' %}
+        {% if block.settings.framed_card_bg_custom != blank %}
+          --card-lg-framed-bg-color: {{ block.settings.framed_card_bg_custom }};
+        {% endif %}
+    {% endcase %}
+  {% endif %}
+
+  {% if set_width %}
+    {% if width_unit == 'pixel' %}
+      max-width: {{ width_px }}px;
+    {% elsif width_unit == 'percent' %}
+      max-width: {{ width_percent }}%;
+    {% endif %}
+  {% endif %}
+{% endcapture %}
+
+{% capture card_list_class %}
+  col-span-full w-full justify-self-center self-center
+{% endcapture %}
+
+{% capture list_items %}
+  {% content_for "blocks" %}
+{% endcapture %}
+
+<div
+  {{ attributes }}
+  class="h-fit entrance-item entrance-fade w-full auto-rows-[minmax(0,max-content)] flex flex-col gap-y-r3 {{ class }}"
+  style="{{ style }}"
+>
+  <div class="relative">
+    {% render 'core-card-slider', items: list_items, class: card_list_class %}
+  </div>
+
+  <div class="col-span-full flex flex-center">
+    {% render 'showcase-controls',
+      pagination_style: pagination_style,
+      background_style: slider_control_style,
+      hide_arrows: false
+    %}
+  </div>
+</div>
+
+{% schema %}
+{
+	"name": "Card Showcase",
+	"tag": null,
+	"settings": [
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_width",
+			"label": "Set width",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "width_unit",
+			"label": "Unit",
+			"default": "percent",
+			"options": [
+				{
+					"value": "percent",
+					"label": "Percent"
+				},
+				{
+					"value": "pixel",
+					"label": "Pixel"
+				}
+			],
+			"visible_if": "{{ block.settings.set_width == true }}"
+		},
+		{
+			"type": "range",
+			"id": "width_px",
+			"label": "Width",
+			"unit": "px",
+			"min": 150,
+			"max": 600,
+			"step": 5,
+			"default": 200,
+			"visible_if": "{{ block.settings.set_width == true and block.settings.width_unit == 'pixel' }}"
+		},
+		{
+			"type": "range",
+			"id": "width_percent",
+			"label": "Width",
+			"unit": "%",
+			"min": 0,
+			"max": 100,
+			"step": 5,
+			"default": 100,
+			"visible_if": "{{ block.settings.set_width == true and block.settings.width_unit == 'percent' }}"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_color_scheme",
+			"label": "Set colors",
+			"default": false
+		},
+		{
+			"type": "color_scheme",
+			"id": "color_scheme",
+			"label": "Color scheme",
+			"visible_if": "{{ block.settings.set_color_scheme }}"
+		},
+		{
+			"type": "header",
+			"content": "Card appearance"
+		},
+		{
+			"type": "select",
+			"id": "card_appearance",
+			"label": "Card style",
+			"default": "framed",
+			"options": [
+				{
+					"value": "normal",
+					"label": "Bare"
+				},
+				{
+					"value": "framed",
+					"label": "Framed"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "framed_card_bg",
+			"label": "Background",
+			"default": "tint",
+			"options": [
+				{
+					"value": "canvas",
+					"label": "Default"
+				},
+				{
+					"value": "tint",
+					"label": "Tint"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			],
+			"visible_if": "{{ block.settings.card_appearance == 'framed' }}"
+		},
+		{
+			"type": "color",
+			"id": "framed_card_bg_custom",
+			"label": "Background custom",
+			"default": "#f7f7f730",
+			"alpha": true,
+			"visible_if": "{{ block.settings.card_appearance == 'framed' and block.settings.framed_card_bg == 'custom' }}"
+		},
+		{
+			"type": "header",
+			"content": "Navigation"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_pagination_style",
+			"label": "Set pagination style",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "pagination_style",
+			"label": "Style",
+			"default": "counter",
+			"options": [
+				{
+					"value": "counter",
+					"label": "Counter"
+				},
+				{
+					"value": "dots",
+					"label": "Dots"
+				},
+				{
+					"value": "lines",
+					"label": "Lines"
+				}
+			],
+			"visible_if": "{{ block.settings.set_pagination_style }}"
+		},
+		{
+			"type": "select",
+			"id": "slider_control_style",
+			"label": "Background style",
+			"default": "tint",
+			"options": [
+				{
+					"value": "tint",
+					"label": "Tint"
+				},
+				{
+					"value": "outline",
+					"label": "Outline"
+				},
+				{
+					"value": "bare",
+					"label": "∅"
+				}
+			],
+			"visible_if": "{{ block.settings.set_pagination_style }}"
+		},
+	],
+	"blocks": [
+		{
+			"type": "_card-product"
+		},
+		{
+			"type": "_cards-products"
+		},
+		{
+			"type": "_cards-collections"
+		},
+		{
+			"type": "_cards-articles"
+		},
+		{
+			"type": "_tile"
+		},
+		{
+			"type": "_card-custom"
+		},
+		{
+			"type": "_grid-group-frame"
+		},
+	],
+	"presets": [
+		{
+			"name": "Card Showcase",
+			"category": "Cards",
+			"blocks": [
+				{
+					"type": "_card-product",
+					"settings": {}
+				}
+			]
+		}
+	]
+}
+{% endschema %}

@@ -1,0 +1,65 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "blog",
+      "blocks": {
+        "section-title": {
+          "type": "_section-title",
+          "static": true,
+          "settings": {
+            "text": "{{ closest.blog.title }}",
+            "type_preset": "h2",
+            "type_resize": "md",
+            "type_font": "heading",
+            "type_size": 8,
+            "type_uppercase": false,
+            "set_color": false,
+            "color": "content",
+            "color_custom": "#000000",
+            "set_spacing": false,
+            "buffer_bottom": 0,
+            "gap": "sm",
+            "gap_custom": 0,
+            "set_heading_tag": true,
+            "heading_tag": "h1"
+          },
+          "blocks": {}
+        }
+      },
+      "settings": {
+        "show_tag_list": false,
+        "title_placement": "center",
+        "columns_lg": 3,
+        "columns_md": 2,
+        "columns_sm": "1",
+        "limit": 18,
+        "set_aspect_ratio": false,
+        "aspect_ratio": 1.7,
+        "show_author": false,
+        "show_tags": true,
+        "show_date": true,
+        "show_preview": true,
+        "show_link": true,
+        "color_scheme": "",
+        "content_width": "page",
+        "content_width_custom": 65,
+        "content_width_custom_mobile": 100,
+        "set_rhythm": false,
+        "section_padding_top": 40,
+        "section_padding_bottom": 40
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

@@ -1,0 +1,39 @@
+{% comment %}
+  Renders a product YouTube/Vimeo video
+  Accepts:
+  - media: {Object} Product media object of type 'external_video'
+{% endcomment %}
+
+{% assign layout_desktop = layout_desktop | default: _settings.layout_desktop | default: 'stack' %}
+
+{% capture on_load_video %}
+  {% comment %} Desktop {% endcomment %}
+  {% if layout_desktop == 'showcase' %}
+    {% comment %} Pause video on slide change {% endcomment %}
+    $watch('$slide.isCurrentSlide', (isCurrentSlide) => {
+      if (!$media.matches.sm) {
+        if (!isCurrentSlide) {
+          pauseVideo();
+        }
+      }
+    })
+  {% endif %}
+
+  {% comment %} Mobile {% endcomment %}
+  if ($media.matches.sm) {
+    $watch('$scrollList.centeredIndex', (centeredIndex) => {
+      if ($media.matches.sm) {
+        if (centeredIndex != {{ media.position | minus: 1 }}) {
+          pauseVideo();
+        }
+      }
+    });
+  }
+{% endcapture %}
+
+{% render 'video-external',
+  video_type: media.host,
+  video_id: media.external_id,
+  aspect_ratio: aspect_ratio,
+  on_load_video: on_load_video
+%}

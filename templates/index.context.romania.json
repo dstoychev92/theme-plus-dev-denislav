@@ -1,0 +1,60 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "context": {
+    "market": "romania"
+  },
+  "parent": "index.json",
+  "sections": {
+    "section_ugc_video_slider_KqcgPF": {
+      "settings": {},
+      "blocks": {
+        "ugc_video_testimonial_WMB64Q": {
+          "settings": {
+            "video": "",
+            "product": ""
+          }
+        },
+        "ugc_video_testimonial_kBePAx": {
+          "settings": {
+            "video": "",
+            "product": ""
+          }
+        },
+        "ugc_video_testimonial_VLn7FN": {
+          "settings": {
+            "video": "",
+            "product": ""
+          }
+        }
+      },
+      "block_order": [
+        "ugc_video_testimonial_WMB64Q",
+        "ugc_video_testimonial_kBePAx",
+        "ugc_video_testimonial_VLn7FN"
+      ]
+    },
+    "section_custom_YF9bHR": {
+      "disabled": true,
+      "settings": {},
+      "blocks": {}
+    },
+    "section_marquee_Qtp3K6": {
+      "disabled": true,
+      "settings": {},
+      "blocks": {}
+    },
+    "section_custom_zcLreV": {
+      "disabled": true,
+      "settings": {},
+      "blocks": {}
+    }
+  }
+}

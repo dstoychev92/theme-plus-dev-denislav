@@ -1,0 +1,54 @@
+<!-- blocks/_toolbar-announcement.liquid -->
+
+{%- liquid
+  assign announcement_text = block.settings.announcement_text
+  assign market = localization.market.handle | default: ''
+  if market == 'greece' and block.settings.announcement_text_greece != blank
+    assign announcement_text = block.settings.announcement_text_greece
+  elsif market == 'romania' and block.settings.announcement_text_romania != blank
+    assign announcement_text = block.settings.announcement_text_romania
+  endif
+-%}
+
+{% render 'core-inline-richtext',
+  _settings: section.settings,
+  text: announcement_text,
+  class: 'self-center [&>a]:text-inherit',
+  attributes: block.shopify_attributes
+%}
+
+{% schema %}
+{
+	"name": "Announcement",
+	"tag": null,
+	"settings": [
+		{
+			"type": "inline_richtext",
+			"id": "announcement_text",
+			"label": "Text",
+			"default": "Make an announcement"
+		},
+		{
+			"type": "header",
+			"content": "Market overrides (optional)"
+		},
+		{
+			"type": "inline_richtext",
+			"id": "announcement_text_greece",
+			"label": "Text — Greece market",
+			"info": "Shown only on the 'greece' market. Leave blank to use the default text."
+		},
+		{
+			"type": "inline_richtext",
+			"id": "announcement_text_romania",
+			"label": "Text — Romania market",
+			"info": "Shown only on the 'romania' market. Leave blank to use the default text."
+		}
+	],
+	"presets": [
+		{
+			"name": "Announcement"
+		}
+	]
+}
+{% endschema %}

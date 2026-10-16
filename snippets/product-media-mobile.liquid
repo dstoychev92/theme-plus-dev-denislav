@@ -1,0 +1,192 @@
+{% liquid
+  assign id = id | default: 'product-media-mobile'
+  assign product = product | default: _settings.product
+  assign pagination_style = pagination_style | default: _settings.pagination_style_mobile | default: 'none'
+  assign media_style = media_style | default: _settings.layout_mobile | default: 'carousel'
+  assign scroll_class = 'scroll-area-x snap-x snap-mandatory'
+  assign viewport_class = ''
+  assign product_media_size_count = product_media.size | default: product_media.count
+
+  if contain_media == true
+    case media_style
+      when 'carousel'
+        assign class = class | append: ' -mx-root-buffer'
+        assign scroll_class = scroll_class | append: ' px-root-buffer scroll-px-root-buffer'
+    endcase
+  endif
+
+  assign media_spacing = 0
+  if media_style == 'carousel'
+    assign media_spacing = _settings.layout_carousel_spacing_mobile | default: 5
+  endif
+
+  assign indicator_spacing = 0
+  if pagination_style == 'photo'
+    assign indicator_spacing = _settings.carousel_indicator_photo_spacing_mobile | default: 3
+  endif
+%}
+
+{%- capture image_sizes -%}
+  {%- render 'image-grid-sizes',
+    columns_lg: 1,
+    columns_md: 1,
+    columns_sm: 1,
+    section_width: section.settings.content_width
+  %}
+{%- endcapture -%}
+{%- capture image_widths -%}
+  {%- render 'image-grid-widths',
+    columns_lg: 1,
+    columns_md: 1,
+    columns_sm: 1
+  -%}
+{%- endcapture -%}
+
+{% assign media_item_width = 100 %}
+{% if media_style == 'carousel' and product_media_size_count > 1 %}
+  {% assign layout_carousel_visible_images_mobile = _settings.layout_carousel_visible_images_mobile | default: 1.2 %}
+  {% assign media_item_width = 100 | divided_by: layout_carousel_visible_images_mobile %}
+{% endif %}
+
+{% if media_style == 'showcase' and pagination_style != 'none' and product_media_size_count > 1 %}
+  {% case pagination_style %}
+    {% when 'photo' %}
+      {% assign thumbnail_aspect_ratio = aspect_ratio | default: 1 %}
+      {% capture thumbnail_picker_indicator %}
+        {% render 'product-media-thumbnail-picker',
+          product_media: product_media,
+          image_size: _settings.carousel_indicator_photo_size_mobile,
+          thumbnail_spacing: _settings.carousel_indicator_photo_spacing_mobile,
+          background: 'solid',
+          orientation: 'horizontal',
+          class: thumbnail_class,
+          id: id
+        %}
+      {% endcapture %}
+
+    {% when 'position' %}
+      {% capture position_indicator %}
+        {% render 'product-media-position-indicator',
+          product: _settings.product,
+          product_media: product_media,
+          class: 'absolute bottom-r5 right-[calc(var(--root-buffer)+var(--media-overlay-inset))] z-10'
+        %}
+      {% endcapture %}
+  {% endcase %}
+{% endif %}
+
+<div
+  class="relative flex flex-col items-start gap-y-[--indicator-spacing] {{ class }}"
+  style="
+    --indicator-spacing: {{ indicator_spacing }}px;
+    --media-spacing: {{ media_spacing }}px;
+    --media-item-width: {{ media_item_width }}%;
+    {{ style }}
+  "
+  x-data="
+    {
+      set currentSlideIndex(value) {
+        $scrollList.scrollTo(value);
+      },
+      get currentSlideIndex() {
+        return $scrollList.centeredIndex;
+      }
+    }
+  "
+  x-photoswipe
+  x-scroll-list
+  x-id="['{{ id }}']"
+  {{ attributes }}
+>
+  <div
+    class="overflow-hidden w-full {{ viewport_class }}"
+    x-scroll-list:viewport
+  >
+    <div
+      class="
+        relative flex flex-row flex-nowrap items-start justify-start select-none
+        gap-x-[--media-spacing]
+        will-change-transform backface-hidden
+        transition-[height] duration-400
+        {{ scroll_class }}
+      "
+      x-scroll-list:scroller
+      x-ref="sliderEl"
+      {{ media_attributes }}
+    >
+      {%- for media in product_media -%}
+        {% liquid
+          assign is_featured_media = false
+          if forloop.first
+            assign is_featured_media = true
+          endif
+
+          assign media_id = id | append: '-' | append: media.id
+          assign thumb_el_id = '#' | append: media_id
+        %}
+
+        {% case media.media_type %}
+          {% when 'image' %}
+            {% render 'photoswipe-image-json', id: media.id, image: media.preview_image, thumb_el: thumb_el_id %}
+          {% when 'video' %}
+            {% assign show_custom_controls = _settings.custom_controls | default: false %}
+            {% assign autoplay = _settings.video_autoplay | default: false %}
+            {% if show_custom_controls or autoplay %}
+              {% for source in media.sources %}
+                {% comment %} Check for mp4, mov or webm source so we can get the correct video URL {% endcomment %}
+                {% case source.mime_type %}
+                  {% when 'video/mp4', 'video/quicktime', 'video/webm' %}
+                    {% render 'photoswipe-video-json',
+                      id: media.id,
+                      video: media,
+                      video_source: source.url,
+                      thumb_el: thumb_el_id
+                    %}
+                    {% break %}
+                {% endcase %}
+              {% endfor %}
+            {% endif %}
+        {% endcase %}
+
+        {% capture media_class %}
+          flex shrink-0 snap-start flex-col justify-start w-[--media-item-width]
+          {% comment %} This prevents performance issues while slider images are loading {% endcomment %}
+          translate-z
+        {% endcapture %}
+
+        {% capture media_item_attributes %}
+          x-scroll-list:item
+          role="group"
+          aria-roledescription="slide"
+
+          {% comment %}
+            All slides render immediately at their natural height (like the
+            carousel layout). We deliberately do NOT measure/animate the
+            container height per slide in showcase: a snap container that
+            resizes as the scroll settles makes iOS Safari abandon native
+            scroll-snap, leaving swipes resting between slides.
+          {% endcomment %}
+          {% unless is_featured_media %}
+            x-cloak
+          {% endunless %}
+        {% endcapture %}
+
+        {% render 'product-media-item',
+          _settings: _settings,
+          product: product,
+          product_media: product_media,
+          media: media,
+          id: media_id,
+          class: media_class,
+          attributes: media_item_attributes,
+          aspect_ratio: aspect_ratio,
+          is_featured_media: is_featured_media,
+          image_sizes: image_sizes,
+          image_widths: image_widths
+        %}
+      {%- endfor -%}
+    </div>
+    {{ position_indicator }}
+  </div>
+  {{ thumbnail_picker_indicator }}
+</div>

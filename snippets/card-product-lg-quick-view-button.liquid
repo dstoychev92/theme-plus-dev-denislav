@@ -1,0 +1,88 @@
+{% doc %}
+  Renders a button for the product card that opens the quickview drawer when clicked.
+  For progressive enhancement, the button is rendered as a link pointing to variant.url,
+  with a JS click handler that prevents navigation and instead opens the quickview drawer.
+{% enddoc %}
+
+{% liquid
+  assign size = size | default: 'lg'
+  assign color = color | default: 'content'
+  assign appearance = appearance | default: 'blur'
+  assign button_text = 'product.quick_view' | t
+  assign button_href = variant.url
+
+  if icon_only == true
+    # Always show the icon, never the text label
+    assign swap_touch_content_class = ''
+    assign swap_pointer_content_class = 'hidden'
+  elsif icon_swap == true
+    assign swap_touch_content_class = 'mouse:hidden'
+    assign swap_pointer_content_class = 'touch:hidden'
+  else
+    assign swap_touch_content_class = 'hidden'
+    assign swap_pointer_content_class = ''
+  endif
+
+  assign is_out_of_stock = false
+  if product.available == false
+    assign is_out_of_stock = true
+  endif
+
+  if is_out_of_stock
+    assign button_text = 'product.sold_out' | t
+    assign button_href = product.url
+  endif
+
+  assign aria_label = aria_label | default: button_text
+%}
+
+{%- capture cart_icon -%}
+  fill-add-{{- settings.cart_icon -}}
+{%- endcapture -%}
+
+{% capture label %}
+  {% render 'core-icon', icon: cart_icon, size: 'lg', class: swap_touch_content_class %}
+  <span class="{{ swap_pointer_content_class }}">
+    {{ button_text }}
+  </span>
+{% endcapture %}
+
+{% capture label_class %}
+  leading-[--leading-block] text-center line-clamp-2
+  {{ label_class }}
+{% endcapture %}
+
+{% capture class %}
+  group-[:not(:has([id='product-quickview-drawer']))]/body:hidden
+  !overflow-visible max-md:hit-area-[--card-lg-media-padding]
+  {{ class }}
+{% endcapture %}
+
+{% unless is_out_of_stock %}
+  {% capture attributes %}
+    {% comment %} Preload the quickview drawer when the user hovers /focuse the button so it's ready when they click {% endcomment %}
+    @mouseover.once="$dispatch('theme:quickview:preload', { url: '{{ variant.url }}' });"
+    @focus.once="$dispatch('theme:quickview:preload', { url: '{{ variant.url }}' });"
+
+    {% comment %} Override link click behaviour to open the quickview drawer instead {% endcomment %}
+    @click.stop.prevent="$dispatch('theme:quickview:open', { url: '{{ variant.url }}' });"
+
+    :role="'button'"
+    :aria-haspopup="'dialog'"
+  {% endcapture %}
+{% endunless %}
+
+{% render 'core-button',
+  tag: 'a',
+  href: button_href,
+  label: label,
+  aria_label: aria_label,
+  appearance: appearance,
+  sizing: size,
+  type_resize: type_resize,
+  color: color,
+  name: 'id',
+  class: class,
+  attributes: attributes,
+  label_class: label_class
+%}

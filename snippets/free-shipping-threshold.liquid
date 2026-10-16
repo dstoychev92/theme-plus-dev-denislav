@@ -1,0 +1,22 @@
+{% doc %}
+  Resolves the free-shipping threshold for the current market.
+  Reads the global `settings.market_free_shipping` map (handle:value pairs).
+  Returns the matching market's value, otherwise the passed-in base.
+  @param {string} base - The section/block's own base threshold (raw number, no currency).
+  @example
+  {% capture threshold %}{% render 'free-shipping-threshold', base: block.settings.threshold %}{% endcapture %}
+{% enddoc %}
+{%- liquid
+  assign result = base
+  assign current_market = localization.market.handle | default: ''
+  assign pairs = settings.market_free_shipping | remove: ' ' | split: ','
+  for pair in pairs
+    assign kv = pair | split: ':'
+    assign handle = kv[0] | downcase
+    if kv.size > 1 and current_market != '' and handle == current_market
+      assign result = kv[1]
+      break
+    endif
+  endfor
+  echo result
+-%}

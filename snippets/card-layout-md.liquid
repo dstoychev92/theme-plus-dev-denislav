@@ -1,0 +1,105 @@
+{% comment %}
+  Usage:
+  {% render 'card-layout-md', url: url, image: image, title: "Product Title", details: "14.99", button: '<a>Buy</a>', class: "any-css-class", loader: false %}
+{% endcomment %}
+
+{% liquid
+  assign loader = loader | default: false
+  assign url = url | default: false
+  assign media_tag = media_tag | default: 'div'
+  assign title_tag = title_tag | default: 'div'
+  assign title = title | default: false
+  assign aria_label = aria_label | default: title
+  assign media_size_class = media_size_class | default: 'aspect-[--aspect-ratio] w-r12'
+%}
+
+{% if loader %}
+  {% assign media = false %}
+  {% capture content %}
+    <div class="{{ media_size_class }}">
+      {% render 'spinner', class: 'absolute top-1/2 left-1/2 -mx-r4 -mt-r4 z-10' %}
+      <span class="line-clamp-2 text-r4 opacity-0">
+        Loading...
+      </span>
+    </div>
+  {% endcapture %}
+{% endif %}
+
+{% if url != false %}
+  {% capture link_attributes %}
+    {{ link_attributes }}
+    href="{{ url }}"
+  {% endcapture %}
+  {% assign title_tag = 'a' %}
+  {% assign media_tag = 'a' %}
+{% endif %}
+
+<article
+  class="
+    vars-card-md
+    flex min-w-[250px] rounded-[--card-md-radius] overflow-hidden text-start
+    bg-[--card-md-bg-color] ring-1 ring-[--card-md-border-color]
+    {{ class }}
+  "
+  style="
+    {{ style }}
+    {% # The 'loader' needs access to the --aspect-ratio too %}
+    --aspect-ratio: {{ aspect_ratio | default: 1 | at_least: 0.7 }};
+  "
+  {% if aria_label %}
+    aria-label="{{ aria_label }}"
+  {% endif %}
+  {{ attributes }}
+>
+  {% comment %} Allow media to be hidden when passing 'false' {% endcomment %}
+  {% if media != false %}
+    <{{ media_tag }}
+      {% if aria_label %}
+        aria-label="{{ aria_label }}"
+      {% endif %}
+      class="relative flex shrink-0 flex-center overflow-hidden rounded-[--card-md-media-radius] {{ media_size_class }}"
+      tabindex="0"
+      {{ link_attributes }}
+    >
+      {% if media %}
+        {{ media }}
+      {% elsif image %}
+        {% render 'core-image', image: image, cover: cover, sizes: '96px', class: 'h-full relative', aspect_ratio: 0 %}
+      {% elsif icon %}
+        <div class="flex size-full flex-none flex-center bg-content-mix-5">
+          {% render 'core-icon', icon: icon %}
+        </div>
+      {% else %}
+        {% render 'image-filler', size_class: 'size-full' %}
+      {% endif %}
+    </{{ media_tag }}>
+  {% endif %}
+
+  <div class="grow text-content">
+    {% if content %}
+      {{ content }}
+    {% else %}
+      <div class="h-full flex-row-center justify-between gap-x-r3 px-[--card-md-inner-padding-x] py-[--card-md-inner-padding-y]">
+        <div class="flex flex-col gap-y-r3">
+          {%- if title -%}
+            <{{ title_tag }}
+              {{ link_attributes }}
+              {% comment %} We don't want to expose this tag as a link to screen readers since we already have a link for this card {% endcomment %}
+              aria-hidden="true"
+              tabindex="-1"
+              class="self-start text-r4 font-bold"
+            >
+              {{ title }}
+            </{{ title_tag }}>
+          {%- endif -%}
+
+          {%- if details -%}
+            <span class="text-r3 text-muted">{{ details }}</span>
+          {%- endif -%}
+        </div>
+
+        {{ button }}
+      </div>
+    {% endif %}
+  </div>
+</article>

@@ -1,0 +1,107 @@
+{% liquid
+  assign logo = _settings.logo
+  assign transparent_white_logo = _settings.transparent_white_logo
+  assign logo_max_width = _settings.logo_max_limit | times: 1
+  assign logo_font_size = _settings.logo_font_size
+  assign target_device = target_device | default: _settings.target_device
+%}
+
+{% if logo %}
+  {% capture class %}
+    keyboard-focus:outline-offset-[-2px]
+    {% comment %} Scale down logo with screen size {% endcomment %}
+    [--header-logo-dynamic-width:calc(max(min(50vw,100%,var(--header-logo-max-width)),75px))]
+    w-[--header-logo-dynamic-width]
+    {{ class }}
+  {% endcapture %}
+  {% capture attributes %}
+    style="--header-logo-max-width: {{ logo_max_width }}px"
+    {{ attributes }}
+  {% endcapture %}
+{% endif %}
+
+<a
+  data-target-device="{{ target_device }}"
+  class="
+    pt-[var(--section-pt)] pb-[var(--section-pb)] grid-stack place-items-center relative flex-none
+    {% render 'props-class-target-device', target_device: target_device %}
+    {{ class }}
+  "
+  href="{{ routes.root_url }}"
+  aria-label="{{ shop.name }}"
+  {{ attributes }}
+  {{ block.shopify_attributes }}
+>
+  {% capture logo_class %}
+    h-auto
+  {% endcapture %}
+  {% if logo != blank %}
+    {% if transparent_white_logo != null %}
+      {% assign transparent_white_logo_alt_default = transparent_white_logo.alt
+        | default: shop.name
+        | strip_html
+        | escape
+      %}
+      {% capture transparent_white_logo_class %}
+        {{ logo_class }}
+        opacity-[--header-transparent-white-logo-opacity,0.0]
+      {% endcapture %}
+
+      {% render 'core-image',
+        image: transparent_white_logo,
+        width: logo_max_width,
+        alt_default: transparent_white_logo_alt_default,
+        fetchpriority: 'high',
+        placeholder: false,
+        loading: 'eager',
+        class: transparent_white_logo_class,
+        aria-hidden: true,
+        role: 'presentation'
+      %}
+    {% endif %}
+
+    {% assign alt_default = logo.alt | default: shop.name | strip_html | escape %}
+    {% capture logo_class %}
+      {{ logo_class }}
+
+      {% if transparent_white_logo != null %}
+        transition-opacity duration-500
+        {% if _settings.color_scheme.settings.color_content.lightness < 50 %}
+          opacity-[calc(1-var(--header-transparent-white-logo-opacity,0.0))]
+        {% else %}
+          opacity-[calc(1-var(--header-transparent-white-logo-opacity,1.0))]
+        {% endif %}
+      {% endif %}
+    {% endcapture %}
+
+    {% render 'core-image',
+      image: logo,
+      width: logo_max_width,
+      alt_default: alt_default,
+      fetchpriority: 'high',
+      placeholder: false,
+      loading: 'eager',
+      class: logo_class
+    %}
+  {% else %}
+    {% liquid
+      assign text_logo_length = ''
+      assign title_length = shop.name | size
+      assign one_word = true
+      if shop.name contains ' ' or shop.name contains '-'
+        assign one_word = false
+      endif
+    %}
+    <span
+      class="
+        bg-content text-canvas
+        font-family-heading text-center
+        uppercase px-[1em] py-[0.5em]
+        whitespace-normal leading-none
+      "
+      style="font-size: min(calc(var(--font-r{{ logo_font_size }}) * var(--font-family-adjust) * var(--caps-adjust)), 3vw)"
+    >
+      {{ shop.name }}
+    </span>
+  {% endif %}
+</a>

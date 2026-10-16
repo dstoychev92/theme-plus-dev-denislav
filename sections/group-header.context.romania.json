@@ -1,0 +1,44 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "context": {
+    "market": "romania"
+  },
+  "parent": "group-header.json",
+  "sections": {
+    "section_announcement_bar_jXLkBt": {
+      "settings": {},
+      "blocks": {
+        "toolbar_announcement_dbjUb": {
+          "type": "_toolbar-announcement",
+          "name": "Announcement",
+          "disabled": false,
+          "settings": {
+            "announcement_text": "<strong>REDUCERE DE 15% LA TOATE PRODUSELE</strong>",
+            "header-9b11f0a0a8cd27aba58ec7ecb536f201": null,
+            "announcement_text_greece": "",
+            "announcement_text_romania": ""
+          }
+        }
+      },
+      "block_order": [
+        "toolbar_announcement_dbjUb",
+        "toolbar_announcement_d9CVNj",
+        "toolbar_announcement_FLiq8c"
+      ]
+    },
+    "header_menu_BxExCA": {
+      "settings": {
+        "linklist": "main-menu-markets"
+      },
+      "blocks": {}
+    }
+  }
+}

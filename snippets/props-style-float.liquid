@@ -1,0 +1,32 @@
+{%- liquid
+  assign z_index = z_index | default: _settings.z_index
+  assign top = top | default: _settings.top
+  assign left = left | default: _settings.left
+  assign top_mobile = top_mobile | default: _settings.top_mobile
+  assign left_mobile = left_mobile | default: _settings.left_mobile
+  assign rotation = rotation | default: _settings.rotation | default: 0
+
+  # Allow passing "false" to disable mobile position from outside this snippet
+  if set_position_mobile == null
+    assign set_position_mobile = _settings.set_position_mobile | default: true, allow_false: true
+  endif
+-%}
+{% if z_index %}
+  z-index: {{ z_index }};
+{% endif %}
+{% if top %}
+  --float-top: {{ top }}%;
+{% endif %}
+{% if left %}
+  --float-left: {{ left }}%;
+{% endif %}
+{% if set_position_mobile and top_mobile %}
+  --float-top-mobile: {{ top_mobile }}%;
+{% endif %}
+{% if set_position_mobile and left_mobile %}
+  --float-left-mobile: {{ left_mobile }}%;
+{% endif %}
+{% if rotation %}
+  --float-rotation: {{ rotation | times: 1.0 | divided_by: 100 | divided_by: 2 }}turn;
+{% endif %}
+

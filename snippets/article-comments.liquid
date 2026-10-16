@@ -1,0 +1,187 @@
+<div>
+  {% paginate article.comments by 5 %}
+    {% if article.comments_count > 0 %}
+      <div id="comments">
+        <h3 class="type-h3">
+          {{ 'blog.comments.comments_with_count' | t: count: article.comments_count }}
+        </h3>
+
+        <!-- a "just published" comment -->
+        {% if comment.status == 'pending' and comment.content %}
+          <div id="comment-{{ comment.id }}" class="mt-r8">
+            <div class="mb-r5 flex text-r5">
+              <div>
+                <span class="type-h6 block">{{ comment.author }}</span>
+
+                {%- assign published_at = comment.created_at | date: '%b %d, %Y at %I:%M %P' -%}
+                <time
+                  datetime="{{ published_at }}"
+                  class="block text-r2 text-muted"
+                >
+                  {{- published_at -}}
+                </time>
+              </div>
+            </div>
+
+            {{ comment.content }}
+          </div>
+        {% endif %}
+        {% for comment in article.comments %}
+          <div id="comment-{{ comment.id }}" class="mt-r8">
+            <div class="mb-r5 flex text-r5">
+              <div>
+                <span class="type-h6 block">{{ comment.author }}</span>
+
+                {%- assign published_at = comment.created_at | date: '%b %d, %Y at %I:%M %P' -%}
+                <time
+                  datetime="{{ published_at }}"
+                  class="block text-r2 text-muted"
+                >
+                  {{- published_at -}}
+                </time>
+              </div>
+            </div>
+
+            {{ comment.content }}
+          </div>
+        {% endfor %}
+      </div>
+
+      {% if paginate.pages > 1 %}
+        {% render 'pagination', paginate: paginate, class: 'pt-r8 w-full' %}
+      {% endif %}
+
+      <hr class="border-1 my-r10 border-line">
+    {% endif %}
+
+    <div class="flex flex-col gap-y-r8">
+      <div>
+        <h3 class="type-h3">{{ 'blog.comments.title' | t }}</h3>
+
+        {% if blog.moderated? %}
+          <p class="mt-r2 text-r5">{{ 'blog.comments.moderated' | t }}</p>
+        {% endif %}
+      </div>
+
+      {% form 'new_comment', article, class: 'flex flex-col gap-y-r6' %}
+        {%- if form.errors -%}
+          <div class="vars-scheme-error bg-canvas p-r5 text-r2 text-content" role="alert">
+            <span>{{ 'other.form.error_heading' | t }}</span>
+
+            <ul class="list-disc pl-r5">
+              {%- for field in form.errors -%}
+                {%- assign error_href_id = 'CommentForm-' | append: field -%}
+                <li>
+                  <a href="#{{ error_href_id | handleize }}" class="text-r2">
+                    {%- if form.errors.translated_fields[field] contains 'author' -%}
+                      {{ 'blog.comments.name' | t }}
+                    {%- elsif form.errors.translated_fields[field] contains 'body' -%}
+                      {{ 'blog.comments.comment' | t }}
+                    {%- else -%}
+                      {{ form.errors.translated_fields[field] | capitalize }}
+                    {%- endif -%}
+                    {{ form.errors.messages[field] }}
+                  </a>
+                </li>
+              {%- endfor -%}
+            </ul>
+          </div>
+        {%- elsif form.posted_successfully? -%}
+          {%- liquid
+            assign post_message = 'blog.comments.success' | t
+            if blog.moderated? and comment.status == 'unapproved'
+              assign post_message = 'blog.comments.success_moderated' | t
+            endif
+          -%}
+
+          <div class="vars-scheme-success bg-canvas p-r5 text-r2 text-content" role="status">
+            <p>{{ post_message }}</p>
+          </div>
+        {%- endif -%}
+
+        <div class="grid grid-cols-1 gap-r8 md:grid-cols-2">
+          {%- liquid
+            assign field_name_label = 'blog.comments.name' | t
+            assign field_name_error = ''
+            assign field_email_label = 'blog.comments.email' | t
+            assign field_email_error = ''
+
+            if form.errors contains 'author'
+              assign field_name_error = field_name_label | append: ' ' | append: form.errors.messages.author | append: '.'
+            endif
+
+            capture field_name_attributes
+              echo 'autocomplete="name" '
+              echo 'aria-required="true" '
+              echo 'required'
+            endcapture
+
+            if form.errors contains 'email'
+              assign field_email_error = field_email_label | append: ' ' | append: form.errors.messages.email | append: '.'
+            endif
+
+            capture field_email_attributes
+              echo 'autocorrect="off" '
+              echo 'autocapitalize="off" '
+              echo 'autocomplete="email" '
+              echo 'aria-required="true" '
+              echo 'required'
+            endcapture
+          -%}
+
+          <div>
+            {%- render 'field-input',
+              id: 'CommentForm-author',
+              label: field_name_label,
+              name: 'comment[author]',
+              value: form.author,
+              attributes: field_name_attributes,
+              error_message: field_name_error
+            -%}
+          </div>
+
+          <div>
+            {%- render 'field-input',
+              id: 'CommentForm-email',
+              label: field_email_label,
+              type: 'email',
+              name: 'comment[email]',
+              value: form.email,
+              attributes: field_email_attributes,
+              error_message: field_email_error
+            -%}
+          </div>
+        </div>
+
+        <div>
+          {%- liquid
+            assign field_body_label = 'blog.comments.comment' | t
+            assign field_body_error = ''
+
+            if form.errors contains 'body'
+              assign field_body_error = field_body_label | append: ' ' | append: form.errors.messages.body | append: '.'
+            endif
+
+            capture field_body_attributes
+              echo 'rows="5" '
+              echo 'aria-required="true" '
+              echo 'x-submittable-textarea '
+              echo 'required'
+            endcapture
+
+            render 'field-textarea', id: 'CommentForm-body', label: field_body_label, name: 'comment[body]', value: form.body, attributes: field_body_attributes, error_message: field_body_error
+          -%}
+        </div>
+
+        {%- liquid
+          assign submit_value = 'blog.comments.post' | t
+          render 'core-button', type: 'submit', id: 'comment-submit', size: 'sm', appearance: 'solid', color: 'primary', label: submit_value, class: 'self-start'
+        -%}
+      {% endform %}
+
+      <div class="text-r1">
+        {{ 'shopify.online_store.spam_detection.disclaimer_html' | t }}
+      </div>
+    </div>
+  {% endpaginate %}
+</div>

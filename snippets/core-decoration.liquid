@@ -1,0 +1,123 @@
+{% liquid
+  assign _settings = _settings | default: settings
+  assign decoration_type = decoration_type | default: _settings.decoration_type | default: 'none'
+  assign decoration_shape = decoration_shape | default: _settings.decoration_shape | default: 'dash'
+  assign decoration_color = decoration_color | default: _settings.decoration_color | default: 'content'
+  assign decoration_color_custom = decoration_color_custom | default: _settings.decoration_color_custom | default: '#00000036'
+  assign decoration_image = decoration_image | default: _settings.decoration_image
+  assign decoration_dash_weight = decoration_dash_weight | default: _settings.decoration_dash_weight | default: 3
+  assign decoration_dash_rounded = decoration_dash_rounded | default: _settings.decoration_dash_rounded | default: false
+  assign decoration_width = decoration_width | default: _settings.decoration_width | default: 6
+  assign decoration_opacity = decoration_opacity | default: _settings.decoration_opacity | default: 50
+  assign decoration_position = decoration_position | default: _settings.decoration_position | default: 'below'
+%}
+
+{% if decoration_type != 'none' %}
+  {% case decoration_type %}
+    {% when 'shape' %}
+      <div
+        class="
+          inline-block
+          w-[--decoration-width]
+
+          {% case decoration_shape %}
+            {% when 'dash' %}
+              h-[--decoration-dash-weight]
+              {% if decoration_dash_rounded %}
+                rounded-full
+              {% endif %}
+            {% when 'circle' %}
+              h-[--decoration-width]
+              rounded-full
+            {% when 'triangle', 'diamond' %}
+              h-[--decoration-width]
+              mask-{{ decoration_shape }}
+          {% endcase %}
+
+          {% if decoration_color == 'custom' %}
+            bg-[--decoration-color-custom]
+          {% else %}
+            bg-{{ decoration_color }}
+            opacity-[--decoration-opacity]
+          {% endif %}
+          {{ class }}
+        "
+        style="
+          {% if decoration_color == 'custom' %}
+            --decoration-color-custom: {{ decoration_color_custom }};
+          {% else %}
+            --decoration-opacity: {{ decoration_opacity }}%;
+          {% endif %}
+          --decoration-width: {{ decoration_width }}px;
+          --decoration-dash-weight: {{ decoration_dash_weight }}px;
+          {{ style }}
+        "
+        {{ attributes }}
+      ></div>
+    {% when 'image' %}
+      {% if decoration_image != blank %}
+        <div
+          class="
+            inline-block
+            w-[--decoration-width]
+            {{ class }}
+          "
+          style="
+            --decoration-width: {{ decoration_width }}px;
+            {{ style }}
+          "
+          {{ attributes }}
+        >
+          {% render 'core-image', image: decoration_image, width: decoration_width, class: 'size-full object-contain' %}
+        </div>
+      {% endif %}
+    {% when 'line' %}
+      {% liquid
+        assign line_direction = line_direction | default: _settings.line_direction | default: 'horizontal'
+        assign line_unit = line_unit | default: _settings.line_unit | default: 'percent'
+        assign line_px = line_px | default: _settings.line_px | default: 100
+        assign line_percent = line_percent | default: _settings.line_percent | default: 100
+        assign line_color = line_color | default: _settings.line_color | default: 'content'
+        assign line_color_custom = line_color_custom | default: _settings.line_color_custom | default: '#00000036'
+        assign line_opacity = line_opacity | default: _settings.line_opacity | default: 30
+        assign line_thickness = line_thickness | default: _settings.line_thickness | default: 1
+
+        assign line_thickness = line_thickness | append: 'px'
+        case line_unit
+          when 'pixel'
+            assign line_size = line_px | append: 'px'
+          when 'percent'
+            assign line_size = line_percent | append: '%'
+        endcase
+      %}
+
+      <div
+        class="
+          inline-block {{ class }}
+          {% if line_direction == 'vertical' %}
+            self-stretch
+          {% endif %}
+        "
+        style="
+          {% render 'props-style-offset', _settings: _settings %}
+
+          {% if line_direction == 'horizontal' %}
+            width: {{ line_size }};
+            height: {{ line_thickness }};
+          {% else %}
+            width: {{ line_thickness }};
+            min-height: {{ line_size }};
+          {% endif %}
+
+          {% if line_color == 'custom' %}
+            background-color: {{ line_color_custom }};
+          {% else %}
+            background-color: var(--{{ line_color }});
+            opacity: {{ line_opacity }}%;
+          {% endif %}
+          {{ style }}
+        "
+        {{ attributes }}
+      ></div>
+  {% endcase %}
+{% endif %}

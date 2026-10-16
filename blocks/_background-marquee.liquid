@@ -1,0 +1,366 @@
+<!-- blocks/_background-marquee.liquid -->
+
+{% capture marquee_class %}
+  absolute origin-center -translate-y-1/2 rotate-[--rotation] top-[--top-mobile] -left-1/2 -right-1/2 md:top-[--top]
+  whitespace-nowrap !z-20 overflow-hidden select-none pointer-events-none
+  {% if block.settings.set_color %}
+    text-{{ block.settings.color | default: 'content' }}
+  {% else %}
+    text-content
+  {% endif %}
+{% endcapture %}
+
+{% capture marquee_style %}
+  {% render 'props-style-padding', _settings: block.settings, apply: false %}
+  --marquee-pt: var(--layout-buffer);
+  --marquee-pb: var(--layout-buffer);
+  --rotation: {{ block.settings.rotation }}deg;
+  --top: {{ block.settings.top }}%;
+  --top-mobile: {{ block.settings.top_mobile }}%;
+  {% if block.settings.set_color and block.settings.color == 'custom' %}
+    --color-custom-text: {{ block.settings.color_custom }};
+  {% endif %}
+{% endcapture %}
+
+{% capture marquee_content %}
+  {% content_for "blocks" %}
+{% endcapture %}
+
+{% capture attributes %}
+  {% if request.design_mode %}
+    x-effect="
+      if ($containsSelectedBlock) {
+        $marquee.pause()
+      } else {
+        $marquee.play()
+      }
+    "
+  {% endif %}
+  {{ block.shopify_attributes }}
+{% endcapture %}
+
+{% render 'marquee',
+  _settings: block.settings,
+  content: marquee_content,
+  class: marquee_class,
+  style: marquee_style,
+  attributes: attributes
+%}
+
+{% schema %}
+{
+	"name": "Marquee",
+	"tag": null,
+	"settings": [
+		{
+			"type": "header",
+			"content": "Color"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_color",
+			"label": "Set color",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "color",
+			"label": "Color",
+			"default": "content",
+			"visible_if": "{{ block.settings.set_color == true  }}",
+			"options": [
+				{
+					"value": "content",
+					"label": "Text default"
+				},
+				{
+					"value": "muted",
+					"label": "Text muted"
+				},
+				{
+					"value": "primary",
+					"label": "Primary accent"
+				},
+				{
+					"value": "secondary",
+					"label": "Link accent"
+				},
+				{
+					"value": "sale",
+					"label": "Sale"
+				},
+				{
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "color",
+			"id": "color_custom",
+			"alpha": true,
+			"default": "#000000",
+			"visible_if": "{{ block.settings.color == 'custom' and block.settings.set_color == true  }}",
+			"label": "Custom color"
+		},
+		{
+			"type": "range",
+			"id": "speed",
+			"label": "Speed",
+			"min": -10,
+			"max": 10,
+			"step": 1,
+			"default": 3
+		},
+		{
+			"type": "header",
+			"content": "Text"
+		},
+		{
+			"type": "select",
+			"id": "type_preset",
+			"label": "Text style",
+			"default": "h5",
+			"options": [
+				{
+					"value": "section",
+					"label": "Section title"
+				},
+				{
+					"value": "p",
+					"label": "Paragraph"
+				},
+				{
+					"value": "h1",
+					"label": "Heading 1"
+				},
+				{
+					"value": "h2",
+					"label": "Heading 2"
+				},
+				{
+					"value": "h3",
+					"label": "Heading 3"
+				},
+				{
+					"value": "h4",
+					"label": "Heading 4"
+				},
+				{
+					"value": "h5",
+					"label": "Heading 5"
+				},
+				{
+					"value": "h6",
+					"label": "Heading 6"
+				},
+				{
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_font",
+			"label": "Font",
+			"default": "heading",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 9,
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "gap",
+			"label": "Gap",
+			"default": "lg",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "gap_custom",
+			"label": "Custom gap",
+			"default": 0,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ block.settings.gap == 'custom'  }}"
+		},
+		{
+			"type": "select",
+			"id": "padding",
+			"label": "Padding",
+			"default": "md",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "padding_custom",
+			"label": "Custom padding",
+			"default": 0,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ block.settings.padding == 'custom'  }}"
+		},
+		{
+			"type": "select",
+			"id": "block_alignment",
+			"label": "Block alignment",
+			"info": "Relevant when blocks are different heights",
+			"default": "middle",
+			"options": [
+				{
+					"value": "top",
+					"label": "⤒"
+				},
+				{
+					"value": "middle",
+					"label": "—"
+				},
+				{
+					"value": "bottom",
+					"label": "⤓"
+				}
+			]
+		},
+		{
+			"type": "header",
+			"content": "Positioning"
+		},
+		{
+			"type": "range",
+			"id": "rotation",
+			"min": -90,
+			"max": 90,
+			"step": 2,
+			"label": "Rotation",
+			"default": 0,
+			"unit": "%"
+		},
+		{
+			"type": "range",
+			"id": "top",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"label": "Top",
+			"default": 50,
+			"unit": "%"
+		},
+		{
+			"type": "range",
+			"id": "top_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"label": "Top (Mobile)",
+			"default": 50,
+			"unit": "%"
+		},
+	],
+	"presets": [
+		{
+			"name": "Marquee",
+			"settings": {
+				"rotation": 10
+			},
+			"blocks": [
+				{
+					"type": "_background-marquee-text",
+					"settings": {
+						"text": "Act Now"
+					}
+				},
+				{
+					"type": "_background-marquee-text",
+					"settings": {
+						"text": "Limited time only"
+					}
+				}
+			]
+		}
+	],
+	"blocks": [
+		{
+			"type": "_background-marquee-text"
+		},
+		{
+			"type": "_background-marquee-image"
+		}
+	]
+}
+{% endschema %}

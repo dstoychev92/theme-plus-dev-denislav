@@ -1,0 +1,46 @@
+{% if search_terms.size > 0 %}
+  <div
+    x-data
+    class="flex-row-center gap-x-r2 opacity-100 transition-opacity"
+  >
+    <p class="text-r2 text-content-mix-70">{{ 'search.suggested_searches' | t }}</p>
+    <ul
+      class="flex flex-row flex-nowrap gap-r2 overflow-x-auto py-r1 scrollbar-hide edge-mask"
+      x-overflow.autoregister
+      x-overflow:viewport
+      :class="
+        {
+          'edge-mask-l': $overflow.start,
+          'edge-mask-r': $overflow.end
+        }
+      "
+      aria-label="{{ 'search.suggested_searches' | t }}"
+    >
+      {% for term in search_terms %}
+        {% assign label = term | strip %}
+        {% assign query = label | url_encode %}
+        {% assign href = routes.search_url | append: '?q=' | append: query %}
+        {% capture attributes %}
+          {% comment %} Set the term in the search input so there is immediate feedback {% endcomment %}
+          @click='$refs.searchInput.value = "{{query}}"'
+          x-section-api:link.nopush
+        {% endcapture %}
+        <li>
+          {% render 'core-button',
+            tag: 'a',
+            href: href,
+            label: label,
+            sizing: 'xs',
+            appearance: 'outline',
+            rounding: 'pill',
+            color: 'content',
+            type_preset: 'p',
+            type_resize: 'xs',
+            class: 'flex-none truncate',
+            attributes: attributes
+          %}
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}

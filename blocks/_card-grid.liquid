@@ -1,0 +1,101 @@
+<!-- blocks/_card-grid.liquid -->
+
+{% liquid
+  assign columns_lg = block.settings.columns_lg
+  assign columns_md = block.settings.columns_md
+  assign columns_sm = block.settings.columns_sm
+%}
+
+{% capture attributes %}
+  {{ block.shopify_attributes }}
+{% endcapture %}
+
+{% capture list_items %}
+  {% content_for "blocks" %}
+{% endcapture %}
+
+<div class="flex" {{ attributes }}>
+  {% render 'card-grid',
+    columns_lg: columns_lg,
+    columns_md: columns_md,
+    columns_sm: columns_sm,
+    items: list_items,
+    class: 'w-full',
+    style: style
+  %}
+</div>
+
+{% schema %}
+{
+	"name": "Card grid",
+	"tag": null,
+	"settings": [
+		{
+			"type": "header",
+			"content": "Columns"
+		},
+		{
+			"type": "range",
+			"id": "columns_lg",
+			"min": 1,
+			"max": 4,
+			"step": 1,
+			"label": "Desktop",
+			"default": 2
+		},
+		{
+			"type": "range",
+			"id": "columns_md",
+			"min": 1,
+			"max": 3,
+			"step": 1,
+			"label": "Tablet",
+			"default": 2
+		},
+		{
+			"type": "range",
+			"id": "columns_sm",
+			"min": 1,
+			"max": 3,
+			"step": 1,
+			"label": "Mobile",
+			"default": 1
+		}
+	],
+	"blocks": [
+		{
+			"type": "_cards-products"
+		},
+		{
+			"type": "_cards-collections"
+		},
+		{
+			"type": "_cards-articles"
+		},
+		{
+			"type": "_tile"
+		},
+		{
+			"type": "_card-custom"
+		},
+		{
+			"type": "_grid-group-frame"
+		},
+	],
+	"presets": [
+		{
+			"name": "Card grid",
+			"category": "Cards",
+			"blocks": [
+				{
+					"type": "_cards-products",
+					"settings": {
+						"source": "collection",
+						"card_limit": 4
+					}
+				}
+			]
+		}
+	]
+}
+{% endschema %}

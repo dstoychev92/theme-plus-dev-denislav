@@ -1,0 +1,18 @@
+{% liquid
+  assign type = type | default: 'richtext'
+  assign text = text | default: _settings.text
+  assign richtext_size = richtext_size | default: _settings.richtext_size | default: 'md'
+  assign tag = tag | default: 'div'
+%}
+
+<{{ tag }}
+  class="
+    {{ type }}
+    type-resize-all-{{ richtext_size }}
+    {{ class }}
+  "
+  style="{{ style }}"
+  {{ attributes }}
+>
+  {{ text }}
+</{{ tag }}>

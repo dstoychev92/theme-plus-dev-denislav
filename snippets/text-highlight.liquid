@@ -1,0 +1,32 @@
+{% liquid
+  assign text = text | strip
+  assign appearance = appearance | default: _settings.highlight_appearance | default: 'full'
+  assign color = color | default: _settings.highlight_color | default: 'transparent'
+  assign animate = animate | default: true, allow_false: true
+%}
+
+<span
+  class="
+    {{ class }}
+    {% if animate %}
+       animate-highlight-wipe-in
+       !paused intersected:!running
+    {% endif %}
+
+    {% case appearance -%}
+      {% when 'full' -%}
+        highlight
+      {% when 'partial' -%}
+        highlight-partial
+      {% when 'underline' -%}
+        highlight-underline
+    {%- endcase -%}
+  "
+  style="
+    {{ style }}
+    --highlight-color: {{ color }};
+  "
+  {{ attributes }}
+>
+  {{- text | strip -}}
+</span>

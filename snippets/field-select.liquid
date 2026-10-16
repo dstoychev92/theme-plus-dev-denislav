@@ -1,0 +1,69 @@
+{% liquid
+  assign id = id | default: name | handleize
+%}
+
+{% capture field_class %}
+  {{ class }}
+
+  {% comment %} Hide label when option disabled option is checked aka placeholder option {% endcomment %}
+  has-[:checked:disabled]:[--field-active:0]
+{% endcapture %}
+
+{% if icon == null %}
+  {% capture icon %}
+    {% render 'core-icon', icon: 'fill-select', class: 'transition' %}
+  {% endcapture %}
+{% endif %}
+
+{% capture select %}
+  <div class="h-full grid-stack">
+    <select
+      id="{{ id }}"
+      name="{{ name }}"
+      value="{{ value }}"
+      class="
+        w-full h-control
+        px-[--input-padding-s] py-[--input-padding-y]
+
+        {% comment %} Add 1em to the end of the select to make space for the select icon {% endcomment %}
+        pe-[calc(var(--input-padding-e)+1em)]
+
+        {% comment %} Turn off default keyboard focus style since field should handle that {% endcomment %}
+        keyboard-focus:!outline-none
+        focus-visible:!outline-none
+
+        text-[color:var(--input-text-color)] text-size-input leading-control
+        bg-transparent
+      "
+      {% if disabled %}disabled{% endif %}
+      {% if error_message != '' and error_message != nil %}
+        aria-invalid="true"
+        {% if id != '' %}
+          aria-errormessage="{{ id }}-error"
+        {% endif %}
+      {% endif %}
+      {{ attributes }}
+    >
+      {{ options }}
+    </select>
+    <span class="self-center justify-self-end pe-[--input-padding-e]">
+      {{ icon }}
+    </span>
+  </div>
+{% endcapture %}
+
+{% render 'field',
+  label: label,
+  id: id,
+  name: name,
+  class: field_class,
+  label_class: label_class,
+  placeholder_class: 'h-control',
+  wrapper_attributes: wrapper_attributes,
+  input: select,
+  size: size,
+  error_message: error_message,
+  error_message_attributes: error_message_attributes,
+  success_message: success_message,
+  hide_label: hide_label
+%}

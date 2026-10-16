@@ -1,0 +1,92 @@
+{% liquid
+  assign image_scaling = _settings.image_scaling | divided_by: 100.0
+  assign aspect_ratio = _settings.image.aspect_ratio | default: 1
+  if _settings.crop_image
+    assign aspect_ratio = _settings.aspect_ratio
+  endif
+
+  assign image_max_height = 200
+  assign image_max_width = image_max_height | times: aspect_ratio
+
+  if section.index0 == 0 and preload_image == null
+    assign preload_image = true
+  endif
+
+  assign href = href | default: _settings.href
+  assign open_in_new_window = open_in_new_window | default: _settings.open_in_new_window
+  assign image = image | default: _settings.image
+%}
+
+{%- capture aria_label -%}
+  {%- if image.alt != blank -%}
+    {{- image.alt | escape -}},
+  {% endif -%}
+  {%- if open_in_new_window -%}
+    {{- 'other.accessibility.opens_in_new_tab' | t -}}
+  {%- endif -%}
+{%- endcapture -%}
+
+{% capture class %}
+  shrink-0 w-fit h-fit inline-block align-middle
+{% endcapture %}
+
+{% capture attributes %}
+  data-scroll-stagger-item
+  {% if request.design_mode %}
+    x-effect="
+      if ($containsSelectedBlock) {
+        $marquee.scrollTo($el)
+      }
+    "
+  {% endif %}
+  {{ attributes }}
+{% endcapture %}
+
+{% capture style %}
+  --image-scaling: {{ image_scaling }}em;
+  --image-max-width: {{ image_max_width }}px;
+  --image-aspect-ratio: {{ aspect_ratio }};
+{% endcapture %}
+
+{% capture image_class %}
+  !h-[--image-scaling] w-auto aspect-[--image-aspect-ratio]
+  transition-transform duration-1000
+{% endcapture %}
+
+{% capture content %}
+  {%- render 'core-image',
+    width: image_max_width,
+    image: _settings.image,
+    class: image_class,
+    aspect_ratio: aspect_ratio,
+    aspect_ratio_mobile: aspect_ratio,
+    cover: true,
+    placeholder: 'product-1',
+    preload: preload_image
+  -%}
+{% endcapture %}
+
+{% if href != blank %}
+  <a
+    class="flex"
+    href="{{ href }}"
+    {% if open_in_new_window %}
+      target="_blank"
+    {% endif %}
+    {% if aria_label != blank %}
+      aria-label="{{ aria_label }}"
+    {% endif %}
+  >
+{% endif %}
+
+{% render 'core-clip-mask',
+  attributes: attributes,
+  _settings: _settings,
+  content: content,
+  class: class,
+  style: style
+%}
+
+{% if href != blank %}
+  </a>
+{% endif %}

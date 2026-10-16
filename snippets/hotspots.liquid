@@ -1,0 +1,137 @@
+<!-- snippets/hotspots.liquid -->
+
+
+{% liquid
+  assign hotspot_color = hotspot_color | default: _settings.hotspot_color
+%}
+
+{% capture hotspots_attributes %}
+  x-ref="hotspotsContainerEl"
+  x-ensemble:hotspots
+  x-data="{
+    ensembleId: 'hotspots',
+    {% comment %} Return the id for the first peer of this ensemble member in order to use it as the aria-labelledby and aria-controls for the other members {% endcomment %}
+    get ensemblePeerId() {
+      const peerIds = $ensemble.getPeerIds(this.ensembleId)
+      if (peerIds.length === 0) return null
+      return peerIds[0]
+    },
+  }"
+  x-init="$ensemble.registerMember(ensembleId, $el)"
+{% endcapture %}
+
+{% capture attributes %}
+  role="region"
+  aria-label="{{ 'other.accessibility.hotspots' | t }}"
+  {{ attributes }}
+{% endcapture %}
+
+{% capture class %}
+  flex flex-col flex-center overflow-hidden relative
+  [--cursor-size:42px]
+  {{ class }}
+{% endcapture %}
+
+{% capture background %}
+  {% render 'core-background-image',
+    _settings: _settings,
+    class: 'z-0',
+    parallax: false,
+    placeholder: 'collection-6',
+    height: 'image'
+  %}
+{% endcapture %}
+
+{% capture style %}
+  --hotspot-color: {{ hotspot_color }}
+{% endcapture %}
+
+{% capture custom_cursor %}
+  {% comment %} Cursor blur background circle {% endcomment %}
+  <div
+    x-cloak x-custom-cursor:element.speed.14%
+    class="size-fit fixed top-0 left-0 overflow-visible z-20 pointer-events-none"
+  >
+    <div
+      class="
+        w-[--cursor-size] h-[--cursor-size]
+        touch:hidden
+        rounded-full frosted-glass border-highlight
+        transition origin-center duration-400 scale-100 rotate-0
+        {% if settings.hotspot_style == 'ring' or settings.hotspot_style == 'crosshair' %}
+          [mask:radial-gradient(12px,#0000_99%,#000)]
+        {% endif %}
+      "
+      style="
+        --frosted-glass-color: var(--hotspot-color,white);
+        --border-highlight-color: var(--hotspot-color,white);
+      "
+      :class="{
+        '!scale-0 !opacity-0': $customCursor.isSnapped,
+      }"
+    ></div>
+  </div>
+
+  <svg
+    x-cloak x-custom-cursor:element.speed.14%
+    class="
+      fixed top-0 left-0 w-[--cursor-size] h-[--cursor-size] overflow-visible z-20 pointer-events-none touch:hidden motion-reduce:hidden
+    "
+    viewBox="0 0 52 52"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <g transform="scale(1.25)" transform-origin="center center">
+    {% case settings.hotspot_style %}
+      {% when 'ring' %}
+        <g class="transition origin-center duration-400">
+          <circle cx="50%" cy="50%" r="20.625" stroke="var(--hotspot-color, white)" stroke-width="0.75"/>
+          <circle cx="50%" cy="50%" r="11.625" stroke="var(--hotspot-color, white)" stroke-width="0.75"/>
+        </g>
+      {% when 'crosshair' %}
+        <g class="transition origin-center rotate-0 duration-400" :class="{ '!rotate-45': $customCursor.isSnapped }">
+          <circle cx="50%" cy="50%" r="20.625" stroke="var(--hotspot-color, white)" stroke-width="0.75"/>
+          <circle cx="50%" cy="50%" r="11.625" stroke="var(--hotspot-color, white)" stroke-width="0.75"/>
+
+          <path d="M25.9969 0.455078L25.9969 6.09049" stroke="var(--hotspot-color, white)" stroke-width="0.75"/>
+          <path d="M25.996 46.6699L25.996 52.3053" stroke="var(--hotspot-color, white)" stroke-width="0.75"/>
+          <path d="M51.9348 26.4102L46.2994 26.4102" stroke="var(--hotspot-color, white)" stroke-width="0.75"/>
+          <path d="M5.70734 26.3906L0.0719205 26.3906" stroke="var(--hotspot-color, white)" stroke-width="0.75"/>
+
+          <path d="M26.0005 15.002L26.0005 17.4757" stroke="var(--hotspot-color, white)" stroke-width="0.75"/>
+          <path d="M26.0002 35.2832L26.0002 37.757" stroke="var(--hotspot-color, white)" stroke-width="0.75"/>
+          <path d="M37.3835 26.3926L34.9098 26.3926" stroke="var(--hotspot-color, white)" stroke-width="0.75"/>
+          <path d="M17.0964 26.3828L14.6227 26.3828" stroke="var(--hotspot-color, white)" stroke-width="0.75"/>
+        </g>
+    {% endcase %}
+    </g>
+  </svg>
+
+  {% comment %} Dot {% endcomment %}
+  <svg
+    x-cloak x-custom-cursor:element.speed.30%
+    class="fixed top-0 left-0 w-[--cursor-size] h-[--cursor-size] z-20 pointer-events-none touch:hidden motion-reduce:hidden"
+    viewBox="0 0 42 42"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle cx="50%" cy="50%" r="3" fill-opacity="1.0" fill="var(--hotspot-color, white)" :class="{ 'opacity-0': $customCursor.isSnapped }" />
+  </svg>
+{% endcapture %}
+
+<div
+  class="{{ class }}"
+  style="{{ style }}"
+  {{ attributes }}
+>
+  <div class="relative z-10 w-full h-fit grid-stack group/hotspots" x-custom-cursor>
+    {{ custom_cursor }}
+    <div
+      class="z-30 relative overflow-clip entrance-container *:auto-set-stagger-order"
+      {{ hotspots_attributes }}
+    >
+      {{ hotspots }}
+    </div>
+    {{ background }}
+  </div>
+</div>

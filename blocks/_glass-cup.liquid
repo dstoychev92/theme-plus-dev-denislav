@@ -1,0 +1,211 @@
+<!-- blocks/_glass-cup.liquid -->
+
+{%- liquid
+  assign mode = block.settings.height_mode | default: 'fit'
+-%}
+
+<div
+  class="glass-cup-block glass-cup-block--{{ mode }}"
+  id="GlassCupBlock-{{ block.id }}"
+  style="
+    --fill:0;
+    --scroll-height:{{ block.settings.scroll_height | default: 300 }}vh;
+    --accent:{{ block.settings.accent | default: '#b5651d' }};
+  "
+  {{ block.shopify_attributes }}
+>
+  <div class="glass-cup-block__scroll" data-scroll>
+    <div class="glass-cup-block__sticky">
+      <div class="glass-cup-block__glow" aria-hidden="true"></div>
+      {% render 'glass-cup', s: block.settings, id: block.id %}
+    </div>
+  </div>
+</div>
+
+{% stylesheet %}
+  /* Always claim the full inline size of whatever holds us — a Pair grid cell,
+     a flex item, or plain section flow — so the cup never collapses to zero
+     width or drifts to the left edge when used on its own. */
+  .glass-cup-block {
+    position: relative;
+    width: 100%;
+    justify-self: stretch;
+    /* When dropped straight into a Pair/section page grid (no pair-column
+       wrapper) a raw block otherwise auto-places into the first track, which
+       is the full-bleed page margin. Span the content columns instead so it
+       gets real width. Ignored in flex/flow containers. */
+    grid-column: content-start / content-end;
+  }
+
+  .glass-cup-block__scroll {
+    width: 100%;
+  }
+
+  /* The cup itself has an intrinsic size, so by default we just centre it in
+     normal flow — guaranteed visible in any container. Fill tracks scroll
+     progress (handled in JS). No forced viewport height, nothing to clip. */
+  .glass-cup-block__sticky {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    /* Fixed padding, never viewport-relative: a vw-based pad can exceed a
+       narrow column's width, driving the cup's available width to zero. */
+    padding: 1.5rem 1rem;
+  }
+
+  /* Fixed mode: own tall runway + pin the cup to the viewport while it scrolls. */
+  .glass-cup-block--fixed .glass-cup-block__scroll {
+    min-height: var(--scroll-height, 300vh);
+  }
+
+  .glass-cup-block--fixed .glass-cup-block__sticky {
+    position: sticky;
+    top: 0;
+    min-height: 100vh;
+  }
+
+  /* The cup's children are all absolutely positioned, so its min-content size is
+     zero — without this it shrinks to 0×0 (and aspect-ratio gives 0 height) in a
+     narrow flex/grid column. Pin its size and cap it to the available width. */
+  .glass-cup-block__sticky > .glass-cup {
+    flex: 0 0 auto;
+    width: clamp(180px, 26vw, 360px);
+    max-width: 100%;
+  }
+
+  .glass-cup-block__glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      40% 40% at 50% 45%,
+      color-mix(in srgb, var(--accent, #b5651d) 35%, transparent),
+      transparent 70%
+    );
+    filter: blur(8px);
+    pointer-events: none;
+  }
+{% endstylesheet %}
+
+<script>
+  (function () {
+    var blockId = {{ block.id | json }};
+    var rootId = 'GlassCupBlock-' + blockId;
+
+    window.boomGlassCup = window.boomGlassCup || {};
+
+    if (typeof window.boomGlassCup[blockId] === 'function') {
+      window.boomGlassCup[blockId]();
+      delete window.boomGlassCup[blockId];
+    }
+
+    function init() {
+      var root = document.getElementById(rootId);
+      if (!root) return;
+
+      var scrollEl = root.querySelector('[data-scroll]');
+      if (!scrollEl) return;
+
+      var pctEl = root.querySelector('[data-pct]');
+      var ticking = false;
+      var destroyed = false;
+
+      // Fixed mode owns its own tall runway via [data-scroll].
+      // Fit mode has no runway of its own (it adopts the container height),
+      // so track progress as the surrounding section travels through the viewport.
+      var isFixed = root.classList.contains('glass-cup-block--fixed');
+      var runway = root.closest('.shopify-section') || root.parentElement;
+
+      function update() {
+        var vh = window.innerHeight;
+        var p;
+        if (isFixed) {
+          var r = scrollEl.getBoundingClientRect();
+          var total = r.height - vh;
+          p = total > 0 ? Math.min(Math.max(-r.top, 0), total) / total : 0;
+        } else {
+          var rect = (runway || scrollEl).getBoundingClientRect();
+          var total = rect.height + vh;
+          p = total > 0 ? (vh - rect.top) / total : 0;
+          p = Math.min(Math.max(p, 0), 1);
+        }
+        root.style.setProperty('--fill', p.toFixed(4));
+        if (pctEl) pctEl.textContent = Math.round(p * 100) + '%';
+      }
+
+      function onScroll() {
+        if (ticking || destroyed) return;
+        ticking = true;
+        requestAnimationFrame(function () {
+          update();
+          ticking = false;
+        });
+      }
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll, { passive: true });
+      update();
+
+      window.boomGlassCup[blockId] = function () {
+        destroyed = true;
+        window.removeEventListener('scroll', onScroll);
+        window.removeEventListener('resize', onScroll);
+      };
+    }
+
+    if (!window.__boomGlassCupUnloadBound) {
+      window.__boomGlassCupUnloadBound = true;
+      document.addEventListener('shopify:section:unload', function () {
+        Object.keys(window.boomGlassCup).forEach(function (key) {
+          if (!document.getElementById('GlassCupBlock-' + key)) {
+            if (typeof window.boomGlassCup[key] === 'function') window.boomGlassCup[key]();
+            delete window.boomGlassCup[key];
+          }
+        });
+      });
+    }
+
+    if (document.readyState !== 'loading') {
+      init();
+    } else {
+      document.addEventListener('DOMContentLoaded', init);
+    }
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Glass Cup",
+  "tag": null,
+  "settings": [
+    { "type": "header", "content": "Assets" },
+    { "type": "image_picker", "id": "glass_overlay", "label": "Glass (PNG, transparent interior)" },
+    { "type": "image_picker", "id": "glass_mask", "label": "Interior mask (white inside)" },
+
+    { "type": "header", "content": "Behavior" },
+    {
+      "type": "select",
+      "id": "height_mode",
+      "label": "Height",
+      "default": "fit",
+      "options": [
+        { "value": "fit", "label": "Fit container (sticky)" },
+        { "value": "fixed", "label": "Fixed scroll length" }
+      ],
+      "info": "Fit container fills as you scroll past the surrounding content. Use Fixed scroll length when the cup stands alone."
+    },
+    { "type": "range", "id": "scroll_height", "label": "Scroll length", "min": 150, "max": 500, "step": 10, "default": 300, "unit": "vh", "visible_if": "{{ block.settings.height_mode == 'fixed' }}" },
+    { "type": "checkbox", "id": "show_pct", "label": "Show percentage", "default": true },
+    { "type": "range", "id": "wave_speed", "label": "Wave speed", "min": 1, "max": 10, "step": 1, "default": 5 },
+
+    { "type": "header", "content": "Colors" },
+    { "type": "color", "id": "coffee_top", "label": "Coffee top", "default": "#6e3d1c" },
+    { "type": "color", "id": "coffee_bottom", "label": "Coffee bottom", "default": "#2a1407" },
+    { "type": "color", "id": "crema", "label": "Crema", "default": "#cf9355" },
+    { "type": "color", "id": "crema_light", "label": "Crema light", "default": "#ecc794" },
+    { "type": "color", "id": "accent", "label": "Glow accent", "default": "#b5651d" }
+  ],
+  "presets": [{ "name": "Glass Cup" }]
+}
+{% endschema %}

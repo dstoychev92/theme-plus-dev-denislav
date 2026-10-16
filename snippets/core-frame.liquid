@@ -1,0 +1,150 @@
+<!-- snippets/core-frame.liquid -->
+
+{% liquid
+  # Rounding
+  assign set_rounding = set_rounding | default: _settings.set_rounding | default: false
+  assign rounding_radius = rounding_radius | default: _settings.rounding_radius | default: 'none'
+  assign rounding_radius_custom = rounding_radius_custom | default: _settings.rounding_radius_custom | default: 0
+
+  # Shadow
+
+  assign set_shadow = set_shadow | default: _settings.set_shadow | default: false
+
+  # Border
+  assign set_border = set_border | default: _settings.set_border | default: false
+  if set_border
+    assign border_color = border_color | default: _settings.border_color | default: 'transparent'
+    assign border_width = border_width | default: _settings.border_width | default: 0
+  endif
+
+  # Inner padding is toggled on by any true value from background, border, or it's own toggle
+  assign set_color_scheme = set_color_scheme | default: _settings.set_color_scheme | default: true, allow_false: true
+  assign enable_padding = enable_padding | default: _settings.set_padding | default: false
+  if set_color_scheme or set_border or enable_padding
+    assign padding = padding | default: _settings.padding
+    assign padding_custom = padding_custom | default: _settings.padding_custom
+  endif
+
+  # Outer border padding is toggled on when both border and background are enabled
+  if set_border and set_color_scheme
+    assign padding_border = padding_border | default: _settings.padding_border | default: 0
+    assign padding_custom_border = padding_custom_border | default: _settings.padding_custom_border | default: 0
+  endif
+
+  assign set_layout = set_layout | default: _settings.set_layout | default: false
+  if set_layout
+    assign content_align = content_align | default: _settings.content_align
+    assign content_align_flex = content_align | replace: 'left', 'start' | replace: 'right', 'end'
+    assign gap = gap | default: _settings.gap
+    assign gap_custom = gap_custom | default: _settings.gap_custom
+    assign full_height = full_height | default: _settings.full_height
+    assign justification_column = justification_column | default: _settings.justification_column
+  endif
+
+  assign limit_width = limit_width | default: _settings.limit_width
+  assign max_width = max_width | default: _settings.max_width
+  assign min_width = min_width | default: _settings.min_width
+
+  assign set_width = set_width | default: _settings.set_width | default: false
+  if set_width
+    assign width_unit = width_unit | default: _settings.width_unit
+    assign width_px = width_px | default: _settings.width_px
+    assign width_percent = width_percent | default: _settings.width_percent
+    assign enable_width_fluid = enable_width_fluid | default: _settings.enable_width_fluid
+    assign width_fluid_limit = width_fluid_limit | default: _settings.width_fluid_limit
+  endif
+%}
+
+<div
+  style="
+    {% render 'props-style-background', _settings: _settings %}
+
+    {% comment %} Inner padding, scoped by border {% endcomment %}
+    {% if padding_border %}
+      {% render 'props-style-padding', padding: padding_border, padding_custom: padding_custom_border %}
+       --outer-padding: var(--custom-buffer);
+    {% endif %}
+
+
+    {% comment %} Custom width {% endcomment %}
+    {% if set_width %}
+      {% if width_unit == 'pixel' %}
+        --layout-width-default: {{ width_px }}px;
+        {% if enable_width_fluid %}
+          {% # Ensure smooth transition between breakpoint %}
+          --layout-width-mobile: min(var(--layout-width-default), {{ width_fluid_limit }}%);
+        {% endif %}
+      {% endif %}
+
+      {% if width_unit == 'percent' %}
+        --layout-width-default: {{ width_percent }}%;
+        {% if enable_width_fluid %}
+          {% # Mobile handoff is trickier in the single column case, without this it often jumps directly to 768px at 768px %}
+          {% assign fluid_limit_mobile = width_fluid_limit | divided_by: 100.0 | times: 640 %}
+          --mobile-handoff-pixels: min({{ width_fluid_limit }}%, {{ fluid_limit_mobile }}px);
+          --layout-width-mobile: max(var(--layout-width-default), var(--mobile-handoff-pixels));
+
+          {% # Tablet: smooth handoff by averaging the desktop and mobile percents %}
+          --layout-width-tablet: {{ width_percent | plus: width_fluid_limit | divided_by: 2 | round }}%;
+        {% endif %}
+      {% endif %}
+    {% endif %}
+
+    {% comment %} Full height for background fill and space-between {% endcomment %}
+    {% if set_layout and full_height %}
+      height: 100%;
+    {% endif %}
+
+    {% if set_rounding %}
+      {% render 'props-style-radius', rounding_radius: rounding_radius, rounding_radius_custom: rounding_radius_custom %}
+    {% endif %}
+  "
+  class="
+      {% if set_width %}
+    width-layout
+    {% endif %}
+    {% render 'props-class-background', _settings: _settings %}
+    entrance-item entrance-fade
+
+    {% if set_rounding %}
+      overflow-hidden
+      {% endif %}
+      {% if set_shadow %}
+         shadow-alt
+      {% endif %}
+  "
+>
+  <div
+    class="
+      flex w-full flex-col items-content-align text-content-align gap-layout
+      *:auto-set-stagger-order
+    "
+    style="
+      {% if set_layout %}
+        {% render 'props-style-gap', _settings: _settings %}
+        --content-align: {{ content_align_flex }};
+
+        {% if full_height %}
+          height: 100%;
+          justify-content: {{ justification_column }};
+        {% endif %}
+      {% endif %}
+      {% if padding %}
+        {% render 'props-style-padding', _settings: _settings %}
+      {% endif %}
+      {% if set_rounding and padding_border %}
+        --radius-min: min(var(--layout-radius), 3px);
+        border-radius: max(calc(var(--layout-radius) - var(--outer-padding)), var(--radius-min));
+        overflow: hidden;
+      {% else %}
+        border-radius: inherit;
+      {% endif %}
+      {% if set_border %}
+        {% render 'props-style-border', border_width: border_width, border_color: border_color %}
+      {% endif %}
+    "
+    {{ attributes }}
+  >
+    {{ content }}
+  </div>
+</div>

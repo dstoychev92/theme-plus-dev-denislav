@@ -1,0 +1,188 @@
+{% liquid
+  assign image = image | default: _settings.image, allow_false: true
+  assign image_mobile = image_mobile | default: _settings.image_mobile, allow_false: true
+  assign placeholder = placeholder | default: 'lifestyle-1', allow_false: true
+  assign default_aspect_ratio = 1.7
+  assign aspect_ratio = aspect_ratio | default: _settings.aspect_ratio | default: image.aspect_ratio | default: default_aspect_ratio
+  assign aspect_ratio_mobile = aspect_ratio_mobile | default: _settings.aspect_ratio_mobile | default: image_mobile.aspect_ratio | default: default_aspect_ratio
+
+  assign height = height | default: _settings.height, allow_false: true
+  assign set_height = set_height | default: _settings.set_height | default: true, allow_false: true
+
+  assign height_mobile = height_mobile | default: _settings.height_mobile, allow_false: true
+  assign set_height_mobile = set_height_mobile | default: _settings.set_height_mobile | default: true, allow_false: true
+
+  if id == blank
+    assign id_prefix = id_prefix | default: block.id | default: section.id
+    assign id = id_prefix | append: '-image'
+  endif
+
+  if id == blank
+    assign id_prefix = id_prefix | default: block.id | default: section.id
+    assign id = id_prefix | append: '-image'
+  endif
+
+  if preload == null and section.index0 == 0
+    assign preload = true
+  endif
+
+  assign loading = loading | default: 'lazy'
+  assign fetchpriority = fetchpriority | default: 'auto'
+
+  if preload == true
+    assign loading = 'eager'
+    assign fetchpriority = 'high'
+  endif
+%}
+
+{% comment %}
+  <img> tag sizes and srcset are populated based on the number of section columns and section width
+  For example, a pair section would have 2 lg and md columns, but only 1 sm column for mobile whereas a full width
+  banner section would have 1 column for all screen sizes.
+{% endcomment %}
+{% unless sizes != blank %}
+  {%- capture sizes -%}
+    {%- render 'image-grid-sizes',
+      columns_lg: 1,
+      columns_md: 1,
+      columns_sm: 1
+    -%}
+  {%- endcapture -%}
+{% endunless %}
+
+{% unless widths != blank %}
+  {%- capture widths -%}
+    {%- render 'image-grid-widths',
+      columns_lg: 1,
+      columns_md: 1,
+      columns_sm: 1
+    -%}
+  {%- endcapture -%}
+{% endunless %}
+
+{% capture attributes %}
+  x-data="
+    {
+      canShowImages: false,
+      get images() {
+        return $el.querySelectorAll('img')
+      },
+      get areAllImagesLoaded() {
+        return Array.from(this.images).every(image => image.complete)
+      }
+    }
+  "
+  @load.capture="if (areAllImagesLoaded) { canShowImages = true }"
+  x-init="if (areAllImagesLoaded) { canShowImages = true }"
+  {{ attributes }}
+{% endcapture %}
+
+{% if loading == 'lazy' and preload == false %}
+  {% capture loading_placeholder %}
+    {% capture loading_placeholder_image_class %}
+      size-full relative !z-10
+    {% endcapture %}
+
+    {% capture loading_placeholder_wrapper_class %}
+      absolute inset-0 size-full
+      {% comment %}
+        When JS is disabled, show placeholder _under_ the main image so that the main
+        image is displayed once it loads.
+      {% endcomment %}
+      z-0
+    {% endcapture %}
+    {% capture loading_placeholder_attributes %}
+      x-show="!canShowImages"
+      x-transition:leave="transition-[opacity,transform] duration-500"
+      x-transition:leave-start="scale-100 opacity-100"
+      x-transition:leave-end="scale-0 opacity-0"
+    {% endcapture %}
+
+    {% render 'image-loading-placeholder',
+      image: image,
+      image_mobile: image_mobile,
+      wrapper_class: loading_placeholder_wrapper_class,
+      image_class: loading_placeholder_image_class,
+      image_style: image_style,
+      attributes: loading_placeholder_attributes,
+      fetchpriority: fetchpriority,
+      preload: true,
+      auto_show: false
+    %}
+  {% endcapture %}
+{% endif %}
+
+{% capture image_class %}
+  size-full inset-0 !z-10
+  {% if request.visual_preview_mode %}
+    {% comment %} In visual preview mode there is nothing to "extend" the container, so we want the placeholder to do it, otherwise nothing appears {% endcomment %}
+    relative
+  {% else %}
+    absolute
+  {% endif %}
+{% endcapture %}
+
+<background-image
+  class="
+    {{ class }} block overflow-hidden w-full
+    {% if height == 'image' and set_height %}
+      h-auto
+      aspect-[var(--mobile-image-aspect-ratio,var(--image-aspect-ratio))]
+      md:aspect-[var(--image-aspect-ratio)]
+    {% else %}
+      h-full
+    {% endif %}
+
+    {% if height_mobile == 'image' and set_height_mobile %}
+      max-md:h-auto
+      max-md:aspect-[var(--mobile-image-aspect-ratio,var(--image-aspect-ratio))]
+    {% else %}
+      max-md:h-full
+    {% endif %}
+  "
+  style="
+    {{ style }}
+    {% if height == 'image' and set_height %}
+      {% if aspect_ratio != 0 and aspect_ratio != blank %}
+        --image-aspect-ratio: {{ aspect_ratio }};
+      {% endif %}
+      {% if image_mobile != blank %}
+        {% if aspect_ratio_mobile != 0 and aspect_ratio_mobile != blank %}
+          --mobile-image-aspect-ratio: {{ aspect_ratio_mobile }};
+        {% endif %}
+      {% else %}
+          --mobile-image-aspect-ratio: {{ aspect_ratio }};
+      {% endif %}
+    {% endif %}
+
+    {% if height_mobile == 'image' and set_height_mobile %}
+      {% if image_mobile != blank %}
+        {% if aspect_ratio_mobile != 0 and aspect_ratio_mobile != blank %}
+          --mobile-image-aspect-ratio: {{ aspect_ratio_mobile }};
+        {% endif %}
+      {% else %}
+        --mobile-image-aspect-ratio: {{ aspect_ratio }};
+      {% endif %}
+    {% endif %}
+  "
+  {{ attributes }}
+>
+  {% render 'core-image',
+    id: id,
+    image: image,
+    image_mobile: image_mobile,
+    class: image_class,
+    sizes: sizes,
+    widths: widths,
+    width: width,
+    preload: preload,
+    loading: loading,
+    fetchpriority: fetchpriority,
+    cover: true,
+    aspect_ratio: aspect_ratio,
+    aspect_ratio_mobile: aspect_ratio_mobile,
+    placeholder: placeholder
+  %}
+
+  {{ loading_placeholder }}
+</background-image>

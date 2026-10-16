@@ -1,0 +1,39 @@
+{% liquid
+  assign image = media.preview_image
+  assign sizes = image_sizes
+  assign widths = image_widths
+%}
+
+{% # Fallback to 2 column grid if no sizes or widths are provided %}
+{% if sizes == blank or widths == blank %}
+  {%- capture sizes -%}
+    {%- render 'image-grid-sizes',
+      columns_lg: 2,
+      columns_md: 2,
+      columns_sm: 1,
+      section_width: section.settings.content_width
+    %}
+  {%- endcapture -%}
+  {%- capture widths -%}
+    {%- render 'image-grid-widths',
+      columns_lg: 2,
+      columns_md: 2,
+      columns_sm: 1
+    -%}
+  {%- endcapture -%}
+{% endif %}
+
+{% render 'core-image',
+  image: image,
+  cover: cover,
+  aspect_ratio: aspect_ratio,
+  sizes: sizes,
+  widths: widths,
+  preload: preload,
+  loading: loading,
+  alt: media.alt,
+  class: 'w-full relative z-10'
+%}
+{% render 'image-loading-placeholder', image: image, wrapper_class: 'absolute inset-0 z-0 w-full' %}
+
+{% render 'product-media-zoom-button', _settings: _settings, media: media %}

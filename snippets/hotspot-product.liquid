@@ -1,0 +1,10 @@
+{% liquid
+  if product == blank
+    assign placeholder = true
+  endif
+%}
+{% capture popover_content %}
+  {% render 'card-product', product: product, size: 'sm', button: true, placeholder: placeholder %}
+{% endcapture %}
+
+{% render 'hotspot-tooltip', content: popover_content, _settings: _settings, attributes: attributes %}

@@ -1,0 +1,38 @@
+<ol
+  class="flex gap-r1"
+  x-data="
+    {
+      calcProgress(index) {
+        switch (true) {
+          case $slideshow.currentSlideIndex < index:
+            return '0';
+          case $slideshow.currentSlideIndex > index:
+            return '100';
+          default:
+            return ($slideshow.currentSlideElapsedTime/{{ slide_duration }}) * 100
+        }
+      }
+    }
+  "
+  aria-label="{{ 'collection.accessibility.product_card.slideshow_indicator' | t }}"
+  {{ attributes }}
+>
+  <template x-for="index in Array($slideshow.totalSlides).fill(null).map((_, i) => i)">
+    <li
+      class="relative grow h-[2px]"
+      :aria-current="index == $slideshow.currentSlideIndex"
+    >
+      {% comment %} Active segment {% endcomment %}
+      <span
+        class="block h-full"
+        style="background-color: hsl(0 0% 100% / 0.4)"
+        :style="{ width: calcProgress(index) + '%' }"
+      ></span>
+      {% comment %} Background {% endcomment %}
+      <span
+        class="block size-full absolute top-0 left-0"
+        style="background-color: hsl(0 0% 100% / 0.1)"
+      ></span>
+    </li>
+  </template>
+</ol>

@@ -1,0 +1,131 @@
+<!-- blocks/theme-video-button.liquid -->
+
+{% capture class %}
+  entrance-item entrance-standard
+{% endcapture %}
+
+{% render 'video-button', _settings: block.settings, id: block.id, class: class, attributes: block.shopify_attributes %}
+
+{% schema %}
+{
+	"name": "Video popup",
+	"tag": null,
+	"settings": [
+		{
+			"type": "select",
+			"id": "video_source",
+			"label": "Type",
+			"default": "uploaded",
+			"options": [
+				{
+					"value": "uploaded",
+					"label": "Uploaded"
+				},
+				{
+					"value": "external_video",
+					"label": "External URL"
+				}
+			]
+		},
+		{
+			"type": "video",
+			"id": "video",
+			"label": "Video",
+			"visible_if": "{{ block.settings.video_source == 'uploaded' }}"
+		},
+		{
+			"type": "video_url",
+			"id": "video_link",
+			"label": "Video URL",
+			"accept": [
+				"youtube",
+				"vimeo"
+			],
+			"info": "Streaming video source from YouTube or Vimeo.",
+			"default": "https://www.youtube.com/watch?v=_9VUPq3SxOc",
+			"visible_if": "{{ block.settings.video_source == 'external_video' }}"
+		},
+		{
+			"type": "header",
+			"content": "Play button"
+		},
+		{
+			"type": "select",
+			"id": "sizing",
+			"label": "Size",
+			"default": "lg",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "sizing_custom",
+			"label": "Custom size",
+			"default": 50,
+			"min": 20,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ block.settings.sizing == 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "color",
+			"label": "Color",
+			"default": "content",
+			"options": [
+				{
+					"value": "primary",
+					"label": "Primary accent"
+				},
+				{
+					"value": "secondary",
+					"label": "Link color"
+				},
+				{
+					"value": "black",
+					"label": "Black"
+				},
+				{
+					"value": "white",
+					"label": "White"
+				},
+				{
+					"value": "content",
+					"label": "Text color"
+				},
+				{
+					"value": "canvas",
+					"label": "Background color"
+				}
+			]
+		}
+	],
+	"presets": [
+		{
+			"name": "Video popup",
+			"category": "Promotional"
+		}
+	]
+}
+{% endschema %}

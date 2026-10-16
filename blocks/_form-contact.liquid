@@ -1,0 +1,339 @@
+<!-- blocks/_form-contact.liquid -->
+
+{% assign form_id = 'form-' | append: block.id %}
+
+{% capture content %}
+  {% content_for "blocks" %}
+  {% render 'core-button', _settings: block.settings, tag: 'button', type: 'submit' %}
+
+  <div class="text-r1 text-muted">
+    {{ 'shopify.online_store.spam_detection.disclaimer_html' | t }}
+  </div>
+{% endcapture %}
+
+{% render 'core-form', content: content, _settings: block.settings, id: form_id, attributes: block.shopify_attributes %}
+
+{% schema %}
+{
+	"name": "Contact Form",
+	"tag": null,
+	"settings": [
+		{
+			"type": "select",
+			"id": "gap",
+			"label": "Gap",
+			"default": "sm",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "gap_custom",
+			"label": "Custom gap",
+			"default": 10,
+			"min": 2,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ block.settings.gap == 'custom'  }}"
+		},
+		{
+			"type": "header",
+			"content": "Submit button"
+		},
+		{
+			"type": "text",
+			"id": "text",
+			"label": "Button text",
+			"default": "Send"
+		},
+		{
+			"type": "select",
+			"id": "appearance",
+			"label": "Style",
+			"default": "solid",
+			"options": [
+				{
+					"value": "solid",
+					"label": "Solid"
+				},
+				{
+					"value": "outline",
+					"label": "Outline"
+				},
+				{
+					"value": "soft",
+					"label": "Soft"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "sizing",
+			"label": "Height",
+			"default": "md",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "color",
+			"label": "Color",
+			"default": "content",
+			"options": [
+				{
+					"value": "content",
+					"label": "Text default"
+				},
+				{
+					"value": "primary",
+					"label": "Primary accent"
+				},
+				{
+					"value": "secondary",
+					"label": "Link accent"
+				},
+				{
+					"value": "sale",
+					"label": "Sale"
+				}
+			]
+		},
+		{
+			"type": "header",
+			"content": "Text style",
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_preset",
+			"label": "Text style",
+			"default": "btn",
+			"options": [
+				{
+					"value": "btn",
+					"label": "Button"
+				},
+				{
+					"value": "p",
+					"label": "Paragraph"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_resize",
+			"label": "Text size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset != 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_font",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 4,
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_rounding",
+			"label": "Set rounding",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "rounding_style",
+			"label": "Rounding",
+			"default": "none",
+			"options": [
+				{
+					"value": "none",
+					"label": "0"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "pill",
+					"label": "L"
+				}
+			],
+			"visible_if": "{{ block.settings.set_rounding }}"
+		},
+	],
+	"blocks": [
+		{
+			"type": "_form-group"
+		},
+		{
+			"type": "theme-badge"
+		},
+		{
+			"type": "theme-button"
+		},
+		{
+			"type": "theme-decoration"
+		},
+		{
+			"type": "theme-image"
+		},
+		{
+			"type": "theme-link"
+		},
+		{
+			"type": "theme-liquid-code"
+		},
+		{
+			"type": "theme-spacer"
+		},
+		{
+			"type": "theme-text"
+		},
+		{
+			"type": "theme-richtext"
+		},
+		{
+			"type": "theme-group-text"
+		},
+		{
+			"type": "_form-input-email"
+		},
+		{
+			"type": "_form-input-name"
+		},
+		{
+			"type": "_form-input-text"
+		},
+		{
+			"type": "_form-select"
+		},
+		{
+			"type": "_form-radio-group"
+		},
+		{
+			"type": "_form-checkbox"
+		},
+	],
+	"presets": [
+		{
+			"name": "Contact Form",
+			"category": "Form",
+			"settings": {},
+			"blocks": [
+				{
+					"type": "_form-input-name",
+					"settings": {
+						"label": "Name"
+					}
+				},
+				{
+					"type": "_form-input-email",
+					"settings": {
+						"label": "Email"
+					}
+				},
+				{
+					"type": "_form-input-text",
+					"settings": {
+						"label": "Message"
+					}
+				}
+			]
+		}
+	]
+}
+{% endschema %}

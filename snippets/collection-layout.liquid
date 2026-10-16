@@ -1,0 +1,280 @@
+{%- liquid
+  assign columns_sm = columns_sm | default: section.settings.columns_sm
+  assign columns_md = columns_md | default: section.settings.columns_md
+  assign columns_lg = columns_lg | default: section.settings.columns_lg
+
+  assign collection_form_id = 'collection-form'
+  assign filter_url = filter_url | default: collection.url
+  assign filters = filters | default: collection.filters
+
+  assign filter_mode = filter_mode | default: section.settings.filter_mode | default: 'sidebar'
+  assign sidebar_open = sidebar_open | default: section.settings.filter_sidebar_open_by_default | default: true, allow_false: true
+  assign enable_filters = enable_filters | default: section.settings.enable_filters | default: true, allow_false: true
+  assign enable_sorting = enable_sorting | default: section.settings.enable_sorting | default: true, allow_false: true
+  assign enable_layout_buttons = enable_layout_buttons | default: section.settings.enable_layout_buttons | default: true, allow_false: true
+  assign show_products_count = show_products_count | default: section.settings.show_products_count | default: true, allow_false: true
+
+  assign limit = limit | default: section.settings.limit
+
+  assign active_filters = null | sort
+  assign active_filter_values_count = 0
+
+  assign show_sidebar = false
+  if filter_mode == 'sidebar' and sidebar_open
+    assign show_sidebar = true
+  endif
+
+  # Disable filters if there's nothing to show
+  if section.settings.filter_menu == null or section.settings.filter_menu.count == 0
+    if filters.size == 0
+      assign enable_filters = false
+    elsif filters.size == 1 and filters.first.type == 'price_range' and filters.first.range_max == 0
+      # There is a bug where price filter shows even when search results are only articles
+      assign enable_filters = false
+    endif
+  endif
+
+  # Filters
+  if enable_filters
+    for filter in filters
+      assign is_active = false
+
+      case filter.type
+        when 'price_range'
+          if filter.max_value.value < filter.range_max or filter.min_value.value > 0
+            assign is_active = true
+          endif
+        else
+          if filter.active_values.size > 0
+            assign is_active = true
+          endif
+      endcase
+
+      if is_active
+        assign new_active_filters = filter | sort
+        assign active_filters = active_filters | concat: new_active_filters
+        assign new_active_filter_values_count = filter.active_values.size | at_least: 1
+        assign active_filter_values_count = active_filter_values_count | plus: new_active_filter_values_count
+      endif
+    endfor
+  endif
+
+  if enable_filters or enable_sorting or enable_layout_buttons
+    assign render_collection_toolbar = true
+  endif
+%}
+
+{% capture collection_toolbar_class %}
+  {% comment %} Hide left and right border {% endcomment %}
+  max-md:border-s-0 max-md:border-e-0 border-line-bold
+{% endcapture %}
+
+<div
+  x-ref="collectionLayout"
+  class="
+    gap-y-min-buffer-safe max-w-full
+    grid col-section-content
+
+    supports-subgrid:col-[fullbleed-start/fullbleed-end]
+    supports-subgrid:grid-cols-subgrid
+
+    {% if render_collection_toolbar %}
+      grid-rows-[minmax(0,var(--row-lg)),minmax(0,1fr)]
+    {% else %}
+      grid-rows-1
+    {% endif %}
+
+    {{ class }}
+  "
+  @theme:section:navigate.window="
+    if ($event.detail.sectionId != '{{ section.id }}') return
+    if ($refs.collectionLayout.getBoundingClientRect().top < 0) {
+      $refs.collectionLayout.scrollIntoView({ block: 'start', behavior: 'smooth' })
+    }
+    $dispatch('theme:collection:update', $event.detail)
+  "
+  x-data="
+    {
+      columns: {
+        mobile: {{ columns_sm }},
+        tablet: {{ columns_md }},
+        desktop: {{ columns_lg }}
+      },
+
+      {% if enable_filters and show_sidebar %}
+        showFilterSidebar: true,
+        showFilterDrawer: false
+      {% else %}
+        showFilterSidebar: false,
+        showFilterDrawer: false
+      {% endif %}
+    }
+  "
+  style="
+    --card-grid-cols-sm: {{ columns_sm }};
+    --card-grid-cols-md: {{ columns_md }};
+    --card-grid-cols-lg: {{ columns_lg }};
+  "
+  :style="
+    {
+      '--card-grid-cols-sm': columns.mobile,
+      '--card-grid-cols-md': columns.tablet,
+      '--card-grid-cols-lg': columns.desktop
+    }
+  "
+>
+  {% comment %} Collection toolbar {% endcomment %}
+  {%- if render_collection_toolbar -%}
+    {% render 'collection-toolbar',
+      collection: collection,
+      form_id: collection_form_id,
+      enable_filters: enable_filters,
+      enable_sorting: enable_sorting,
+      enable_layout_buttons: enable_layout_buttons,
+      class: '
+        supports-subgrid:col-start-fullbleed supports-subgrid:col-end-fullbleed
+        supports-subgrid:md:col-start-section-content supports-subgrid:md:col-end-section-content
+      '
+    %}
+  {%- endif -%}
+
+  <div
+    class="
+      flex flex-col md:flex-row
+
+      {% if section.settings.mobile_dense_card_grid %}
+        max-md:supports-subgrid:col-[fullbleed-start/fullbleed-end]
+      {% else %}
+        max-md:supports-subgrid:col-[content-start/content-end]
+      {% endif %}
+
+      supports-subgrid:md:col-start-section-content supports-subgrid:md:col-end-section-content
+
+      [--sidebar-width:0px]
+      [--sidebar-width-md:240px]
+      [--sidebar-width-lg:320px]
+      {% comment %} Gutter can become buffer in drawer layouts {% endcomment %}
+      [--sidebar-gap:var(--layout-gutter-x)]
+      md:[--sidebar-width:var(--sidebar-width-md)]
+      lg:[--sidebar-width:var(--sidebar-width-lg)]
+
+      [--sidebar-outer-duration:200ms]
+      [--sidebar-inner-duration:300ms]
+    "
+  >
+    {% comment %} Sidebar {% endcomment %}
+    <aside
+      id="{{ section.id }}-filter-sidebar"
+      aria-label="{{ 'collection.filters.filters' | t }}"
+      key="filter-sidebar"
+      class="
+        hidden md:flex flex-col w-[--sidebar-width] md:shrink-0 nojs:md:!flex
+        transition-[width]
+        duration-[--sidebar-outer-duration]
+        md:self-start
+      "
+      x-disclosure="
+        {
+          get isExpanded() {
+            return showFilterSidebar
+          },
+          set isExpanded(value) {
+            showFilterSidebar = value
+          }
+        }
+      "
+      x-disclosure:panel
+      x-transition:enter-start="!w-0"
+      x-transition:enter-end="!w-[--sidebar-width]"
+      x-transition:leave-start="!w-[--sidebar-width] delay-[--sidebar-inner-duration]"
+      x-transition:leave-end="!w-0"
+
+      {% if enable_filters == false or show_sidebar == false %}
+        x-cloak
+      {% endif %}
+    >
+      <div
+        class="
+          pe-[--sidebar-gap]
+          w-[--sidebar-width] h-fit
+          sticky [--sidebar-sticky-padding:--r6]
+          pb-[--sidebar-sticky-padding] top-[--sidebar-sticky-padding]
+          transition-[opacity,transform]
+        "
+        x-show="$disclosure.isExpanded"
+        x-sticky-scroll
+        x-transition:enter="duration-[var(--sidebar-inner-duration),calc(var(--sidebar-outer-duration)/2)] delay-[calc(var(--sidebar-outer-duration)/2)]"
+        x-transition:enter-start="translate-y-1/5 opacity-0"
+        x-transition:enter-end="translate-y-0 opacity-100"
+        x-transition:leave="duration-[var(--sidebar-inner-duration),calc(var(--sidebar-outer-duration)/2)] delay-0"
+        x-transition:leave-start="translate-y-0 opacity-100"
+        x-transition:leave-end="translate-y-1/5 opacity-0"
+
+        {% if filter_mode == 'sidebar' and sidebar_open == false %}
+          x-cloak
+        {% endif %}
+      >
+        {% comment %} Filters {% endcomment %}
+        {% render 'collection-filters',
+          filter_url: filter_url,
+          id: collection_form_id,
+          filters: filters,
+          form: form,
+          q: q
+        %}
+      </div>
+    </aside>
+
+    {% if enable_filters %}
+      <div
+        key="filter-drawer"
+        x-scroll-lock="$dialog.isOpen"
+        x-dialog.modal="
+          {
+            get isOpen() {
+              return showFilterDrawer
+            },
+            set isOpen(value) {
+              showFilterDrawer = value
+            }
+          }
+        "
+      >
+        {% render 'filter-drawer',
+          filter_url: filter_url,
+          collection_form_id: collection_form_id,
+          active_filter_values_count: active_filter_values_count,
+          filters: filters,
+          form: form,
+          q: q
+        %}
+      </div>
+    {% endif %}
+
+    {% comment %} Content {% endcomment %}
+    <div
+      class="flex grow flex-col gap md:self-start"
+      key="content"
+      :class="
+        {
+          'opacity-50 transition-opacity duration-400 pointer-events-none': $sectionApi.state == 'loading'
+        }
+      "
+    >
+      {{ content }}
+
+      {% if paginate.pages > 1 %}
+        {% if section.settings.mobile_dense_card_grid %}
+          {% assign pagination_class = 'max-md:px-root-buffer' %}
+        {% endif %}
+        {% render 'pagination', paginate: paginate, class: pagination_class %}
+      {% endif %}
+
+      <template x-if="$sectionApi.state == 'loading'">
+        <span class="sr-only" role="status" aria-live="polite">
+          {{ 'other.loading' | t }}
+        </span>
+      </template>
+    </div>
+  </div>
+</div>

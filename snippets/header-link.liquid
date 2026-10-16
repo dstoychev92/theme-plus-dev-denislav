@@ -1,0 +1,138 @@
+{% liquid
+  assign label_style = label_style | default: _settings.label_style | default: 'both'
+  assign color = color | default: _settings.color | default: 'content'
+  assign href = href | default: _settings.href
+  assign label = label | default: _settings.label
+  assign target_device = target_device | default: _settings.target_device
+  assign tag = tag | default: 'a'
+
+  if label_style == 'both' and icon == blank
+    assign label_style = 'text'
+  endif
+
+  case color
+    when 'primary'
+      assign color_class = 'vars-stain-primary'
+    when 'secondary'
+      assign color_class = 'vars-stain-secondary'
+    when 'black'
+      assign color_class = 'vars-stain-black'
+    when 'white'
+      assign color_class = 'vars-stain-white'
+    when 'canvas'
+      assign color_class = 'vars-stain-canvas'
+    when 'content'
+      assign color_class = 'vars-stain-content'
+    when 'muted'
+      assign color_class = 'vars-stain-muted'
+    when 'sale'
+      assign color_class = 'vars-stain-sale'
+    else
+      assign color_class = 'vars-stain-content'
+  endcase
+%}
+
+{% capture attributes %}
+  {% if tag == 'a' %}
+    href="{{ href }}"
+  {% endif %}
+
+  {% comment %} We need aria-label because the text is hidden on Mobile {% endcomment %}
+  {% if aria_label %}
+    aria-label="{{ aria_label | escape }}"
+  {% endif %}
+
+  {% if active %}
+    aria-current="page"
+
+    {% if section.settings.underline_current_page %}
+      x-init="
+        initialActiveEl = $el;
+      "
+    {% endif %}
+  {% endif %}
+
+  {{ attributes }}
+
+  {% unless label_style == 'icon' %}
+    x-data="{
+      get isActive() {
+        return activeEl == $el || (activeEl == null && initialActiveEl == $el)
+      },
+      get shouldAnimateUnderlineIn() {
+        return this.isActive && !hasInteractedWithNav
+      }
+    }"
+  {% endunless %}
+
+  x-hover:start.delay.100ms="setActiveEl($el)"
+  @click="initialActiveEl = $el; setActiveEl($el)"
+{% endcapture %}
+
+{% capture class %}
+  {{ class }} {{ color_class }}
+  flex-row-center gap-x-r4 h-full min-h-[--header-row-height]
+  relative z-0 text-stain
+
+  {% render 'props-class-target-device', target_device: target_device %}
+{% endcapture %}
+
+{% comment %} Note: icon size is set in toolbar and menu as a user defined percentage of text size {% endcomment %}
+{% capture icon_wrapper_class %}
+  relative shrink-0
+  {{ icon_type_class }}
+{% endcapture %}
+
+{% case label_style %}
+  {% when 'icon' %}
+    {% assign label = false %}
+  {% when 'text' %}
+    {% if icon != blank %}
+      {% assign label_class = label_class | append: ' hidden md:!flex' %}
+      {% assign icon_wrapper_class = icon_wrapper_class | append: ' block md:!hidden' %}
+    {% else %}
+      {% assign label_class = label_class | append: ' flex' %}
+    {% endif %}
+  {% when 'both' %}
+    {% assign label_class = label_class | append: ' hidden md:!flex' %}
+    {% assign icon_wrapper_class = icon_wrapper_class | append: ' block' %}
+{% endcase %}
+
+<{{ tag }} class="{{ class }}" {{ attributes }}>
+  {% if icon %}
+    <span class="{{ icon_wrapper_class }}">
+      {% render 'core-icon', icon: icon %}
+      {{ icon_indicator }}
+    </span>
+  {% endif %}
+
+  {% if label %}
+    {% capture label_class %}
+      shrink-0 flex py-r2 flex-center {{ label_class }}
+    {% endcapture %}
+
+    {% capture label_attributes %}
+      {{ label_attributes }}
+    {% endcapture %}
+
+    {% capture label_with_line %}
+      <span class="relative">
+        {{ label }}
+        <template x-if="isActive">
+          <div class="h-px bg-content absolute left-0 right-0 bottom-[-2px]"
+            :class="{ 'animate-in scale-in-x': shouldAnimateUnderlineIn }"
+            data-layout-id="{{section.id}}-header-link-underline"></div>
+        </template>
+      </span>
+    {% endcapture %}
+
+    {% render 'core-text-preset',
+      tag: 'span',
+      class: label_class,
+      text: label_with_line,
+      settings_suffix: 'nav_link',
+      _settings: _settings,
+      attributes: label_attributes
+    %}
+  {% endif %}
+</{{ tag }}>

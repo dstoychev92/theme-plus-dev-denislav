@@ -1,0 +1,78 @@
+{% liquid
+  # Media that is shown initially
+  assign initial_media = initial_media | default: product.featured_media
+  assign initial_index = initial_media.position | minus: 1
+
+  # Reveal media index is the _next_ media in the product's media list, but looping back to the first media if it's the last one
+  assign reveal_index = initial_index | plus: 1 | modulo: product.media.size
+
+  # Media that is hidden initially and will be revealed when user hovers
+  assign reveal_media = product.media[reveal_index]
+%}
+
+{% capture image_class %}
+  absolute inset-0 z-0 size-full
+{% endcapture %}
+
+{% capture image_transition_attributes %}
+  x-transition:enter="z-20 transition-opacity duration-[--transition-duration]"
+  x-transition:enter-start="opacity-0"
+  x-transition:enter-end="opacity-100"
+  x-transition:leave="z-0 transition-opacity duration-[--transition-duration] delay-[calc(var(--transition-duration)/4)]"
+  x-transition:leave-start="opacity-100"
+  x-transition:leave-end="opacity-0"
+{% endcapture %}
+
+<div
+  class="
+    {{ class }}
+    [--transition-duration:250ms]
+  "
+  x-data="
+    {
+      get isRevealed() {
+        return $productCard.isHoveringMedia;
+      }
+    }
+  "
+>
+  {% comment %}
+    Initial image
+  {% endcomment %}
+  {% capture inital_image_attributes %}
+    x-show="!isRevealed"
+    {{ image_transition_attributes }}
+  {% endcapture %}
+
+  {% render 'card-product-lg-image',
+    image: initial_media.preview_image,
+    class: image_class,
+    loading: initial_image_loading,
+    fetchpriority: initial_image_fetchpriority,
+    alt: initial_media.alt,
+    attributes: inital_image_attributes,
+    image_widths: image_widths,
+    image_sizes: image_sizes
+  %}
+
+  {% comment %}
+    Reveal image
+  {% endcomment %}
+  {% capture reveal_image_attributes %}
+    x-cloak
+    x-show="isRevealed"
+    {{ image_transition_attributes }}
+  {% endcapture %}
+
+  {% comment %} We use a template tag here to prevent the reveal image from loading until there's a good chance it will be shown {% endcomment %}
+  {% render 'card-product-lg-image',
+    image: reveal_media.preview_image,
+    class: image_class,
+    loading: initial_image_loading,
+    fetchpriority: 'low',
+    alt: reveal_media.alt,
+    attributes: reveal_image_attributes,
+    image_widths: image_widths,
+    image_sizes: image_sizes
+  %}
+</div>

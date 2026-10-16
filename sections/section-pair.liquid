@@ -1,0 +1,781 @@
+<!-- sections/section-pair.liquid -->
+
+{% liquid
+  assign column_width = section.settings.column_width
+  assign order_mobile = section.settings.order_mobile
+%}
+
+{% capture style %}
+  --section-content-col-start: section-start;
+  --section-content-col-end: section-end;
+  {% render 'props-style-gap', _settings: section.settings, apply: false, vars: false %}
+  --pair-gap-x: var(--custom-gutter-x);
+
+  {% if section.settings.contain_section %}
+    --pair-gap-y: var(--layout-bg-buffer-x);
+  {% else %}
+    --pair-gap-y: var(--custom-gutter-y);
+  {% endif %}
+{% endcapture %}
+
+{% capture class %}
+  entrance-container
+  pair-section-grid
+  vars-section-grid-layout-pair
+  {% if section.blocks.size > 1 %}
+    {% case column_width %}
+      {% when 'even' %}
+        vars-section-grid-layout-pair-even
+      {% when 'first-wide' %}
+        vars-section-grid-layout-pair-first-wide
+      {% when 'second-wide' %}
+        vars-section-grid-layout-pair-second-wide
+    {% endcase %}
+
+    {% if order_mobile == 'reversed' %}
+      max-md:[&>:first-child]:order-last
+    {% endif %}
+  {% endif %}
+{% endcapture %}
+
+{% capture blocks %}
+  {% content_for 'blocks' %}
+{% endcapture %}
+
+{% capture content %}
+  {% if request.visual_preview_mode and section.blocks.size < 2 %}
+    {% if section.blocks.size == 1 %}
+      {{ blocks }}
+      {% render 'pair-column', content: '', background: 'accent', color_scheme: 'scheme-default' %}
+    {% elsif section.blocks.size == 0 %}
+      {% render 'pair-column', content: '', background: 'accent', color_scheme: 'scheme-default' %}
+      {% render 'pair-column', content: '', background: 'accent', color_scheme: 'scheme-default' %}
+    {% endif %}
+  {% elsif request.design_mode and section.blocks.size == 0 %}
+    {% render 'pair-column', content: '', background: 'accent', color_scheme: 'scheme-default' %}
+    {% render 'pair-column', content: '', background: 'accent', color_scheme: 'scheme-default' %}
+  {% else %}
+    {{ blocks }}
+  {% endif %}
+{% endcapture %}
+
+{% capture attributes %}
+  x-data
+
+  {% if section.settings.enable_ensemble %}
+    {% if section.settings.autoplay %}
+      x-ensemble.autoplay
+    {% else %}
+      x-ensemble
+    {% endif %}
+  {% endif %}
+
+  {{ section.shopify_attributes }}
+{% endcapture %}
+
+{% render 'core-section-wrapper',
+  _settings: section.settings,
+  set_rhythm: true,
+  content: content,
+  style: style,
+  class: class,
+  attributes: attributes,
+  content_padding: 'lg'
+%}
+
+{{ 'theme.pair.css' | asset_url | stylesheet_tag: preload: true }}
+
+{% schema %}
+{
+	"name": "Pair",
+	"tag": "section",
+	"max_blocks": 2,
+	"settings": [
+		{
+			"type": "color_scheme",
+			"id": "color_scheme",
+			"label": "Color scheme"
+		},
+		{
+			"type": "select",
+			"id": "background",
+			"label": "Background",
+			"default": "canvas",
+			"options": [
+				{
+					"value": "canvas",
+					"label": "Default"
+				},
+				{
+					"value": "tint",
+					"label": "Tint"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background color",
+			"default": "#f2f2f2",
+			"alpha": false,
+			"visible_if": "{{ section.settings.background == 'custom' }}"
+		},
+		{
+			"type": "header",
+			"content": "Section layout"
+		},
+		{
+			"type": "select",
+			"id": "height_mode",
+			"label": "Set by",
+			"default": "section",
+			"options": [
+				{
+					"value": "section",
+					"label": "Section"
+				},
+				{
+					"value": "column",
+					"label": "Column"
+				},
+			]
+		},
+		{
+			"type": "select",
+			"id": "height",
+			"label": "Section height",
+			"visible_if": "{{ section.settings.height_mode == 'section' }}",
+			"default": "screen-one-half",
+			"options": [
+				{
+					"value": "content",
+					"label": "Content height"
+				},
+				{
+					"value": "screen",
+					"label": "Full screen height"
+				},
+				{
+					"value": "screen-five-sixths",
+					"label": "Five sixths screen"
+				},
+				{
+					"value": "screen-three-quarters",
+					"label": "Three quarters screen"
+				},
+				{
+					"value": "screen-one-half",
+					"label": "One half screen"
+				},
+				{
+					"value": "screen-one-third",
+					"label": "One third screen"
+				},
+				{
+					"value": "screen-one-quarter",
+					"label": "One quarter screen"
+				},
+				{
+					"value": "custom",
+					"label": "Custom"
+				},
+			]
+		},
+		{
+			"type": "select",
+			"id": "custom_height_type",
+			"label": "Height type",
+			"default": "percentage",
+			"options": [
+				{
+					"value": "percentage",
+					"label": "%"
+				},
+				{
+					"value": "px",
+					"label": "px"
+				},
+			],
+			"visible_if": "{{ section.settings.height_mode == 'section' and section.settings.height == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "custom_height_percentage",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"unit": "%",
+			"label": "Custom height",
+			"default": 33,
+			"visible_if": "{{ section.settings.height_mode == 'section' and section.settings.height == 'custom' and section.settings.custom_height_type == 'percentage' }}",
+			"info": "Percentage of screen height"
+		},
+		{
+			"type": "range",
+			"id": "custom_height_px",
+			"min": 0,
+			"max": 1000,
+			"step": 50,
+			"unit": "px",
+			"label": "Custom height",
+			"default": 350,
+			"visible_if": "{{ section.settings.height_mode == 'section' and section.settings.height == 'custom' and section.settings.custom_height_type == 'px' }}"
+		},
+		{
+			"type": "select",
+			"id": "align_self",
+			"label": "Short column placement",
+			"default": "start",
+			"options": [
+				{
+					"value": "start",
+					"label": "⤒"
+				},
+				{
+					"value": "center",
+					"label": "—"
+				},
+				{
+					"value": "end",
+					"label": "⤓"
+				}
+			],
+			"visible_if": "{{ section.settings.height_mode == 'column' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_sticky",
+			"label": "Short column sticky",
+			"default": false,
+			"visible_if": "{{ section.settings.height_mode == 'column' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "contain_section",
+			"label": "Contain section",
+			"default": true
+		},
+		{
+			"type": "select",
+			"id": "section_width",
+			"label": "Width",
+			"visible_if": "{{ section.settings.contain_section }}",
+			"default": "page",
+			"options": [
+				{
+					"value": "full",
+					"label": "Full"
+				},
+				{
+					"value": "page",
+					"label": "Page"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "section_padding_top",
+			"label": "Spacing top",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 40
+		},
+		{
+			"type": "range",
+			"id": "section_padding_bottom",
+			"label": "Spacing bottom",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 40
+		},
+		{
+			"type": "header",
+			"content": "Columns"
+		},
+		{
+			"type": "select",
+			"id": "column_width",
+			"label": "First column width",
+			"default": "even",
+			"options": [
+				{
+					"value": "first-wide",
+					"label": "Wide"
+				},
+				{
+					"value": "even",
+					"label": "Even"
+				},
+				{
+					"value": "second-wide",
+					"label": "Slim"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "order_mobile",
+			"label": "Mobile order",
+			"default": "normal",
+			"options": [
+				{
+					"value": "normal",
+					"label": "Normal"
+				},
+				{
+					"value": "reversed",
+					"label": "Reversed"
+				},
+			]
+		},
+		{
+			"type": "select",
+			"id": "gap",
+			"label": "Gap",
+			"default": "lg",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "gap_custom",
+			"label": "Custom gap",
+			"default": 0,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ section.settings.gap == 'custom'  }}"
+		},
+		{
+			"type": "header",
+			"content": "Interactive content"
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_ensemble",
+			"label": "Link interactive content",
+			"default": true,
+			"info": "Slideshows, accordions, hotspots and tabs will be linked so that when one changes, the other changes as well."
+		},
+		{
+			"type": "checkbox",
+			"id": "autoplay",
+			"label": "Auto-rotate slides",
+			"default": true,
+			"visible_if": "{{ section.settings.enable_ensemble }}"
+		},
+		{
+			"type": "range",
+			"id": "duration",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"unit": "sec",
+			"label": "Change slides every",
+			"default": 5,
+			"visible_if": "{{ section.settings.autoplay and section.settings.enable_ensemble }}"
+		},
+		/* Hidden setting that allows background images to correctly set their sizes/srcset values depending on the number of columns in the section */
+		{
+			"type": "number",
+			"id": "img_columns_lg",
+			"label": "Image columns",
+			"default": 2,
+			"visible_if": "{{ false }}"
+		},
+		{
+			"type": "header",
+			"content": "Target device",
+			"visible_if": "{{ settings.show_target_device_settings == true }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_target_device",
+			"label": "Set target device",
+			"visible_if": "{{ settings.show_target_device_settings == true }}",
+			"default": false
+		},
+		{
+			"type": "select",
+			"label": "Show on",
+			"id": "target_device",
+			"default": "desktop",
+			"visible_if": "{{ settings.show_target_device_settings == true and section.settings.set_target_device == true }}",
+			"options": [
+				{
+					"value": "mobile",
+					"label": "Mobile"
+				},
+				{
+					"value": "desktop",
+					"label": "Desktop"
+				}
+			]
+		},
+	],
+	"blocks": [
+		{
+			"type": "_pair-banner",
+		},
+		{
+			"type": "_pair-pro-banner",
+		},
+		{
+			"type": "_pair-video",
+		},
+		{
+			"type": "_pair-custom",
+		},
+		{
+			"type": "_pair-slideshow",
+		},
+		{
+			"type": "_pair-hotspots"
+		},
+		{
+			"type": "_pair-card-grid"
+		},
+		{
+			"type": "_pair-card-slider"
+		},
+		{
+			"type": "_pair-card-showcase"
+		},
+		{
+			"type": "_pair-before-after"
+		},
+		{
+			"type": "_glass-cup"
+		}
+	],
+	"presets": [
+		{
+			"name": "Custom Pair",
+			"category": "Pair"
+		},
+		{
+			"name": "Hotspots & Accordion",
+			"category": "Pair",
+			"blocks": [
+				{
+					"type": "_pair-hotspots",
+					"blocks": [
+						{
+							"type": "_pair-hotspot",
+							"settings": {
+								"top": 70,
+								"left": 20,
+								"top_mobile": 70,
+								"left_mobile": 20
+							}
+						},
+						{
+							"type": "_pair-hotspot",
+							"settings": {
+								"top": 55,
+								"left": 45,
+								"top_mobile": 55,
+								"left_mobile": 45
+							}
+						},
+						{
+							"type": "_pair-hotspot",
+							"settings": {
+								"top": 40,
+								"left": 70,
+								"top_mobile": 40,
+								"left_mobile": 70
+							}
+						},
+					]
+				},
+				{
+					"type": "_pair-custom",
+					"blocks": [
+						{
+							"type": "_accordion-group",
+							"blocks": [
+								{
+									"type": "_accordion",
+									"settings": {
+										"title": "Exceptional craftsmanship"
+									},
+									"blocks": [
+										{
+											"type": "theme-richtext",
+											"settings": {
+												"text": "<p>Meticulously crafted to deliver unmatched quality, reflecting a dedication to excellence in every detail.</p>"
+											}
+										}
+									]
+								},
+								{
+									"type": "_accordion",
+									"settings": {
+										"title": "Made for your lifestyle"
+									},
+									"blocks": [
+										{
+											"type": "theme-richtext",
+											"settings": {
+												"text": "<p>Designed with versatility and practicality in mind. Made for you, and for whatever your day demands.</p>"
+											}
+										}
+									]
+								},
+								{
+									"type": "_accordion",
+									"settings": {
+										"title": "Inspired by you"
+									},
+									"blocks": [
+										{
+											"type": "theme-richtext",
+											"settings": {
+												"text": "<p>Carefully crafted to complement your unique way of being you, we strive to bring a touch of inspiration to your life.</p>"
+											}
+										}
+									]
+								},
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Hotspots & Showcase",
+			"category": "Pair",
+			"blocks": [
+				{
+					"type": "_pair-hotspots",
+					"settings": {
+						"set_color_scheme": true,
+						"background": "custom",
+						"background_custom": "#eeeeee"
+					},
+					"blocks": [
+						{
+							"type": "_pair-hotspot",
+							"settings": {
+								"top": 70,
+								"left": 20,
+								"top_mobile": 70,
+								"left_mobile": 20
+							}
+						},
+						{
+							"type": "_pair-hotspot",
+							"settings": {
+								"top": 55,
+								"left": 45,
+								"top_mobile": 55,
+								"left_mobile": 45
+							}
+						},
+						{
+							"type": "_pair-hotspot",
+							"settings": {
+								"top": 40,
+								"left": 70,
+								"top_mobile": 40,
+								"left_mobile": 70
+							}
+						},
+					]
+				},
+				{
+					"type": "_pair-card-showcase",
+					"settings": {
+						"set_color_scheme": true,
+						"framed_card_bg": "tint"
+					},
+					"blocks": [
+						{
+							"type": "_cards-products",
+							"settings": {
+								"source": "collection",
+								"card_limit": 3
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Slides & Accordion",
+			"category": "Pair",
+			"blocks": [
+				{
+					"type": "_pair-slideshow",
+					"blocks": [
+						{
+							"type": "_pair-slide"
+						},
+						{
+							"type": "_pair-slide"
+						},
+						{
+							"type": "_pair-slide"
+						}
+					]
+				},
+				{
+					"type": "_pair-custom",
+					"blocks": [
+						{
+							"type": "_accordion-group",
+							"blocks": [
+								{
+									"type": "_accordion",
+									"settings": {
+										"title": "Exceptional craftsmanship"
+									},
+									"blocks": [
+										{
+											"type": "theme-richtext",
+											"settings": {
+												"text": "<p>Meticulously crafted to deliver unmatched quality, reflecting a dedication to excellence in every detail.</p>"
+											}
+										}
+									]
+								},
+								{
+									"type": "_accordion",
+									"settings": {
+										"title": "Made for your lifestyle"
+									},
+									"blocks": [
+										{
+											"type": "theme-richtext",
+											"settings": {
+												"text": "<p>Designed with versatility and practicality in mind. Made for you, and for whatever your day demands.</p>"
+											}
+										}
+									]
+								},
+								{
+									"type": "_accordion",
+									"settings": {
+										"title": "Inspired by you"
+									},
+									"blocks": [
+										{
+											"type": "theme-richtext",
+											"settings": {
+												"text": "<p>Carefully crafted to complement your unique way of being you, we strive to bring a touch of inspiration to your life.</p>"
+											}
+										}
+									]
+								},
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Text & Image",
+			"category": "Pair",
+			"settings": {
+				"gap": "custom",
+				"gap_custom": 0
+			},
+			"blocks": [
+				{
+					"type": "_pair-custom",
+					"blocks": [
+						{
+							"type": "theme-text",
+							"settings": {
+								"text": "Image with text"
+							}
+						},
+						{
+							"type": "theme-richtext",
+							"settings": {
+								"text": "<p>Use this text to share information about your brand with your customers. Describe a product, share news, or welcome customers to your store.</p>"
+							}
+						}
+					]
+				},
+				{
+					"type": "_pair-banner",
+					"blocks": [
+						{
+							"type": "theme-button",
+							"settings": {
+								"text": "View products",
+								"href": "shopify://collections/all",
+								"open_in_new_window": false,
+								"appearance": "solid",
+								"sizing": "md",
+								"color": "content"
+							}
+						}
+					]
+				},
+			]
+		},
+		{
+			"name": "Text & Before/After",
+			"category": "Pair",
+			"blocks": [
+				{
+					"type": "_pair-custom",
+					"blocks": [
+						{
+							"type": "theme-text",
+							"settings": {
+								"text": "Image with text"
+							}
+						},
+						{
+							"type": "theme-richtext",
+							"settings": {
+								"text": "<p>Use this text to share information about your brand with your customers. Describe a product, share news, or welcome customers to your store.</p>"
+							}
+						},
+					]
+				},
+				{
+					"type": "_pair-before-after",
+					"blocks": []
+				},
+			]
+		}
+	],
+	"disabled_on": {
+		"groups": [
+			"header",
+			"custom.overlays",
+			"custom.drawers"
+		]
+	}
+}
+{% endschema %}

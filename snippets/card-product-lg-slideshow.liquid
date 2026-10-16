@@ -1,0 +1,127 @@
+{% liquid
+  assign initial_media = initial_media | default: product.featured_media
+  assign initial_index = initial_media.position | minus: 1
+  assign next_index = initial_index | plus: 1 | modulo: media_size
+  assign slide_duration = settings.product_card_slideshow_slide_duration | times: 1000 | round
+-%}
+
+<div
+  class="group relative {{ class }}"
+
+  {% comment %} Initialization {% endcomment %}
+  x-init="
+    $slideshow.currentSlideIndex = {{ initial_index }}
+
+    $watch('$productCard.isHoveringMedia', (isHoveringMedia) => {
+      if (isHoveringMedia) {
+        {% comment %} If we're already on the initial slide when the user first hovers, then move to the next slide right away {% endcomment %}
+        if ($slideshow.currentSlideIndex == {{ initial_index }}) {
+          $slideshow.next()
+        }
+      } else {
+        {% comment %} When user leaves card altogether reset to the initial slide {% endcomment %}
+        $slideshow.currentSlideIndex = {{ initial_index }}
+        $slideshow.pause()
+      }
+    })
+  "
+  x-slideshow.duration.{{ slide_duration }}ms="
+    {
+      get state() {
+        return $productCard.isHoveringMedia ? 'playing' : 'paused';
+      }
+    }
+  "
+  x-slideshow:viewport
+>
+  <div
+    class="
+      absolute inset-card-lg-media-padding bottom-auto py-r1
+      opacity-0 motion-safe:-translate-y-full transition duration-[--slideshow-indicator-transition-duration]
+      mix-blend-difference isolate z-30
+      touch:hidden
+    "
+    :class="
+      {
+         'opacity-100 motion-safe:translate-y-0': $productCard.isActive
+      }
+    "
+  >
+    {% render 'slideshow-indicator', slide_duration: slide_duration %}
+  </div>
+
+  {% for media in product.media limit: media_size %}
+    {% capture slide_class %}
+      absolute inset-0 z-0 size-full
+    {% endcapture %}
+    {% capture slide_image_class %}
+      size-full
+    {% endcapture %}
+    <div
+      class="{{ slide_class }}"
+      x-slideshow:slide
+      x-transition:enter="duration-[--slide-transition-duration]"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="duration-[--slide-transition-duration] delay-[calc(var(--slide-transition-duration)/4)]"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+      :class="
+        {
+          'z-20': $slideshow.currentSlideIndex === {{ forloop.index0 }},
+        }
+      "
+      {% unless forloop.index0 == initial_index %}
+        x-cloak
+      {% endunless %}
+      x-show="$slide.isCurrentSlide"
+      key="{{ media.id }}"
+      x-data="
+        {
+          canRenderSlide: false
+        }
+      "
+      {% if forloop.index0 > next_index %}
+        x-effect="
+          if ($productCard.canLoadMedia || $slide.isCurrentSlide || $slideshow.state === 'playing') {
+            canRenderSlide = true
+          }
+        "
+      {% else %}
+        {% # Do nothing - this is the initial slide and is always rendered %}
+      {% endif %}
+      role="group"
+    >
+      {% if forloop.index0 == initial_index %}
+        {% render 'card-product-lg-image',
+          image: initial_media.preview_image,
+          class: slide_image_class,
+          loading: initial_image_loading,
+          fetchpriority: initial_image_fetchpriority,
+          image_widths: image_widths,
+          image_sizes: image_sizes
+        %}
+      {% elsif forloop.index0 == next_index %}
+        {% render 'card-product-lg-image',
+          image: media.preview_image,
+          class: slide_image_class,
+          loading: initial_image_loading,
+          fetchpriority: 'low',
+          image_widths: image_widths,
+          image_sizes: image_sizes
+        %}
+      {% else %}
+        <template x-if="canRenderSlide">
+          {% render 'card-product-lg-image',
+            image: media.preview_image,
+            class: slide_image_class,
+            loading: 'eager',
+            fetchpriority: 'low',
+            image_widths: image_widths,
+            image_sizes: image_sizes
+          %}
+        </template>
+      {% endif %}
+    </div>
+  {% endfor %}
+</div>

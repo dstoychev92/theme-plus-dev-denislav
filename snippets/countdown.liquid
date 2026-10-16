@@ -1,0 +1,236 @@
+{% comment %}
+  Renders a countdown timer
+
+  - end_date: {Datetime} Expiration date YYYY-MM-DD
+  - end_time: {Datetime} Expiration time of day HH:MM
+  - period: {Datetime} am/pm
+  - text_size: {Integer} Text size from 1 to 15
+  - hide_on_complete: {Boolean} Hide the whole thing when the timer completes
+  - end_message: {String} Message to show when the timer completes
+  - enable_animations: {Boolean} Enable fade-in animation
+{% endcomment %}
+
+{%- liquid
+  assign end_date = end_date | default: _settings.end_date
+  assign end_time = end_time | default: _settings.end_time | default: '11:59'
+  assign period = period | default: _settings.period | default: 'pm'
+  assign hide_on_complete = hide_on_complete | default: _settings.hide_on_complete
+  assign digit_size = digit_size | default: _settings.digit_size
+  assign digit_size_mobile = digit_size_mobile | default: _settings.digit_size_mobile
+  assign end_message = end_message | default: _settings.end_message
+  assign word_length = word_length | default: _settings.word_length
+  assign layout = layout | default: _settings.layout | default: 'column'
+  assign end_time_split = end_time | split: ':'
+  assign end_time_hour = end_time_split | first | strip | abs
+  assign end_time_minute = end_time_split | last | strip
+
+  capture expiration_date
+    echo end_date
+    echo ' '
+    case period
+      when 'am'
+        case end_time_hour
+          when 0, 12
+            echo '00' | append: ':' | append: end_time_minute
+          else
+            echo end_time
+        endcase
+
+      when 'pm'
+        capture hour
+          case end_time_hour
+            when 0, 12
+              echo '12'
+            else
+              if end_time_hour < 12
+                echo end_time_hour | plus: 12
+              else
+                echo end_time_hour
+              endif
+          endcase
+        endcapture
+
+        echo hour | append: ':' | append: end_time_minute
+    endcase
+  endcapture
+
+  assign current_date = 'now' | date: '%s'
+  assign expiration_date = expiration_date | date: '%s'
+  assign time_difference = expiration_date | minus: current_date
+  assign days = time_difference | divided_by: 86400 | at_least: 0
+  assign remaining_seconds = time_difference | modulo: 86400
+  assign hours = remaining_seconds | divided_by: 3600 | at_least: 0
+  assign remaining_seconds = remaining_seconds | modulo: 3600
+  assign minutes = remaining_seconds | divided_by: 60 | at_least: 0
+  assign seconds = remaining_seconds | modulo: 60 | at_least: 0
+
+  case word_length
+    when 'short'
+      assign days_label = 'homepage.countdown_block_short.days.other' | t
+      assign hours_label = 'homepage.countdown_block_short.hours' | t
+      assign minutes_label = 'homepage.countdown_block_short.minutes' | t
+      assign seconds_label = 'homepage.countdown_block_short.seconds' | t
+      if days == 1 or layout == 'column'
+        assign days_label = 'homepage.countdown_block_short.days.one' | t
+      endif
+    when 'full'
+      assign days_label = 'homepage.countdown_block.days.other' | t
+      assign hours_label = 'homepage.countdown_block.hours' | t
+      assign minutes_label = 'homepage.countdown_block.minutes' | t
+      assign seconds_label = 'homepage.countdown_block.seconds' | t
+      if days == 1
+        assign days_label = 'homepage.countdown_block.days.one' | t
+      endif
+    when 'letter'
+      assign days_label = 'homepage.countdown_block_letter.days' | t
+      assign hours_label = 'homepage.countdown_block_letter.hours' | t
+      assign minutes_label = 'homepage.countdown_block_letter.minutes' | t
+      assign seconds_label = 'homepage.countdown_block_letter.seconds' | t
+  endcase
+
+  if days < 10
+    assign days = days | prepend: '0'
+  endif
+
+  if hours < 10
+    assign hours = hours | prepend: '0'
+  endif
+
+  if minutes < 10
+    assign minutes = minutes | prepend: '0'
+  endif
+
+  if seconds < 10
+    assign seconds = seconds | prepend: '0'
+  endif
+
+  assign expiration_behaviour = 'show-message'
+  if hide_on_complete
+    assign expiration_behaviour = 'hide-section'
+  endif
+
+  assign countdown_has_expired = false
+  if current_date > expiration_date
+    assign countdown_has_expired = true
+  endif
+
+  assign block_index_zero = forloop.index0
+-%}
+
+{% capture class %}
+  {{ class }}
+  {% if digit_size %}
+    text-size-apply
+    [--font-size:var(--font-size-mobile)]
+    [--leading:var(--leading-mobile)]
+    md:[--font-size:var(--font-size-desktop)]
+    md:[--leading:var(--leading-desktop)]
+  {% endif %}
+{% endcapture %}
+
+{% capture style %}
+  {% if digit_size %}
+    --font-size-mobile: var(--font-r{{ digit_size_mobile | default: digit_size }});
+    --leading-mobile: var(--leading-{{ digit_size_mobile | default: digit_size }});
+    --font-size-desktop: var(--font-r{{ digit_size }});
+    --leading-desktop: var(--leading-{{ digit_size }});
+  {% endif %}
+{% endcapture %}
+
+<div
+  {{ block.shopify_attributes }}
+  class="{{ class }}"
+  style="{{ style }}"
+  x-data="{ inView: false }"
+  x-countdown="{{ expiration_date | date: '%Y-%m-%dT%H:%M:%S.%3N%z' }}"
+  x-intersect:enter="inView = true"
+  x-intersect:leave="inView = false"
+
+  {% if expiration_behaviour == 'hide-section' %}
+    x-show="!$countdown.isExpired"
+    :data-hide-section="$countdown.isExpired"
+    {% if countdown_has_expired %}
+      x-cloak
+      data-hide-section
+    {% endif %}
+  {% endif %}
+>
+  <time
+    class="
+      flex gap-[0.375em]
+      {% if enable_animations %}
+        *:animate-in motion-safe:*:slide-in-from-bottom *:fade-in
+        *:animate-opacity-duration-1500 *:animate-transform-duration-1000
+        *:paused *:auto-stagger-animations-225
+      {% endif %}
+      {{ time_class }}
+    "
+    :class="
+      {
+        '*:!running': inView,
+        {% if expiration_behaviour == 'show-message' %}
+          '!hidden': $countdown.isExpired
+        {% endif %}
+      }
+    "
+    {% if countdown_has_expired %}
+      x-cloak
+    {% endif %}
+  >
+    {% for i in (1..4) %}
+      {%- capture place -%}
+        {% cycle 'days', 'hours', 'minutes', 'seconds' %}
+      {%- endcapture -%}
+
+      {% case layout %}
+        {% when 'column' %}
+          <div
+            class="flex flex-col items-center"
+            {% if enable_animations %}
+              style="--stagger-order: {{ block_index_zero | plus: forloop.index0 }}"
+            {% endif %}
+          >
+            <strong
+              class="min-w-[1.2em] font-bold w-full"
+              style="text-align: var(--content-align, center)"
+              x-countdown:{{ place }}
+            >
+              {% cycle days, hours, minutes, seconds %}
+            </strong>
+            <p
+              class="text-r1 w-full"
+              style="text-align: var(--content-align, center)"
+            >
+              {% cycle days_label, hours_label, minutes_label, seconds_label %}
+            </p>
+          </div>
+        {% when 'row' %}
+          {% comment %} Less gap + min-width to negate horizontal width changes when numbers update every second {% endcomment %}
+          <span class="flex gap-[0.25em]">
+            <span class="min-w-[1.125em]" x-countdown:{{ place }}>
+              {% cycle days, hours, minutes, seconds %}
+            </span>
+
+            <span>
+              {% cycle days_label, hours_label, minutes_label, seconds_label %}
+            </span>
+          </span>
+
+          {% unless forloop.last %}
+            <span>:</span>
+          {% endunless %}
+      {% endcase %}
+    {% endfor %}
+  </time>
+
+  {%- if hide_on_complete == false and end_message != '' and expiration_behaviour == 'show-message' -%}
+    <div
+      x-show="$countdown.isExpired"
+      {% unless countdown_has_expired %}
+        x-cloak
+      {% endunless %}
+    >
+      <p class="inline-richtext [&>a]:text-inherit">{{ end_message }}</p>
+    </div>
+  {%- endif -%}
+</div>

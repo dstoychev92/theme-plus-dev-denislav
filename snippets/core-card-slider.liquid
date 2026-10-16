@@ -1,0 +1,60 @@
+{% comment %}
+  Note: if you're just doing a straight up card grid on all screen sizes use card-grid instead, there's a lot of overhead here and you're probably better off using a simple grid layout
+{% endcomment %}
+{% liquid
+  assign autoregister = autoregister | default: true, allow_false: true
+%}
+
+<card-list
+  x-carousel:viewport
+  x-overflow:viewport
+  class="block overflow-clip apply-card-list-vars vars-layout-gutter-card max-w-[--max-width] {{ class }}"
+  style="{{ style }}"
+  {{ attributes }}
+>
+  <card-list-track
+    {% if autoregister %}
+      x-carousel:track.autoregister
+      x-overflow:container
+    {% else %}
+      x-carousel:track
+    {% endif %}
+
+    x-intersect:enter.once="
+      $nextTick(() => {
+        window.requestIdleCallback(() => {
+          const images = $el.querySelectorAll('img');
+          images.forEach((img, index) => {
+            if (img.loading === 'lazy') {
+              img.loading = 'eager';
+              // Prioritize first image and images that are visible, others get auto priority
+              if (index == 0 || $carousel.visibleIndices.includes(index) || img.checkVisibility()) {
+                img.fetchpriority = 'high';
+              }
+            }
+          });
+        });
+      });
+    "
+
+    class="
+      grid min-w-full relative backface-hidden will-change-transform scrollbar-hide h-min
+      *:[scroll-snap-align:var(--snap-align)] *:translate-z
+      *:auto-set-stagger-order
+      overscroll-x-contain snap-x snap-mandatory
+      gap-layout px-[--scroll-padding]
+      [overflow-x:var(--overflow-x)]
+      overflow-y-hidden
+      scroll-p-[--scroll-padding]
+      py-r6
+    "
+    style="
+      grid-auto-columns: var(--grid-auto-columns);
+      grid-auto-flow: var(--grid-auto-flow);
+      grid-template-rows: var(--grid-template-rows);
+      grid-template-columns: var(--grid-template-columns);
+    "
+  >
+    {{ items }}
+  </card-list-track>
+</card-list>

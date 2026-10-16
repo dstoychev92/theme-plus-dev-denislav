@@ -1,0 +1,48 @@
+<!-- blocks/_form-radio.liquid -->
+
+{% liquid
+  assign label = block.settings.label
+  assign label_handle = label | handleize
+  assign id = label_handle | append: '-' | append: block.id
+%}
+
+{% capture attributes %}
+  :name="radioGroupName"
+  {{ block.shopify_attributes }}
+{% endcapture %}
+
+{% render 'field-radio',
+  name: name,
+  id: id,
+  label: label,
+  value: label_handle,
+  size: false,
+  disabled: block.settings.disabled,
+  input_attributes: attributes
+%}
+
+{% schema %}
+{
+	"name": "Radio",
+	"tag": null,
+	"settings": [
+		{
+			"type": "text",
+			"id": "label",
+			"label": "Label",
+			"default": "Radio item"
+		},
+		{
+			"type": "checkbox",
+			"id": "disabled",
+			"label": "Disabled",
+			"default": false
+		}
+	],
+	"presets": [
+		{
+			"name": "Radio"
+		}
+	]
+}
+{% endschema %}

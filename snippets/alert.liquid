@@ -1,0 +1,35 @@
+<div
+  aria-live="assertive"
+  role="alert"
+  class="
+    flex-row-center justify-between
+    gap-x-r4 bg-canvas
+    text-content py-r4 px-r5
+    {% case type %}
+      {% when 'success' %}
+        vars-scheme-success
+      {% when 'error' %}
+        vars-scheme-error
+    {% endcase %}
+    {{ class }}
+  "
+  {{ attributes }}
+>
+  {% if icon %}
+    <div class="inline-flex flex-shrink-0 flex-center p-r2">
+      {{ icon }}
+    </div>
+  {% endif %}
+
+  <div
+    class="flex-1 flex-row-center text-r4 font-bold"
+  >
+    {{ content }}
+  </div>
+
+  {% if button %}
+    <div class="flex-none flex-row-center">
+      {{ button }}
+    </div>
+  {% endif %}
+</div>

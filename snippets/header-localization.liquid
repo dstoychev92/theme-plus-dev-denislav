@@ -1,0 +1,64 @@
+{% liquid
+  assign flag_size = 18
+
+  if placement == blank
+    case _settings.layout_position
+      when 'left'
+        assign placement = 'bottom-start'
+      when 'right'
+        assign placement = 'bottom-end'
+      else
+        assign placement = 'bottom'
+    endcase
+  endif
+
+  capture end_icon
+    render 'core-icon', icon: 'stroke-chevron-down', class: 'opacity-[--line-alpha-bold]', size: 'sm'
+  endcapture
+%}
+
+{%- form 'localization', id: 'localization-form-toolbar', x-ref: 'form', class: class -%}
+  <div
+    class="
+      flex flex-row gap-x-r6 h-full
+      vars-{{ section.settings.color_scheme.id }}
+    "
+    {% comment %} Prevent morphing from messing with the state of any open selects {% endcomment %}
+    data-morph-skip
+    {{ attributes }}
+  >
+    {% if _settings.show_language %}
+      {%- if localization.available_languages.size > 1 -%}
+        {%- render 'localization-locale-select',
+          placement: placement,
+          offset: offset,
+          size: false,
+          flip: false,
+          match: false,
+          language_style: _settings.language_style,
+          button_class: button_class,
+          popup_class: popup_class,
+          end_icon: end_icon
+        -%}
+      {%- endif -%}
+    {%- endif -%}
+
+    {% if _settings.show_country %}
+      {%- if localization.available_countries.size > 1 -%}
+        {%- render 'localization-country-select',
+          placement: placement,
+          offset: offset,
+          size: false,
+          flip: false,
+          match: false,
+          currency_display_style: _settings.currency_display_style,
+          country_display_style: _settings.country_display_style,
+          button_class: button_class,
+          popup_class: popup_class,
+          flag_size: flag_size,
+          end_icon: end_icon
+        -%}
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+{% endform %}

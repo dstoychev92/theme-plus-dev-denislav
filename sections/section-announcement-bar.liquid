@@ -1,0 +1,361 @@
+<!-- sections/section-announcement-bar.liquid -->
+
+{% liquid
+  assign marquee_mode = section.settings.marquee_mode
+  assign marquee_speed = section.settings.marquee_speed | times: 15
+  assign separator_style = section.settings.separator_style
+  assign block_count = section.blocks.size
+%}
+
+{% capture class %}
+  group/announcement-bar vars-control-xs
+  [--header-row-gap-x:theme(space.r6)]
+  {% render 'props-class-type-preset', _settings: section.settings %}
+{% endcapture %}
+
+{% capture inner_class %}
+  justify-center
+  max-md:col-fullbleed
+  [--control-font-size:--font-size-calc]
+
+  {% case section.settings.bottom_border_mode %}
+    {% when 'always' %}
+      border-b border-b-content border-opacity-[--line-alpha-subtle]
+    {% when 'transparent' %}
+      border-b border-b-content border-opacity-[calc(var(--line-alpha-subtle)*(1-var(--header-auto-border)))]
+  {% endcase %}
+{% endcapture %}
+
+{% capture style %}
+  --header-bg-opacity: 1;
+{% endcapture %}
+
+{% capture attributes %}
+  aria-label="Announcement"
+{% endcapture %}
+
+{% capture marquee_separator %}
+  {% if separator_style == 'line' %}
+    <div
+      class="flex items-center shrink-0"
+      style="padding-inline-start: calc(12.5px * var(--r-multiplier)); padding-inline-end: calc(12.5px * var(--r-multiplier));"
+      aria-hidden="true"
+    >
+      <span class="block w-px h-[1em] bg-content opacity-40"></span>
+    </div>
+  {% elsif separator_style == 'dot' %}
+    <div
+      class="flex items-center shrink-0"
+      style="padding-inline-start: calc(12.5px * var(--r-multiplier)); padding-inline-end: calc(12.5px * var(--r-multiplier));"
+      aria-hidden="true"
+    >
+      <span class="block w-[3px] h-[3px] rounded-full bg-content opacity-50"></span>
+    </div>
+  {% else %}
+    <div
+      class="shrink-0"
+      style="padding-inline-start: calc(12.5px * var(--r-multiplier)); padding-inline-end: calc(12.5px * var(--r-multiplier));"
+      aria-hidden="true"
+    ></div>
+  {% endif %}
+{% endcapture %}
+
+{% capture static_blocks %}
+  {% for block in section.blocks %}
+    <div class="flex items-center shrink-0">
+      {% render block %}
+    </div>
+  {% endfor %}
+{% endcapture %}
+
+{% capture marquee_blocks %}
+  {% for block in section.blocks %}
+    <div class="flex items-center shrink-0">
+      {% render block %}
+    </div>
+    {{ marquee_separator }}
+  {% endfor %}
+{% endcapture %}
+
+{% capture content %}
+  <div
+    class="relative w-full flex items-stretch overflow-hidden h-[--header-row-height]"
+    x-data="{
+      mode: '{{ marquee_mode }}',
+      isOverflowing: {% if marquee_mode == 'always' %}true{% else %}false{% endif %},
+      measure() {
+        if (this.mode === 'always') { this.isOverflowing = true; return; }
+        if (this.mode === 'never') { this.isOverflowing = false; return; }
+        const el = this.$refs.static;
+        if (!el) return;
+        const blocks = el.children.length;
+        const minGap = 16;
+        const minNeeded = el.scrollWidth + Math.max(0, blocks - 1) * minGap;
+        this.isOverflowing = minNeeded > el.clientWidth + 1;
+      },
+      init() {
+        this.$nextTick(() => this.measure());
+        this._ro = new ResizeObserver(() => this.measure());
+        this._ro.observe(this.$el);
+        if (this.$refs.static) this._ro.observe(this.$refs.static);
+      }
+    }"
+  >
+    <div
+      x-ref="static"
+      :class="isOverflowing ? 'invisible absolute inset-0 pointer-events-none' : ''"
+      class="
+        flex items-center w-full h-full
+        {% if block_count <= 1 %}justify-center{% else %}justify-between{% endif %}
+      "
+    >
+      {{ static_blocks }}
+    </div>
+
+    <template x-if="isOverflowing">
+      <div
+        class="flex-row-center w-full h-full"
+        x-marquee.speed.{{ marquee_speed }}.fill
+      >
+        <div
+          x-marquee:source
+          class="flex items-center shrink-0 whitespace-nowrap"
+        >
+          {{ marquee_blocks }}
+        </div>
+        <div
+          x-marquee:target
+          aria-hidden="true"
+          class="flex items-center shrink-0 whitespace-nowrap"
+        ></div>
+      </div>
+    </template>
+  </div>
+{% endcapture %}
+
+{% render 'header-section',
+  _settings: section.settings,
+  class: class,
+  attributes: attributes,
+  inner_class: inner_class,
+  style: style,
+  tag: 'aside',
+  content: content
+%}
+
+{% schema %}
+{
+	"name": "Announcement bar",
+	"tag": "section",
+	"max_blocks": 3,
+	"settings": [
+		{
+			"type": "color_scheme",
+			"id": "color_scheme",
+			"label": "Color scheme",
+			"default": "scheme-default"
+		},
+		{
+			"type": "select",
+			"id": "background",
+			"label": "Background",
+			"default": "tint",
+			"options": [
+				{ "value": "canvas", "label": "Default" },
+				{ "value": "tint", "label": "Tint" },
+				{ "value": "custom", "label": "⋯" }
+			]
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background color",
+			"default": "#f2f2f2",
+			"alpha": false,
+			"visible_if": "{{ section.settings.background == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "transparent",
+			"label": "Allow transparent bar",
+			"info": "First section must support transparent headers and have transparent header options enabled.",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "bottom_border_mode",
+			"label": "Border",
+			"default": "transparent",
+			"options": [
+				{ "value": "always", "label": "Always" },
+				{ "value": "transparent", "label": "When Transparent" },
+				{ "value": "never", "label": "Never" }
+			]
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "content_width",
+			"label": "Width",
+			"default": "full",
+			"options": [
+				{ "value": "full", "label": "Full" },
+				{ "value": "page", "label": "Page" }
+			]
+		},
+		{
+			"type": "range",
+			"id": "padding_y",
+			"label": "Padding",
+			"min": 0,
+			"max": 40,
+			"step": 2,
+			"unit": "px",
+			"default": 6
+		},
+		{
+			"type": "select",
+			"id": "separator_style",
+			"label": "Marquee separator",
+			"info": "Shown between blocks only when the bar overflows and scrolls as a marquee.",
+			"default": "line",
+			"options": [
+				{ "value": "line", "label": "Line" },
+				{ "value": "dot", "label": "Dot" },
+				{ "value": "none", "label": "None" }
+			]
+		},
+		{
+			"type": "header",
+			"content": "Marquee"
+		},
+		{
+			"type": "select",
+			"id": "marquee_mode",
+			"label": "Scroll behavior",
+			"default": "auto",
+			"info": "Auto scrolls only when blocks overflow the available width.",
+			"options": [
+				{ "value": "auto", "label": "Auto on overflow" },
+				{ "value": "always", "label": "Always scroll" },
+				{ "value": "never", "label": "Never scroll" }
+			]
+		},
+		{
+			"type": "range",
+			"id": "marquee_speed",
+			"label": "Scroll speed",
+			"min": 1,
+			"max": 10,
+			"step": 1,
+			"default": 2,
+			"visible_if": "{{ section.settings.marquee_mode != 'never' }}"
+		},
+		{
+			"type": "header",
+			"content": "Typography"
+		},
+		{
+			"type": "select",
+			"id": "type_preset",
+			"label": "Text style",
+			"default": "btn",
+			"options": [
+				{ "value": "p", "label": "Paragraph" },
+				{ "value": "btn", "label": "Button" },
+				{ "value": "custom", "label": "⋯" }
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_resize",
+			"label": "Text size",
+			"default": "sm",
+			"options": [
+				{ "value": "xs", "label": "XS" },
+				{ "value": "sm", "label": "S" },
+				{ "value": "md", "label": "M" },
+				{ "value": "lg", "label": "L" },
+				{ "value": "xl", "label": "XL" }
+			],
+			"visible_if": "{{ section.settings.type_preset != 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_font",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{ "value": "heading", "label": "Heading" },
+				{ "value": "subheading", "label": "Subheading" },
+				{ "value": "accent", "label": "Accent" },
+				{ "value": "body", "label": "Body" }
+			],
+			"visible_if": "{{ section.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 3,
+			"visible_if": "{{ section.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ section.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "header",
+			"content": "Sticky"
+		},
+		{
+			"type": "select",
+			"id": "sticky_style",
+			"label": "Sticky scroll",
+			"default": "never",
+			"options": [
+				{ "value": "always", "label": "Sticky" },
+				{ "value": "scroll", "label": "Scroll up" },
+				{ "value": "never", "label": "None" }
+			]
+		}
+	],
+	"blocks": [
+		{ "type": "_toolbar-announcement" },
+		{ "type": "_toolbar-countdown" },
+		{ "type": "_announcement-shipping-threshold" },
+		{ "type": "theme-icon" }
+	],
+	"presets": [
+		{
+			"name": "Announcement bar",
+			"blocks": [
+				{
+					"type": "_toolbar-announcement",
+					"settings": {
+						"announcement_text": "Free shipping on orders over $50"
+					}
+				},
+				{
+					"type": "_toolbar-announcement",
+					"settings": {
+						"announcement_text": "New arrivals every Friday"
+					}
+				}
+			]
+		}
+	],
+	"enabled_on": {
+		"groups": ["header"]
+	}
+}
+{% endschema %}

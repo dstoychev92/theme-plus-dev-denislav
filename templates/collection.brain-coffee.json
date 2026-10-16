@@ -1,0 +1,269 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "section_banner_g6cqk7": {
+      "type": "section-banner",
+      "blocks": {
+        "theme_text_JUA6pc": {
+          "type": "theme-text",
+          "settings": {
+            "text": "АДАПТОГЕННО КАФЕ",
+            "type_preset": "h2",
+            "type_resize": "md",
+            "type_font": "heading",
+            "type_size": 10,
+            "type_uppercase": false,
+            "set_color": false,
+            "color": "content",
+            "color_custom": "#000000",
+            "limit_width": false,
+            "max_width": 500,
+            "set_heading_tag": true,
+            "heading_tag": "h1"
+          },
+          "blocks": {}
+        },
+        "theme_richtext_83p9kX": {
+          "type": "theme-richtext",
+          "settings": {
+            "text": "<p>Brain Coffee е функционално кафе с адаптогенни гъби: лъвска грива, кордицепс, рейши и чага. Комбинацията доставя фокус и концентрация без нервността на обикновеното кафе, заедно с витамини от група B и магнезий.</p>",
+            "richtext_size": "md",
+            "limit_width": true,
+            "max_width": 600,
+            "set_color": false,
+            "color": "content",
+            "color_custom": "#000000"
+          },
+          "blocks": {}
+        },
+        "theme_group_row_cLjPnm": {
+          "type": "theme-group-row",
+          "settings": {
+            "gap": "custom",
+            "gap_custom": 4,
+            "full_width": false,
+            "style": "even",
+            "justify_spread": "between",
+            "justify_packed": "start",
+            "wrap_mobile": "wrap"
+          },
+          "blocks": {
+            "theme_badge_Qe8w9F": {
+              "type": "theme-badge",
+              "name": "Badge",
+              "settings": {
+                "text": "<strong>4 адаптогенни гъби</strong>",
+                "type_preset": "p",
+                "type_resize": "sm",
+                "type_font": "subheading",
+                "type_size": 2,
+                "type_uppercase": true,
+                "size": "md",
+                "size_custom": 10,
+                "set_custom_color": false,
+                "custom_color": "#f4a482",
+                "outline_style": false,
+                "set_rounding": false,
+                "rounding_style": "none"
+              },
+              "blocks": {}
+            },
+            "theme_badge_DR4LJ4": {
+              "type": "theme-badge",
+              "name": "Badge",
+              "settings": {
+                "text": "<strong>4g кафе</strong>",
+                "type_preset": "p",
+                "type_resize": "sm",
+                "type_font": "subheading",
+                "type_size": 2,
+                "type_uppercase": true,
+                "size": "md",
+                "size_custom": 10,
+                "set_custom_color": false,
+                "custom_color": "#f4a482",
+                "outline_style": false,
+                "set_rounding": false,
+                "rounding_style": "none"
+              },
+              "blocks": {}
+            },
+            "theme_badge_KcnpBi": {
+              "type": "theme-badge",
+              "name": "Badge",
+              "settings": {
+                "text": "<strong>Без добавена захар</strong>",
+                "type_preset": "p",
+                "type_resize": "sm",
+                "type_font": "subheading",
+                "type_size": 2,
+                "type_uppercase": true,
+                "size": "md",
+                "size_custom": 10,
+                "set_custom_color": false,
+                "custom_color": "#f4a482",
+                "outline_style": false,
+                "set_rounding": false,
+                "rounding_style": "none"
+              },
+              "blocks": {}
+            },
+            "theme_badge_qcLDri": {
+              "type": "theme-badge",
+              "name": "Badge",
+              "settings": {
+                "text": "<strong>D3 + Mg + B</strong>",
+                "type_preset": "p",
+                "type_resize": "sm",
+                "type_font": "subheading",
+                "type_size": 2,
+                "type_uppercase": true,
+                "size": "md",
+                "size_custom": 10,
+                "set_custom_color": false,
+                "custom_color": "#f4a482",
+                "outline_style": false,
+                "set_rounding": false,
+                "rounding_style": "none"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "theme_badge_Qe8w9F",
+            "theme_badge_DR4LJ4",
+            "theme_badge_KcnpBi",
+            "theme_badge_qcLDri"
+          ]
+        }
+      },
+      "block_order": [
+        "theme_text_JUA6pc",
+        "theme_richtext_83p9kX",
+        "theme_group_row_cLjPnm"
+      ],
+      "name": "Banner",
+      "settings": {
+        "media_type": "image",
+        "image": "shopify://shop_images/boom-lifestyle-1.webp",
+        "show_image_on_mobile": false,
+        "set_height": true,
+        "height": "screen-one-third",
+        "custom_height_type": "percentage",
+        "custom_height_percentage": 33,
+        "custom_height_px": 350,
+        "set_height_mobile": false,
+        "height_mobile": "screen-one-half",
+        "custom_height_type_mobile": "percentage",
+        "custom_height_percentage_mobile": 33,
+        "custom_height_px_mobile": 350,
+        "contain_section": false,
+        "section_width": "full",
+        "section_padding_top": 40,
+        "section_padding_bottom": 40,
+        "set_rounding": false,
+        "rounding_radius": "lg",
+        "rounding_radius_custom": 20,
+        "set_border": false,
+        "border_width": 1,
+        "border_color": "#000000",
+        "content_width": "page",
+        "vertical_placement": "middle",
+        "set_mobile_placement": false,
+        "vertical_placement_mobile": "middle",
+        "horizontal_placement": "left",
+        "content_padding": "lg",
+        "content_padding_custom": 0,
+        "color_scheme": "",
+        "background": "transparent",
+        "background_color": "#ffffff",
+        "overlay_opacity": 80,
+        "overlay_color": "#3c2121",
+        "enable_transparent": true,
+        "transparent_style": "auto",
+        "set_target_device": false,
+        "target_device": "desktop"
+      }
+    },
+    "main": {
+      "type": "collection",
+      "settings": {
+        "enable_sorting": false,
+        "enable_layout_buttons": false,
+        "enable_filters": false,
+        "show_products_count": true,
+        "expanded_filters_count": 5,
+        "visible_filter_options_limit": 6,
+        "filter_mode": "sidebar",
+        "filter_sidebar_open_by_default": true,
+        "filter_menu_title": "Collections",
+        "filter_menu": [],
+        "columns_lg": 3,
+        "columns_md": 2,
+        "columns_sm": "1",
+        "mobile_dense_card_grid": false,
+        "limit": 18,
+        "color_scheme": "",
+        "background": "canvas",
+        "background_color": "#f2f2f2",
+        "content_width": "page",
+        "set_rhythm": true,
+        "section_padding_top": 20,
+        "section_padding_bottom": 40
+      }
+    },
+    "section_custom_LFBEB6": {
+      "type": "section-custom",
+      "blocks": {
+        "theme_richtext_qjriVG": {
+          "type": "theme-richtext",
+          "name": "Rich Text",
+          "settings": {
+            "text": "{{ closest.collection.description }}",
+            "richtext_size": "sm",
+            "limit_width": false,
+            "max_width": 500,
+            "set_color": false,
+            "color": "content",
+            "color_custom": "#000000"
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "theme_richtext_qjriVG"
+      ],
+      "name": "Text",
+      "settings": {
+        "contain_section": true,
+        "section_width": "page",
+        "set_rhythm": false,
+        "section_padding_top": 40,
+        "section_padding_bottom": 40,
+        "gap": "md",
+        "gap_custom": 0,
+        "alignment": "left",
+        "color_scheme": "",
+        "background": "canvas",
+        "background_color": "#f2f2f2",
+        "overlay_opacity": 0,
+        "overlay_color": "#000000",
+        "set_target_device": false,
+        "target_device": "desktop"
+      }
+    }
+  },
+  "order": [
+    "section_banner_g6cqk7",
+    "main",
+    "section_custom_LFBEB6"
+  ]
+}

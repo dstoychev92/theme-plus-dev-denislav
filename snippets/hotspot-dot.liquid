@@ -1,0 +1,105 @@
+{% capture class %}
+  group/hotspot relative hit-area-[4px] before:rounded-full
+  {{ class }}
+{% endcapture %}
+
+{% if style != blank %}
+  {% capture style %}
+    style="{{ style }}"
+  {% endcapture %}
+{% endif %}
+
+{% capture svg %}
+  <svg
+    width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg"
+    class="overflow-visible"
+  >
+  {% case settings.hotspot_style %}
+    {% when 'solid' %}
+      {% comment %} Pulse animation {% endcomment %}
+      <circle cx="50%" cy="50%" r="10" class="
+        fill-[var(--hotspot-color,white)]
+        invisible origin-center
+        group-aria-selected/hotspot:!visible
+        group-aria-selected/hotspot:animate-pulse
+        group-aria-expanded/hotspot:!visible
+        group-aria-expanded/hotspot:animate-pulse
+      " />
+
+      <circle cx="50%" cy="50%" r="10" class="
+        fill-[var(--hotspot-color,white)]
+        invisible origin-center pulse-delay-200
+        group-aria-selected/hotspot:!visible
+        group-aria-selected/hotspot:animate-pulse
+        group-aria-expanded/hotspot:!visible
+        group-aria-expanded/hotspot:animate-pulse
+      " />
+
+      {% comment %} Solid Circle {% endcomment %}
+      <circle cx="50%" cy="50%" r="6.75" stroke-width="10.5" class="
+        stroke-[var(--hotspot-color,white)]
+        transition origin-center scale-100 duration-300
+        group-aria-selected/hotspot:!scale-110
+        group-aria-expanded/hotspot:!scale-110
+      group-aria-selected/hotspot:fill-[var(--hotspot-color,white)]
+        group-hover/hotspot:fill-[var(--hotspot-color,white)]
+      " />
+
+      {% comment %} Selected ring {% endcomment %}
+      <circle cx="50%" cy="50%" r="14" stroke-width="2"
+        class="
+          transition origin-center delay-100 opacity-0 scale-100 duration-300
+          stroke-[var(--hotspot-color,white)]
+        "
+        :class="{
+          'group-hover/hotspot:!opacity-50 group-hover/hotspot:!scale-110': $customCursor.isSnapped,
+        }"
+      />
+
+      {% comment %} Cross {% endcomment %}
+      <path d="M21 26H31M26 31V21" stroke-width="1.5" class="
+        stroke-white mix-blend-exclusion
+        transition origin-center opacity-0 scale-0 rotate-0 duration-400
+        group-hover/hotspot:!scale-100 group-hover/hotspot:!opacity-100
+        group-aria-selected/hotspot:!scale-100 group-aria-selected/hotspot:!rotate-45 group-aria-selected/hotspot:!opacity-100
+        group-aria-expanded/hotspot:!scale-100 group-aria-expanded/hotspot:!rotate-45 group-aria-expanded/hotspot:!opacity-100
+      "/>
+
+    {% when 'ring' %}
+      <circle cx="50%" cy="50%" r="1" class="
+        fill-[var(--hotspot-color,white)]
+        transition origin-center opacity-100
+      " />
+      <circle cx="50%" cy="50%" r="20.625" stroke-width="0.75" class=" transition stroke-[var(--hotspot-color,white)] group-aria-selected/hotspot:stroke-2" />
+
+      <path d="M21 26H31M26 31V21" stroke-width="1.5" class="
+        stroke-[var(--hotspot-color,white)]
+        transition origin-center opacity-0 rotate-0 duration-400
+        group-hover/hotspot:!opacity-100
+        group-aria-selected/hotspot:!opacity-100 group-aria-selected/hotspot:!rotate-45
+        group-aria-expanded/hotspot:!opacity-100 group-aria-expanded/hotspot:!rotate-45
+      "/>
+    {% when 'crosshair' %}
+      <circle cx="50%" cy="50%" r="1" class="
+        fill-[var(--hotspot-color,white)]
+        transition origin-center opacity-100
+      " />
+      <circle cx="50%" cy="50%" r="20.625" stroke-width="0.75" class="
+        stroke-[var(--hotspot-color,white)]
+        transition group-aria-selected/hotspot:stroke-2
+      " />
+
+      <path d="M21 26H31M26 31V21" stroke-width="1.5" class="
+        stroke-[var(--hotspot-color,white)]
+        transition origin-center opacity-0 rotate-0 duration-400
+        group-hover/hotspot:!opacity-100
+        group-aria-selected/hotspot:!opacity-100 group-aria-selected/hotspot:!rotate-45
+        group-aria-expanded/hotspot:!opacity-100 group-aria-expanded/hotspot:!rotate-45
+      "/>
+  {% endcase %}
+  </svg>
+{% endcapture %}
+
+<button type="button" class="{{ class }}" {{ style }} {{ attributes }}>
+  {{ svg }}
+</button>

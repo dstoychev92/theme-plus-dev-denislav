@@ -1,0 +1,22 @@
+{% liquid
+  if settings_suffix
+    assign _id_suffix = settings_suffix | prepend: '_'
+  endif
+  assign type_preset_id = 'type_preset' | append: _id_suffix
+
+  assign text = text | default: _settings.text
+  assign type_preset = type_preset | default: _settings[type_preset_id] | default: default_type_preset | default: 'p'
+  assign tag = tag | default: 'p'
+%}
+
+<{{ tag }}
+  class="
+    inline-richtext
+    {{ class }}
+    type-{{ type_preset }}
+  "
+  style="{{ style }}"
+  {{ attributes }}
+>
+  {{ text }}
+</{{ tag }}>

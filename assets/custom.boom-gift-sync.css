@@ -1,0 +1,413 @@
+/*
+ * custom.boom-gift-sync.css
+ * ─────────────────────────
+ * Styles for the BOOM! BOX tier bar + gift-sync optimistic UI.
+ *
+ * Companion files:
+ *   • snippets/cart-boom-tier-bar.liquid   — markup
+ *   • assets/custom.boom-gift-sync.js      — sync engine
+ *
+ * Loaded via snippets/head-scripts.liquid.
+ *
+ * Sections:
+ *   1. Tier bar (lifted from the old inline <style>)
+ *   2. Sync-state overlay   (.boom-tb--syncing)
+ *   3. Ghost cart row       (.boom-ghost-row)
+ *   4. Reduced-motion fallbacks
+ */
+
+/* ─────────────────────────────────────────────────────────
+ * 1. Tier bar
+ * ───────────────────────────────────────────────────────── */
+
+/* The wrapper renders (hidden) even with no qualifying items in the cart —
+   the sync engine reads its data-attrs to clean up orphaned gifts. */
+.boom-tb[hidden] {
+  display: none !important;
+}
+
+.boom-tb {
+  padding: 0;
+  background: var(--canvas, #fff);
+  border-bottom: 1px solid var(--line-subtle, #eee);
+  /* Needed for the sync overlay to position over the meter */
+  position: relative;
+}
+
+.boom-tb-hd {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.boom-tb-title {
+  font-family: var(--font-heading, 'Impact', sans-serif);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.boom-tb-title span {
+  color: var(--sale, #ef3340);
+}
+
+.boom-tb-count {
+  font-size: 12px;
+  color: var(--content-muted, #999);
+}
+.boom-tb-count strong {
+  color: var(--content, #3b2121);
+}
+
+.boom-tb-meter {
+  position: relative;
+  background: #f4f1ed;
+  border: 2px solid var(--line-bold, #e0e0e0);
+  border-radius: 8px;
+  padding: 14px 0 12px;
+  user-select: none;
+  /* Contain the shimmer overlay we paint during sync */
+  overflow: hidden;
+}
+
+.boom-tb-items {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  justify-items: center;
+  position: relative;
+  padding: 0;
+}
+
+.boom-tb-line {
+  position: absolute;
+  top: 52%;
+  left: 12.5%;
+  right: 12.5%;
+  height: 3px;
+  background: var(--line-bold, #e0e0e0);
+  border-radius: 2px;
+  z-index: 0;
+  transform: translateY(-50%);
+}
+
+.boom-tb-fill {
+  position: absolute;
+  top: 52%;
+  left: 12.5%;
+  height: 3px;
+  background: var(--sale, #ef3340);
+  border-radius: 2px;
+  z-index: 1;
+  transition: width 0.35s ease;
+  transform: translateY(-50%);
+}
+
+.boom-tb-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+  z-index: 2;
+}
+
+.boom-tb-qlabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--content-muted, #999);
+  transition: color 0.2s;
+  white-space: nowrap;
+}
+.boom-tb-qlabel.on {
+  color: var(--content, #3b2121);
+}
+
+.boom-tb-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2.5px solid var(--line-bold, #e0e0e0);
+  background: var(--canvas, #fff);
+  position: relative;
+  transition: all 0.25s;
+}
+.boom-tb-dot.on {
+  border-color: var(--sale, #ef3340);
+}
+.boom-tb-dot.on::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--sale, #ef3340);
+  position: absolute;
+  top: 2.5px;
+  left: 2.5px;
+}
+.boom-tb-dot.active {
+  box-shadow: 0 0 0 4px rgba(239, 51, 64, 0.12);
+}
+
+.boom-tb-reward {
+  font-size: 9px;
+  transition: color 0.2s;
+  text-align: center;
+  max-width: 72px;
+  line-height: 1.3;
+}
+.boom-tb-reward.on {
+  color: var(--sale, #ef3340);
+  font-weight: 600;
+}
+
+.boom-tb-best {
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 7px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 99px;
+  background: var(--sale, #ef3340);
+  color: #fff;
+  white-space: nowrap;
+}
+
+.boom-tb-nudge,
+.boom-tb-done {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 16px 0;
+  font-size: 12px;
+  text-align: center;
+}
+.boom-tb-nudge {
+  color: var(--content, #3b2121);
+}
+.boom-tb-nudge strong {
+  color: var(--sale, #ef3340);
+}
+.boom-tb-done {
+  font-weight: 600;
+  color: var(--success, #49ac7e);
+}
+
+/* A11y: the sync-status node is visually slotted in the same row as the nudge */
+.boom-tb-sync-msg {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--sale, #ef3340);
+  text-align: center;
+}
+.boom-tb-sync-msg::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: boom-spin 0.7s linear infinite;
+}
+
+/* ─────────────────────────────────────────────────────────
+ * 2. Sync state — shown during the 300-400ms mutation window
+ * ───────────────────────────────────────────────────────── */
+
+.boom-tb--syncing .boom-tb-meter {
+  /* Subtle pulse on the whole meter */
+  animation: boom-sync-pulse 1.2s ease-in-out infinite;
+}
+
+.boom-tb--syncing .boom-tb-meter::after {
+  /* Shimmer sweep across the meter while we sync.
+     Positioned above the meter contents via z-index: 4. */
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 60%;
+  height: 100%;
+  z-index: 4;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(239, 51, 64, 0) 0%, rgba(239, 51, 64, 0.18) 50%, rgba(239, 51, 64, 0) 100%);
+  animation: boom-sync-sweep 1.1s ease-in-out infinite;
+}
+
+.boom-tb--syncing .boom-tb-fill {
+  /* The fill itself gets a dotted texture so it reads as "working" */
+  background-image: linear-gradient(90deg, var(--sale, #ef3340) 0 6px, rgba(239, 51, 64, 0.4) 6px 12px);
+  background-size: 12px 100%;
+  animation: boom-sync-stripe 0.9s linear infinite;
+}
+
+/* Hide the nudge line; show the sync message instead. */
+.boom-tb--syncing .boom-tb-nudge,
+.boom-tb--syncing .boom-tb-done {
+  display: none;
+}
+.boom-tb--syncing .boom-tb-sync-msg {
+  display: flex;
+}
+
+@keyframes boom-sync-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 51, 64, 0);
+  }
+  50% {
+    box-shadow: 0 0 0 3px rgba(239, 51, 64, 0.08);
+  }
+}
+
+@keyframes boom-sync-sweep {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(280%);
+  }
+}
+
+@keyframes boom-sync-stripe {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 12px 0;
+  }
+}
+
+@keyframes boom-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────
+ * 3. Ghost cart row — shown in the cart line list while
+ *    the real gift is on its way from Shopify.
+ * ───────────────────────────────────────────────────────── */
+
+.boom-ghost-row {
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  grid-template-areas: 'img body chip';
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border-top: 1px solid var(--line-subtle, rgba(59, 33, 33, 0.08));
+  background: #f4f1ed;
+  /* Shimmer base */
+  position: relative;
+  overflow: hidden;
+}
+
+.boom-ghost-row__img {
+  grid-area: img;
+  width: 64px;
+  height: 64px;
+  border-radius: 6px;
+  background: #e9e4dd;
+}
+
+.boom-ghost-row__body {
+  grid-area: body;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.boom-ghost-row__line {
+  height: 10px;
+  border-radius: 3px;
+  background: #e9e4dd;
+}
+.boom-ghost-row__line--title {
+  width: 60%;
+}
+.boom-ghost-row__line--meta {
+  width: 35%;
+  height: 8px;
+}
+
+.boom-ghost-row__chip {
+  grid-area: chip;
+  align-self: center;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 99px;
+  background: var(--sale, #ef3340);
+  color: #fff;
+  white-space: nowrap;
+}
+
+/* Sweep shimmer over the ghost row — same curve as the meter shimmer
+   so they feel like one system. */
+.boom-ghost-row::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.55) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: translateX(-100%);
+  animation: boom-ghost-sweep 1.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes boom-ghost-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────
+ * 4. Reduced motion — drop the animations, keep the messaging.
+ *    Users who opt out still see the "adding your gift" chip and the
+ *    ghost row silhouette, just without shimmer / sweep / pulse.
+ * ───────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .boom-tb-fill {
+    transition: none;
+  }
+  .boom-tb-dot {
+    transition: none;
+  }
+
+  .boom-tb--syncing .boom-tb-meter,
+  .boom-tb--syncing .boom-tb-meter::after,
+  .boom-tb--syncing .boom-tb-fill,
+  .boom-ghost-row::before,
+  .boom-tb-sync-msg::before {
+    animation: none;
+  }
+
+  .boom-tb--syncing .boom-tb-meter::after {
+    display: none;
+  }
+
+  /* Replace the spinner with a static dot so the sync message still
+     has a visual marker that something's happening. */
+  .boom-tb-sync-msg::before {
+    border: none;
+    background: currentColor;
+  }
+}

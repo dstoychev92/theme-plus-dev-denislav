@@ -1,0 +1,89 @@
+{% liquid
+  assign media_col_order = _settings.media_col_order | default: 'first'
+  assign media_col_width = _settings.media_col_width | default: 'even'
+
+  assign pt_desktop = _settings.pt_desktop | default: 0
+  assign pb_desktop = _settings.pb_desktop | default: 0
+
+  if _settings.enable_transparent
+    assign pt_desktop = 0
+  endif
+
+  assign pt_mobile = _settings.pt_mobile | default: 0
+  assign pb_mobile = _settings.pb_mobile | default: 0
+%}
+
+{% capture style %}
+  {% comment %} Use subgrid so the product form can get bumped below the header {% endcomment %}
+  --section-grid-template-rows-desktop: subgrid;
+
+  {% comment %} If you're using core-section-wrapper, you need to give it the right grid-column {% endcomment %}
+  {% comment %} In this case, we want to self-manage form padding so photos can bleed to edge {% endcomment %}
+  --section-content-col-start:fullbleed-start;
+  --section-content-col-end:fullbleed-end;
+  {{ style }}
+{% endcapture %}
+
+{% capture attributes %}
+  key="{{ product.id }}"
+  {{ attributes }}
+{% endcapture %}
+
+{% capture column_content %}
+  {% liquid
+    assign skip_href = '#' | append: section.id | append: '-product-details'
+    assign skip_label = 'other.accessibility.skip_to_product' | t
+  %}
+  {% render 'skip-to-content-link', href: skip_href, label: skip_label, fixed: false %}
+  <div
+    class="
+      grid grid-cols-1 grid-rows-[auto_auto] grid-flow-row col-fullbleed row-span-full
+      {% # Create space between columns on mobile but don't add to header subgrid on desktop %}
+      max-md:gap-y-root-buffer max-md:pt-[--mobile-pt] max-md:pb-[--mobile-pb]
+
+      md:grid-flow-col md:grid-rows-subgrid md:grid-cols-[--product-grid-cols] md:gap-x-0 md:col-section md:pt-[--desktop-pt] md:pb-[--desktop-pb]
+    "
+    style="
+      {% case media_col_width %}
+        {% when 'even' %}
+          --media-width: 1fr;
+          --details-width: 1fr;
+        {% when 'wide' %}
+          --media-width: 7fr;
+          --details-width: 5fr;
+        {% when 'slim' %}
+          --media-width: 5fr;
+          --details-width: 7fr;
+        {% when 'fill' %}
+          --media-width: 1fr;
+          --details-width: {{ _settings.details_width }}px;
+      {% endcase %}
+      {% if media_col_order == 'first' %}
+        --product-grid-cols: [media-start] minmax(0,var(--media-width)) [media-end details-start] minmax(0,var(--details-width)) [details-end];
+      {% else %}
+        --product-grid-cols: [details-start] minmax(0,var(--details-width)) [details-end media-start] minmax(0,var(--media-width)) [media-end];
+      {% endif %}
+      --desktop-pt: {{ pt_desktop }}px;
+      --desktop-pb: {{ pb_desktop }}px;
+      --mobile-pt: {{ pt_mobile }}px;
+      --mobile-pb: {{ pb_mobile }}px;
+    "
+  >
+    {{ content_media }}
+    {{ content_details }}
+  </div>
+{% endcapture %}
+
+{% render 'core-section-wrapper',
+  lazy_alpine: lazy_alpine,
+  _settings: _settings,
+  content: column_content,
+  attributes: attributes,
+  class: class,
+  style: style,
+  padding: false,
+  tag: tag,
+  photoswipe: false
+%}
+
+{{ 'theme.product.css' | asset_url | stylesheet_tag: preload: true }}

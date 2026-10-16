@@ -1,0 +1,123 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "name": "Header",
+  "type": "header",
+  "sections": {
+    "section_announcement_bar_jXLkBt": {
+      "type": "section-announcement-bar",
+      "blocks": {
+        "toolbar_announcement_d9CVNj": {
+          "type": "_toolbar-announcement",
+          "name": "Announcement",
+          "settings": {
+            "announcement_text": "-15% САМО ТАЗИ СЕДМИЦА",
+            "announcement_text_greece": "",
+            "announcement_text_romania": ""
+          },
+          "blocks": {}
+        },
+        "toolbar_announcement_FLiq8c": {
+          "type": "_toolbar-announcement",
+          "name": "Announcement",
+          "settings": {
+            "announcement_text": "КУПИ 3 ПРОДУКТА И ПОЛУЧИ ПОДАРЪК",
+            "announcement_text_greece": "",
+            "announcement_text_romania": ""
+          },
+          "blocks": {}
+        },
+        "toolbar_announcement_j9xTpp": {
+          "type": "_toolbar-announcement",
+          "name": "Announcement",
+          "settings": {
+            "announcement_text": "БЕЗПЛАТНА ДОСТАВКА НАД 50€",
+            "announcement_text_greece": "ΔΩΡΕΑΝ ΑΠΟΣΤΟΛΗ ΑΝΩ ΤΩΝ 75€",
+            "announcement_text_romania": "LIVRARE GRATUITĂ PESTE 375 LEI"
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "toolbar_announcement_d9CVNj",
+        "toolbar_announcement_FLiq8c",
+        "toolbar_announcement_j9xTpp"
+      ],
+      "name": "Announcement bar",
+      "settings": {
+        "color_scheme": "scheme-success",
+        "background": "tint",
+        "background_color": "#f2f2f2",
+        "transparent": false,
+        "bottom_border_mode": "never",
+        "content_width": "full",
+        "padding_y": 6,
+        "separator_style": "dot",
+        "marquee_mode": "auto",
+        "marquee_speed": 2,
+        "type_preset": "btn",
+        "type_resize": "sm",
+        "type_font": "body",
+        "type_size": 3,
+        "type_uppercase": false,
+        "sticky_style": "scroll"
+      }
+    },
+    "header_menu_BxExCA": {
+      "type": "header-menu",
+      "name": "Menu",
+      "settings": {
+        "linklist": "main-menu",
+        "color_scheme": "",
+        "background": "tint",
+        "background_color": "#f2f2f2",
+        "transparent": true,
+        "logo": "shopify://shop_images/image_3.svg",
+        "logo_max_limit": 120,
+        "logo_font_size": 5,
+        "transparent_white_logo": "shopify://shop_images/logo-simple-white.svg",
+        "logo_position": "left",
+        "logo_position_left_menu_position": "center",
+        "content_width": "full",
+        "padding_y": 16,
+        "gap": "md",
+        "gap_custom": 26,
+        "type_preset_nav_link": "custom",
+        "type_resize_nav_link": "md",
+        "type_font_nav_link": "body",
+        "type_size_nav_link": 4,
+        "type_uppercase_nav_link": true,
+        "type_preset_dropdown": "btn",
+        "type_resize_dropdown": "md",
+        "type_font_dropdown": "body",
+        "type_size_dropdown": 4,
+        "type_uppercase_dropdown": false,
+        "sticky_style": "scroll",
+        "sticky_background_style": "blur",
+        "target_device_drawer_button": "mobile",
+        "show_cart_button": true,
+        "show_search_button": true,
+        "target_device_search_button": "both",
+        "show_account_button": true,
+        "target_device_account_button": "desktop",
+        "label_style": "icon",
+        "icon_size": 150,
+        "icon_stroke_weight": "bold",
+        "show_collection_images": true,
+        "collection_images_aspect_ratio": 2.5,
+        "underline_current_page": true
+      }
+    }
+  },
+  "order": [
+    "section_announcement_bar_jXLkBt",
+    "header_menu_BxExCA"
+  ]
+}

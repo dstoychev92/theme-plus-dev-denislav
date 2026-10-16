@@ -1,0 +1,34 @@
+{% capture section_content %}
+  {% render 'core-section-content',
+    class: inner_class,
+    attributes: inner_attributes,
+    inner_col_class: inner_col_class,
+    content: content,
+    style: inner_style
+  %}
+{% endcapture %}
+
+{% render 'core-section-wrapper',
+  tag: tag,
+  _settings: _settings,
+  section_width: section_width,
+  content_width: content_width,
+  content_width_custom: content_width_custom,
+  content_width_custom_mobile: content_width_custom_mobile,
+  content_padding: content_padding,
+  contain_controls_rhythm: contain_controls_rhythm,
+  contain_disables_transparent_header: contain_disables_transparent_header,
+  padding: padding,
+  target_device: target_device,
+  color_scheme: color_scheme,
+  background: background,
+  background_color: background_color,
+  text_class: text_class,
+  class: class,
+  style: style,
+  attributes: attributes,
+  content: section_content,
+  layout: layout,
+  content_align: content_align,
+  photoswipe: photoswipe
+%}

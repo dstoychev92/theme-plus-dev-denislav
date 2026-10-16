@@ -1,0 +1,66 @@
+
+/*
+* @license
+* PIPELINE Theme (c) Groupthought Themes
+*
+* The contents of this file should not be modified.
+* Add any minor changes to assets/custom.css
+*
+*/
+
+:root {
+  --header-bg-opacity: 1;
+  --header-auto-border: 1;
+  --header-blur-amount: 0px;
+  --header-transparent-white-logo-opacity: 0;
+  /* Default approximate values until JS kicks in and sets the correct values */
+  --header-height: 50px;
+  --header-bottom: 50px;
+}
+
+/* Default dark header logo opacity */
+
+header:has([data-header-menu-style=dark]):is([data-header-stuck],
+:hover,
+:focus-within,
+:has([aria-expanded=true])) {
+  /* Transparent header selector when stuck, hover, focus, etc */
+  --header-transparent-white-logo-opacity: 1;
+}
+
+header:has([data-header-menu-style=dark]):not([data-overlay-header]) {
+  /* Non-transparent header selector - default */
+  --header-transparent-white-logo-opacity: 1;
+}
+
+/* Hover devices */
+
+@media (hover: hover) {
+  /* Blur/solid when header is stuck */
+  header[data-header-stuck]:not(:has(:hover), :focus-within, :has([aria-expanded=true])) [data-sticky-blur] {
+    --header-bg-opacity: 0.75;
+    --header-blur-amount: 10px;
+    --header-auto-border: 1;
+  }
+}
+
+/* Touch devices */
+
+@media (pointer: coarse) and (hover: none) {
+  /* Blur/solid when header is stuck */
+  header[data-header-stuck] [data-sticky-blur] {
+    --header-bg-opacity: 0.6;
+    --header-blur-amount: 10px;
+    --header-auto-border: 1;
+  }
+}
+
+/* Styles to simulate `(pointer: coarse) and (hover: none)` in the theme editor mobile preview */
+
+@media (max-width: 767px) {
+  html[data-theme-editor] header[data-header-stuck] [data-sticky-blur] {
+    --header-bg-opacity: 0.6;
+    --header-blur-amount: 10px;
+    --header-auto-border: 1;
+  }
+}

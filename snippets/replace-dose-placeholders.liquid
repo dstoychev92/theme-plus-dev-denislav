@@ -1,0 +1,38 @@
+{% doc %}
+  Replaces dose-price placeholders in a piece of text/HTML with the
+  market-aware formatted price resolved from theme settings (see dose-price).
+
+  Supported placeholders (write them in admin content — SEO descriptions,
+  product descriptions, etc.):
+    [[doza_protein]] → e.g. €1,17
+    [[doza_brain]]   → e.g. €0,83
+
+  If a value is not configured in theme settings, the placeholder is removed.
+
+  @param {string} text - The text or HTML containing placeholders
+  @example
+  {% capture out %}{% render 'replace-dose-placeholders', text: page_description %}{% endcapture %}
+{% enddoc %}
+{%- assign out = text -%}
+
+{%- if out contains '[[doza_protein]]' -%}
+  {%- capture raw_value -%}{%- render 'dose-price', line: 'protein', part: 'price' -%}{%- endcapture -%}
+  {%- if raw_value != blank -%}
+    {%- assign formatted = raw_value | times: 100 | round | money -%}
+  {%- else -%}
+    {%- assign formatted = '' -%}
+  {%- endif -%}
+  {%- assign out = out | replace: '[[doza_protein]]', formatted -%}
+{%- endif -%}
+
+{%- if out contains '[[doza_brain]]' -%}
+  {%- capture raw_value -%}{%- render 'dose-price', line: 'brain', part: 'price' -%}{%- endcapture -%}
+  {%- if raw_value != blank -%}
+    {%- assign formatted = raw_value | times: 100 | round | money -%}
+  {%- else -%}
+    {%- assign formatted = '' -%}
+  {%- endif -%}
+  {%- assign out = out | replace: '[[doza_brain]]', formatted -%}
+{%- endif -%}
+
+{{- out -}}

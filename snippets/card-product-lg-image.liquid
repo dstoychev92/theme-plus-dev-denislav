@@ -1,0 +1,54 @@
+{%- liquid
+  if placeholder == blank
+    assign placeholder = true
+  endif
+
+  assign cover = false
+
+  case settings.product_card_image_fit
+    when 'scale'
+      assign cover = false
+    when 'crop'
+      assign cover = true
+    when 'uneven'
+      assign cover = true
+  endcase
+-%}
+
+{%- liquid
+  if image_sizes == blank
+    capture image_sizes
+      render 'image-grid-sizes'
+    endcapture
+  endif
+  if image_widths == blank
+    capture image_widths
+      render 'image-grid-widths'
+    endcapture
+  endif
+-%}
+
+<div
+  class="{{ class }}"
+  {{ attributes }}
+>
+  {% render 'core-image',
+    cover: cover,
+    image: image,
+    sizes: image_sizes,
+    widths: image_widths,
+    class: 'size-full relative z-10',
+    x-ref: 'productCardImage',
+    loading: loading,
+    fetchpriority: fetchpriority
+  %}
+
+  {% if placeholder and loading == 'lazy' %}
+    {% render 'image-loading-placeholder',
+      cover: cover,
+      image: image,
+      wrapper_class: 'absolute inset-0 z-0 size-full',
+      class: image_class
+    %}
+  {% endif %}
+</div>

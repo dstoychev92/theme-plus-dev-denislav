@@ -1,0 +1,95 @@
+{% comment %} Sanitize color value to standard hex output for reliable contrast filters {% endcomment %}
+{% capture color %}{{color}}{% endcapture %}
+
+{% liquid
+  assign size = size | default: 'xs', allow_false: true
+  assign shape = shape | default: settings.swatch_shape | default: 'circle'
+
+  if available == null
+    assign available = true
+  endif
+
+  if selected == null
+    assign selected = false
+  endif
+
+  # Check swatch color contrast against black and white and adjust if necessary
+  # TODO use CSS color-contrast() function once widely available
+  # https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/color-contrast
+
+  assign black_contrast = color | color_contrast: '#000000'
+  assign white_contrast = color | color_contrast: '#FFFFFF'
+
+  if black_contrast <= 1.0
+    # Adjust black swatches to a dark grey in case background is black
+    assign color = color | color_lighten: 20
+  elsif white_contrast <= 1.0
+    # Adjust white swatches to a light grey in case background is white
+    assign color = color | color_darken: 10
+  endif
+
+  if size == 'xs'
+    assign swatch_size = 'var(--row-xs)'
+  elsif size == 'sm'
+    assign swatch_size = 'var(--row-sm)'
+  elsif size == 'md'
+    assign swatch_size = 'var(--row-md)'
+  elsif size == 'lg'
+    assign swatch_size = 'var(--row-lg)'
+  elsif size == 'xl'
+    assign swatch_size = 'var(--row-xl)'
+  endif
+
+  if custom_size != blank
+    assign swatch_size = custom_size | append: 'px'
+  endif
+
+  # Build shared mask ID from shape + state
+  assign mask_id = 'swatch-' | append: shape
+  if selected
+    assign mask_id = mask_id | append: '-selected'
+  endif
+  unless available
+    assign mask_id = mask_id | append: '-unavailable'
+  endunless
+%}
+
+<span
+  style="
+    {% if color != blank %}
+      --swatch-color: {{ color }};
+    {% endif %}
+    {% if size %}
+      --swatch-size: var(--swatch-force-size, {{ swatch_size }});
+    {% endif %}
+  "
+  class="group/swatch block size-[--swatch-size] {{ class }}"
+  data-selected="{{ selected }}"
+  data-available="{{ available }}"
+  data-color="{{ color }}"
+  data-shape="{{ shape }}"
+  {{ attributes }}
+>
+  {% assign viewbox_size = 38 %}
+  <svg
+    class="size-full"
+    viewBox="0 0 {{ viewbox_size }} {{ viewbox_size }}"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    {{ svg_attributes }}
+  >
+    <g
+      mask="url(#{{ mask_id }})"
+      :mask="typeof selected !== 'undefined' ? 'url(#swatch-{{ shape }}' + (selected ? '-selected' : '') + '{% unless available %}-unavailable{% endunless %})' : 'url(#{{ mask_id }})'"
+    >
+      {% if image %}
+        {% comment %} Image swatch, with placeholder {% endcomment %}
+        <image href="{{ image | image_url: width: 2 }}" height="100%" width="100%" preserveAspectRatio="xMidYMid slice" />
+        <image href="{{ image | image_url: width: 120 }}" height="100%" width="100%" preserveAspectRatio="xMidYMid slice" />
+      {% else %}
+        {% comment %} Color swatch {% endcomment %}
+        <rect x="0" y="0" width="100%" height="100%" class="stroke-none fill-[--swatch-color]" />
+      {% endif %}
+    </g>
+  </svg>
+</span>

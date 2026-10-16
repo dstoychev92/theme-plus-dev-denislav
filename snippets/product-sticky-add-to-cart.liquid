@@ -1,0 +1,126 @@
+<!-- snippets/product-sticky-add-to-cart.liquid -->
+
+{% doc %}
+  Sticky "add to cart" bar pinned to the bottom of the viewport on the product page.
+
+  It appears once the main product form (the real add-to-cart button) has scrolled
+  above the viewport, and hides again when the form is back in view. Clicking it does
+  NOT submit — it smooth-scrolls the page up to the quantity selector.
+
+  Rendered from sections/product.liquid when section.settings.enable_sticky_atc is on.
+
+  @param {object} _settings - The product section settings.
+{% enddoc %}
+
+{% liquid
+  assign settings = _settings | default: section.settings
+
+  assign product = product
+  if product == blank and request.visual_preview_mode
+    assign product = collections.all.products.first
+  endif
+
+  assign product_form_id = 'product-form-' | append: product.handle | append: '-' | append: section.id
+  assign quantity_id = product_form_id | append: '-quantity'
+
+  assign label = settings.sticky_atc_label
+  if label == blank
+    assign label = 'product.add_to_cart' | t
+  endif
+  assign appearance = settings.sticky_atc_appearance | default: 'solid'
+  assign color = settings.sticky_atc_color | default: 'primary'
+  assign sizing = settings.sticky_atc_sizing | default: 'lg'
+  assign desktop_width = settings.sticky_atc_desktop_width | default: 320
+%}
+
+{% if product != blank %}
+{% capture sticky_button %}
+  {% render 'core-button',
+    type: 'button',
+    label: label,
+    color: color,
+    appearance: appearance,
+    sizing: sizing,
+    class: 'sticky-atc__btn',
+    attributes: '@click="scrollToForm()"'
+  %}
+{% endcapture %}
+
+<sticky-add-to-cart
+  x-data="{
+    visible: false,
+    observer: null,
+    init() {
+      const target = document.getElementById('{{ product_form_id }}');
+      if (!target) return;
+      this.observer = new IntersectionObserver((entries) => {
+        const entry = entries[0];
+        {% # Show only once the form has scrolled ABOVE the viewport, not before it's reached. %}
+        const rootTop = entry.rootBounds ? entry.rootBounds.top : 0;
+        this.visible = !entry.isIntersecting && entry.boundingClientRect.bottom <= rootTop;
+      }, { threshold: 0 });
+      this.observer.observe(target);
+    },
+    toggleBodyClass() {
+      document.body.classList.toggle('sticky-atc', this.visible);
+    },
+    destroy() {
+      if (this.observer) this.observer.disconnect();
+      document.body.classList.remove('sticky-atc');
+    },
+    scrollToForm() {
+      const target =
+        document.getElementById('{{ quantity_id }}') ||
+        document.getElementById('{{ product_form_id }}') ||
+        document.querySelector('product-add-buttons');
+      if (!target) return;
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const input = target.querySelector('input:not([type=hidden])');
+      if (input) setTimeout(() => input.focus({ preventScroll: true }), 600);
+    }
+  }"
+  x-effect="toggleBodyClass()"
+>
+  <template x-teleport="body">
+    <div
+      class="
+        vars-{{ settings.color_scheme }} text-content
+        fixed inset-x-0 bottom-0 z-40
+        px-r5 pt-r4
+        bg-canvas border-t border-line
+      "
+      style="
+        --sticky-atc-desktop-width: {{ desktop_width }}px;
+        padding-bottom: max(var(--r4), env(safe-area-inset-bottom));
+        box-shadow: 0 -6px 24px -12px rgb(0 0 0 / 0.25);
+      "
+      x-show="visible"
+      x-cloak
+      x-transition:enter="transition duration-300"
+      x-transition:enter-start="translate-y-full"
+      x-transition:enter-end="translate-y-0"
+      x-transition:leave="transition duration-200"
+      x-transition:leave-start="translate-y-0"
+      x-transition:leave-end="translate-y-full"
+      :aria-hidden="(!visible).toString()"
+    >
+      <div class="vars-btn-{{ sizing }} vars-btn-{{ color }} mx-auto w-full max-w-[--page-width] flex justify-center">
+        {{ sticky_button }}
+      </div>
+    </div>
+  </template>
+</sticky-add-to-cart>
+{% endif %}
+
+{% stylesheet %}
+  /* Full-width button on mobile; merchant-controlled width on desktop. */
+  .sticky-atc__btn {
+    width: 100%;
+  }
+
+  @media (min-width: 768px) {
+    .sticky-atc__btn {
+      width: min(var(--sticky-atc-desktop-width, 20rem), 100%);
+    }
+  }
+{% endstylesheet %}

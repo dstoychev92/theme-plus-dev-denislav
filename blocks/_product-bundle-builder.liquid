@@ -1,0 +1,650 @@
+<!-- blocks/_product-bundle-builder.liquid -->
+<!-- "Build Your Bundle" block: quantity meter + flavor picker -->
+<!-- No ATC — selections are stored globally for the existing ATC + subscription blocks -->
+
+{% liquid
+  assign bundle_collection = block.settings.collection
+  assign products = bundle_collection.products
+  assign doses_per_bag = block.settings.doses_per_bag | default: 20
+
+  comment
+    Host ("BOOM! BOX") product — only a shell for this builder. Its variant ids
+    are exposed to JS so the fetch guard can block them from being ordered alone.
+  endcomment
+  assign base_product = closest.product
+
+  assign disc_2 = block.settings.discount_pct_2 | default: 0
+  assign disc_3 = block.settings.discount_pct_3 | default: 0
+  assign disc_4 = block.settings.discount_pct_4 | default: 0
+
+  assign has_gift_2 = false
+  assign has_gift_3 = false
+  assign has_gift_4 = false
+  if block.settings.gift_product_2 != blank
+    assign has_gift_2 = true
+  endif
+  if block.settings.gift_product_3 != blank
+    assign has_gift_3 = true
+  endif
+  if block.settings.gift_product_4 != blank
+    assign has_gift_4 = true
+  endif
+
+  comment
+    Pre-render a known price (100.00) so JS can derive the money format template.
+  endcomment
+  if settings.hide_trailing_zeros
+    assign money_fmt_sample = 10000 | money_without_trailing_zeros
+  else
+    assign money_fmt_sample = 10000 | money
+  endif
+  if settings.show_currency
+    assign money_fmt_sample = money_fmt_sample | append: ' ' | append: cart.currency.iso_code
+  endif
+
+  if settings.hide_trailing_zeros
+    assign money_fmt_no_cur = 10000 | money_without_trailing_zeros
+  else
+    assign money_fmt_no_cur = 10000 | money
+  endif
+%}
+
+{% capture content %}
+
+{%- comment -%} Product data JSON — each product carries its own variant price {%- endcomment -%}
+<script id="bundle-data-{{ section.id }}" type="application/json">
+  {
+    "moneyFmt": {{ money_fmt_sample | json }},
+    "moneyFmtNoCur": {{ money_fmt_no_cur | json }},
+    "dosesPerBag": {{ doses_per_bag }},
+    "baseVariantIds": [
+      {%- for v in base_product.variants -%}
+        {{ v.id }}{%- unless forloop.last -%},{%- endunless -%}
+      {%- endfor -%}
+    ],
+    "discTiers": [
+      { "min": 1, "max": 1, "label": "1 {{ block.settings.bag_label | default: 'пакет' }}", "discPct": 0, "hasGift": false },
+      { "min": 2, "max": 2, "label": "2 {{ block.settings.bags_label | default: 'пакета' }}", "discPct": {{ disc_2 }}, "hasGift": {{ has_gift_2 }} },
+      { "min": 3, "max": 3, "label": "3 {{ block.settings.bags_label | default: 'пакета' }}", "discPct": {{ disc_3 }}, "hasGift": {{ has_gift_3 }} },
+      { "min": 4, "max": 99, "label": "4+ {{ block.settings.bags_label | default: 'пакета' }}", "discPct": {{ disc_4 }}, "hasGift": {{ has_gift_4 }}, "best": true }
+    ],
+    "products": [
+      {%- for p in products -%}
+        {%- assign v = p.selected_or_first_available_variant -%}
+        {
+          "variantId": {{ v.id }},
+          "productId": {{ p.id }},
+          "handle": {{ p.handle | json }},
+          "title": {{ p.title | json }},
+          "description": {{ p.description | strip_html | remove_first: 'Познат вкус и аромат, но различен старт на деня' | strip | truncate: 100 | json }},
+          "priceCents": {{ v.price }},
+          "compareAtCents": {{ v.compare_at_price | default: 0 }},
+          "available": {{ v.available }},
+          "image": {{ v.image.src | default: p.featured_image.src | image_url: width: 140, format: 'webp' | json }},
+          "bgColor": {{ p.metafields.custom.card_bg_color | default: '#F8F6F4' | json }},
+          "badge": {{ p.metafields.custom.card_badge | default: '' | json }}
+        }{%- unless forloop.last -%},{%- endunless -%}
+      {%- endfor -%}
+    ]
+  }
+</script>
+
+{% comment %}
+  Styles extracted to assets/custom.boom-bundle-builder.css (April 2026
+  perf pass) — browser caches the stylesheet instead of reparsing ~3 KB
+  of CSS on every render of this block.
+{% endcomment %}
+{{ 'custom.boom-bundle-builder.css' | asset_url | stylesheet_tag }}
+
+<div
+  class="flex flex-col"
+  x-data="{
+    tiers: [],
+    products: [],
+    moneyFmt: '',
+    moneyFmtNoCur: '',
+    dosesPerBag: {{ doses_per_bag }},
+    sel: {},       /* { variantId: qty } */
+    sellingPlan: 0, /* set by subscription block via boom:sub-change */
+    subPct: 0,      /* subscription discount %, set by boom:sub-change */
+
+    /* ── Computed ── */
+    get totalBags() {
+      var s = 0; for (var k in this.sel) s += this.sel[k]; return s;
+    },
+
+    get activeTierIdx() {
+      var bags = this.totalBags;
+      for (var i = this.tiers.length - 1; i >= 0; i--) {
+        if (bags >= this.tiers[i].min) return i;
+      }
+      return -1;
+    },
+
+    get currentDiscPct() {
+      var idx = this.activeTierIdx;
+      return idx >= 0 ? this.tiers[idx].discPct : 0;
+    },
+
+    get meterFillWidth() {
+      var idx = this.activeTierIdx;
+      var n = this.tiers.length;
+      if (idx < 0 || n <= 1) return '0px';
+      var frac = idx / (n - 1);
+      /* fill starts at left:40px, line ends at right:40px → track = 100% - 80px */
+      return 'calc(' + (frac * 100) + '% - ' + (frac * 80) + 'px)';
+    },
+
+    /* Total price: sum of each product's own price × qty, then apply tier discount */
+    get totalPrice() {
+      var sum = 0;
+      var self = this;
+      for (var k in this.sel) {
+        var p = this.productById(k);
+        if (p) sum += p.priceCents * this.sel[k];
+      }
+      if (this.currentDiscPct > 0) {
+        sum = Math.round(sum * (100 - this.currentDiscPct) / 100);
+      }
+      return sum;
+    },
+
+    /* Display total, matching the Shopify cart rounding: per bag apply the
+       selling-plan (subscription) % per unit, then the tier % per unit, each
+       rounded to the cent, × qty. Drives the bundle summary + per-dose.
+       (totalPrice stays tier-only for the broadcast, so the subscription block
+       can apply its own discount without double-counting.) */
+    get displayTotal() {
+      var sum = 0;
+      var tierPct = this.currentDiscPct;
+      var subPct = this.subPct;
+      for (var k in this.sel) {
+        var p = this.productById(k);
+        if (!p) continue;
+        var unit = p.priceCents;
+        if (subPct > 0) unit = Math.round(unit * (100 - subPct) / 100);
+        if (tierPct > 0) unit = unit - Math.round(unit * tierPct / 100);
+        sum += unit * this.sel[k];
+      }
+      return sum;
+    },
+
+    /* A compare-at price means priceCents is ALREADY the sale price: strike
+       through compare-at, show its % in the badges, never discount it again. */
+    fullUnit(p) {
+      return p.compareAtCents > p.priceCents ? p.compareAtCents : p.priceCents;
+    },
+    /* Compare-at sale % (first product that has one; the promo is store-wide) */
+    get salePct() {
+      for (var i = 0; i < this.products.length; i++) {
+        var p = this.products[i];
+        if (p.compareAtCents > p.priceCents) return Math.round((p.compareAtCents - p.priceCents) * 100 / p.compareAtCents);
+      }
+      return 0;
+    },
+    /* Badge % for a tier = compare-at sale % combined with that tier's volume % */
+    tierBadgePct(tier) {
+      return Math.round(100 - (100 - this.salePct) * (100 - (tier.discPct || 0)) / 100);
+    },
+
+    /* Full price: compare-at (or price) × qty, without any volume discount */
+    get fullPrice() {
+      var sum = 0;
+      for (var k in this.sel) {
+        var p = this.productById(k);
+        if (p) sum += this.fullUnit(p) * this.sel[k];
+      }
+      return sum;
+    },
+
+    get hasDiscount() {
+      return this.totalBags > 0 && this.displayTotal < this.fullPrice;
+    },
+
+    get totalDoses() { return this.totalBags * this.dosesPerBag; },
+
+    get perDose() {
+      if (this.totalDoses === 0) return 0;
+      return Math.round(this.displayTotal / this.totalDoses);
+    },
+
+    /* ── Helpers ── */
+    productById(variantId) {
+      for (var i = 0; i < this.products.length; i++) {
+        if (String(this.products[i].variantId) === String(variantId)) return this.products[i];
+      }
+      return null;
+    },
+
+    /* Money formatting */
+    fmtMoney(cents) {
+      var amt = (cents / 100).toFixed(2);
+      var tpl = this.moneyFmt;
+      if (!tpl) return amt;
+      if (tpl.indexOf('100,00') > -1) amt = amt.replace('.', ',');
+      return tpl.replace(/[\d.,]+/, amt);
+    },
+    /* Per-dose display */
+    fmtMoneyNoCur(cents) {
+      var amt = (cents / 100).toFixed(2);
+      var tpl = this.moneyFmtNoCur;
+      if (!tpl) return amt;
+      if (tpl.indexOf('100,00') > -1) amt = amt.replace('.', ',');
+      return tpl.replace(/[\d.,]+/, amt);
+    },
+
+    /* Per-product display price with current tier discount */
+    displayPrice(p) {
+      var price = p.priceCents;
+      if (this.currentDiscPct > 0) price = Math.round(price * (100 - this.currentDiscPct) / 100);
+      return price;
+    },
+
+    /* Tier per-unit price uses the cheapest product as reference */
+    tierRefPrice(tier) {
+      var cheapest = this.products.length ? this.products[0].priceCents : 0;
+      for (var i = 1; i < this.products.length; i++) {
+        if (this.products[i].priceCents < cheapest) cheapest = this.products[i].priceCents;
+      }
+      if (tier.discPct > 0) return Math.round(cheapest * (100 - tier.discPct) / 100);
+      return cheapest;
+    },
+
+    getQty(p) { return this.sel[p.variantId] || 0; },
+
+    addOne(p) {
+      if (!this.sel[p.variantId]) this.sel[p.variantId] = 0;
+      this.sel[p.variantId]++;
+      this.sel = Object.assign({}, this.sel);
+      this.broadcastBundle();
+    },
+
+    removeOne(p) {
+      if (!this.sel[p.variantId]) return;
+      this.sel[p.variantId]--;
+      if (this.sel[p.variantId] <= 0) delete this.sel[p.variantId];
+      this.sel = Object.assign({}, this.sel);
+      this.broadcastBundle();
+    },
+
+    /* ── Broadcast bundle state for ATC + subscription blocks ── */
+    broadcastBundle() {
+      var items = [];
+      var self = this;
+      for (var k in this.sel) {
+        if (this.sel[k] > 0) {
+          var item = { id: parseInt(k), quantity: this.sel[k] };
+          if (self.sellingPlan) item.selling_plan = self.sellingPlan;
+          items.push(item);
+        }
+      }
+      /* Global state for fetch interceptor */
+      window.__boomBundleItems = items;
+      window.__boomBundleTotalBags = this.totalBags;
+
+      /* Event for subscription block and other listeners */
+      window.dispatchEvent(new CustomEvent('boom:bundle-change', {
+        detail: {
+          items: items,
+          totalBags: this.totalBags,
+          totalCents: this.totalPrice,
+          discPct: this.currentDiscPct
+        }
+      }));
+
+      /* Also broadcast as volume-change so the main price block updates */
+      window.dispatchEvent(new CustomEvent('boom:volume-change', {
+        detail: {
+          qty: this.totalBags,
+          totalCents: this.totalPrice,
+          unitCents: this.totalBags > 0 ? Math.round(this.totalPrice / this.totalBags) : 0,
+          discountPct: this.currentDiscPct,
+          fmtTotal: this.fmtMoney(this.totalPrice)
+        }
+      }));
+    },
+
+    init() {
+      var el = document.getElementById('bundle-data-{{ section.id }}');
+      if (el) {
+        try {
+          var data = JSON.parse(el.textContent);
+          this.tiers = data.discTiers || [];
+          this.products = data.products || [];
+          this.moneyFmt = data.moneyFmt || '';
+          this.moneyFmtNoCur = data.moneyFmtNoCur || this.moneyFmt;
+          this.dosesPerBag = data.dosesPerBag || {{ doses_per_bag }};
+          /* Host variant ids for the safety guard. closest.product is nil when
+             this block sits outside a product context, so prefer Shopify's page
+             product meta and merge the Liquid-derived ids as a fallback. */
+          var baseIds = (data.baseVariantIds || []).map(String);
+          try {
+            var pm = window.ShopifyAnalytics && window.ShopifyAnalytics.meta && window.ShopifyAnalytics.meta.product;
+            if (pm && pm.variants) {
+              pm.variants.forEach(function(v) {
+                var id = String(v.id);
+                if (baseIds.indexOf(id) === -1) baseIds.push(id);
+              });
+            }
+          } catch(e) {}
+          window.__boomBaseVariantIds = baseIds;
+        } catch(e) { console.error('Bundle data parse error', e); }
+      }
+
+      /* Restore selling plan + subscription discount from subscription block */
+      if (window.__boomSubPlan) this.sellingPlan = window.__boomSubPlan;
+      if (window.__boomSubPct !== undefined) this.subPct = window.__boomSubPct;
+
+      /* ── Intercept /cart/add.js calls to inject bundle items ── */
+      /* Only intercept ATC from the product page form, NOT from the cart
+         (e.g. subscription toggle re-adds, gift sync, etc.).
+         Cart-originating calls set __boomSkipIntercept = true to bypass. */
+      if (!window.__boomFetchPatched) {
+        var origFetch = window.fetch;
+        /* Read the variant id from an outgoing /cart/add body, across the
+           formats the theme may send (FormData, URLSearchParams, JSON or
+           urlencoded string). Returns a string, or null if none found. */
+        var boomAddVariantId = function(opts) {
+          try {
+            if (!opts || !opts.body) return null;
+            var b = opts.body;
+            if (typeof FormData !== 'undefined' && b instanceof FormData) {
+              var fv = b.get('id'); return fv != null ? String(fv) : null;
+            }
+            if (typeof URLSearchParams !== 'undefined' && b instanceof URLSearchParams) {
+              var uv = b.get('id'); return uv != null ? String(uv) : null;
+            }
+            if (typeof b === 'string') {
+              try { var j = JSON.parse(b); if (j && j.id != null) return String(j.id); } catch (e) {}
+              try { var sv = new URLSearchParams(b).get('id'); if (sv != null) return String(sv); } catch (e) {}
+            }
+          } catch (e) {}
+          return null;
+        };
+        window.fetch = function(url, opts) {
+          var isCartAdd = typeof url === 'string' && url.indexOf('/cart/add') > -1;
+
+          /* ── Safety guard ──
+             The host BOOM! BOX product is only a shell for this builder and
+             must never be ordered on its own. If a /cart/add targets a host
+             variant while no flavors are selected (e.g. a stray add races the
+             swap below), block it. Cart-originating re-adds (gift-sync,
+             subscription toggle) set __boomSkipIntercept to bypass this. */
+          if (isCartAdd && !window.__boomSkipIntercept &&
+              (!window.__boomBundleItems || window.__boomBundleItems.length === 0)) {
+            var addId = boomAddVariantId(opts);
+            var baseIds = window.__boomBaseVariantIds || [];
+            if (addId && baseIds.indexOf(addId) > -1) {
+              window.__boomSkipIntercept = false;
+              return Promise.reject(new Error('BOOM bundle: host product cannot be ordered on its own — select flavors first'));
+            }
+          }
+
+          if (isCartAdd && window.__boomBundleItems && window.__boomBundleItems.length > 0 &&
+              !window.__boomSkipIntercept) {
+            opts = Object.assign({}, opts);
+            opts.headers = Object.assign({}, opts.headers || {}, {
+              'Content-Type': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest'
+            });
+            opts.body = JSON.stringify({ items: window.__boomBundleItems });
+          }
+          /* Always reset the flag after each call */
+          window.__boomSkipIntercept = false;
+          return origFetch.call(window, url, opts);
+        };
+        window.__boomFetchPatched = true;
+      }
+
+      this.broadcastBundle();
+    }
+  }"
+  @boom:sub-change.window="
+    sellingPlan = $event.detail.sellingPlanId || 0;
+    subPct = $event.detail.subPct || 0;
+    window.__boomSubPlan = sellingPlan;
+    broadcastBundle();
+  "
+>
+
+  {% comment %} ── Section heading ── {% endcomment %}
+  {% if block.settings.show_heading %}
+    <div class="flex items-center gap-x-r2 my-r3">
+      <span class="font-bold text-content type-resize-lg">
+        {{ block.settings.heading | default: 'Създай свой бъндъл:' }}
+      </span>
+    </div>
+  {% endif %}
+
+  {% comment %} ── Quantity Meter ── {% endcomment %}
+  <div class="boom-bm">
+    <div class="boom-bm-items">
+      <div class="boom-bm-line"></div>
+      <div class="boom-bm-fill" :style="'width:' + meterFillWidth"></div>
+      <template x-for="(tier, idx) in tiers" :key="idx">
+        <div class="boom-bm-item">
+          <span class="boom-bm-label" :class="idx <= activeTierIdx && 'on'" x-text="tier.label"></span>
+          <div class="boom-bm-dot" :class="{ 'on': idx <= activeTierIdx, 'active': idx === activeTierIdx }"></div>
+          <span class="boom-bm-price" :class="idx <= activeTierIdx && 'on'">
+            <span x-text="tierBadgePct(tier) > 0 ? '−' + tierBadgePct(tier) + '%' : '{{ block.settings.tier_1_label | default: 'Стандартна' }}'"></span>
+            <template x-if="tier.hasGift">
+              <span>+ {% render 'boom-gift-icon', size: 14 %}<template x-if="tier.best">{% render 'boom-gift-icon', size: 14 %}</template></span>
+            </template>
+          </span>
+          <span class="boom-bm-best" x-show="tier.best" x-cloak>{{ block.settings.best_deal_text | default: 'Най-добра оферта' }}</span>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  {% comment %} ── Flavor cards (scrollable) ── {% endcomment %}
+  <div class="boom-fl-wrap">
+    <div class="boom-fl-grid">
+      <template x-for="p in products" :key="p.variantId">
+        <div class="boom-fl-card" :class="getQty(p) > 0 && 'has-qty'">
+          <div class="boom-fl-img" :style="'background-color:' + p.bgColor">
+            <img :src="p.image" :alt="p.title" loading="lazy" width="140" height="140">
+          </div>
+          <div class="boom-fl-body">
+            <div class="boom-fl-info">
+              <div class="boom-fl-title" x-text="p.title"></div>
+              <div class="boom-fl-desc" x-text="p.description"></div>
+              <template x-if="p.badge">
+                <div class="boom-fl-badge" x-text="p.badge"></div>
+              </template>
+              <div class="boom-fl-price-tag" :class="(currentDiscPct > 0 || fullUnit(p) > p.priceCents) && 'has-discount'">
+                <template x-if="currentDiscPct > 0 || fullUnit(p) > p.priceCents">
+                  <span class="boom-fl-price-tag__compare" x-text="fmtMoney(fullUnit(p))"></span>
+                </template>
+                <span class="boom-fl-price-tag__now" x-text="fmtMoney(displayPrice(p))"></span>
+              </div>
+            </div>
+            <div class="boom-fl-actions">
+              <button
+                class="boom-fl-add"
+                x-show="getQty(p) === 0"
+                @click="addOne(p)"
+                :disabled="!p.available"
+                x-text="p.available ? '{{ block.settings.add_label | default: 'Добави +' }}' : '{{ 'product.sold_out' | t | default: 'Изчерпано' }}'"
+              ></button>
+              <div class="boom-fl-qw" x-show="getQty(p) > 0" x-cloak>
+                <button class="boom-fl-qb" @click="removeOne(p)">−</button>
+                <div class="boom-fl-qn" x-text="getQty(p)"></div>
+                <button class="boom-fl-qb" @click="addOne(p)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  {% comment %} ── Scroll hint ── {% endcomment %}
+  <template x-if="products.length > 5">
+    <div class="boom-scroll-hint">
+      {{ block.settings.scroll_text | default: 'Скролни за повече вкусове' }} ↓
+    </div>
+  </template>
+
+  {% comment %} ── Summary bar (no ATC — just info) ── {% endcomment %}
+  <div class="boom-bsum" x-show="totalBags > 0" x-cloak x-transition>
+    <div class="boom-bsum-left">
+      📦 <strong x-text="totalBags"></strong> {{ block.settings.bags_label | default: 'пакета' }}
+      · <strong x-text="totalDoses"></strong> {{ block.settings.dose_label | default: 'дози' }}
+    </div>
+    <div class="boom-bsum-right">
+      <div class="boom-bsum-full" x-show="hasDiscount" x-text="fmtMoney(fullPrice)"></div>
+      <div class="boom-bsum-total" :style="hasDiscount && 'color: var(--primary, #EF3340)'" x-text="fmtMoney(displayTotal)"></div>
+      <div class="boom-bsum-per" x-text="fmtMoneyNoCur(perDose) + ' / {{ block.settings.dose_label | default: 'доза' }}'"></div>
+    </div>
+  </div>
+
+</div>
+
+{% endcapture %}
+
+{% render 'product-block',
+  _settings: block.settings,
+  content: content,
+  attributes: block.shopify_attributes,
+  class: 'flex flex-col w-full'
+%}
+
+{% schema %}
+{
+  "name": "Bundle Builder",
+  "tag": null,
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_heading",
+      "label": "Show heading",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Създай свой бъндъл:"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection"
+    },
+    {
+      "type": "range",
+      "id": "doses_per_bag",
+      "label": "Doses per bag",
+      "min": 1,
+      "max": 60,
+      "step": 1,
+      "default": 20
+    },
+    {
+      "type": "header",
+      "content": "Volume discounts"
+    },
+    {
+      "type": "range",
+      "id": "discount_pct_2",
+      "label": "Discount % for 2 bags",
+      "info": "EXTRA volume % on top of the variant price. If products have a compare-at price, that sale % is shown automatically; keep these at 0 unless a matching Shopify volume discount is active.",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "default": 5
+    },
+    {
+      "type": "range",
+      "id": "discount_pct_3",
+      "label": "Discount % for 3 bags",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "default": 10
+    },
+    {
+      "type": "range",
+      "id": "discount_pct_4",
+      "label": "Discount % for 4+ bags",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "default": 15
+    },
+    {
+      "type": "header",
+      "content": "Tier gifts",
+      "info": "Visual indicator only — actual gift sync happens via the cart-drawer tier bar."
+    },
+    {
+      "type": "product",
+      "id": "gift_product_2",
+      "label": "Gift product (2 bags)"
+    },
+    {
+      "type": "product",
+      "id": "gift_product_3",
+      "label": "Gift product (3 bags)"
+    },
+    {
+      "type": "product",
+      "id": "gift_product_4",
+      "label": "Gift product (4+ bags)"
+    },
+    {
+      "type": "header",
+      "content": "Labels"
+    },
+    {
+      "type": "text",
+      "id": "bag_label",
+      "label": "Bag label (singular)",
+      "default": "пакет"
+    },
+    {
+      "type": "text",
+      "id": "bags_label",
+      "label": "Bags label (plural)",
+      "default": "пакета"
+    },
+    {
+      "type": "text",
+      "id": "dose_label",
+      "label": "Dose label",
+      "default": "доза"
+    },
+    {
+      "type": "text",
+      "id": "best_deal_text",
+      "label": "Best deal badge text",
+      "default": "Най-добра оферта"
+    },
+    {
+      "type": "text",
+      "id": "tier_1_label",
+      "label": "Tier 1 reward label (when 0% discount)",
+      "default": "Стандартна"
+    },
+    {
+      "type": "text",
+      "id": "add_label",
+      "label": "Add button label",
+      "default": "Добави +"
+    },
+    {
+      "type": "text",
+      "id": "scroll_text",
+      "label": "Scroll hint text",
+      "default": "Скролни за повече вкусове"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Bundle Builder",
+      "category": "Product"
+    }
+  ]
+}
+{% endschema %}

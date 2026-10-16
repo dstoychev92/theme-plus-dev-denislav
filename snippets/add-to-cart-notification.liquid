@@ -1,0 +1,20 @@
+<div
+  x-section-api="api-add-to-cart-notification"
+  x-effect="
+    if ($store?.drawer?.isOpen && $sectionApi.state == 'loading') {
+      $sectionApi.abortController?.abort();
+    }
+  "
+  @theme:cart-notification:show.window="
+    if ($store?.drawer?.isOpen) return;
+
+    {% comment %} Load notification from section rendering api {% endcomment %}
+    await $sectionApi.update({
+      baseUrl: $event.detail.url,
+      htmlMode: 'replace',
+      cachePolicy: 'network-only',
+      abortPending: true
+    })
+  "
+  data-morph-children-only
+></div>

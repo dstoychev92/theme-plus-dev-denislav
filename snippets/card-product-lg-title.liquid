@@ -1,0 +1,38 @@
+<!-- snippets/card-product-lg-title.liquid -->
+
+{% capture content %}
+  {%- if title contains '-' -%}
+    {%- assign type = title | split: '-' | first -%}
+    {%- assign flavor = title | split: '-' | last -%}
+    <span class="flex items-center gap-x-r2 type-resize-xs type-p font-bold block uppercase mb-r3" style="color: {{ product.metafields.custom.background_color }}">
+      <div class="
+          inline-block
+          w-[--decoration-width]
+          h-[--decoration-width]
+          rounded-full
+          bg-[--decoration-color-custom]
+          wraps-inline-graphics
+          entrance-item entrance-standard scale-in-50
+        " style="
+          --decoration-color-custom: {{ product.metafields.custom.background_color }};
+          --decoration-width: 6px;
+          --decoration-dash-weight: 3px;
+        "></div>
+
+      {{ type }}
+    </span>
+
+    <span class="font-bold uppercase">
+      {{ flavor }}
+    </span>
+  {%- else -%}
+    <span class="font-bold uppercase">
+      {{ title }}
+    </span>
+  {%- endif -%}
+{% endcapture %}
+{% if settings.enable_metafield_cardslot_title %}
+  {% render 'card-product-lg-metafield-cardslot', type: 'title', product: product, variant: variant, content: content %}
+{% else %}
+  {{ content }}
+{% endif %}

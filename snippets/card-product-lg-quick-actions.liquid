@@ -1,0 +1,223 @@
+{% doc %}
+  Quick actions buttons for product card.
+
+  - Renders an Instant Add button if the product can be added to the cart without any further options needing to be selected
+  - Renders Quick Add button menu if the product can be added to the cart with a single option being selected
+  - Renders a Quick View button if the product would need multiple options to be selected
+{% enddoc %}
+
+{%- liquid
+  assign variant = variant | default: product.selected_or_first_available_variant
+
+  # These values were chosen so that quick add button only show up if they are not too long and don't have too many values and look bad
+  assign max_quick_add_option_values = 15
+  assign max_quick_add_option_combined_characters = 90
+
+  assign is_quick_add_allowed = false
+  assign is_instant_add_allowed = false
+
+  assign quick_add_option = null
+
+  # Product option which can be used to generate swatches
+  assign swatch_option = null
+  assign has_swatch_option = false
+
+  # Loop through product options and their values to find a "swatch option"
+  for product_option in product.options_with_values
+    if product_option.values.first.swatch != null
+      assign swatch_option = product_option
+      break
+    endif
+  endfor
+
+  if settings.enable_card_quickadd or settings.enable_instant_add
+    if swatch_option != null
+      assign has_swatch_option = true
+    endif
+
+    # Count up the number of non-swatch options
+    assign non_swatch_options = null | sort
+
+    for option in product.options_with_values
+      if has_swatch_option and swatch_option.position == option.position
+        continue
+      endif
+
+      assign new_non_swatch_options = option | sort
+      assign non_swatch_options = non_swatch_options | concat: new_non_swatch_options
+    endfor
+
+    # If there's only one non-swatch option, we can display an instant add button
+    if non_swatch_options.size == 1
+      if non_swatch_options[0].values.size == 1
+        assign is_instant_add_allowed = true
+      endif
+
+      # We can also potentially display a quick add button
+      assign quick_add_candidate_option = non_swatch_options[0]
+
+      # Quick add must have more than 1 value
+      if quick_add_candidate_option.values.size > 1
+        assign has_multiple_values = true
+      endif
+
+      # Quick add must have less than max number of values
+      if quick_add_candidate_option.values.size <= max_quick_add_option_values
+        assign has_allowed_number_of_values = true
+      endif
+
+      # Quick add must have all available values (i.e. none are sold out and all have an associated variant)
+      assign all_values_have_variants = true
+
+      for value in quick_add_candidate_option.values
+        if value.variant == null
+          assign all_values_have_variants = false
+          break
+        endif
+      endfor
+
+      # Quick add must have less than max combined character length
+      assign combined_number_of_characters = quick_add_candidate_option.values | join: '' | size
+
+      if combined_number_of_characters <= max_quick_add_option_combined_characters
+        assign has_allowed_total_character_length = true
+      endif
+
+      # If all of the conditions are met, we can display a quick add button
+      if has_multiple_values and all_values_have_variants and has_allowed_number_of_values and has_allowed_total_character_length
+        assign is_quick_add_allowed = true
+        assign quick_add_option = quick_add_candidate_option
+      endif
+
+      # When there's no non-swatch options, we can display an instant add button
+    elsif non_swatch_options.size == 0
+      assign is_instant_add_allowed = true
+    endif
+  endif
+
+  # Selling plans can be added along with quick add or instant add buttons only if
+  # the product has exactly 1 selling plan with subscriptions required
+  assign simple_selling_plan = null
+
+  if is_quick_add_allowed or is_instant_add_allowed
+    if product.requires_selling_plan and product.selling_plan_groups.size == 1 and product.selling_plan_groups[0].selling_plans.size == 1
+      # one variant, one required subscription, no choices to make
+      assign simple_selling_plan = product.selected_or_first_available_selling_plan_allocation.selling_plan
+    elsif product.selling_plan_groups.size > 0
+      # Abort instant and inline add buttons, subs choices must be made
+      assign is_quick_add_allowed = false
+      assign is_instant_add_allowed = false
+    endif
+  endif
+-%}
+
+{% capture button_class %}
+  {% comment %} Quick actions buttons are square on touch devices {% endcomment %}
+  touch:aspect-square touch:p-0 touch:min-h-0 touch:w-row-md touch:h-row-md
+{% endcapture %}
+
+{% capture error_message %}
+  <div
+    x-cloak
+    x-show="$productForm.state === 'error'"
+    class="
+      flex flex-row gap-x-r3 flex-center
+      w-full top-0 sticky p-r3 vars-scheme-error text-content bg-canvas
+      rounded-sm
+      animate-in slide-in-from-bottom-1/2 fade-in duration-500
+    "
+  >
+    {% capture alert_icon %}
+      {% render 'core-icon', icon: 'fill-circle-alert' %}
+    {% endcapture %}
+    {% capture alert_content %}
+      <div>
+        {% assign default_error_message = "product.error_adding_to_cart" | t %}
+        <p x-html="$productForm.errorDescription || $productForm.errorMessage || '{{ default_error_message | escape }}'"></p>
+      </div>
+    {% endcapture %}
+    {% render 'alert',
+      icon: alert_icon,
+      content: alert_content,
+      type: 'error',
+      attributes: alert_attributes,
+      class: 'rounded-btn w-full'
+    %}
+  </div>
+{% endcapture %}
+
+{% comment %} IMPORTANT: Fail safe so we never show quick actions for a different product or variant than the one the user selected. Hides the form when productId/variantId have changed (swatch/sibling click) but the section API hasn't finished loading the new quick-actions yet. {% endcomment %}
+<template x-if="productId == {{ product.id }} && (variantId == null || variantId == {{ variant.id }})">
+  <div x-product-form.wait-error.2000ms.wait-success.1500ms class="contents">
+    {% form 'product',
+      product,
+      class: 'absolute overflow-clip inset-[--card-lg-media-padding] flex-col justify-end items-center max-h-full pointer-events-none'
+    %}
+      {%- if simple_selling_plan -%}
+        <input type="hidden" name="selling_plan" value="{{ simple_selling_plan.id }}">
+      {%- endif -%}
+
+      <input
+        type="hidden"
+        name="quantity"
+        value="{% if variant.quantity_rule.min %}{{ variant.quantity_rule.min }}{% else %}1{% endif %}"
+      >
+
+      {% render 'product-preorder-properties', product: product %}
+      {% render 'product-line-item-properties', product: product %}
+
+      <div
+        key="{{ product.id }}-{{ variant.id }}"
+
+        {% comment %} Prevent clicks from bubbling up to product card on click so it doesn't navigate {% endcomment %}
+        @click.stop=""
+        class="
+          vars-control-lg flex flex-col gap-y-r3 items-center touch:items-end justify-end relative
+          h-full w-full pointer-events-none *:pointer-events-auto
+          opacity-0 touch:opacity-100
+          {{ class }}
+        "
+        :class="
+          {
+            '!opacity-100': $productCard.isActive || $productForm.state !== 'idle'
+          }
+        "
+        {{ attributes }}
+      >
+        {{ error_message }}
+
+        {%- if settings.enable_card_quickadd and is_quick_add_allowed -%}
+          {% comment %}
+            A quick add button that will show short variants like 'size' inside the button.
+          {% endcomment %}
+          {%- render 'card-product-lg-quick-add',
+            product: product,
+            option: quick_add_option,
+            placeholder_button_class: button_class,
+            icon_swap: true
+          -%}
+        {%- elsif settings.enable_instant_add and is_instant_add_allowed -%}
+          {% comment %}
+            Instant add button that will instantly add the product to the cart on click for cases where there are no (non-color) options to choose from
+          {% endcomment %}
+          {%- render 'card-product-lg-instant-add-button',
+            class: button_class,
+            product: product,
+            variant: variant,
+            icon_swap: true
+          -%}
+        {%- elsif settings.enable_quickview -%}
+          {% comment %}
+            A quick view button that will show a modal/drawer with the product details.
+          {% endcomment %}
+          {% render 'card-product-lg-quick-view-button',
+            class: button_class,
+            product: product,
+            variant: variant,
+            icon_swap: true
+          %}
+        {%- endif -%}
+      </div>
+    {% endform %}
+  </div>
+</template>

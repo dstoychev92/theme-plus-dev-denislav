@@ -1,0 +1,355 @@
+<!-- sections/section-marquee.liquid -->
+
+{% capture marquee_style %}
+  {% render 'props-style-padding', _settings: section.settings, apply: false %}
+  --marquee-pt: var(--layout-buffer);
+  --marquee-pb: var(--layout-buffer);
+{% endcapture %}
+
+{% capture blocks %}
+  {% content_for 'blocks' %}
+{% endcapture %}
+
+{% capture marquee_attributes %}
+  {% if request.design_mode %}
+    x-effect="
+      if ($isSelectedSection) {
+        $marquee.pause()
+      } else {
+        $marquee.play()
+      }
+    "
+  {% endif %}
+{% endcapture %}
+
+{% capture content %}
+  {% render 'marquee',
+    _settings: section.settings,
+    content: blocks,
+    style: marquee_style,
+    class: 'row-span-full col-span-full',
+    attributes: marquee_attributes
+  %}
+
+  {% comment %} A hack to fix visual preview, because marquee JS is breaking it {% endcomment %}
+  {% if request.visual_preview_mode %}
+    <div style="width: 1px; height: 1px;"></div>
+  {% endif %}
+{% endcapture %}
+
+{% render 'core-section-wrapper',
+  _settings: section.settings,
+  content: content,
+  padding: false,
+  content_width: 'full',
+  photoswipe: false,
+  inner_class: 'overflow-hidden'
+%}
+
+{% schema %}
+{
+	"name": "Marquee",
+	"settings": [
+		{
+			"type": "header",
+			"content": "Appearance"
+		},
+		{
+			"type": "color_scheme",
+			"id": "color_scheme",
+			"label": "Color scheme"
+		},
+		{
+			"type": "select",
+			"id": "background",
+			"label": "Background",
+			"default": "canvas",
+			"options": [
+				{
+					"value": "canvas",
+					"label": "Default"
+				},
+				{
+					"value": "tint",
+					"label": "Tint"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background color",
+			"default": "#f2f2f2",
+			"alpha": false,
+			"visible_if": "{{ section.settings.background == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "speed",
+			"label": "Speed",
+			"min": -10,
+			"max": 10,
+			"step": 1,
+			"default": 2
+		},
+		{
+			"type": "header",
+			"content": "Text"
+		},
+		{
+			"type": "select",
+			"id": "type_preset",
+			"label": "Text style",
+			"default": "h1",
+			"options": [
+				{
+					"value": "section",
+					"label": "Section title"
+				},
+				{
+					"value": "p",
+					"label": "Paragraph"
+				},
+				{
+					"value": "h1",
+					"label": "Heading 1"
+				},
+				{
+					"value": "h2",
+					"label": "Heading 2"
+				},
+				{
+					"value": "h3",
+					"label": "Heading 3"
+				},
+				{
+					"value": "h4",
+					"label": "Heading 4"
+				},
+				{
+					"value": "h5",
+					"label": "Heading 5"
+				},
+				{
+					"value": "h6",
+					"label": "Heading 6"
+				},
+				{
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_font",
+			"label": "Font",
+			"default": "heading",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ section.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 9,
+			"visible_if": "{{ section.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ section.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "gap",
+			"label": "Gap",
+			"default": "lg",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "gap_custom",
+			"label": "Custom gap",
+			"default": 0,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ section.settings.gap == 'custom'  }}"
+		},
+		{
+			"type": "select",
+			"id": "padding",
+			"label": "Padding",
+			"default": "lg",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "padding_custom",
+			"label": "Custom padding",
+			"default": 0,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ section.settings.padding == 'custom'  }}"
+		},
+		{
+			"type": "select",
+			"id": "block_alignment",
+			"label": "Block alignment",
+			"info": "Relevant when blocks are different heights",
+			"default": "middle",
+			"options": [
+				{
+					"value": "top",
+					"label": "⤒"
+				},
+				{
+					"value": "middle",
+					"label": "—"
+				},
+				{
+					"value": "bottom",
+					"label": "⤓"
+				}
+			]
+		},
+		{
+			"type": "header",
+			"content": "Target device",
+			"visible_if": "{{ settings.show_target_device_settings == true }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_target_device",
+			"label": "Set target device",
+			"visible_if": "{{ settings.show_target_device_settings == true }}",
+			"default": false
+		},
+		{
+			"type": "select",
+			"label": "Show on",
+			"id": "target_device",
+			"default": "desktop",
+			"visible_if": "{{ settings.show_target_device_settings == true and section.settings.set_target_device == true }}",
+			"options": [
+				{
+					"value": "mobile",
+					"label": "Mobile"
+				},
+				{
+					"value": "desktop",
+					"label": "Desktop"
+				}
+			]
+		},
+	],
+	"blocks": [
+		{
+			"type": "_marquee-image",
+		},
+		{
+			"type": "_marquee-text",
+		}
+	],
+	"presets": [
+		{
+			"name": "Marquee",
+			"category": "Banner",
+			"blocks": [
+				{
+					"type": "_marquee-text",
+					"settings": {
+						"text": "Say something dynamic"
+					}
+				},
+				{
+					"type": "_marquee-text",
+					"settings": {
+						"text": "Make it scroll"
+					}
+				},
+				{
+					"type": "_marquee-text",
+					"settings": {
+						"text": "Let the world know"
+					}
+				}
+			]
+		}
+	],
+	"disabled_on": {
+		"groups": [
+			"custom.overlays",
+			"custom.drawers"
+		]
+	}
+}
+{% endschema %}

@@ -1,0 +1,135 @@
+{% comment %}
+  Nutrition facts + ingredients tables for the product page.
+
+  Rendered from the "Liquid" block inside the product accordion. Lived inline in
+  templates/product*.json until it was extracted here — keep it a snippet so the
+  three product templates share one copy.
+
+  Data comes from two JSON metafields:
+  - custom.hranitelni_stoinosti → { serving_size, per_100g_basis, values[] }
+  - custom.systavki             → { ingredients[], nrv_note }
+
+  Accepts:
+  - product: {Object} the product whose metafields to read
+
+  {% render 'boom-nutrition-table', product: product %}
+{% endcomment %}
+
+{%- liquid
+  assign nutrition_facts = product.metafields.custom.hranitelni_stoinosti.value
+  assign ingredients_data = product.metafields.custom.systavki.value
+  assign default_serving = 'boom.nutrition.default_serving' | t
+-%}
+
+{%- if nutrition_facts or ingredients_data -%}
+<div class="boom-nutrition">
+
+  {%- if nutrition_facts -%}
+    <section class="boom-nutrition__block">
+      <h3 class="boom-nutrition__title">{{ 'boom.nutrition.title' | t }}</h3>
+      <table class="boom-nutrition__table">
+        <thead>
+          <tr>
+            <th>{{ 'boom.nutrition.per' | t }}</th>
+            <th>{{ nutrition_facts.serving_size | default: default_serving }}</th>
+            {%- if nutrition_facts.per_100g_basis -%}
+              <th>{{ 'boom.nutrition.per_100g' | t }}</th>
+            {%- endif -%}
+          </tr>
+        </thead>
+        <tbody>
+          {%- for row in nutrition_facts.values -%}
+            <tr>
+              <td>{{ row.name }}</td>
+              <td>{{ row.per_serving }}</td>
+              {%- if nutrition_facts.per_100g_basis -%}
+                <td>{{ row.per_100g }}</td>
+              {%- endif -%}
+            </tr>
+            {%- if row.sub -%}
+              {%- for sub_row in row.sub -%}
+                <tr class="boom-nutrition__subrow">
+                  <td>↳ {{ sub_row.name }}</td>
+                  <td>{{ sub_row.per_serving }}</td>
+                  {%- if nutrition_facts.per_100g_basis -%}
+                    <td>{{ sub_row.per_100g }}</td>
+                  {%- endif -%}
+                </tr>
+              {%- endfor -%}
+            {%- endif -%}
+          {%- endfor -%}
+        </tbody>
+      </table>
+    </section>
+  {%- endif -%}
+
+  {%- if ingredients_data -%}
+    <section class="boom-nutrition__block">
+      <h3 class="boom-nutrition__title">{{ 'boom.nutrition.ingredients_title' | t }}</h3>
+      <table class="boom-nutrition__table">
+        <thead>
+          <tr>
+            <th>{{ 'boom.nutrition.ingredient' | t }}</th>
+            <th>{{ 'boom.nutrition.dose_per_serving' | t }}</th>
+            <th>{{ 'boom.nutrition.provides' | t }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {%- for row in ingredients_data.ingredients -%}
+            <tr>
+              <td>{{ row.name }}</td>
+              <td>{{ row.dose }}</td>
+              <td>
+                {{ row.provides }}
+                {%- if row.is_nrv -%}<sup>*</sup>{%- endif -%}
+              </td>
+            </tr>
+          {%- endfor -%}
+        </tbody>
+      </table>
+      {%- if ingredients_data.nrv_note -%}
+        <p class="boom-nutrition__note"><sup>*</sup> {{ ingredients_data.nrv_note }}</p>
+      {%- endif -%}
+    </section>
+  {%- endif -%}
+
+</div>
+
+<style>
+  .boom-nutrition { margin: 2rem 0; font-family: inherit; }
+  .boom-nutrition__block { margin-bottom: 2.5rem; }
+  .boom-nutrition__block:last-child { margin-bottom: 0; }
+  .boom-nutrition__title {
+    font-size: 1.1rem; font-weight: 600;
+    margin: 0 0 .75rem; letter-spacing: .02em;
+  }
+  .boom-nutrition__table {
+    width: 100%; border-collapse: collapse; font-size: .95rem;
+  }
+  .boom-nutrition__table th,
+  .boom-nutrition__table td {
+    text-align: left; padding: .65rem .5rem;
+    border-bottom: 1px solid #e8e2d6; vertical-align: top;
+  }
+  .boom-nutrition__table th {
+    font-weight: 600; color: #6b4f3a;
+    border-bottom: 2px solid #6b4f3a;
+  }
+  .boom-nutrition__table td + td,
+  .boom-nutrition__table th + th {
+    text-align: right; white-space: nowrap;
+  }
+  .boom-nutrition__subrow td:first-child {
+    padding-left: 1.25rem; color: #8a7a66;
+  }
+  .boom-nutrition__note {
+    margin: .5rem 0 0; font-size: .82rem;
+    color: #8a7a66; font-style: italic;
+  }
+  @media (max-width: 480px) {
+    .boom-nutrition__table { font-size: .85rem; }
+    .boom-nutrition__table th,
+    .boom-nutrition__table td { padding: .5rem .35rem; }
+  }
+</style>
+{%- endif -%}

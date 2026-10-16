@@ -1,0 +1,82 @@
+{% liquid
+  assign visible_limit = visible_limit | default: false
+  assign base_id = base_id | default: 'filter'
+%}
+
+<ul
+  class="flex flex-col gap-y-[--filter-row-gap]"
+  x-data="{ showAllFilterItems: false }"
+  x-roving-tab.vertical
+  x-roving-tab:list
+>
+  {% for filter_value in filter.values %}
+    {% assign swatch_image = filter_value.swatch.image %}
+    {% assign swatch_color = filter_value.swatch.color %}
+    {%- assign disabled = false -%}
+    {%- assign enabled = true -%}
+    {%- capture id -%}
+      {{ base_id }}-{{- filter.label | handle -}}-{{- forloop.index -}}
+    {%- endcapture -%}
+    {%- if filter_value.count == 0 and filter_value.active == false -%}
+      {%- assign disabled = true -%}
+      {%- assign enabled = false -%}
+    {%- endif -%}
+
+    {%- capture filter_value_label -%}
+      <div
+        class="flex-1 flex-row-center justify-between gap-x-r4 w-full"
+        style="--swatch-size: 16px"
+      >
+        <div class="flex-row-center gap-x-r3 overflow-hidden">
+          <span class="truncate text-ellipsis text-r3">
+            {{- filter_value.label -}}
+          </span>
+
+          {% if filter_value.count > 0 and enabled == true %}
+            {% render 'filter-count', count: filter_value.count %}
+          {% endif %}
+        </div>
+
+        {% render 'swatch', color: swatch_color, image: swatch_image, available: enabled, size: false, class: 'shrink-0' %}
+      </div>
+    {%- endcapture -%}
+
+    <li
+      class="
+        flex-row-center *:flex-1 justify-between h-[--filter-row-height]
+        {% if forloop.index > visible_limit %}
+          stagger-animation-25 animate-in fade-in animate-duration-500
+        {% endif %}
+      "
+      {% if forloop.index0 >= visible_limit %}
+        x-show="showAllFilterItems"
+        x-cloak
+        style="--stagger-order: {{ forloop.index0 | minus: visible_limit }}"
+      {% endif %}
+      {% comment %} Force Alpine.morph to replace the current checkbox with the one from the server so it has the right checked state... {% endcomment %}
+      key="{{ filter.param_name }}-{{ filter_value.param_name }}-{{ filter_value.value }}-{{ filter_value.active }}"
+    >
+      {% render 'field-checkbox',
+        label: filter_value_label,
+        id: id,
+        name: filter_value.param_name,
+        value: filter_value.value,
+        checked: filter_value.active,
+        disabled: disabled,
+        form: form,
+        class: 'w-full',
+        label_class: 'justify-start items-center gap-r4 w-full overflow-hidden',
+        reversed: true
+      %}
+    </li>
+  {% endfor %}
+
+  {% if filter.values.size > visible_limit %}
+    <li
+      x-show="!showAllFilterItems"
+      class="flex-row-center *:flex-1 justify-between h-[--filter-row-height]"
+    >
+      {% render 'filter-show-all-button' %}
+    </li>
+  {% endif %}
+</ul>

@@ -1,0 +1,246 @@
+{% doc %}
+  Product card for products that have siblings (defined by a metafield).
+
+  Sibling cards work a bit different than variant cards. For sibling cards,
+  there is always a selected swatch which is the "main" product card product, and
+  then clicking the other swatches will swap in the sibling product for that swatch
+  to display the sibling product's price, title, media, etc.
+{% enddoc %}
+
+{% liquid
+  #
+  # Sibling swatches
+  #
+
+  assign swatch_limit = settings.card_swatch_limit | default: 5
+
+  if settings.enable_card_sibling_swatches
+    if settings.metafield_siblings != blank
+      assign siblings_metafield_namespace = settings.metafield_siblings | split: '.' | first
+      assign siblings_metafield_key = settings.metafield_siblings | split: '.' | last
+      assign siblings_metafield = product.metafields[siblings_metafield_namespace][siblings_metafield_key]
+    endif
+
+    # Empty array to hold all siblings
+    assign all_siblings = null | sort
+
+    case siblings_metafield.type
+      when 'single_line_text_field'
+        # Metafield is set to a collection handle. This is the legacy way to define siblings and not the preferable way.
+        assign collection_handle = siblings_metafield.value
+        assign siblings_collection = collections[collection_handle]
+        assign all_siblings = siblings_collection.products
+      when 'metaobject_reference'
+        # Metafield is set to a metaobject which has a field that is a list of products
+        assign siblings_metaobject = siblings_metafield.value
+
+        assign product_list_field_name = settings.metafield_siblings_inner_name | default: 'products'
+
+        assign all_siblings = siblings_metaobject[product_list_field_name].value
+    endcase
+
+    # Empty array to hold visible siblings (i.e. ones under swatch limit). Note: this may not include the current product
+    assign swatch_siblings = null | sort
+
+    assign current_product_in_swatch_siblings = false
+
+    # If there are no siblings, use the current product
+    if all_siblings == null or all_siblings.size == 0
+      assign swatch_siblings = product | sort
+    endif
+
+    # Build up an array of siblings (up to swatch limit) that will be used to render swatches
+    for sibling in all_siblings limit: swatch_limit
+      if sibling.id == product.id
+        assign current_product_in_swatch_siblings = true
+      endif
+
+      # If the current product is not in the swatch siblings, insert it at the end of the array so that it's always rendered
+      if forloop.last and current_product_in_swatch_siblings == false
+        assign new_swatch_siblings = product | sort
+        assign swatch_siblings = swatch_siblings | concat: new_swatch_siblings
+        break
+      endif
+
+      assign new_swatch_siblings = sibling | sort
+      assign swatch_siblings = swatch_siblings | concat: new_swatch_siblings
+    endfor
+
+    assign total_swatches = all_siblings.size | default: all_siblings.count
+  else
+    assign swatch_siblings = product | sort
+    assign total_swatches = 0
+  endif
+%}
+
+{% comment %} Some very basic JSON  that lets us render the right url and stuff. We will probably end up refactoring the product card to get rid of the need for this {% endcomment %}
+{%- capture products_json -%}
+  {%- render 'products-json', products: swatch_siblings -%}
+{%- endcapture -%}
+
+{% for sibling in swatch_siblings %}
+  {% liquid
+    # Calculate once per iteration instead of 5 separate conditionals
+    assign is_current_product = false
+    if sibling.id == product.id
+      assign is_current_product = true
+    endif
+  %}
+
+  {% capture price %}
+    {{ price }}
+    {% if is_current_product %}
+      <span x-show="displayProductId == {{ sibling.id }}">
+        {% render 'card-product-lg-price', product: product %}
+      </span>
+    {% else %}
+      <template x-if="displayProductId == {{ sibling.id }}">
+        <span> {% # Keep a <span> because the wrapping element is a <template> and requires exactly 1 child element to function %}
+          {% render 'card-product-lg-price', product: sibling %}
+        </span>
+      </template>
+    {% endif %}
+  {% endcapture %}
+
+  {% capture title %}
+    {{ title }}
+    {% if is_current_product %}
+      <span x-show="displayProductId == {{ sibling.id }}">
+        {% assign stripped_title = product.title | strip_html %}
+        {% render 'card-product-lg-title', title: stripped_title, product: product, variant: null %}
+      </span>
+    {% else %}
+      <template x-if="displayProductId == {{ sibling.id }}">
+        <span> {% # Keep a <span> because the wrapping element is a <template> and requires exactly 1 child element to function %}
+          {% assign stripped_title = sibling.title | strip_html %}
+          {% render 'card-product-lg-title', title: stripped_title, product: sibling, variant: null %}
+        </span>
+      </template>
+    {% endif %}
+  {% endcapture %}
+
+  {% capture media %}
+    {{ media }}
+    {% if is_current_product %}
+      {% capture media_attributes %}
+        x-show="displayProductId == {{ sibling.id }}"
+      {% endcapture %}
+
+      {% render 'card-product-lg-media',
+        product: product,
+        initial_image_loading: image_loading,
+        initial_image_fetchpriority: image_fetchpriority,
+        attributes: media_attributes,
+        media_limit: 2,
+        image_widths: image_widths,
+        image_sizes: image_sizes
+      %}
+    {% else %}
+      <template x-if="$productCard.canLoadMedia">
+        {% capture media_attributes %}
+          x-show="displayProductId == {{ sibling.id }}"
+        {% endcapture %}
+        {% render 'card-product-lg-media',
+          product: sibling,
+          initial_image_loading: 'eager',
+          attributes: media_attributes,
+          media_limit: 2,
+          image_widths: image_widths,
+          image_sizes: image_sizes
+        %}
+      </template>
+    {% endif %}
+  {% endcapture %}
+
+  {% capture badges %}
+    {{ badges }}
+    {% if is_current_product %}
+      <span x-show="displayProductId == {{ sibling.id }} && !$productCard.isActive">
+        {%- render 'card-product-lg-media-badges', product: product -%}
+      </span>
+    {% else %}
+      <template x-if="displayProductId == {{ sibling.id }}">
+        {%- render 'card-product-lg-media-badges', product: sibling -%}
+      </template>
+    {% endif %}
+  {% endcapture %}
+
+  {% if total_swatches > 1 %}
+    {% capture swatches %}
+      {{ swatches }}
+      {% liquid
+        assign selected = is_current_product
+      %}
+      {% capture swatch_attributes %}
+        x-data="
+          {
+            get selected() {
+              {% if sibling != null %}
+                return productId == {{ sibling.id }}
+              {% else %}
+                return false
+              {% endif %}
+            }
+          }
+        "
+      {% endcapture %}
+      {% capture swatch_input_attributes %}
+        x-model.number.fill="productId"
+      {% endcapture %}
+      {% capture swatch_inner_attributes %}
+        :data-selected="selected"
+      {% endcapture %}
+      {% capture swatch_label_attributes %}
+        data-preload-url="{{ sibling.url }}"
+      {% endcapture %}
+      {% render 'product-sibling-swatch',
+        sibling: sibling,
+        tag: 'input',
+        selected: selected,
+        custom_size: settings.card_swatch_custom_size,
+        attributes: swatch_attributes,
+        input_attributes: swatch_input_attributes,
+        label_attributes: swatch_label_attributes,
+        swatch_attributes: swatch_inner_attributes
+      %}
+    {% endcapture %}
+  {% endif %}
+{% endfor %}
+
+{% capture quick_actions %}
+  {%- render 'card-product-lg-quick-actions-wrapper', product: product -%}
+{% endcapture %}
+
+{% capture link_attributes %}
+  {% comment %} Update href to the url of the selected sibling if it exists, otherwise use the product url {% endcomment %}
+  :href="productCardUrl"
+{% endcapture %}
+
+{% if total_swatches > 1 %}
+  {% assign swatches_attributes = '' %}
+{% endif %}
+
+{% capture attributes %}
+  x-data="productCardSiblingData({{ product.id }})"
+  {{ attributes }}
+{% endcapture %}
+
+{% render 'card-product-lg-layout',
+  url: product.url,
+  product: product,
+  products_json: products_json,
+  link_attributes: link_attributes,
+  title: title,
+  price: price,
+  media: media,
+  badges: badges,
+  swatches: swatches,
+  total_swatches: total_swatches,
+  swatches_attributes: swatches_attributes,
+  quick_actions: quick_actions,
+  class: class,
+  attributes: attributes,
+  placeholder: placeholder,
+  appearance: appearance,
+  aspect_ratio: aspect_ratio
+%}

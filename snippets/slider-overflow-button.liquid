@@ -1,0 +1,55 @@
+{% liquid
+  assign size = size | default: 'md'
+  assign background_style = background_style | default: settings.slider_control_style
+%}
+
+{% capture icon_class %}
+  rtl:rotate-180
+{% endcapture %}
+
+{% if type != blank %}
+  {% if type == 'next' %}
+    {% assign label = 'other.accessibility.next_items' | t %}
+    {% assign icon = 'stroke-chevron-right' %}
+    {% capture attributes %}
+      x-carousel:next
+      :disabled="!$overflow.end"
+      :data-overflow-end-amount="$overflow.end"
+      {{ attributes }}
+    {% endcapture %}
+  {% elsif type == 'prev' %}
+    {% assign label = 'other.accessibility.prev_items' | t %}
+    {% assign icon = 'stroke-chevron-left' %}
+    {% capture attributes %}
+      x-carousel:prev
+      :disabled="!$overflow.start"
+      :data-overflow-start-amount="$overflow.start"
+      {{ attributes }}
+    {% endcapture %}
+  {% endif %}
+
+  <button
+    class="
+      {{ class }} transition hover:opacity-50
+      vars-btn-{{ size }} text-r3 relative
+
+      slider-control vars-slider-control-content vars-slider-control-{{ background_style }}
+      flex flex-center rounded-pill
+
+      {% if background_style == 'bare' %}
+        hit-area [--hit-area-top:var(--btn-padding)] [--hit-area-bottom:var(--btn-padding)]
+        first:ps-0 first:[--hit-area-left:var(--btn-padding)]
+        last:pe-0 last:[--hit-area-right:var(--btn-padding)]
+      {% else %}
+        size-btn
+      {% endif %}
+    "
+    aria-label="{{ label }}"
+    style="{{ style }}"
+    {{ attributes }}
+  >
+    {% render 'core-icon', icon: icon, class: icon_class %}
+  </button>
+{% else %}
+  Error: you must pass type: 'next', or type: 'prev' to this snippet
+{% endif %}

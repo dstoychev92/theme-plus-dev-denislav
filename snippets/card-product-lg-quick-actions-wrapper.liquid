@@ -1,0 +1,11 @@
+{% doc %}
+  Wrapper for the quick actions section that renders initial quick actions markup when card is in view, then
+  re-loads quick actions via section rendering api when card product changes i.e. in the case of sibling cards.
+{% enddoc %}
+
+{% unless product.available == false %}
+  <quick-actions class="contents" x-product-card:quick-actions x-cloak>
+    {% comment %} Render the quick actions for the initial product card product/variant combo {% endcomment %}
+    {% render 'card-product-lg-quick-actions', product: product %}
+  </quick-actions>
+{% endunless %}

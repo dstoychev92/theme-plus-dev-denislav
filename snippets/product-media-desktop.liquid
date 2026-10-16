@@ -1,0 +1,334 @@
+{% liquid
+  assign id = id | default: 'product-media-desktop'
+  assign layout = _settings.layout_desktop | default: 'showcase'
+  assign product_media_size_count = product_media.size | default: product_media.count
+
+  assign media_spacing = 0
+
+  case layout
+    when 'showcase'
+      assign media_spacing = _settings.carousel_media_spacing
+      assign thumbnail_spacing = media_spacing
+      assign thumbnail_position = _settings.carousel_indicator_photo_position
+      assign thumbnail_position_beside_alignment = _settings.carousel_indicator_photo_position_beside_alignment
+      assign thumbnail_size = _settings.carousel_indicator_photo_size
+      assign media_attributes = media_attributes | append: ' x-slideshow:viewport'
+    when 'stack'
+      assign media_spacing = _settings.stack_media_spacing
+
+      assign stack_style = _settings.stack_style
+      assign class = class | append: ' grid gap-[--media-spacing]'
+      if stack_style == 'mosaic' or stack_style == 'columns'
+        assign class = class | append: ' grid-cols-2 items-start '
+        assign stack_media_class = 'h-full *:h-full'
+      endif
+  endcase
+
+  case thumbnail_position
+    when 'below'
+      assign thumbnail_orientation = 'horizontal'
+      assign thumbnail_position_class = 'max-w-full sticky bottom-r4 z-20'
+    when 'beside'
+      assign thumbnail_orientation = 'vertical'
+      assign thumbnail_position_class = 'max-h-full'
+  endcase
+
+  assign layout_all_single = false
+  assign layout_all_columns = false
+  assign layout_mosaic = false
+
+  if layout == 'showcase'
+    assign layout_all_single = true
+  endif
+  if layout == 'stack' and stack_style == 'single'
+    assign layout_all_single = true
+  endif
+  if layout == 'stack' and stack_style == 'columns'
+    assign layout_all_columns = true
+  endif
+  if layout == 'stack' and stack_style == 'mosaic'
+    assign layout_mosaic = true
+  endif
+%}
+
+{% if layout_all_single %}
+  {%- capture image_sizes -%}
+    {%- render 'image-grid-sizes',
+      columns_lg: 1,
+      columns_md: 1,
+      columns_sm: 1,
+      section_width: section.settings.content_width
+    %}
+  {%- endcapture -%}
+  {%- capture image_widths -%}
+    {%- render 'image-grid-widths',
+      columns_lg: 1,
+      columns_md: 1,
+      columns_sm: 1
+    -%}
+  {%- endcapture -%}
+{% elsif layout_all_columns %}
+  {%- capture image_sizes -%}
+    {%- render 'image-grid-sizes',
+      columns_lg: 2,
+      columns_md: 2,
+      columns_sm: 1,
+      section_width: section.settings.content_width
+    %}
+  {%- endcapture -%}
+  {%- capture image_widths -%}
+    {%- render 'image-grid-widths',
+      columns_lg: 2,
+      columns_md: 2,
+      columns_sm: 1
+    -%}
+  {%- endcapture -%}
+{% elsif layout_mosaic %}
+  {%- capture image_sizes_single -%}
+    {%- render 'image-grid-sizes',
+      columns_lg: 1,
+      columns_md: 1,
+      columns_sm: 1,
+      section_width: section.settings.content_width
+    %}
+  {%- endcapture -%}
+  {%- capture image_widths_single -%}
+    {%- render 'image-grid-widths',
+      columns_lg: 1,
+      columns_md: 1,
+      columns_sm: 1
+    -%}
+  {%- endcapture -%}
+  {%- capture image_sizes_grid -%}
+    {%- render 'image-grid-sizes',
+      columns_lg: 2,
+      columns_md: 2,
+      columns_sm: 1,
+      section_width: section.settings.content_width
+    %}
+  {%- endcapture -%}
+  {%- capture image_widths_grid -%}
+    {%- render 'image-grid-widths',
+      columns_lg: 2,
+      columns_md: 2,
+      columns_sm: 1
+    -%}
+  {%- endcapture -%}
+{% endif %}
+
+{% comment %} Custom cursor {% endcomment %}
+{% if _settings.enable_zoom %}
+  {% assign media_attributes = media_attributes | append: ' x-custom-cursor' %}
+
+  {% capture custom_cursor %}
+    {% comment %} Cursor blur background circle {% endcomment %}
+    <div
+      x-cloak
+      x-custom-cursor:element.speed.14%
+      class="size-fit fixed top-0 left-0 z-10 overflow-visible pointer-events-none cursor-pointer motion-reduce:hidden touch:hidden"
+    >
+      <div class="[--cursor-size:42px] size-[--cursor-size] rounded-full frosted-glass border border-white/50"></div>
+    </div>
+    {% comment %} Cursor arrow {% endcomment %}
+    <span
+      x-cloak
+      x-custom-cursor:element.speed.16%
+      class="fixed top-0 left-0 z-10 pointer-events-none flex flex-center [--cursor-size:42px] size-[--cursor-size] touch:hidden"
+    >
+      {% render 'core-icon', icon: 'fill-magnify', size: 'md', class: 'text-white' %}
+    </span>
+  {% endcapture %}
+{% endif %}
+
+{% capture main_media %}
+  <div
+    class="
+      group/media
+      relative w-full overflow-hidden
+      transition-[height] duration-400
+      {{ class }}
+    "
+    style="--model-icon-size: var(--r13);"
+    {{ media_attributes }}
+  >
+    {% for media in product_media %}
+      {% liquid
+        assign is_featured_media = false
+        if forloop.first
+          assign is_featured_media = true
+        endif
+      %}
+
+      {% if layout == 'showcase' %}
+        {% capture media_item_attributes %}
+          x-slideshow:slide
+          x-show="$slide.isCurrentSlide"
+
+          {% if is_featured_media %}
+            x-intersect="
+              $nextTick(() => {
+                updateSlideshowHeight($el.offsetHeight)
+              })
+            "
+          {% else %}
+            x-cloak
+          {% endif %}
+
+          x-transition:enter="duration-[--slide-transition-duration]"
+          x-transition:enter-start="opacity-0"
+          x-transition:enter-end="opacity-100 z-10"
+          x-transition:leave="duration-[--slide-transition-duration] delay-[calc(var(--transition-duration)/4)] !absolute top-0 left-0 w-full"
+          x-transition:leave-start="opacity-100"
+          x-transition:leave-end="opacity-0"
+          aria-label="{{ media.alt | escape }}"
+          :aria-selected="$slide.isCurrentSlide"
+          :id="$id('{{ id }}') + '_{{ media.position }}/{{ product_media_size_count }}'"
+          {% comment %} Prevent not-featured images from loading {% endcomment %}
+          {% if is_featured_media == false %}
+            x-cloak
+          {% endif %}
+        {% endcapture %}
+      {% elsif layout == 'stack' %}
+        {% assign media_item_attributes = '' %}
+        {% comment %} full-width first column when in mosaic layout {% endcomment %}
+        {% if stack_style == 'mosaic' %}
+          {% if forloop.first %}
+            {% assign media_class = media_class | append: ' col-span-2' %}
+          {% else %}
+            {% assign media_class = stack_media_class %}
+          {% endif %}
+        {% endif %}
+      {% endif %}
+
+      {% liquid
+        assign use_single_col = layout_all_single
+        if layout_mosaic and forloop.first
+          assign use_single_col = true
+        endif
+
+        assign media_id = id | append: '-' | append: media.id
+        assign thumb_el_id = '#' | append: media_id
+      %}
+
+      {% case media.media_type %}
+        {% when 'image' %}
+          {% render 'photoswipe-image-json', id: media.id, image: media.preview_image, thumb_el: thumb_el_id %}
+        {% when 'video' %}
+          {% assign show_custom_controls = _settings.custom_controls | default: false %}
+          {% assign autoplay = _settings.video_autoplay | default: false %}
+          {% if show_custom_controls or autoplay %}
+            {% for source in media.sources %}
+              {% comment %} Check for mp4, mov or webm source so we can get the correct video URL {% endcomment %}
+              {% case source.mime_type %}
+                {% when 'video/mp4', 'video/quicktime', 'video/webm' %}
+                  {% render 'photoswipe-video-json', id: media.id, video: media, video_source: source.url, thumb_el: thumb_el_id %}
+                  {% break %}
+              {% endcase %}
+            {% endfor %}
+          {% endif %}
+      {% endcase %}
+
+      {% if use_single_col %}
+        {%- capture item_image_sizes -%}
+          {%- render 'image-grid-sizes',
+            columns_lg: 1,
+            columns_md: 1,
+            columns_sm: 1,
+            section_width: section.settings.content_width
+          %}
+        {%- endcapture -%}
+        {%- capture item_image_widths -%}
+          {%- render 'image-grid-widths',
+            columns_lg: 1,
+            columns_md: 1,
+            columns_sm: 1
+          -%}
+        {%- endcapture -%}
+      {% else %}
+        {%- capture item_image_sizes -%}
+          {%- render 'image-grid-sizes',
+            columns_lg: 2,
+            columns_md: 2,
+            columns_sm: 1,
+            section_width: section.settings.content_width
+          %}
+        {%- endcapture -%}
+        {%- capture item_image_widths -%}
+          {%- render 'image-grid-widths',
+            columns_lg: 2,
+            columns_md: 2,
+            columns_sm: 1
+          -%}
+        {%- endcapture -%}
+      {% endif %}
+
+      {% render 'product-media-item',
+        _settings: _settings,
+        product: product,
+        product_media: product_media,
+        media: media,
+        class: media_class,
+        attributes: media_item_attributes,
+        id: media_id,
+        aspect_ratio: aspect_ratio,
+        is_featured_media: is_featured_media,
+        image_sizes: item_image_sizes,
+        image_widths: item_image_widths
+      %}
+    {% endfor %}
+
+    {{ custom_cursor }}
+  </div>
+{% endcapture %}
+
+<div
+  style="--media-spacing: {{ media_spacing }}px;"
+  class="
+    relative hidden gap-[--media-spacing]
+    md:flex
+    {% if thumbnail_position == 'beside' %}
+      flex-row-reverse justify-end {% if thumbnail_position_beside_alignment == 'bottom' %} items-end {% endif %}
+    {% else %}
+      flex-col items-start
+    {% endif %}
+  "
+  x-photoswipe
+  {% if layout == 'showcase' %}
+    x-data="
+      {
+        get currentSlideIndex() {
+          return $slideshow.currentSlideIndex
+        },
+        set currentSlideIndex(value) {
+          $slideshow.currentSlideIndex = value
+        }
+      }
+    "
+    x-slideshow
+    aria-label="{{ 'product.gallery.accessibility.gallery_label' | t }}"
+    role="region"
+    id="{{ id }}"
+    x-id="['{{ id }}']"
+  {% endif %}
+  {{ attributes }}
+>
+  {{ main_media }}
+
+  {% if layout == 'showcase' %}
+    {% assign thumbnail_aspect_ratio = aspect_ratio | default: 1 %}
+    <div
+      class="flex {{ thumbnail_position_class }}"
+      @keydown.right="$slideshow.next()"
+      @keydown.left="$slideshow.prev()"
+    >
+      {% render 'product-media-thumbnail-picker',
+        product: product,
+        product_media: product_media,
+        orientation: thumbnail_orientation,
+        image_size: thumbnail_size,
+        thumbnail_spacing: thumbnail_spacing,
+        id: id
+      %}
+    </div>
+  {% endif %}
+</div>

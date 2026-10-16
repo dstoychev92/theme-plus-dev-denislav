@@ -1,0 +1,133 @@
+<!-- blocks/_section-title.liquid -->
+
+{%- if block.settings.text != blank or block.blocks.size > 0 -%}
+  {% liquid
+    assign tag = 'h2'
+    if settings.show_tag_settings and block.settings.set_heading_tag
+      assign tag = block.settings.heading_tag | default: 'h2'
+    endif
+  %}
+
+  {% capture style %}
+    {% if block.settings.set_spacing %}
+      padding-bottom: {{ block.settings.buffer_bottom }}px;
+      {% render 'props-style-gap', _settings: block.settings, vars: false, apply: false %}
+      row-gap: var(--custom-gutter-y);
+    {% else %}
+      row-gap: var(--root-space-sm);
+    {% endif %}
+    {% if block.settings.set_color and block.settings.color == 'custom' %}
+      --color-custom-text: {{ block.settings.color_custom }};
+    {% endif %}
+  {% endcapture %}
+
+  {% capture text_class %}
+    {% if block.settings.set_color %}
+      text-{{ block.settings.color | default: 'content' }}
+    {% else %}
+      text-default
+    {% endif %}
+    inline-richtext
+    entrance-item entrance-standard
+  {% endcapture %}
+
+  <header
+    style="{{ style }}"
+    data-morph-root="section-title"
+    class="
+      flex flex-col w-full
+      justify-self-content-align
+      items-content-align text-content-align
+      entrance-container *:auto-set-stagger-order
+    "
+    {{ block.shopify_attributes }}
+  >
+    {% render 'core-text-preset', tag: tag, class: text_class, _settings: block.settings %}
+    {% content_for 'blocks' %}
+  </header>
+{%- endif -%}
+
+{%- schema -%}
+{
+  "name": "Section title",
+  "tag": null,
+  "settings": [
+    {
+      "type": "inline_richtext",
+      "id": "text",
+      "label": "Text"
+    },
+    
+    {"type":"select","id":"type_preset","label":"Text style","default":"section","options":[{"value":"section","label":"Section title"},{"value":"kicker","label":"Kicker"},{"value":"custom","label":"⋯"}]},
+
+    {"type":"select","id":"type_resize","label":"Text size","default":"md","options":[{"value":"xs","label":"XS"},{"value":"sm","label":"S"},{"value":"md","label":"M"},{"value":"lg","label":"L"},{"value":"xl","label":"XL"}],"visible_if":"{{ block.settings.type_preset != 'custom' }}"},{"type":"select","id":"type_font","label":"Font","default":"heading","options":[{"value":"heading","label":"Heading"},{"value":"subheading","label":"Subheading"},{"value":"accent","label":"Accent"},{"value":"body","label":"Body"}],"visible_if":"{{ block.settings.type_preset == 'custom' }}"},{"type":"range","id":"type_size","label":"Size","min":1,"max":15,"step":1,"default":8,"visible_if":"{{ block.settings.type_preset == 'custom' }}"},{"type":"checkbox","id":"type_uppercase","label":"Uppercase","default":false,"visible_if":"{{ block.settings.type_preset == 'custom' }}"},
+
+    {
+      "type": "header",
+      "content": "Color"
+    },
+    {"type":"checkbox","id":"set_color","label":"Set color","default":false},{"type":"select","id":"color","label":"Color","default":"content","visible_if":"{{ block.settings.set_color == true  }}","options":[{"value":"content","label":"Text default"},{"value":"muted","label":"Text muted"},{"value":"primary","label":"Primary accent"},{"value":"secondary","label":"Link accent"},{"value":"sale","label":"Sale"},{"value":"custom","label":"Custom"}]},{"type":"color","id":"color_custom","alpha":true,"default":"#000000","visible_if":"{{ block.settings.color == 'custom' and block.settings.set_color == true  }}","label":"Custom color"},
+
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_spacing",
+      "label": "Set spacing",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "buffer_bottom",
+      "label": "Padding bottom",
+      "visible_if": "{{ block.settings.set_spacing }}",
+      "default": 0,
+      "min": 0,
+      "max": 200,
+      "step": 2,
+      "unit": "px",
+    },
+    {"type":"select","id":"gap","label":"Vertical gap for blocks","default":"sm","visible_if":"{{ block.settings.set_spacing }}","info":"Applies when blocks are added to the section title","options":[{"value":"sm","label":"S"},{"value":"md","label":"M"},{"value":"lg","label":"L"},{"value":"custom","label":"⋯"}]},{"type":"range","id":"gap_custom","label":"Custom gap","default":0,"min":0,"max":80,"step":2,"unit":"px","visible_if":"{{ block.settings.gap == 'custom'  and block.settings.set_spacing }}"},
+
+
+    {"type":"header","content":"Tag","visible_if":"{{ settings.show_tag_settings == true }}"},{"type":"checkbox","id":"set_heading_tag","label":"Set HTML tag","visible_if":"{{ settings.show_tag_settings == true }}","default":false},{"type":"select","id":"heading_tag","label":"HTML tag","info":"Override the style preset with a specific HTML tag","default":"h2","visible_if":"{{ settings.show_tag_settings == true and block.settings.set_heading_tag == true }}","options":[{"value":"p","label":"p"},{"value":"h1","label":"h1"},{"value":"h2","label":"h2"},{"value":"h3","label":"h3"},{"value":"h4","label":"h4"},{"value":"h5","label":"h5"},{"value":"h6","label":"h6"}]},
+
+  ],
+  "blocks": [
+    {
+      "type": "_section-title-row"
+    },
+    {
+      "type": "_section-title-inline"
+    },
+    {
+      "type": "theme-text"
+    },
+    {
+      "type": "theme-richtext"
+    },
+    {
+      "type": "theme-spacer"
+    },
+    {
+      "type": "theme-decoration"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Section title",
+      "category": "Text",
+      "settings": {
+        "text": "Section title"
+      },
+      "blocks": [
+        {
+          "type": "theme-decoration"
+        }
+      ]
+    }
+  ]
+}
+{%- endschema -%}

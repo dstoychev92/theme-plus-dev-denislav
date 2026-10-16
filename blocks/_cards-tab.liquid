@@ -1,0 +1,108 @@
+<!-- blocks/_cards-tab.liquid -->
+
+{% capture list_items %}
+  {% content_for 'blocks' %}
+{% endcapture %}
+
+{% capture attributes %}
+  {% if request.design_mode %}
+    x-effect="
+      let scrollToElement;
+      {% comment %} $isSelectedBlock triggers when the Tab block is selected {% endcomment %}
+      {% comment %} $containsSelectedBlock triggers when Tab or any nested block is selected {% endcomment %}
+      if ($isSelectedBlock) {
+        {% comment %} Scrolling to the panel's container last element(which is the card-list container), because targeting the tab buttons is very hard at this point {% endcomment %}
+        scrollToElement = $selectedBlock?.lastElementChild;
+      } else if ($containsSelectedBlock) {
+        scrollToElement = $selectedBlock;
+      }
+
+      if (typeof scrollToElement !== 'undefined') {
+        $tab.select();
+
+        {% comment %} Override the default "scroll to selected block" functionality {% endcomment %}
+        setTimeout(() => {
+          scrollToElement.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+        }, 350);
+      }
+    "
+  {% endif %}
+
+  {{ block.shopify_attributes }}
+{% endcapture %}
+
+{% render 'core-tab-card-list', list_items: list_items, _settings: section.settings, attributes: attributes %}
+
+{% schema %}
+{
+	"name": "Tab",
+	"tag": null,
+	"settings": [
+		{
+			"type": "text",
+			"id": "title",
+			"label": "Title",
+			"default": "Tab",
+			"info": "Tab title hides when there is only one tab to display"
+		}
+	],
+	"blocks": [
+		{
+			"type": "_cards-products"
+		},
+		{
+			"type": "_cards-collections"
+		},
+		{
+			"type": "_cards-articles"
+		},
+		{
+			"type": "_tile"
+		},
+		{
+			"type": "_card-custom"
+		},
+		{
+			"type": "_grid-group-frame"
+		},
+	],
+	"presets": [
+		{
+			"name": "Custom Tab"
+		},
+		{
+			"name": "Products",
+			"settings": {
+				"title": "Best Sellers"
+			},
+			"blocks": [
+				{
+					"type": "_cards-products"
+				}
+			]
+		},
+		{
+			"name": "Collections",
+			"settings": {
+				"title": "Featured Collections"
+			},
+			"blocks": [
+				{
+					"type": "_cards-collections"
+				}
+			]
+		},
+		{
+			"name": "Articles",
+			"settings": {
+				"title": "Popular Articles"
+			},
+			"blocks": [
+				{
+					"type": "_cards-articles"
+				}
+			]
+		}
+	]
+}
+{% endschema %}

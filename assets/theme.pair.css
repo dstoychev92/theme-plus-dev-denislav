@@ -1,0 +1,271 @@
+
+/*
+* @license
+* PIPELINE Theme (c) Groupthought Themes
+*
+* The contents of this file should not be modified.
+* Add any minor changes to assets/custom.css
+*
+*/
+
+@charset "UTF-8";
+/*
+ * Pair Grid System
+ * Two-column layout system where each column sits within the section grid and maintains
+ * its own internal grid with named grid lines (outer-start, inner-start, inner-end, outer-end).
+ * The internal grid defines padding/buffer zones that create boundaries for content positioning.
+ *
+ * Architecture:
+ * - Section Grid: Contains both columns, defines section-start, col-gap-start, col-gap-end, section-end
+ * - Column Grid: Each pair-column is an independent grid container with its own:
+ *   - Outer grid lines: Define the full column boundaries including padding
+ *   - Inner grid lines: Define the content area within the padding
+ *   - Content positioning: Children use CSS variables to position themselves on inner/outer lines
+ *
+ * Key Behaviors:
+ *
+ * 1. Image Dominance: When columns have no gap and one contains .pair-media, the media
+ *    extends to fill its column's outer boundaries, forcing opposing column's content to
+ *    yield inward to the inner boundaries.
+ *
+ * 2. Responsive: Mobile stacks columns vertically (both span section-start to section-end),
+ *    desktop maintains side-by-side layout (column-1: section-start to col-gap-start,
+ *    column-2: col-gap-end to section-end).
+ *
+ * 3. Background Handling: Columns with backgrounds (.pair-bg-opaque, .pair-bg-transparent)
+ *    affect content positioning - opaque backgrounds inset content to inner lines, transparent
+ *    backgrounds allow content to use outer lines (subject to image dominance rules).
+ */
+:root {
+  /* Default grid positioning for pair column children */
+  --pair-column-content-col-start: outer-start;
+  --pair-column-content-col-end: outer-end;
+  --pair-column-content-row-start: outer-start;
+  --pair-column-content-row-end: outer-end;
+  /* Default title positioning (inherits from content) */
+  --pair-column-title-col-start: var(--pair-column-content-col-start);
+  --pair-column-title-col-end: var(--pair-column-content-col-end);
+}
+/* ==========================================================================
+    BASE COLUMN STYLES
+   ========================================================================== */
+pair-column {
+  /* Desktop column positioning within section grid */
+  --pair-column-1-col-start: section-start;
+  --pair-column-1-col-end: col-gap-start;
+  --pair-column-2-col-start: col-gap-end;
+  --pair-column-2-col-end: section-end;
+  /* Padding/buffer system with responsive overrides */
+  --pair-buffer-x-default: var(--root-buffer);
+  --pair-buffer-y-default: var(--root-space-lg);
+  --pair-pt: var(--pair-buffer-t-lg, var(--pair-buffer-y, var(--pair-buffer-y-default)));
+  --pair-pb: var(--pair-buffer-b-lg, var(--pair-buffer-y, var(--pair-buffer-y-default)));
+  --pair-ps: var(--pair-buffer-s-lg, var(--pair-buffer-x, var(--pair-buffer-x-default)));
+  --pair-pe: var(--pair-buffer-e-lg, var(--pair-buffer-x, var(--pair-buffer-x-default)));
+  /* Grid template with named lines: outer-start → inner-start → inner-end → outer-end */
+  --pair-grid-rows: [outer-start] var(--pair-pt) [inner-start] minmax(0, 1fr) [inner-end] var(--pair-pb) [outer-end];
+  --pair-grid-cols: [outer-start] var(--pair-ps) [inner-start] minmax(0, 1fr) [inner-end] var(--pair-pe) [outer-end];
+  display: grid;
+  grid-template-columns: var(--pair-grid-cols);
+  grid-template-rows: var(--pair-grid-rows);
+  /* Position all children using CSS variables (customized per element below) */
+}
+pair-column.pair-column-1 {
+  grid-column-start: var(--pair-column-1-col-start);
+  grid-column-end: var(--pair-column-1-col-end);
+}
+pair-column.pair-column-2 {
+  grid-column-start: var(--pair-column-2-col-start);
+  grid-column-end: var(--pair-column-2-col-end);
+}
+pair-column > * {
+  grid-column-start: var(--pair-column-content-col-start);
+  grid-column-end: var(--pair-column-content-col-end);
+  grid-row-start: var(--pair-column-content-row-start);
+  grid-row-end: var(--pair-column-content-row-end);
+}
+/* Helper class for position-absolute elements (e.g., placement-grid) */
+.pair-padding {
+  padding-top: var(--pair-pt);
+  padding-bottom: var(--pair-pb);
+  padding-inline-start: var(--pair-ps);
+  padding-inline-end: var(--pair-pe);
+}
+/* Card list slider scroll padding (applies to all breakpoints) */
+/* Note: This would normally be in a media query, but card-list.css uses variables for everything */
+pair-column:has(.card-list-mobile-layout-slider) {
+  --card-list-scroll-padding-mobile: var(--pair-buffer-s-sm, var(--root-buffer));
+}
+/* ==========================================================================
+    MOBILE STYLES (< md breakpoint)
+   ========================================================================== */
+@media not all and (min-width: 768px) {
+  /* Mobile: Titles default to inner boundaries */
+  :root {
+    --pair-column-title-col-start: inner-start;
+    --pair-column-title-col-end: inner-end;
+  }
+  /* Mobile: Stack columns vertically (both span full section width) */
+  pair-column {
+    --pair-column-col-start-mobile: section-start;
+    --pair-column-col-end-mobile: section-end;
+    --pair-column-1-col-start: var(--pair-column-col-start-mobile);
+    --pair-column-1-col-end: var(--pair-column-col-end-mobile);
+    --pair-column-2-col-start: var(--pair-column-col-start-mobile);
+    --pair-column-2-col-end: var(--pair-column-col-end-mobile);
+    /* Mobile padding overrides (smaller values) */
+    --pair-pt: var(--pair-buffer-t-sm, var(--pair-buffer-y, var(--pair-buffer-y-default)));
+    --pair-pb: var(--pair-buffer-b-sm, var(--pair-buffer-y, var(--pair-buffer-y-default)));
+    --pair-ps: var(--pair-buffer-s-sm, var(--pair-buffer-x, var(--pair-buffer-x-default)));
+    --pair-pe: var(--pair-buffer-e-sm, var(--pair-buffer-x, var(--pair-buffer-x-default)));
+  }
+  /* Mobile: Content uses inner boundaries (unless it's background media) */
+  pair-column:not(.pair-media) {
+    --pair-column-content-row-start: inner-start;
+    --pair-column-content-row-end: inner-end;
+  }
+  /* Rounded columns: Content insets from edges */
+  pair-column.pair-column-rounded:not(.pair-media) {
+    --pair-column-content-col-start: inner-start;
+    --pair-column-content-col-end: inner-end;
+    --pair-column-content-row-start: inner-start;
+    --pair-column-content-row-end: inner-end;
+  }
+  /* Rounded columns with media: Media extends to outer boundaries */
+  pair-column.pair-column-rounded.pair-media {
+    --pair-column-content-col-start: outer-start;
+    --pair-column-content-col-end: outer-end;
+    --pair-column-content-row-start: outer-start;
+    --pair-column-content-row-end: outer-end;
+  }
+  /* Full-bleed elements: Sliders and media extend to page edges */
+  pair-column:has(.card-list-mobile-layout-slider):not(.pair-column-contain), pair-column.pair-media:not(.pair-column-rounded) {
+    --pair-column-col-start-mobile: fullbleed-start;
+    --pair-column-col-end-mobile: fullbleed-end;
+    --pair-column-content-col-start: outer-start;
+    --pair-column-content-col-end: outer-end;
+  }
+  /* Bleed sections: Inset content from page edges (excludes media and sliders) */
+  .section-width-bleed pair-column:not(.pair-media):not(:has(.card-list-mobile-layout-slider)) {
+    --pair-column-content-col-start: inner-start;
+    --pair-column-content-col-end: inner-end;
+  }
+  /* Contained columns: Inset content when background/border is present */
+  pair-column.pair-column-contain {
+    /* Default: Inset rows for non-media, non-slider content */
+    /* Card lists: Inset all sides to provide padding around cards */
+  }
+  pair-column.pair-column-contain:not(.pair-media):not(:has(.card-list-mobile-layout-slider)) {
+    --pair-column-content-col-start: inner-start;
+    --pair-column-content-col-end: inner-end;
+    --pair-column-content-row-start: inner-start;
+    --pair-column-content-row-end: inner-end;
+  }
+  pair-column.pair-column-contain:has(.card-list-mobile-layout-slider), pair-column.pair-column-contain:has(.card-list-mobile-layout-grid) {
+    --pair-column-content-col-start: inner-start;
+    --pair-column-content-col-end: inner-end;
+    --pair-column-content-row-start: inner-start;
+    --pair-column-content-row-end: inner-end;
+    --pair-column-title-col-start: inner-start;
+    --pair-column-title-col-end: inner-end;
+  }
+  /* Background columns: Add vertical gap between stacked columns */
+  .pair-section-grid:has(pair-column.pair-bg-opaque) {
+    row-gap: var(--pair-gap-y);
+  }
+}
+/* ==========================================================================
+    DESKTOP & TABLET STYLES (≥ md breakpoint)
+   ========================================================================== */
+@media (min-width: 768px) {
+  /* Contained columns: Inset content when background/border is present */
+  pair-column.pair-column-contain {
+    /* Default: Inset all content except media and sliders */
+    /* Card lists: Inset all sides to provide padding around cards */
+  }
+  pair-column.pair-column-contain:not(.pair-media):not(:has(.card-list-layout-slider)) {
+    --pair-column-content-col-start: inner-start;
+    --pair-column-content-col-end: inner-end;
+    --pair-column-content-row-start: inner-start;
+    --pair-column-content-row-end: inner-end;
+  }
+  pair-column.pair-column-contain:has(.card-list-layout-slider), pair-column.pair-column-contain:has(.card-list-layout-grid), pair-column.pair-column-contain:has(.card-list-layout-showcase) {
+    --pair-column-content-col-start: inner-start;
+    --pair-column-content-col-end: inner-end;
+    --pair-column-content-row-start: inner-start;
+    --pair-column-content-row-end: inner-end;
+    --pair-column-title-col-start: inner-start;
+    --pair-column-title-col-end: inner-end;
+  }
+  /* Custom padding columns: Inset all content */
+  pair-column.pair-column-custom-padding {
+    --pair-column-content-col-start: inner-start;
+    --pair-column-content-col-end: inner-end;
+    --pair-column-content-row-start: inner-start;
+    --pair-column-content-row-end: inner-end;
+  }
+  /* Bleed sections: Inset content from page edges (excludes media and sliders) */
+  .section-width-bleed pair-column:not(.pair-media):not(:has(.card-list-layout-slider)).pair-column-1 {
+    --pair-column-content-col-start: inner-start;
+  }
+  .section-width-bleed pair-column:not(.pair-media):not(:has(.card-list-layout-slider)).pair-column-2 {
+    --pair-column-content-col-end: inner-end;
+  }
+  /* Full-width sections: Sliders extend to full bleed lines */
+  .section-width-full.pair-section-grid pair-column:has(.card-list-layout-slider):not(.pair-column-contain).pair-column-1 {
+    --pair-column-1-col-start: fullbleed-start;
+  }
+  .section-width-full.pair-section-grid pair-column:has(.card-list-layout-slider):not(.pair-column-contain).pair-column-2 {
+    --pair-column-2-col-end: fullbleed-end;
+  }
+  /* Image dominance: No-gap transparent columns yield to media */
+  .pair-section-grid pair-column.pair-bg-transparent:not(.pair-gap):not(.pair-media) {
+    /* Default: Yield inward on adjacent side */
+    /* Card grids: Add gutter spacing when opposing column has media */
+  }
+  .pair-section-grid pair-column.pair-bg-transparent:not(.pair-gap):not(.pair-media):not(:has(.card-list-layout-grid, .card-list-layout-slider)).pair-column-1 {
+    --pair-column-content-col-end: inner-end;
+  }
+  .pair-section-grid pair-column.pair-bg-transparent:not(.pair-gap):not(.pair-media):not(:has(.card-list-layout-grid, .card-list-layout-slider)).pair-column-2 {
+    --pair-column-content-col-start: inner-start;
+  }
+  section:has(.pair-section-grid pair-column.pair-media) .pair-section-grid pair-column.pair-bg-transparent:not(.pair-gap):not(.pair-media):has(.card-list-layout-grid).pair-column-1 {
+    --pair-pe: var(--root-gutter);
+    --pair-column-content-col-end: inner-end;
+  }
+  section:has(.pair-section-grid pair-column.pair-media) .pair-section-grid pair-column.pair-bg-transparent:not(.pair-gap):not(.pair-media):has(.card-list-layout-grid).pair-column-2 {
+    --pair-ps: var(--root-gutter);
+    --pair-column-content-col-start: inner-start;
+  }
+  /* Slider adjacent to media: Use inner line on adjacent side */
+  .pair-section-grid:not(:has(.pair-gap)):has(pair-column.pair-column-2.pair-media) pair-column.pair-column-1:has(.card-list-layout-slider) {
+    --card-list-scroll-padding-desktop: var(--pair-ps);
+    --pair-column-title-col-end: inner-end;
+  }
+  .pair-section-grid:not(:has(.pair-gap)):has(pair-column.pair-column-1.pair-media) pair-column.pair-column-2:has(.card-list-layout-slider) {
+    --card-list-scroll-padding-desktop: var(--pair-pe);
+    --pair-column-title-col-start: inner-start;
+  }
+  /* Slider adjacent to card-grid: Use inner line on adjacent side */
+  .pair-section-grid:not(:has(.pair-gap)):has(pair-column.pair-column-2 .card-list-layout-grid) pair-column.pair-column-1:has(.card-list-layout-slider) {
+    --pair-column-content-col-end: inner-end;
+    --pair-column-title-col-end: inner-end;
+  }
+  .pair-section-grid:not(:has(.pair-gap)):has(pair-column.pair-column-1 .card-list-layout-grid) pair-column.pair-column-2:has(.card-list-layout-slider) {
+    --pair-column-content-col-start: inner-start;
+    --pair-column-title-col-start: inner-start;
+  }
+  /* Remove inner corner rounding when both columns are rounded with no gap */
+  .pair-section-grid:not(:has(.pair-gap)):has(pair-column.pair-column-1.pair-column-contain):has(pair-column.pair-column-2.pair-column-rounded) pair-column.pair-column-1.pair-column-rounded {
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+  }
+  .pair-section-grid:not(:has(.pair-gap)):has(pair-column.pair-column-1.pair-column-contain):has(pair-column.pair-column-2.pair-column-rounded) pair-column.pair-column-2.pair-column-rounded {
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+  }
+  /* Remove inner border from first column when both columns have borders with no gap */
+  .pair-section-grid:not(:has(.pair-gap)):has(pair-column.pair-column-1.pair-column-border):has(pair-column.pair-column-2.pair-column-border) pair-column.pair-column-1.pair-column-border {
+    border-right-width: 0 !important;
+  }
+}

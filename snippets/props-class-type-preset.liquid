@@ -1,0 +1,30 @@
+{% liquid
+  if settings_suffix
+    assign _id_suffix = settings_suffix | prepend: '_'
+  endif
+
+  assign type_preset_id = 'type_preset' | append: _id_suffix
+  assign type_size_id = 'type_size' | append: _id_suffix
+  assign type_font_id = 'type_font' | append: _id_suffix
+  assign type_resize_id = 'type_resize' | append: _id_suffix
+  assign type_uppercase_id = 'type_uppercase' | append: _id_suffix
+
+  assign type_preset = type_preset | default: _settings[type_preset_id] | default: default_type_preset | default: 'p'
+  assign type_size = type_size | default: _settings[type_size_id] | default: '4'
+  assign type_font = type_font | default: _settings[type_font_id] | default: 'body'
+  assign type_resize = type_resize | default: _settings[type_resize_id], allow_false: true
+  assign type_uppercase = type_uppercase | default: _settings[type_uppercase_id] | default: false, allow_false: true
+
+  assign tag = tag | default: 'p'
+%}
+
+{%- if type_preset == 'custom' -%}
+  {% if type_uppercase == true %} type-case-uppercase {% else %} type-case-normal {% endif %}
+  text-r{{ type_size }}
+  font-family-{{ type_font }} type-apply
+{% else %}
+  type-{{ type_preset }}
+  {% if type_resize %}
+    type-resize-{{ type_resize }}
+  {% endif %}
+{%- endif -%}

@@ -1,0 +1,40 @@
+{% liquid
+  assign text = _settings.text
+  assign highlight_toggle = _settings.highlight_toggle
+  assign enable_typography = _settings.enable_typography
+%}
+
+{% capture style %}
+  {% if _settings.set_color and _settings.color == 'custom' %}
+    --color-custom-text: {{ _settings.color_custom }};
+  {% endif %}
+{% endcapture %}
+
+{% capture class %}
+  inline inline-richtext
+  {{ class }}
+
+  {% if enable_typography %}
+    {% render 'props-class-type-preset', _settings: _settings, type_preset: 'custom' %}
+  {% endif %}
+
+  {% if _settings.set_color %}
+    text-{{ _settings.color | default: 'content' }}
+  {% else %}
+    text-content
+  {% endif %}
+{% endcapture %}
+
+{% capture split_text %}
+  {% render 'split-text', text: text, attributes: split_text_attributes %}
+{% endcapture %}
+
+<span style="{{ style }}" class="{{ class }}" {{ attributes }}>
+  {% if highlight_toggle == 'auto' %}
+    {% render 'text-autohighlight', text: split_text, _settings: _settings %}
+  {% elsif highlight_toggle == 'full' %}
+    {% render 'text-highlight', text: split_text, _settings: _settings %}
+  {% else %}
+    {{ split_text }}
+  {% endif %}
+</span>

@@ -1,0 +1,25 @@
+{% comment %}
+  Renders PhotoSwipe slide data for image zoom. Place inside an x-photoswipe root.
+  Uses data-photoswipe-json so the lightbox reads slides from the DOM when opened (no duplication on re-render).
+
+  Parameters:
+    - id: Optional ID for the PhotoSwipe item (default: blank)
+    - image: Image object for image zoom
+    - msrc: Optional thumbnail/preview image URL
+{% endcomment %}
+
+{% if image != blank %}
+  <script type="application/json" data-photoswipe-json>
+    {
+      "id": "{{ id }}",
+      "src": "{{ image | image_url }}",
+      "width": {{ image.width }},
+      "height": {{ image.height }},
+      {% if thumb_el != blank %}
+        "thumbEl": {{ thumb_el | json }},
+      {% endif %}
+      "alt": {{ image.alt | strip_html | strip_newlines | escape | json }}
+      {% if msrc != blank %},"msrc": "{{ msrc }}"{% endif %}
+    }
+  </script>
+{% endif %}

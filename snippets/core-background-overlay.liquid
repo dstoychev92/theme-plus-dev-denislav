@@ -1,0 +1,20 @@
+{% liquid
+  assign overlay_opacity = overlay_opacity | default: _settings.overlay_opacity | default: 0
+  assign overlay_color = overlay_color | default: _settings.overlay_color | default: 'var(--canvas)'
+
+  # Allow passing "false" to disable overlay from outside this snippet
+  if set_overlay == null
+    assign set_overlay = _settings.set_overlay | default: true, allow_false: true
+  endif
+%}
+
+{%- if overlay_opacity > 0 and set_overlay -%}
+  <background-overlay
+    class="block absolute overflow-hidden inset-0 {{ class }}"
+    style="
+      opacity: {{ overlay_opacity | divided_by: 100.0 }};
+      background-color: {{ overlay_color }};
+      {{ style }}
+    "
+  ></background-overlay>
+{%- endif -%}

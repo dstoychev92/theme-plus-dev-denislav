@@ -1,0 +1,121 @@
+<!-- blocks/_related-tab-related-products.liquid -->
+
+{% liquid
+  assign limit = block.settings.card_limit
+  assign fallback_products = block.settings.fallback_collection.products
+
+  assign has_loaded = false
+
+  if recommendations.performed
+    assign has_loaded = true
+  endif
+
+  if recommendations.performed and recommendations.products_count > 0 and recommendations.intent == 'related'
+    assign related_products = recommendations.products
+    assign product_count = recommendations.products_count | at_most: limit
+  endif
+
+  assign default_title = 'product.related' | t
+  assign title = block.settings.title | default: default_title
+%}
+
+{%- capture image_widths -%}
+  {%- render 'image-grid-widths' -%}
+{%- endcapture -%}
+{%- capture image_sizes -%}
+  {%- render 'image-grid-sizes' -%}
+{%- endcapture -%}
+
+{% capture tab_button_attributes %}
+  {{ block.shopify_attributes }}
+  {% if request.design_mode %}
+    x-effect="
+      if ($containsSelectedBlock) {
+        $tab.select()
+      }
+    "
+  {% endif %}
+{% endcapture %}
+
+{% capture attributes %}
+  id="{{ section.id }}-related-products"
+  data-morph-root="related-products"
+  {% unless request.visual_preview_mode %}
+    x-section-related:related-products-tab.limit.{{ limit }}="{{ product.id }}"
+  {% endunless %}
+{% endcapture %}
+
+{% capture list_items %}
+  {% if has_loaded %}
+    {% if related_products.size > 0 %}
+      {% for related_product in related_products limit: limit %}
+        {% if related_product.metafields.seo.hidden != true %}
+          {% render 'card-product', size: 'lg', product: related_product, attributes: 'x-carousel:item', image_widths: image_widths, image_sizes: image_sizes %}
+        {% endif %}
+      {% endfor %}
+    {% else %}
+      {% for product in fallback_products limit: limit %}
+        {% render 'card-product', size: 'lg', product: product, attributes: 'x-carousel:item', image_widths: image_widths, image_sizes: image_sizes %}
+      {% endfor %}
+    {% endif %}
+  {% else %}
+    {% for i in (1..limit) %}
+      {% capture placeholder_index %}
+        {% cycle 1, 2, 3 %}
+      {% endcapture %}
+      {% render 'card-layout-lg', loader: true %}
+    {% endfor %}
+  {% endif %}
+{%- endcapture -%}
+
+{% render 'core-tab-card-list',
+  list_items: list_items,
+  _settings: section.settings,
+  title: title,
+  attributes: attributes,
+  tab_button_attributes: tab_button_attributes
+%}
+
+{% schema %}
+{
+	"name": "Related products",
+	"tag": null,
+	"settings": [
+		{
+			"type": "paragraph",
+			"content": "Use the [Search & Discovery](https://apps.shopify.com/search-and-discovery) app from Shopify to customize the list of related products. [Learn more](https://help.shopify.com/en/manual/online-store/search-and-discovery/product-recommendations)"
+		},
+		{
+			"type": "text",
+			"id": "title",
+			"label": "Tab title",
+			"default": "Related",
+			"info": "Tab title hides when there is only one tab to display"
+		},
+		{
+			"type": "range",
+			"id": "card_limit",
+			"min": 1,
+			"max": 20,
+			"step": 1,
+			"label": "Card limit",
+			"default": 6
+		},
+		{
+			"type": "collection",
+			"id": "fallback_collection",
+			"label": "Fallback Collection",
+			"info": "If no related products are found, this collection will be used to generate recommendations."
+		}
+	],
+	"presets": [
+		{
+			"name": "Related products",
+			"settings": {
+				"fallback_collection": "frontpage"
+			},
+			"blocks": []
+		}
+	]
+}
+{% endschema %}

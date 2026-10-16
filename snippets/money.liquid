@@ -1,0 +1,41 @@
+{% comment %}
+  Renders a price inside a money tag with correct formatting.
+
+  @param {number} price - number to format in cents
+  @param {boolean} hide_trailing_zeros - Override global setting to show/hide trailing zeros
+  @param {boolean} show_currency - Override global setting to show/hide the current cart iso currency code
+
+  @example
+  {% render 'money', price: variant.price %}
+  {% render 'money', price: cart.order_total, show_currency: true, hide_trailing_zeros: false %}
+  {% render 'money', price: variant.unit_price, show_currency: false %}
+  {% render 'money', price: order.total_net_amount, show_currency: true, hide_trailing_zeros: false, iso: order.currency.iso %}
+{% endcomment %}
+
+{%- liquid
+  assign iso = iso | default: cart.currency.iso_code
+  assign hide_trailing_zeros = hide_trailing_zeros | default: settings.hide_trailing_zeros, allow_false: true
+  assign show_currency = show_currency | default: settings.show_currency, allow_false: true
+
+  if hide_trailing_zeros
+    assign money_price = price | money_without_trailing_zeros
+  else
+    assign money_price = price | money
+  endif
+
+  if show_currency
+    assign money_price = money_price | append: ' ' | append: iso
+  endif
+-%}
+
+<span
+  class="money {{ class }}"
+  {% if style %}
+    style="{{ style }}"
+  {% endif %}
+  {% comment %} Specifying 'ltr' direction in order to prevent the currency(USD) from swapping places with the price when the direction is 'rtl' {% endcomment %}
+  dir="ltr"
+  {{ attributes }}
+>
+  {{- money_price -}}
+</span>

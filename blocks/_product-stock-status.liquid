@@ -1,0 +1,441 @@
+<!-- blocks/_product-stock-status.liquid -->
+
+{% liquid
+  assign product = closest.product
+
+  if product == blank and request.visual_preview_mode
+    assign product = collections.all.products.first
+  endif
+
+  assign current_variant = product.selected_or_first_available_variant
+
+  assign current_inventory = current_variant.inventory_quantity
+  assign show_count = block.settings.stockout_show_count
+
+  # The inventory at which the "countdown" begins, e.g. "Only 9 products left"
+  assign low_threshold = block.settings.stockout_low_threshold
+
+  assign show_always = false
+  if block.settings.stockout_style == 'always'
+    assign show_always = true
+  endif
+
+  assign is_in_stock = false
+  assign is_low_stock = false
+  assign is_out_of_stock = false
+
+  if current_variant.inventory_quantity > low_threshold
+    assign is_in_stock = true
+  endif
+
+  if current_variant.inventory_quantity > 0 and current_variant.inventory_quantity <= low_threshold
+    assign is_low_stock = true
+  endif
+
+  if current_variant.inventory_quantity < 1
+    assign is_out_of_stock = true
+  endif
+%}
+
+{% capture stock_status_class %}
+  relative flex-row-center gap-x-r4 text-content
+  {% render 'props-class-type-preset', _settings: block.settings, settings_suffix: 'stockout' %}
+{% endcapture %}
+
+{% comment %} Size button and popup {% endcomment %}
+{% if block.settings.info_page != blank %}
+  {% capture popup_content %}
+    <h3 class="type-h3">{{ block.settings.info_page.title }}</h3>
+    <div class="prose" tabindex="0">{{ block.settings.info_page.content }}</div>
+  {% endcapture %}
+
+  {% capture size_popup %}
+    <div x-dialog.modal>
+      {% render 'core-button',
+        label: block.settings.info_page.title,
+        color: block.settings.info_button_color,
+        appearance: block.settings.info_button_appearance,
+        sizing: block.settings.info_button_size,
+        attributes: 'x-dialog:button',
+        settings_suffix: 'info_button',
+        _settings: block.settings
+      %}
+
+      <template x-teleport="body">
+        {% render 'dialog', modal: true, content: popup_content, scrollable: true %}
+      </template>
+    </div>
+  {% endcapture %}
+{% endif %}
+
+{% comment %} Stock status {% endcomment %}
+{%- if current_variant.inventory_management == 'shopify' and current_variant.inventory_policy == 'deny' -%}
+  {%- capture stock_status -%}
+    {%- if is_in_stock and show_always -%}
+      <div class="{{ stock_status_class }}">
+        {{ 'product.in_stock' | t }}
+      </div>
+    {%- elsif is_low_stock -%}
+      <div class="{{ stock_status_class }}">
+        {% if show_count %}
+          {{ 'product.remaining_html' | t: inventory: current_inventory }}
+        {% else %}
+          {{ 'product.low_stock' | t }}
+        {% endif %}
+      </div>
+    {%- elsif is_out_of_stock -%}
+      <div class="{{ stock_status_class }}">
+        {{ 'product.out_of_stock' | t }}
+      </div>
+    {%- endif -%}
+  {%- endcapture -%}
+{%- endif -%}
+
+{% liquid
+  assign has_only_one_child = true
+  if size_popup and stock_status
+    assign has_only_one_child = false
+  endif
+%}
+
+{% capture class %}
+  flex
+  {% comment %} Respect alignment when there is only one child {% endcomment %}
+  {% if has_only_one_child %}
+    justify-content-align
+  {% else %}
+    justify-between items-center flex-wrap gap-r5 w-full
+  {% endif %}
+{% endcapture %}
+
+{%- capture content -%}
+  {{- size_popup -}}
+  {{- stock_status -}}
+{%- endcapture -%}
+
+{% render 'product-block',
+  _settings: block.settings,
+  content: content,
+  class: class,
+  attributes: block.shopify_attributes
+%}
+
+{% schema %}
+{
+	"name": "Product stock status",
+	"tag": null,
+	"settings": [
+		{
+			"type": "select",
+			"id": "stockout_style",
+			"label": "Inventory message",
+			"default": "low",
+			"options": [
+				{
+					"value": "low",
+					"label": "Show when low"
+				},
+				{
+					"value": "always",
+					"label": "Show always"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "stockout_low_threshold",
+			"label": "Low inventory threshold",
+			"min": 1,
+			"max": 50,
+			"step": 1,
+			"default": 10
+		},
+		{
+			"type": "checkbox",
+			"id": "stockout_show_count",
+			"label": "Show inventory count in message",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "type_preset_stockout",
+			"label": "Text style",
+			"default": "p",
+			"options": [
+				{
+					"value": "p",
+					"label": "Paragraph"
+				},
+				{
+					"value": "h1",
+					"label": "Heading 1"
+				},
+				{
+					"value": "h2",
+					"label": "Heading 2"
+				},
+				{
+					"value": "h3",
+					"label": "Heading 3"
+				},
+				{
+					"value": "h4",
+					"label": "Heading 4"
+				},
+				{
+					"value": "h5",
+					"label": "Heading 5"
+				},
+				{
+					"value": "h6",
+					"label": "Heading 6"
+				},
+				{
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_font_stockout",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset_stockout == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size_stockout",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 4,
+			"visible_if": "{{ block.settings.type_preset_stockout == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase_stockout",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ block.settings.type_preset_stockout == 'custom' }}"
+		},
+		{
+			"type": "header",
+			"content": "Info popup (optional)"
+		},
+		{
+			"type": "paragraph",
+			"content": "Typically used for sizing information, near the stock-out indicator.",
+		},
+		{
+			"id": "info_page",
+			"type": "page",
+			"label": "Select page",
+			"info": "This popup will show on every product."
+		},
+		{
+			"type": "select",
+			"id": "info_button_appearance",
+			"label": "Style",
+			"default": "soft",
+			"visible_if": "{{ block.settings.info_page != blank }}",
+			"options": [
+				{
+					"value": "solid",
+					"label": "Solid"
+				},
+				{
+					"value": "outline",
+					"label": "Outline"
+				},
+				{
+					"value": "soft",
+					"label": "Soft"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "info_button_size",
+			"label": "Height",
+			"default": "sm",
+			"visible_if": "{{ block.settings.info_page != blank }}",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "info_button_color",
+			"label": "Color",
+			"default": "content",
+			"visible_if": "{{ block.settings.info_page != blank }}",
+			"options": [
+				{
+					"value": "content",
+					"label": "Text default"
+				},
+				{
+					"value": "primary",
+					"label": "Primary accent"
+				},
+				{
+					"value": "secondary",
+					"label": "Link accent"
+				},
+				{
+					"value": "sale",
+					"label": "Sale"
+				},
+				{
+					"value": "canvas",
+					"label": "Background default"
+				},
+				{
+					"value": "black",
+					"label": "Black"
+				},
+				{
+					"value": "white",
+					"label": "White"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_preset_info_button",
+			"label": "Text style",
+			"default": "btn",
+			"visible_if": "{{ block.settings.info_page != blank }}",
+			"options": [
+				{
+					"value": "btn",
+					"label": "Button"
+				},
+				{
+					"value": "p",
+					"label": "Paragraph"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_resize_info_button",
+			"label": "Text size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			],
+			"visible_if": "{{ block.settings.info_page != blank and block.settings.type_preset_info_button != 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_font_info_button",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ block.settings.info_page != blank and block.settings.type_preset_info_button == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size_info_button",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 4,
+			"visible_if": "{{ block.settings.info_page != blank and block.settings.type_preset_info_button == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase_info_button",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ block.settings.info_page != blank and block.settings.type_preset_info_button == 'custom' }}"
+		},
+	],
+	"presets": [
+		{
+			"name": "Product stock status"
+		}
+	]
+}
+{% endschema %}

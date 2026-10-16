@@ -1,0 +1,67 @@
+{%- liquid
+  assign show_arrow = show_arrow | default: true, allow_false: true
+  assign size = size | default: 'sm', allow_false: true
+  assign position = position | default: 'bottom'
+  assign offset = offset | default: 5
+  assign max_width = max_width | default: '300px'
+
+  capture popover_class
+    case size
+      when 'lg'
+        echo 'px-r6 py-r4 text-r4'
+      when 'sm'
+        echo 'px-r5 py-r5 text-r1'
+    endcase
+
+    if popover_class
+      echo ' ' | append: popover_class
+    endif
+  endcapture
+-%}
+
+<div
+  x-popover="{{ popover_options }}"
+  class="contents {{ class }}"
+  style="{{ style }}"
+  {{ attributes }}
+>
+  {% comment %} Button {% endcomment %}
+  {{ button }}
+
+  {% comment %} Panel {% endcomment %}
+  <div
+    class="
+      fixed z-30 rounded-sm bg-[--popover-bg-color] text-content
+      shadow ring-1 ring-[color:var(--popover-border-color)]
+      transition-none w-max
+      {{ popover_class }}
+    "
+    style="
+      max-width: {{ max_width }};
+      --popover-bg-color: var(--canvas);
+      --popover-border-color: var(--content-alpha-5);
+    "
+    x-popover:panel.fixed.{{- position -}}.offset.{{- offset -}}px.flip.shift.update.pad.5px="{{ float_options }}"
+    :data-open="$popup.isOpen"
+    x-transition:enter="animate-in animate-duration-[--popover-enter-duration] slide-in-from-top-[5px] fade-in"
+    x-transition:leave="animate-out animate-duration-[--popover-exit-duration] slide-out-to-top-[5px] fade-out"
+    x-cloak
+  >
+    {% comment %} Arrow {% endcomment %}
+    {% if show_arrow %}
+      <div
+        x-popover:arrow
+        class="
+          h-r6 w-r6 overflow-hidden
+          before:absolute
+          before:left-1/2 before:top-r5
+          before:h-r5 before:w-r5 before:-translate-x-1/2 before:rotate-45 before:skew-x-3
+          before:skew-y-3 before:bg-[--popover-bg-color] before:shadow before:ring-1
+          before:ring-[color:var(--popover-border-color)]
+        "
+      ></div>
+    {% endif %}
+
+    {{ content }}
+  </div>
+</div>

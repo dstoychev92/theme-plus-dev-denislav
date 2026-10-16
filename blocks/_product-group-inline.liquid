@@ -1,0 +1,452 @@
+<!-- blocks/_product-group-inline.liquid -->
+
+{% capture blocks %}
+  {% content_for "blocks" %}
+{% endcapture %}
+
+{% liquid
+  assign tag = 'div'
+  if settings.show_tag_settings and block.settings.set_heading_tag
+    assign tag = block.settings.heading_tag | default: 'div'
+  endif
+%}
+
+{% capture class %}
+  inline entrance-item entrance-standard
+  *:auto-stagger-transitions-[--entrance-animation-stagger]
+  *:auto-stagger-animations-[--entrance-animation-stagger]
+
+  {% comment %}
+   The wraps-inline-graphics class duplicates the default, but it's very
+   important that icon, decoration and image block wrappers have an inline-block
+   wrapper when contained by the inline group.
+  {% endcomment %}
+  [&>.wraps-inline-graphics]:!inline-block
+  {% if block.settings.set_alignment %}
+    [&>.wraps-inline-graphics]:[vertical-align:var(--inline-block-gravity)]
+  {% endif %}
+
+  {% comment %} Use margin instead of gap for inline display {% endcomment %}
+  {% if block.settings.set_gap %}
+    *:me-[var(--custom-gutter-x)]
+  {% endif %}
+
+  {% if block.settings.set_alignment %}
+    vars-content-align-{{ block.settings.text_alignment }}
+  {% endif %}
+
+  {% render 'props-class-type-preset', _settings: block.settings %}
+
+  text-content-align
+{% endcapture %}
+
+{% capture style %}
+  {% if block.settings.set_gap %}
+    {% render 'props-style-gap', _settings: block.settings, apply: false, vars: false %}
+  {% endif %}
+  {% if block.settings.limit_width %}
+    {% render 'style-max-width', max_width: block.settings.max_width %}
+  {% endif %}
+
+  {% if block.settings.set_alignment %}
+    --inline-block-gravity: {{ block.settings.inline_block_alignment }};
+  {% endif %}
+
+  {% if block.settings.set_column_alignment %}
+    {% case block.settings.column_style %}
+      {% when 'count' %}
+        columns: {{ block.settings.column_count }};
+      {% when 'pixels' %}
+        columns: {{ block.settings.column_width_px }}px;
+    {% endcase %}
+  {% endif %}
+  {% comment %} Columns combines nicely with the gap setting {% endcomment %}
+  {% if block.settings.set_gap %}
+    column-gap: var(--custom-gutter-x);
+  {% else %}
+    column-gap: var(--layout-gutter-x);
+  {% endif %}
+{% endcapture %}
+
+<{{ tag }}
+  class="{{ class }}"
+  style="{{ style }}"
+  {{ block.shopify_attributes }}
+>
+  {{ blocks }}
+</{{ tag }}>
+
+{% schema %}
+{
+	"name": "Text group",
+	"tag": null,
+	"settings": [
+		{
+			"type": "select",
+			"id": "type_preset",
+			"label": "Style",
+			"default": "h2",
+			"options": [
+				{
+					"value": "section",
+					"label": "Section title"
+				},
+				{
+					"value": "kicker",
+					"label": "Kicker"
+				},
+				{
+					"value": "p",
+					"label": "Paragraph"
+				},
+				{
+					"value": "h1",
+					"label": "Heading 1"
+				},
+				{
+					"value": "h2",
+					"label": "Heading 2"
+				},
+				{
+					"value": "h3",
+					"label": "Heading 3"
+				},
+				{
+					"value": "h4",
+					"label": "Heading 4"
+				},
+				{
+					"value": "h5",
+					"label": "Heading 5"
+				},
+				{
+					"value": "h6",
+					"label": "Heading 6"
+				},
+				{
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_resize",
+			"label": "Text size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset != 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_font",
+			"label": "Font",
+			"default": "heading",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 10,
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "header",
+			"content": "Gap"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_gap",
+			"label": "Set gap",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "gap",
+			"label": "Gap",
+			"default": "sm",
+			"visible_if": "{{ block.settings.set_gap }}",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "gap_custom",
+			"label": "Custom gap",
+			"default": 0,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ block.settings.gap == 'custom'  and block.settings.set_gap }}"
+		},
+		{
+			"type": "header",
+			"content": "Width"
+		},
+		{
+			"type": "checkbox",
+			"id": "limit_width",
+			"label": "Limit width",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "max_width",
+			"label": "Limit",
+			"unit": "px",
+			"min": 100,
+			"max": 1100,
+			"step": 10,
+			"default": 500,
+			"visible_if": "{{ block.settings.limit_width == true }}"
+		},
+		{
+			"type": "header",
+			"content": "Columns"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_column_alignment",
+			"label": "Set columns",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "column_style",
+			"label": "Column style",
+			"visible_if": "{{ block.settings.set_column_alignment }}",
+			"default": "count",
+			"options": [
+				{
+					"value": "count",
+					"label": "Count"
+				},
+				{
+					"value": "pixels",
+					"label": "Pixels"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "column_count",
+			"label": "Column count",
+			"visible_if": "{{ block.settings.set_column_alignment and block.settings.column_style == 'count' }}",
+			"min": 1,
+			"max": 4,
+			"default": 2,
+			"step": 1
+		},
+		{
+			"type": "range",
+			"id": "column_width_px",
+			"label": "Column width",
+			"visible_if": "{{ block.settings.set_column_alignment and block.settings.column_style == 'pixels' }}",
+			"unit": "px",
+			"min": 100,
+			"max": 1000,
+			"default": 400,
+			"step": 20
+		},
+		{
+			"type": "header",
+			"content": "Alignment"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_alignment",
+			"label": "Set alignment",
+			"default": false
+		},
+		{
+			"type": "text_alignment",
+			"id": "text_alignment",
+			"label": "Text alignment",
+			"visible_if": "{{ block.settings.set_alignment }}",
+			"default": "center"
+		},
+		{
+			"type": "select",
+			"id": "inline_block_alignment",
+			"label": "Graphic alignment",
+			"info": "Image, decoration, icon, etc.",
+			"visible_if": "{{ block.settings.set_alignment }}",
+			"default": "middle",
+			"options": [
+				{
+					"value": "middle",
+					"label": "Center"
+				},
+				{
+					"value": "baseline",
+					"label": "Baseline"
+				}
+			]
+		},
+		{
+			"type": "header",
+			"content": "Tag",
+			"visible_if": "{{ settings.show_tag_settings == true }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_heading_tag",
+			"label": "Set HTML tag",
+			"visible_if": "{{ settings.show_tag_settings == true }}",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "heading_tag",
+			"label": "HTML tag",
+			"info": "Override the style preset with a specific HTML tag",
+			"default": "h2",
+			"visible_if": "{{ settings.show_tag_settings == true and block.settings.set_heading_tag == true }}",
+			"options": [
+				{
+					"value": "p",
+					"label": "p"
+				},
+				{
+					"value": "h1",
+					"label": "h1"
+				},
+				{
+					"value": "h2",
+					"label": "h2"
+				},
+				{
+					"value": "h3",
+					"label": "h3"
+				},
+				{
+					"value": "h4",
+					"label": "h4"
+				},
+				{
+					"value": "h5",
+					"label": "h5"
+				},
+				{
+					"value": "h6",
+					"label": "h6"
+				}
+			]
+		},
+	],
+	"blocks": [
+		{
+			"type": "@app"
+		},
+		{
+			"type": "_inline-text"
+		},
+		{
+			"type": "_inline-spacer"
+		},
+		{
+			"type": "_inline-image"
+		},
+		{
+			"type": "theme-decoration"
+		},
+		{
+			"type": "theme-icon"
+		},
+	],
+	"presets": [
+		{
+			"name": "Text group",
+			"category": "Layout",
+			"blocks": [
+				{
+					"type": "_inline-text",
+					"settings": {
+						"text": "<strong>Primary title</strong>",
+						"set_color": false,
+						"color": "content",
+						"color_custom": "#000000"
+					}
+				},
+				{
+					"type": "_inline-text",
+					"settings": {
+						"text": "<strong>Secondary text title</strong>",
+						"set_color": true,
+						"color": "muted",
+						"color_custom": "#777777"
+					}
+				}
+			]
+		}
+	]
+}
+{% endschema %}
+

@@ -1,0 +1,68 @@
+{% liquid
+  layout none
+  assign show_currency = settings.show_currency
+  if show_currency
+    assign initial_value = gift_card.initial_value | money_with_currency
+  else
+    assign initial_value = gift_card.initial_value | money_without_trailing_zeros
+  endif
+  assign initial_value_stripped = initial_value | strip_html | escape
+%}
+
+<!doctype html>
+{%- liquid
+  assign rtl_codes = ',ar,arc,ckb,dv,fa,ha,he,khw,ks,ps,sd,ur,uz_AF,yi,'
+  assign current_lang = request.locale.iso_code | append: ',' | prepend: ','
+  assign direction_attr = ''
+  if rtl_codes contains current_lang
+    assign direction_attr = 'dir="rtl"'
+  endif
+-%}
+
+<html
+  lang="{{ request.locale.iso_code }}"
+  {{ direction_attr }}
+  class="relative"
+  {% comment %} This will be removed when the fonts are loaded. Is used to delay showing certain text until the fonts are loaded {% endcomment %}
+  data-fonts-loading="true"
+
+  {% comment %} This will be removed when alpine loads. Is used to add temporary styles to some elements until alpine loads {% endcomment %}
+  data-alpine-loading="true"
+>
+  <head>
+    {% # override global page_title and page_description for snippet head context %}
+    {% capture gift_card_page_title %}
+      {{ 'gift_card.page.title' | t: value: initial_value_stripped, shop: shop.name }}
+    {% endcapture %}
+    {% capture gift_card_page_description %}
+      {{ 'gift_card.page.heading' | t }}
+    {% endcapture %}
+
+    {% render 'head', page_title: gift_card_page_title, page_description: gift_card_page_description %}
+
+    <script src="{{ 'vendor/qrcode.js' | shopify_asset_url }}" defer="defer"></script>
+    {{ content_for_header }}
+  </head>
+  <body
+    class="
+      group/body relative
+      vars-{{ settings.color_scheme_default.id }}
+      bg-canvas text-content
+      font-family-body
+
+      [--page-canvas-color:var(--canvas)]
+      [--page-content-color:var(--content)]
+    "
+    x-data
+    x-scroll-lock="$store.drawer.isOpen"
+
+    :data-keyboard-active="$isKeyboardActive"
+    :data-scroll-direction="$store.page.scrollDirection"
+  >
+    <div class="relative page-grid [view-transition-name:none]">
+      <main id="main" class="[view-transition-name:content] relative z-30">
+        {% section 'gift-card-inner' %}
+      </main>
+    </div>
+  </body>
+</html>

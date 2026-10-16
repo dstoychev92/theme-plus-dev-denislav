@@ -1,0 +1,13 @@
+{%- if product -%}
+  {%- capture product_json -%}
+  {
+    "id": {{ product.id }},
+    "handle": "{{ product.handle }}",
+    "url": "{{ product.url }}",
+    "title": {{ product.title | json }},
+    "url": "{{ product.url }}"
+  }
+  {%- endcapture -%}
+
+  {{ product_json | strip | strip_newlines }}
+{%- endif -%}

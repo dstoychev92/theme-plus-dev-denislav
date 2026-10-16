@@ -1,0 +1,811 @@
+
+/*
+* @license
+* PIPELINE Theme (c) Groupthought Themes
+*
+* The contents of this file should not be modified.
+* Add any minor changes to assets/custom.css
+*
+*/
+
+/*! PhotoSwipe main CSS by Dmytro Semenov | photoswipe.com */
+
+.pswp {
+  --pswp-bg: oklch(var(--canvas-oklch) / 1);
+  --pswp-placeholder-bg: oklch(var(--canvas-oklch) / 1);
+
+  --pswp-root-z-index: 100000;
+
+  --pswp-preloader-color: rgba(79, 79, 79, 0.4);
+  --pswp-preloader-color-secondary: rgba(255, 255, 255, 0.9);
+
+  /* defined via js:
+  --pswp-transition-duration: 333ms; */
+
+  --pswp-icon-color: #fff;
+  --pswp-icon-color-secondary: #4f4f4f;
+  --pswp-icon-stroke-color: #4f4f4f;
+  --pswp-icon-stroke-width: 2px;
+
+  --pswp-error-text-color: var(--pswp-icon-color);
+}
+
+/*
+	Styles for basic PhotoSwipe (pswp) functionality (sliding area, open/close transitions)
+*/
+
+.pswp {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: var(--pswp-root-z-index);
+  display: none;
+  touch-action: none;
+  outline: 0;
+  opacity: 0.003;
+  contain: layout style size;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+/* Prevents focus outline on the root element,
+  (it may be focused initially) */
+
+.pswp:focus {
+  outline: 0;
+}
+
+.pswp * {
+  box-sizing: border-box;
+}
+
+.pswp img {
+  max-width: none;
+}
+
+.pswp--open {
+  display: block;
+}
+
+.pswp,
+.pswp__bg {
+  transform: translateZ(0);
+  will-change: opacity;
+}
+
+.pswp__bg {
+  opacity: 0.005;
+  background: var(--pswp-bg);
+}
+
+.pswp,
+.pswp__scroll-wrap {
+  overflow: hidden;
+}
+
+.pswp__scroll-wrap,
+.pswp__bg,
+.pswp__container,
+.pswp__item,
+.pswp__content,
+.pswp__img,
+.pswp__zoom-wrap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.pswp__img,
+.pswp__zoom-wrap {
+  width: auto;
+  height: auto;
+}
+
+.pswp--click-to-zoom.pswp--zoom-allowed .pswp__img {
+  cursor: zoom-in;
+}
+
+.pswp--click-to-zoom.pswp--zoomed-in .pswp__img {
+  cursor: move;
+  cursor: grab;
+}
+
+.pswp--click-to-zoom.pswp--zoomed-in .pswp__img:active {
+  cursor: grabbing;
+}
+
+/* :active to override grabbing cursor */
+
+.pswp--no-mouse-drag.pswp--zoomed-in .pswp__img,
+.pswp--no-mouse-drag.pswp--zoomed-in .pswp__img:active,
+.pswp__img {
+  cursor: zoom-out;
+}
+
+/* Prevent selection and tap highlights */
+
+.pswp__container,
+.pswp__img,
+.pswp__button,
+.pswp__counter {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+
+.pswp__item {
+  /* z-index for fade transition */
+  z-index: 1;
+  overflow: hidden;
+}
+
+.pswp__hidden {
+  display: none !important;
+}
+
+/* Allow to click through pswp__content element, but not its children */
+
+.pswp__content {
+  pointer-events: none;
+}
+
+.pswp__content > * {
+  pointer-events: auto;
+}
+
+/*
+
+  PhotoSwipe UI
+
+*/
+
+/*
+	Error message appears when image is not loaded
+	(JS option errorMsg controls markup)
+*/
+
+.pswp__error-msg-container {
+  display: grid;
+}
+
+.pswp__error-msg {
+  margin: auto;
+  font-size: 1em;
+  line-height: 1;
+  color: var(--pswp-error-text-color);
+}
+
+/*
+class pswp__hide-on-close is applied to elements that
+should hide (for example fade out) when PhotoSwipe is closed
+and show (for example fade in) when PhotoSwipe is opened
+ */
+
+.pswp .pswp__hide-on-close {
+  opacity: 0.005;
+  will-change: opacity;
+  transition: opacity var(--pswp-transition-duration) cubic-bezier(0.4, 0, 0.22, 1);
+  z-index: 10; /* always overlap slide content */
+  pointer-events: none; /* hidden elements should not be clickable */
+}
+
+/* class pswp--ui-visible is added when opening or closing transition starts */
+
+.pswp--ui-visible .pswp__hide-on-close {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* <button> styles, including css reset */
+
+.pswp__button {
+  position: relative;
+  display: block;
+  width: 50px;
+  height: 60px;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  cursor: pointer;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  opacity: 0.85;
+  -webkit-appearance: none;
+  -webkit-touch-callout: none;
+}
+
+.pswp__button:hover,
+.pswp__button:active,
+.pswp__button:focus {
+  transition: none;
+  padding: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  opacity: 1;
+}
+
+.pswp__button:disabled {
+  opacity: 0.3;
+  cursor: auto;
+}
+
+.pswp__icn {
+  fill: var(--pswp-icon-color);
+  color: var(--pswp-icon-color-secondary);
+  position: absolute;
+  top: 14px;
+  left: 9px;
+  width: 32px;
+  height: 32px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.pswp__icn-shadow {
+  stroke: var(--pswp-icon-stroke-color);
+  stroke-width: var(--pswp-icon-stroke-width);
+  fill: none;
+}
+
+.pswp__icn:focus {
+  outline: 0;
+}
+
+/*
+	div element that matches size of large image,
+	large image loads on top of it,
+	used when msrc is not provided
+*/
+
+div.pswp__img--placeholder,
+.pswp__img--with-bg {
+  background: var(--pswp-placeholder-bg);
+}
+
+.pswp__top-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 60px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  z-index: 10;
+
+  /* allow events to pass through top bar itself */
+  pointer-events: none !important;
+}
+
+.pswp__top-bar > * {
+  pointer-events: auto;
+  /* this makes transition significantly more smooth,
+     even though inner elements are not animated */
+  will-change: opacity;
+}
+
+/*
+
+  Close button
+
+*/
+
+.pswp__button--close {
+  margin-right: 6px;
+}
+
+/*
+
+  Arrow buttons
+
+*/
+
+.pswp__button--arrow {
+  position: absolute;
+  top: 0;
+  width: 75px;
+  height: 100px;
+  top: 50%;
+  margin-top: -50px;
+}
+
+.pswp__button--arrow:disabled {
+  display: none;
+  cursor: default;
+}
+
+.pswp__button--arrow .pswp__icn {
+  top: 50%;
+  margin-top: -30px;
+  width: 60px;
+  height: 60px;
+  background: none;
+  border-radius: 0;
+}
+
+.pswp--one-slide .pswp__button--arrow {
+  display: none;
+}
+
+/* hide arrows on touch screens */
+
+.pswp--touch .pswp__button--arrow {
+  visibility: hidden;
+}
+
+/* show arrows only after mouse was used */
+
+.pswp--has_mouse .pswp__button--arrow {
+  visibility: visible;
+}
+
+.pswp__button--arrow--prev {
+  right: auto;
+  left: 0px;
+}
+
+.pswp__button--arrow--next {
+  right: 0px;
+}
+
+.pswp__button--arrow--next .pswp__icn {
+  left: auto;
+  right: 14px;
+  /* flip horizontally */
+  transform: scale(-1, 1);
+}
+
+/*
+
+  Zoom button
+
+*/
+
+.pswp__button--zoom {
+  display: none;
+}
+
+.pswp--zoom-allowed .pswp__button--zoom {
+  display: block;
+}
+
+/* "+" => "-" */
+
+.pswp--zoomed-in .pswp__zoom-icn-bar-v {
+  display: none;
+}
+
+/*
+
+  Loading indicator
+
+*/
+
+.pswp__preloader {
+  position: relative;
+  overflow: hidden;
+  width: 50px;
+  height: 60px;
+  margin-right: auto;
+}
+
+.pswp__preloader .pswp__icn {
+  opacity: 0;
+  transition: opacity 0.2s linear;
+  animation: pswp-clockwise 600ms linear infinite;
+}
+
+.pswp__preloader--active .pswp__icn {
+  opacity: 0.85;
+}
+
+@keyframes pswp-clockwise {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/*
+
+  "1 of 10" counter
+
+*/
+
+.pswp__counter {
+  height: 30px;
+  margin-top: 15px;
+  margin-inline-start: 20px;
+  font-size: 14px;
+  line-height: 30px;
+  color: var(--pswp-icon-color);
+  text-shadow: 1px 1px 3px var(--pswp-icon-color-secondary);
+  opacity: 0.85;
+}
+
+.pswp--one-slide .pswp__counter {
+  display: none;
+}
+
+.pswp {
+  --tw-backdrop-blur: blur(8px);
+  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
+}
+
+.pswp .pswp__icn-shadow {
+  display: none;
+}
+
+.pswp .pswp__top-bar {
+  position: static;
+}
+
+.pswp .pswp__top-bar,
+  .pswp .pswp__preloader {
+  height: auto;
+}
+
+.pswp .pswp__counter,
+  .pswp .pswp__button {
+  margin: 0px;
+  height: auto;
+  opacity: 1;
+}
+
+.pswp .pswp__button {
+    /* Button styles */
+    --font-family: var(--root-font-stack-button);
+    --font-style: var(--root-font-style-button);
+    --font-weight-normal: var(--root-font-weight-normal-button);
+    --font-weight-bold: var(--root-font-weight-bold-button);
+    --font-caps-tracking: var(--root-font-caps-tracking-button);
+    --font-baseline-ratio: var(--root-font-baseline-ratio-button);
+    --font-size-xs: var(--root-font-size-button-xs);
+    --font-size-sm: var(--root-font-size-button-sm);
+    --font-size-md: var(--root-font-size-button-md);
+    --font-size-lg: var(--root-font-size-button-lg);
+    --font-size-xl: var(--root-font-size-button-xl);
+    --font-size-calc: calc(var(--font-size, var(--font-size-md)) * var(--font-family-adjust) * var(--caps-adjust));
+    --font-family-adjust: var(--root-font-adjust-button);
+    --caps-adjust: var(--root-caps-adjust-button);
+    --caps-transform: var(--root-caps-transform-button);
+    --caps-tracking: var(--root-caps-tracking-button);
+    --leading-prose: var(--root-leading-prose-button);
+    --leading-block: var(--root-leading-block-button);
+    font-family: var(--font-family);
+    font-style: var(--font-style);
+    font-size: calc(var(--font-size, var(--font-size-md)) * var(--font-family-adjust) * var(--caps-adjust));
+    line-height: var(--leading, var(--leading-block));
+    font-weight: var(--font-weight, var(--font-weight-normal));
+    text-transform: var(--caps-transform);
+    letter-spacing: var(--caps-tracking);
+    min-height: var(--btn-height);
+    -webkit-user-select: none;
+       -moz-user-select: none;
+            user-select: none;
+    align-items: center;
+    justify-content: center;
+    -moz-column-gap: var(--r4);
+         column-gap: var(--r4);
+    white-space: nowrap;
+    border-radius: var(--radius-btn);
+    border-width: 1px;
+    border-color: var(--btn-border-color);
+    background-color: var(--btn-bg-color);
+    padding-left: var(--btn-padding-x, calc(var(--btn-padding) * 2));
+    padding-right: var(--btn-padding-x, calc(var(--btn-padding) * 2));
+    line-height: 1;
+    color: var(--btn-text-color);
+    transition-property: opacity,background-color,border-color,box-shadow;
+    transition-timing-function: var(--ease-in-out);
+    transition-duration: 300ms;
+  }
+
+.vars-btn-white.pswp .pswp__button {
+      --btn-text-hover-color: var(--primary);
+    }
+
+.pswp .pswp__button {
+  --stain-oklch: var(--canvas-oklch);
+  --stain-contrast-oklch: var(--canvas-contrast-oklch);
+  --stain: oklch(var(--canvas-oklch));
+  --stain-contrast: oklch(var(--canvas-contrast-oklch));
+}
+
+@supports not (color: oklch(0% 0 0)) {
+
+  .pswp .pswp__button {
+    --stain: rgb(var(--canvas-fallback));
+    --stain-contrast: rgb(var(--canvas-contrast-fallback));
+  }
+}
+
+.pswp .pswp__button {
+    --btn-bg-color: var(--stain);
+    --btn-text-color: var(--stain-contrast);
+    --btn-border-color: var(--btn-bg-color);
+    --btn-border-hover-color: var(--btn-border-color);
+    --btn-blur: 0;
+    --btn-text-highlight-opacity: 0.3;
+    --btn-text-hover-color: var(--btn-text-color);
+    --btn-bg-hover-color: var(--btn-bg-color);
+    --btn-hover-blur: 0;
+  }
+
+@supports (color: oklch(from white l c h)) {
+
+  .pswp .pswp__button {
+      --btn-bg-hover-color: oklch(from var(--btn-bg-color) max(0.2, calc(l + 0.04)) c h)
+  }
+    }
+
+.pswp .pswp__button:focus-visible {
+  outline-width: 2px;
+  outline-color: rgb(var(--secondary-fallback) / 1);
+}
+
+@supports (color: oklch(0% 0 0)) {
+
+  .pswp .pswp__button:focus-visible {
+    outline-color: oklch(var(--secondary-oklch) / 1);
+  }
+}
+
+.pswp .pswp__button:disabled {
+  opacity: 0.5;
+}
+
+.pswp .pswp__button:has(:disabled) {
+  opacity: 0.5;
+}
+
+.pswp .pswp__button {
+  border-radius: 9999px;
+  --tw-shadow: 0 var(--shadow-offset-y, 1px) var(--shadow-offset-x, 3px) 0 oklch(var(--content-oklch) / 0.1), 0 1px 2px -1px oklch(var(--content-oklch) / 0.1);
+  --tw-shadow-colored: 0 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+
+.pswp .pswp__counter {
+    /* Button styles */
+    min-height: var(--btn-height);
+    -webkit-user-select: none;
+       -moz-user-select: none;
+            user-select: none;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    border-radius: var(--radius-btn);
+    border-width: 1px;
+    border-color: var(--btn-border-color);
+    background-color: var(--btn-bg-color);
+    padding-left: var(--btn-padding-x, calc(var(--btn-padding) * 2));
+    padding-right: var(--btn-padding-x, calc(var(--btn-padding) * 2));
+    line-height: 1;
+    color: var(--btn-text-color);
+  }
+
+.vars-btn-white.pswp .pswp__counter {
+      --btn-text-hover-color: var(--primary);
+    }
+
+.pswp .pswp__counter {
+  --stain-oklch: var(--canvas-oklch);
+  --stain-contrast-oklch: var(--canvas-contrast-oklch);
+  --stain: oklch(var(--canvas-oklch));
+  --stain-contrast: oklch(var(--canvas-contrast-oklch));
+}
+
+@supports not (color: oklch(0% 0 0)) {
+
+  .pswp .pswp__counter {
+    --stain: rgb(var(--canvas-fallback));
+    --stain-contrast: rgb(var(--canvas-contrast-fallback));
+  }
+}
+
+.pswp .pswp__counter {
+    --btn-bg-color: var(--stain);
+    --btn-text-color: var(--stain-contrast);
+    --btn-border-color: var(--btn-bg-color);
+    --btn-border-hover-color: var(--btn-border-color);
+    --btn-blur: 0;
+    --btn-text-highlight-opacity: 0.3;
+    --btn-text-hover-color: var(--btn-text-color);
+    --btn-bg-hover-color: var(--btn-bg-color);
+    --btn-hover-blur: 0;
+  }
+
+@supports (color: oklch(from white l c h)) {
+
+  .pswp .pswp__counter {
+      --btn-bg-hover-color: oklch(from var(--btn-bg-color) max(0.2, calc(l + 0.04)) c h)
+  }
+    }
+
+.pswp .pswp__counter {
+  border-radius: 9999px;
+  --tw-shadow: 0 var(--shadow-offset-y, 1px) var(--shadow-offset-x, 3px) 0 oklch(var(--content-oklch) / 0.1), 0 1px 2px -1px oklch(var(--content-oklch) / 0.1);
+  --tw-shadow-colored: 0 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+
+.pswp .pswp__button:hover,
+  .pswp .pswp__button:active,
+  .pswp .pswp__button:focus {
+  border-width: 1px;
+  border-color: var(--btn-border-color);
+  background-color: var(--btn-bg-color);
+  padding-left: var(--btn-padding-x, calc(var(--btn-padding) * 2));
+  padding-right: var(--btn-padding-x, calc(var(--btn-padding) * 2));
+  transition-property: all;
+  transition-timing-function: var(--ease-in-out);
+  transition-duration: 300ms;
+}
+
+.pswp .pswp__counter,
+  .pswp .pswp__button:not(.pswp__button--zoom) {
+  display: inline-flex;
+}
+
+.pswp .pswp__button {
+    --btn-height: var(--row-lg);
+    --btn-padding: var(--r6);
+  }
+
+@media (min-width: 768px) {
+    .pswp .pswp__button {
+      --btn-padding: var(--r7);
+    }
+  }
+
+.pswp .pswp__button {
+  aspect-ratio: 1 / 1;
+  --btn-padding: 0;
+}
+
+.pswp .pswp__button--close {
+  position: absolute;
+  top: var(--root-buffer);
+  left: 50%;
+  --tw-translate-x: -50%;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
+.pswp .pswp__counter {
+  position: absolute;
+  left: 50%;
+  bottom: var(--root-buffer);
+  --tw-translate-x: -50%;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+    --btn-height: var(--row-md);
+    --btn-padding: var(--r5);
+}
+
+@media (min-width: 768px) {
+    .pswp .pswp__counter {
+      --btn-padding: var(--r4);
+    }
+  }
+
+.pswp .pswp__counter {
+
+    text-shadow: none;
+  }
+
+.pswp .pswp__button--arrow {
+  top: var(--root-buffer);
+  width: auto;
+}
+
+@media (min-width: 1024px) {
+
+  .pswp .pswp__button--arrow {
+    top: 50%;
+    --tw-translate-y: -50%;
+    transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+  }
+}
+
+.pswp .pswp__button--arrow--prev {
+  left: var(--root-buffer);
+}
+
+@media (min-width: 1024px) {
+
+  .pswp .pswp__button--arrow--prev {
+    left: calc(var(--root-buffer) * 2);
+  }
+}
+
+.pswp .pswp__button--arrow--prev:where([dir="rtl"], [dir="rtl"] *) {
+  left: auto;
+  right: var(--root-buffer);
+  --tw-rotate: 180deg;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
+@media (min-width: 1024px) {
+
+  .pswp .pswp__button--arrow--prev:where([dir="rtl"], [dir="rtl"] *) {
+    right: calc(var(--root-buffer) * 2);
+  }
+}
+
+.pswp .pswp__button--arrow--next {
+  right: var(--root-buffer);
+}
+
+@media (min-width: 1024px) {
+
+  .pswp .pswp__button--arrow--next {
+    right: calc(var(--root-buffer) * 2);
+  }
+}
+
+.pswp .pswp__button--arrow--next:where([dir="rtl"], [dir="rtl"] *) {
+  right: auto;
+  left: var(--root-buffer);
+  --tw-rotate: 180deg;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
+@media (min-width: 1024px) {
+
+  .pswp .pswp__button--arrow--next:where([dir="rtl"], [dir="rtl"] *) {
+    left: calc(var(--root-buffer) * 2);
+  }
+}
+
+.pswp .pswp__preloader {
+  aspect-ratio: 1 / 1;
+}
+
+.pswp .pswp__preloader .pswp__icn {
+  fill: rgb(var(--content-fallback) / var(--mix-50, 50%));
+  stroke: rgb(var(--content-fallback) / var(--mix-50, 50%));
+}
+
+@supports (color: oklch(0% 0 0)) {
+
+  .pswp .pswp__preloader .pswp__icn {
+    fill: oklch(var(--content-oklch) / var(--mix-50, 50%));
+    stroke: oklch(var(--content-oklch) / var(--mix-50, 50%));
+  }
+}
+
+@supports (color: color-mix(in hsl, black, white)) {
+
+  .pswp .pswp__preloader .pswp__icn {
+    fill: color-mix(
+          in oklch,
+          oklch(var(--content-oklch) / 1) var(--mix-50, 50%),
+          oklch(var(--content-contrast-oklch) / 1)
+        );
+    stroke: color-mix(
+          in oklch,
+          oklch(var(--content-oklch) / 1) var(--mix-50, 50%),
+          oklch(var(--content-contrast-oklch) / 1)
+        );
+  }
+}
+
+.pswp.pswp--touch .pswp__button--arrow {
+  visibility: visible;
+}
+
+.pswp.pswp--one-slide .pswp__button--arrow,
+  .pswp.pswp--one-slide .pswp__counter {
+  display: none;
+}
+
+.pswp__item video {
+  position: static !important;
+}

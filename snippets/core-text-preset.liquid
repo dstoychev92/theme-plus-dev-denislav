@@ -1,0 +1,37 @@
+{% doc %}
+  Thin wrapper for props-class-type-preset, defaults to p tag. Can use _settings or individual properties.
+{% enddoc %}
+
+{% liquid
+  if settings_suffix
+    assign _id_suffix = settings_suffix | prepend: '_'
+  endif
+
+  assign text_id = 'text' | append: _id_suffix
+  assign text = text | default: _settings[text_id]
+
+  assign tag = tag | default: 'p'
+%}
+
+{% if text != blank %}
+  <{{ tag }}
+    class="
+      {% render 'props-class-type-preset',
+        _settings: _settings,
+        _id_suffix: _id_suffix,
+        settings_suffix: settings_suffix,
+        default_type_preset: default_type_preset,
+        type_preset: type_preset,
+        type_size: type_size,
+        type_font: type_font,
+        type_resize: type_resize,
+        type_uppercase: type_uppercase
+      %}
+      {{ class }}
+    "
+    style="{{ style }}"
+    {{ attributes }}
+  >
+    {{ text | replace: '<strong> </strong>', '</br>' }}
+  </{{ tag }}>
+{% endif %}

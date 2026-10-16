@@ -1,0 +1,182 @@
+{% doc %}
+  Renders a custom select dropdown component.
+{% enddoc %}
+
+{% liquid
+  assign placement = placement | default: 'bottom-start'
+  assign offset = offset | default: '5px'
+  assign edge_padding = edge_padding | default: '10px'
+  assign size = size | default: 'md', allow_false: true
+  assign match = match | default: true, allow_false: true
+
+  assign modifiers = 'fixed.shift.fit-y'
+  assign modifiers = modifiers | append: '.' | append: placement
+  assign modifiers = modifiers | append: '.offset.' | append: offset
+  assign modifiers = modifiers | append: '.pad.' | append: edge_padding
+
+  if match
+    assign modifiers = modifiers | append: '.match'
+  endif
+
+  if flip != false
+    assign modifiers = modifiers | append: '.flip'
+  endif
+
+  if size != blank
+    case size
+      when 'xs'
+        assign size_class = 'vars-control-xs'
+      when 'sm'
+        assign size_class = 'vars-control-sm'
+      when 'md'
+        assign size_class = 'vars-control-md'
+      when 'lg'
+        assign size_class = 'vars-control-lg'
+      when 'xl'
+        assign size_class = 'vars-control-xl'
+    endcase
+  endif
+%}
+
+{% unless end_icon %}
+  {% capture end_icon %}
+    {% render 'core-icon', icon: 'fill-select', class: " w-[--icon-size] h-[--icon-size] opacity-70 " %}
+  {% endcapture %}
+{% endunless %}
+
+{% if button_content == null %}
+  {% capture button_content %}
+    {{ start_icon }}
+
+    {% if initial_display %}
+      {% assign initial_display_content = initial_display %}
+    {% else %}
+      {% assign initial_display_content = label %}
+    {% endif %}
+
+    <span class="flex-1 !flex-row-center justify-start flex-nowrap gap-x-r4 leading-[1.5] overflow-hidden">
+      <span x-select:display class="truncate">{{ initial_display_content }}</span>
+    </span>
+
+    {{ end_icon }}
+  {% endcapture %}
+{% endif %}
+
+<custom-select
+  class="
+    block
+    {{ size_class }}
+    {{ class }}
+  "
+  x-select
+  x-popup:float-reference
+  {{ attributes }}
+>
+  <span x-select:label class="sr-only">{{ label }}</span>
+  <input
+    type="hidden"
+    name="{{ name }}"
+    value="{{ value | escape }}"
+    x-select:hidden-input
+    {% if form %}
+      form="{{ form }}"
+    {% endif %}
+    {% if disabled %}
+      disabled
+    {% endif %}
+    {% if error_message != '' and error_message != null %}
+      aria-invalid="true"
+      {% if id != '' %}
+        aria-errormessage="{{ id }}-error"
+      {% endif %}
+    {% endif %}
+  >
+  <custom-select-popup
+    x-cloak
+    class="
+      border border-line-subtle
+      peer fixed left-0 top-0 z-40 flex
+      flex-col bg-canvas text-content transition-none
+      rounded-[--select-radius] min-w-fit
+      data-[side=top]:origin-bottom data-[side=bottom]:origin-top
+      shadow overflow-clip group/popup
+      {{ size_class }}
+
+      {{ popup_class }}
+    "
+    :data-open="$popup.isOpen"
+    x-effect="
+      if ($float.side != null) {
+        if ($float.side == 'top') {
+          $el.dataset.side = 'top'
+        } else {
+          $el.dataset.side = 'bottom'
+        }
+      }
+    "
+
+    x-transition:enter="animate-in animate-duration-[--custom-select-enter-duration] fade-in"
+    x-transition:leave="animate-out animate-delay-[calc(var(--custom-select-exit-duration)/4)] animate-duration-[--custom-select-exit-duration] fade-out"
+
+    x-select:panel.{{ modifiers }}
+    style="
+      --select-radius: min(var(--custom-select-popup-radius, var(--radius-form-field)),12px);
+      --popup-padding: var(--r3, var(--custom-select-popup-padding));
+      --popup-inner-radius: var(--select-radius);
+    "
+  >
+    <ul
+      class="
+        flex flex-col
+        overflow-y-auto group/options overscroll-y-contain edge-mask {{ popup_list_class }}
+        scrollbar-hide p-[--popup-padding]
+        leading-tight gap-y-r3
+        group-data-[side=top]/popup:origin-bottom group-data-[side=bottom]/popup:origin-top
+      "
+      :class="
+        {
+          'edge-mask-t': $overflow.top,
+          'edge-mask-b': $overflow.bottom,
+          'animate-in animate-delay-[calc(var(--custom-select-enter-duration)/4)] animate-duration-[--custom-select-enter-duration] fade-in group-data-[side=top]/popup:slide-in-from-bottom-[5px] group-data-[side=bottom]/popup:slide-in-from-top-[5px]': $popup.isOpen,
+          'animate-out animate-duration-[--custom-select-exit-duration] fade-out group-data-[side=top]/popup:slide-out-to-bottom-[2px] group-data-[side=bottom]/popup:slide-out-to-top-[2px]': !$popup.isOpen
+        }
+      "
+      x-select:options
+      x-overflow.autoregister
+      x-overflow:viewport
+      role="listbox"
+    >
+      {% if label and value == blank %}
+        {% comment %} If select label is passed and there is no initial value, show it as the first option but make it non-selectable {% endcomment %}
+        <li aria-disabled="true" aria-selected="true" role="option" hidden x-select:option value="">
+          {{ label }}
+        </li>
+      {% endif %}
+      {{ options }}
+    </ul>
+  </custom-select-popup>
+
+  {% if button != null %}
+    {{ button }}
+  {% else %}
+    <button
+      x-select:button
+      class="
+        flex w-full select-none
+        flex-row items-center justify-start gap-x-r4
+        text-size-control text-start
+
+        {% comment %} Placeholder state {% endcomment %}
+        group-has-[[aria-selected='true'][aria-disabled='true']]:text-[color:var(--input-placeholder-text-color)]
+
+        {{ button_class }}
+      "
+      style="{{ button_style }}"
+      {% if disabled %}
+        disabled
+      {% endif %}
+    >
+      {{ button_content }}
+    </button>
+  {% endif %}
+</custom-select>

@@ -1,0 +1,44 @@
+{% liquid
+  assign default_label = 'collection.filters.filter_yes' | t
+  assign value = filter.true_value.value | default: 1
+
+  assign filter_value = filter.true_value
+
+  assign disabled = false
+
+  if filter_value == blank or filter_value.count == 0 and filter_value.active == false
+    assign disabled = true
+  endif
+
+  assign checked = filter_value.active
+
+  assign id = base_id | default: 'filter' | append: '-' | append: filter.param_name | append: '-yes'
+%}
+
+{%- capture label -%}
+  <span class="truncate">{{- filter_value.label -}}</span>
+
+  {% if filter_value.count > 0 and disabled == false %}
+    {% render 'filter-count', count: filter_value.count %}
+  {% endif %}
+{%- endcapture -%}
+
+<ul class="flex flex-col gap-y-[--filter-row-gap]">
+  <li
+    class="flex-row-center *:flex-1 justify-between h-[--filter-row-height]"
+    key="{{ filter.param_name }}-{{ filter.false_value.active }}-{{ filter.true_value.active }}"
+  >
+    {% render 'field-checkbox',
+      label: label,
+      id: id,
+      name: filter.param_name,
+      value: value,
+      checked: checked,
+      disabled: disabled,
+      form: form,
+      class: 'w-full',
+      label_class: 'justify-start items-center gap-r4 w-full text-r3',
+      reversed: true
+    %}
+  </li>
+</ul>

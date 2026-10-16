@@ -1,0 +1,155 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "name": "Header drawers",
+  "type": "custom.drawers",
+  "sections": {
+    "cart-drawer": {
+      "type": "cart-drawer",
+      "blocks": {
+        "cart_upsell_yrnDQp": {
+          "type": "cart_upsell",
+          "settings": {
+            "title": "Виж също",
+            "product_list": [],
+            "limit": 5,
+            "include_line_item_upsells": true,
+            "prioritize_shipping_upsell": false
+          }
+        },
+        "cart_review": {
+          "type": "cart_review",
+          "settings": {
+            "accordion": false,
+            "show_cart_review": true,
+            "show_tax_message": false
+          }
+        }
+      },
+      "block_order": [
+        "cart_upsell_yrnDQp",
+        "cart_review"
+      ],
+      "settings": {
+        "color_scheme": "",
+        "empty_cart_buttons": "main-menu",
+        "set_free_shipping_message": true,
+        "free_shipping_limit": "50",
+        "free_shipping_progress_message": "Остават ти ||amount|| до безплатна доставка!",
+        "free_shipping_success_message": "<strong>Честито</strong>! Отключихте <strong>безплатна</strong> доставка",
+        "boom_tier_enabled": true,
+        "boom_tier_collection": "all-products",
+        "boom_tier_title": "BOOM! BOX",
+        "boom_tier_best_label": "Най-изгодно",
+        "boom_tier_1_min": 1,
+        "boom_tier_1_disc": 15,
+        "boom_tier_2_min": 2,
+        "boom_tier_2_disc": 15,
+        "boom_tier_2_gift": "",
+        "boom_tier_3_min": 3,
+        "boom_tier_3_disc": 15,
+        "boom_tier_3_gift": "boom-electric-whisk",
+        "boom_tier_4_min": 4,
+        "boom_tier_4_disc": 15,
+        "boom_tier_4_gift": "boom-thermos",
+        "show_quantity_selector": true,
+        "quantity_sizing": "sm",
+        "show_checkbox": false,
+        "checkbox_label": "<p>I agree to terms and conditions</p>",
+        "richtext_size_checkbox": "md",
+        "checkbox_required": false,
+        "show_company_invoice": true,
+        "company_invoice_label": "Искам фактура за фирма",
+        "appearance_checkout_button": "solid",
+        "color_checkout_button": "primary",
+        "type_preset_checkout_button": "btn",
+        "type_resize_checkout_button": "md",
+        "type_font_checkout_button": "body",
+        "type_size_checkout_button": 4,
+        "type_uppercase_checkout_button": false
+      }
+    },
+    "header-drawer": {
+      "type": "header-drawer",
+      "blocks": {
+        "card_slider_4D7CfK": {
+          "type": "_card-slider",
+          "name": "Slider",
+          "settings": {
+            "columns_lg": 1.6,
+            "columns_sm": 1.2
+          },
+          "blocks": {
+            "cards_products_rrnVVL": {
+              "type": "_cards-products",
+              "settings": {
+                "source": "product_list",
+                "product_list": [
+                  "brain-coffee",
+                  "protein-coffee-hazelnut",
+                  "protein-coffee-chocolate",
+                  "protein-coffee-original",
+                  "protein-coffee-vanilla",
+                  "protein-coffee-raspberry"
+                ],
+                "collection": "",
+                "card_limit": 8,
+                "set_aspect_ratio": false,
+                "aspect_ratio": 1
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "cards_products_rrnVVL"
+          ]
+        }
+      },
+      "block_order": [
+        "card_slider_4D7CfK"
+      ],
+      "settings": {
+        "color_scheme": "",
+        "linklist": "main-menu",
+        "show_search": false,
+        "show_social_links": true,
+        "show_account_link": true,
+        "show_secondary_links": false,
+        "secondary_linklist": "",
+        "show_language": false,
+        "language_style": "long",
+        "show_country": false,
+        "country_display_style": "flag_name",
+        "currency_display_style": "short",
+        "show_collection_images": true,
+        "collection_images_aspect_ratio": 2.5,
+        "type_preset_main_link": "p",
+        "type_resize_main_link": "md",
+        "type_font_main_link": "body",
+        "type_size_main_link": 5,
+        "type_uppercase_main_link": false,
+        "type_preset_secondary_link": "p",
+        "type_resize_secondary_link": "xs",
+        "type_font_secondary_link": "body",
+        "type_size_secondary_link": 5,
+        "type_uppercase_secondary_link": false,
+        "type_preset_account_locale": "p",
+        "type_resize_account_locale": "md",
+        "type_font_account_locale": "body",
+        "type_size_account_locale": 5,
+        "type_uppercase_account_locale": false
+      }
+    }
+  },
+  "order": [
+    "cart-drawer",
+    "header-drawer"
+  ]
+}

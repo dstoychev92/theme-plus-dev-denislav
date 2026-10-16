@@ -1,0 +1,179 @@
+{% liquid
+  assign slider_control_style = background_style | default: settings.slider_control_style
+  assign pagination_style = pagination_style | default: settings.carousel_pagination_style
+  assign hide_arrows = hide_arrows | default: false, allow_false: true
+%}
+
+{% capture class %}
+  {{ class }}
+  slider-control vars-slider-control-content vars-slider-control-{{ slider_control_style }}
+{% endcapture %}
+
+{% capture icon_class %}
+  rtl:rotate-180
+{% endcapture %}
+
+{% capture prev_button %}
+  {% unless hide_arrows %}
+    <button
+      aria-label="{{ 'other.accessibility.prev' | t }}"
+      class="px-r5 transition hover:opacity-50"
+      disabled
+      :disabled="!$overflow.start"
+      :class="
+        {
+          'opacity-50 hover:bg-transparent': !$overflow.start,
+          'opacity-100': $overflow.start
+        }
+      "
+      x-carousel:prev
+    >
+      {% render 'core-icon', icon: 'stroke-chevron-left', class: icon_class %}
+    </button>
+  {% endunless %}
+{% endcapture %}
+
+{% capture next_button %}
+  {% unless hide_arrows %}
+    <button
+      aria-label="{{ 'other.accessibility.next' | t }}"
+      class="px-r5 transition hover:opacity-50"
+      :disabled="!$overflow.end"
+      :class="
+        {
+          'opacity-50 hover:bg-transparent': !$overflow.end,
+          'opacity-100': $overflow.end
+        }
+      "
+      x-carousel:next
+    >
+      {% render 'core-icon', icon: 'stroke-chevron-right', class: icon_class %}
+    </button>
+  {% endunless %}
+{% endcapture %}
+
+{% liquid
+  if pagination_style == 'dots' or pagination_style == 'lines'
+    assign container_flex_class = 'flex items-center'
+  else
+    assign container_flex_class = 'flex'
+  endif
+%}
+
+<div
+  class="
+    {% if hide_arrows %}
+      {{ container_flex_class }} justify-center
+    {% else %}
+      {{ container_flex_class }}
+    {% endif %}
+    min-h-row-sm rounded-pill mt-r4 text-r2
+    {{ class }}
+  "
+  :class="
+    {
+      'opacity-0': $carousel.isEnabled == false,
+    }
+  "
+  x-cloak
+  x-transition.opacity
+  x-show="$carousel.items.length > 1"
+>
+  {{ prev_button }}
+
+  {% case pagination_style %}
+    {% when 'dots' %}
+      <div
+        class="
+          flex items-center gap-x-r5 rounded-pill h-row-sm py-r3
+          {% if hide_arrows %}px-r6{% endif %}
+          {% unless hide_arrows %}{% else %}justify-center{% endunless %}
+        "
+        role="presentation"
+      >
+        <template x-for="(_, index) in $carousel.items.length">
+          <div
+            class="rounded-full size-r2 bg-stain opacity-40 transition-opacity duration-400"
+            :key="index"
+            :class="
+              {
+                '!opacity-100': $carousel.centeredIndex == index,
+              }
+            "
+          ></div>
+        </template>
+      </div>
+    {% when 'lines' %}
+      <div
+        class="
+          flex items-center gap-x-r1 rounded-pill h-row-sm py-r3
+          {% if hide_arrows %}px-r6{% endif %}
+          {% unless hide_arrows %}{% else %}justify-center{% endunless %}
+        "
+        role="presentation"
+        x-data="
+          {
+            lastCenteredIndex: null,
+            init() {
+              this.$watch('$carousel.centeredIndex', (centeredIndex, previousCenteredIndex) => {
+                this.lastCenteredIndex = previousCenteredIndex
+              })
+            }
+          }
+        "
+        :data-prev-centered-index="lastCenteredIndex"
+        :data-current-centered-index="$carousel.centeredIndex"
+      >
+        <template x-for="(_, index) in $carousel.items.length">
+          <button
+            class="relative rounded-sm w-r9 h-r1 hit-area-y-r5"
+            @click="$carousel.scrollTo(index)"
+            :aria-label="index + 1"
+            :key="index"
+            x-data="
+              {
+                get wasLastItem() {
+                  return lastCenteredIndex == index;
+                },
+                get isCurrentItem() {
+                  return $carousel.centeredIndex == index;
+                },
+                get goingRight() {
+                  return lastCenteredIndex < $carousel.centeredIndex;
+                },
+                get goingLeft() {
+                  return lastCenteredIndex > $carousel.centeredIndex;
+                },
+              }
+            "
+          >
+            {% comment %} Active segment {% endcomment %}
+            <span
+              class="block h-full bg-stain-mix-50 scale-x-0 transition-none"
+              :class="
+                {
+                  '!scale-x-100': isCurrentItem,
+                  'origin-right !transition !duration-200': wasLastItem && goingRight,
+                  'origin-left !transition !duration-200': wasLastItem && goingLeft,
+                  'origin-right !transition !scale-x-100 !duration-200': isCurrentItem && goingLeft,
+                  'origin-left !transition !scale-x-100 !duration-200': isCurrentItem && goingRight
+                }
+              "
+            ></span>
+            {% comment %} Background {% endcomment %}
+            <span class="block size-full absolute top-0 left-0 bg-stain-mix-50 opacity-30"> </span>
+          </button>
+        </template>
+      </div>
+    {% else %}
+      <div aria-live="polite" class="self-center flex items-baseline gap-x-r2 {% if hide_arrows %}px-r5{% endif %}">
+        <span class="font-family-body font-bold" x-text="$carousel.centeredIndex + 1">1</span>
+        <span class="font-family-body italic opacity-70">
+          {{- 'product.gallery.index_indicator_separator' | t -}}
+        </span>
+        <span class="font-family-body font-bold" x-text="$carousel.items.length">1</span>
+      </div>
+  {% endcase %}
+
+  {{ next_button }}
+</div>

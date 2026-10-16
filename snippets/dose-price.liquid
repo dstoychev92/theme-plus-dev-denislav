@@ -1,0 +1,68 @@
+{% doc %}
+  Resolves the "lowest price per dose" value or qualifier for a product.
+
+  Priority: theme settings (per product line, with per-market overrides)
+  → falls back to the product's own metafields
+  (custom.lowest_per_dose_price / custom.lowest_per_dose_qualifier).
+
+  Product line detection: product type or handle
+  (Протеиново кафе / protein → protein settings,
+  Адаптогенно кафе / brain → brain settings).
+
+  @param {object} [product] - The product (optional when line is passed)
+  @param {string} [line] - Optional explicit line: 'protein' or 'brain' (skips product detection)
+  @param {string} part - 'price' (decimal, e.g. 1.17) or 'qualifier' (text)
+  @example
+  {% capture value %}{% render 'dose-price', product: product, part: 'price' %}{% endcapture %}
+{% enddoc %}
+{%- liquid
+  assign base = ''
+  assign markets_map = ''
+  assign qualifier = ''
+  assign detected = line | default: ''
+
+  if detected == ''
+    assign ptype = product.type | downcase
+    assign phandle = product.handle | downcase
+    if ptype contains 'протеиново кафе' or phandle contains 'protein-coffee'
+      assign detected = 'protein'
+    elsif ptype contains 'адаптогенно кафе' or phandle contains 'brain-coffee'
+      assign detected = 'brain'
+    endif
+  endif
+
+  if detected == 'protein'
+    assign base = settings.dose_price_protein
+    assign markets_map = settings.dose_price_protein_markets
+    assign qualifier = settings.dose_qualifier_protein
+  elsif detected == 'brain'
+    assign base = settings.dose_price_brain
+    assign markets_map = settings.dose_price_brain_markets
+    assign qualifier = settings.dose_qualifier_brain
+  endif
+
+  if part == 'qualifier'
+    assign result = qualifier
+    if result == blank
+      assign result = product.metafields.custom.lowest_per_dose_qualifier
+    endif
+    echo result
+  else
+    assign result = base
+    assign current_market = localization.market.handle | default: ''
+    assign pairs = markets_map | remove: ' ' | split: ','
+    for pair in pairs
+      assign kv = pair | split: ':'
+      assign handle = kv[0] | downcase
+      if kv.size > 1 and current_market != '' and handle == current_market
+        assign result = kv[1]
+        break
+      endif
+    endfor
+    if result == blank
+      assign result = product.metafields.custom.lowest_per_dose_price
+    endif
+    assign result = result | append: '' | replace: ',', '.' | strip
+    echo result
+  endif
+-%}

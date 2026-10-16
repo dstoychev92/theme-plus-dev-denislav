@@ -1,0 +1,137 @@
+<!-- blocks/_accordion-group.liquid -->
+
+{% capture content %}
+  {% content_for 'blocks' %}
+{% endcapture %}
+
+{% capture class %}
+  group/accordions
+  flex flex-col w-full
+  {% if block.settings.show_top_border %}
+    border-t border-t-line-subtle
+  {% endif %}
+{% endcapture %}
+
+{% capture attributes %}
+  {% if section.settings.enable_ensemble %}
+    x-ensemble:disclosure-group
+    x-ensemble:slideshow.duration.{{ section.settings.duration | times: 1000 }}ms
+  {% else %}
+    {% if block.settings.multiple %}
+      x-disclosure-group.multiple
+    {% else %}
+      x-disclosure-group
+    {% endif %}
+  {% endif %}
+  {% if block.settings.show_number %}
+    style="counter-reset: accordion-group"
+  {% endif %}
+  {{ block.shopify_attributes }}
+  x-data="{ mutedTitle: {{ block.settings.enable_muted_title | json }} }"
+{% endcapture %}
+
+<div
+  class="{{ class }}"
+  {% if block.settings.show_number %}
+    data-has-counter
+  {% endif %}
+  {% if block.settings.show_open_close_icon %}
+    data-has-icon
+  {% endif %}
+  {% if block.settings.enable_timer_indicator and section.settings.enable_ensemble %}
+    data-enable-timer-indicator
+  {% endif %}
+  {{ attributes }}
+>
+  {{ content }}
+</div>
+
+{% schema %}
+{
+	"name": "Accordion group",
+	"tag": null,
+	"settings": [
+		{
+			"type": "checkbox",
+			"id": "multiple",
+			"label": "Allow multiple items to be expanded at once",
+			"visible_if": "{{ section.settings.enable_ensemble != true }}",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "show_top_border",
+			"label": "Show top border",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "show_number",
+			"label": "Show number",
+			"default": false,
+			"info": "Show a number before the title"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_open_close_icon",
+			"label": "Show open/close icon",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_muted_title",
+			"label": "Enable muted title",
+			"default": true,
+			"info": "Greys out the title when collapsed"
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_timer_indicator",
+			"label": "Enable timer indicator",
+			"default": true,
+			"visible_if": "{{ section.settings.enable_ensemble == true and section.settings.autoplay == true }}",
+			"info": "Enabling this will animate the line to represent the time elapsed since the accordion was opened."
+		},
+	],
+	"blocks": [
+		{
+			"type": "_accordion"
+		},
+	],
+	"presets": [
+		{
+			"name": "Accordion group",
+			"category": "Interactive",
+			"blocks": [
+				{
+					"type": "_accordion",
+					"settings": {
+						"expand": true
+					},
+					"blocks": [
+						{
+							"type": "theme-richtext",
+							"settings": {
+								"text": "<p>Use this accordion to share simple text or unleash your creativity with buttons, images, and layout blocks. Experiment with custom designs to make your content stand out and engage your customers.</p>"
+							}
+						}
+					]
+				},
+				{
+					"type": "_accordion",
+					"blocks": [
+						{
+							"type": "theme-text",
+							"settings": {
+								"text": "Use this accordion to share simple text or unleash your creativity with buttons, images, and layout blocks. Experiment with custom designs to make your content stand out and engage your customers.",
+								"type_preset": "p"
+							}
+						}
+					]
+				}
+			]
+		},
+	]
+}
+{% endschema %}
+

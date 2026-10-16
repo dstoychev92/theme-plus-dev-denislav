@@ -1,0 +1,160 @@
+{% liquid
+  assign label = 'other.accessibility.localization_country_select' | t
+  assign initial_country = localization.country
+  assign flag_size = flag_size | default: 16
+  assign show_popular_options = show_popular_options | default: true
+
+  assign offset = offset | default: '0px'
+
+  if id == blank or id == false
+    assign id = section.id | append: '-localization-country-select'
+  endif
+%}
+
+{% capture options %}
+  {% assign all_options = '' %}
+  {% assign popular_options = '' %}
+
+  {% for country in localization.available_countries %}
+    {% liquid
+      if country == initial_country
+        assign loading = 'eager'
+      else
+        assign loading = 'lazy'
+      endif
+    %}
+    {% capture option %}
+      {% capture flag %}
+        {{ country
+          | image_url: width: flag_size
+          | image_tag: loading: loading, aria-hidden: true
+        }}
+      {% endcapture %}
+
+      {% capture option_display_value %}
+        <span class="flex-row-center flex-nowrap gap-x-r3">
+          {%- capture option_display_currency -%}
+            {%- case currency_display_style -%}
+              {% when 'long' %}
+                {{- country.currency.iso_code }} {{ country.currency.symbol -}}
+              {% when 'none' %}
+              {% else %}
+                {{- country.currency.symbol -}}
+            {%- endcase -%}
+          {%- endcapture -%}
+
+          <span class="flex-row-center flex-nowrap gap-x-r3">
+            {% case country_display_style %}
+              {% when 'flag_name' %}
+                {{ flag }} <span>{{ country.name }}</span>
+              {% when 'flag_symbol' %}
+                {{ flag }} <span title="{{ country.name }}">{{ country.iso_code | upcase }}</span>
+              {% when 'flag' %}
+                {{ flag }}
+              {% when 'symbol' %}
+                {{ country.iso_code | upcase }}
+              {% else %}
+                {{ country.name }}
+            {% endcase %}
+          </span>
+
+          {% if currency_display_style != 'none' %}
+            <span title="{{ country.currency.name }}" class="opacity-70">{{- option_display_currency -}}</span>
+          {% endif %}
+        </span>
+      {% endcapture %}
+
+      {% if initial_country.iso_code == country.iso_code %}
+        {% assign initial_display = option_display_value %}
+      {% endif %}
+
+      {% capture option_currency_badge %}
+        <span title="{{ country.currency.name }}" class="inline-flex rounded-full bg-content-mix-5 text-r1 text-content-mix-90 px-r2 py-r1">
+          {{ country.currency.iso_code }} {{ country.currency.symbol }}
+        </span>
+      {% endcapture %}
+
+      {% render 'custom-select-option',
+        start_accessory: flag,
+        label: country.name,
+        end_accessory: option_currency_badge,
+        value: country.iso_code,
+        display_value: option_display_value
+      %}
+    {% endcapture %}
+
+    {% liquid
+      assign all_options = all_options | append: option
+
+      if country.popular?
+        assign popular_options = popular_options | append: option | append: ''
+      endif
+    %}
+  {% endfor %}
+
+  {% capture popular_options_group %}
+    {% if show_popular_options %}
+      {% assign popular_options_label = 'other.country_select.popular_countries' | t %}
+      {% assign popular_options_id = id | append: '-' | append: popular_options_label | handleize %}
+
+      <ul role="group" aria-labelledby="{{ popular_options_id }}">
+        <li class="px-control py-r3 text-r1 font-bold select-none {{ option_group_label_class }}" id="{{ popular_options_id }}">
+          {{ popular_options_label }}
+        </li>
+        {{ popular_options }}
+      </ul>
+    {% endif %}
+  {% endcapture %}
+
+  {% if popular_options != '' and show_popular_options != false %}
+    {% if show_popular_options != 'bottom' %}
+      {{ popular_options_group }}
+    {% endif %}
+
+    {% assign all_options_label = 'other.country_select.all_countries' | t %}
+    {% assign all_options_label_id = id | append: '-' | append: all_options_label | handleize %}
+    <ul role="group" aria-labelledby="{{ all_options_label_id }}">
+      <li class="px-control py-r3 text-r1 font-bold select-none {{ option_group_label_class }}" id="{{ all_options_label_id }}">
+        {{ all_options_label }}
+      </li>
+      {{ all_options }}
+    </ul>
+
+    {% if show_popular_options == 'bottom' %}
+      {{ popular_options_group }}
+    {% endif %}
+  {% else %}
+    {{ all_options }}
+  {% endif %}
+{% endcapture %}
+
+{% capture attributes %}
+  {% comment %} When the custom select value changes, autosubmit the associated form {% endcomment %}
+  @change="$el.closest('form').requestSubmit()"
+{% endcapture %}
+
+{% render 'custom-select',
+  name: 'country_code',
+  size: size,
+  options: options,
+  label: label,
+  value: initial_country.iso_code,
+  attributes: attributes,
+  disabled: disabled,
+  start_icon: start_icon,
+  end_icon: end_icon,
+  class: class,
+  button_class: button_class,
+  button_style: button_style,
+  popup_class: popup_class,
+  popup_list_class: popup_list_class,
+  placement: placement,
+  offset: offset,
+  flip: flip,
+  popover: popover,
+  match: match,
+  edge_padding: edge_padding,
+  initial_display: initial_display,
+  _settings: _settings,
+  settings_suffix: settings_suffix
+%}

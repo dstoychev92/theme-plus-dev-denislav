@@ -1,0 +1,138 @@
+<!-- blocks/_section-background.liquid -->
+
+{% assign target_device = block.settings.target_device %}
+
+{% capture blocks %}
+  {% content_for "blocks" %}
+{% endcapture %}
+
+{% capture class %}
+  {% render 'props-class-target-device', target_device: target_device %}
+{% endcapture %}
+
+{% capture banner_widths %}
+  {% comment %} Note: do not exceed 6 widths for images that will be preloaded. Shopify will ignore this image for preloading if it has more than 6 srcset items. {% endcomment %}
+  832, 1200, 1600, 1920, 2560, 3840
+{% endcapture %}
+
+{% capture background %}
+  {% render 'core-background',
+    content: blocks,
+    widths: banner_widths,
+    _settings: block.settings,
+    attributes: block.shopify_attributes,
+    set_height: section.settings.set_height,
+    height: section.settings.height,
+    custom_height_type: section.settings.custom_height_type,
+    custom_height_percentage: section.settings.custom_height_percentage,
+    custom_height_px: section.settings.custom_height_px,
+    set_height_mobile: section.settings.set_height_mobile,
+    height_mobile: section.settings.height_mobile,
+    custom_height_type_mobile: section.settings.custom_height_type_mobile,
+    custom_height_percentage_mobile: section.settings.custom_height_percentage_mobile,
+    custom_height_px_mobile: section.settings.custom_height_px_mobile
+  %}
+{% endcapture %}
+
+{% render 'core-section-background',
+  content: background,
+  _settings: section.settings,
+  class: class,
+  attributes: block.shopify_attributes
+%}
+
+{% schema %}
+{
+	"name": "Background",
+	"tag": null,
+	"settings": [
+		{
+			"type": "header",
+			"content": "Overlay"
+		},
+		{
+			"type": "range",
+			"id": "overlay_opacity",
+			"label": "Opacity",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 8
+		},
+		{
+			"type": "color",
+			"id": "overlay_color",
+			"label": "Color",
+			"default": "#000000"
+		},
+		{
+			"type": "header",
+			"content": "Parallax"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_parallax",
+			"label": "Set parallax amount",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "parallax",
+			"min": -100,
+			"max": 100,
+			"step": 2,
+			"label": "Parallax Amount",
+			"default": 14,
+			"info": "Positive values move the background in the opposite direction of the scroll direction. Negative values move the background in the same direction as the scroll direction.",
+			"visible_if": "{{ block.settings.set_parallax }}"
+		},
+		{
+			"type": "header",
+			"content": "Limit by screen size",
+			"info": "Optional: use a different background for mobile and desktop"
+		},
+		{
+			"type": "select",
+			"label": "Show on",
+			"id": "target_device",
+			"default": "both",
+			"options": [
+				{
+					"value": "mobile",
+					"label": "Mobile"
+				},
+				{
+					"value": "desktop",
+					"label": "Desktop"
+				},
+				{
+					"value": "both",
+					"label": "Both"
+				}
+			]
+		},
+	],
+	"blocks": [
+		{
+			"type": "_background-pattern-text"
+		},
+		{
+			"type": "_background-collage-image"
+		},
+		{
+			"type": "_background-image"
+		},
+		{
+			"type": "_background-split"
+		},
+		{
+			"type": "_background-marquee"
+		}
+	],
+	"presets": [
+		{
+			"name": "Background"
+		}
+	]
+}
+{% endschema %}

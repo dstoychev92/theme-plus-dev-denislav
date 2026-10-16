@@ -1,0 +1,1033 @@
+<!-- sections/article-recipe.liquid -->
+
+{%- liquid
+  assign show_video = section.settings.show_video
+  assign show_product = section.settings.show_product
+  assign show_share = section.settings.show_share
+  assign show_related = section.settings.show_related
+
+  assign recipe_ingredients = article.metafields.custom.recipe_ingredients.value
+  assign recipe_steps = article.metafields.custom.recipe_steps.value
+  assign recipe_video = article.metafields.custom.recipe_video.value
+  assign recipe_product = article.metafields.custom.recipe_product.value
+  assign recipe_time = article.metafields.custom.recipe_time
+  assign recipe_servings = article.metafields.custom.recipe_servings
+  assign recipe_difficulty = article.metafields.custom.recipe_difficulty
+  assign recipe_intro = article.metafields.custom.recipe_intro
+  assign recipe_note = article.metafields.custom.recipe_note
+  assign author_name = article.metafields.custom.recipe_author_name
+  assign author_role = article.metafields.custom.recipe_author_role
+  assign author_image = article.metafields.custom.recipe_author_image
+
+  assign has_video = false
+  if show_video and recipe_video != blank
+    assign has_video = true
+  endif
+
+  # Placeholder demo content so the design is visible in the theme editor before metafields are filled
+  assign enable_placeholder = false
+  if settings.placeholder_mode or request.design_mode or request.visual_preview_mode
+    assign enable_placeholder = true
+  endif
+  if enable_placeholder
+    if recipe_time == blank and recipe_servings == blank and recipe_difficulty == blank
+      assign recipe_time = 'boom.recipe.placeholder.time' | t
+      assign recipe_servings = 'boom.recipe.placeholder.servings' | t
+      assign recipe_difficulty = 'boom.recipe.placeholder.difficulty' | t
+    endif
+    if recipe_ingredients.size == 0 or recipe_ingredients == blank
+      assign recipe_ingredients = 'boom.recipe.placeholder.ingredients' | t | split: '|'
+    endif
+    if recipe_steps.size == 0 or recipe_steps == blank
+      assign recipe_steps = 'boom.recipe.placeholder.steps' | t | split: '|'
+    endif
+    if recipe_intro == blank
+      assign recipe_intro = 'boom.recipe.placeholder.intro' | t
+    endif
+  endif
+
+  # Trailing "!" in the title renders in the accent color
+  assign title_text = article.title
+  assign title_bang = false
+  assign last_char = article.title | slice: -1
+  if last_char == '!'
+    assign title_bang = true
+    assign title_len = article.title.size | minus: 1
+    assign title_text = article.title | slice: 0, title_len
+  endif
+-%}
+
+{%- liquid
+  # Pre-compute how many main-column blocks render so the sticky rail can span them on desktop
+  assign main_rows = 0
+  if recipe_intro != blank
+    assign main_rows = main_rows | plus: 1
+  endif
+  if article.content != blank
+    assign main_rows = main_rows | plus: 1
+  endif
+  if recipe_steps.size > 0
+    assign main_rows = main_rows | plus: 1
+  endif
+  if show_product and recipe_product != blank
+    assign main_rows = main_rows | plus: 1
+  endif
+  if show_share
+    assign main_rows = main_rows | plus: 1
+  endif
+  if main_rows == 0
+    assign main_rows = 1
+  endif
+
+  assign cream = section.settings.color_cream
+
+  # Dedicated hero image (custom.recipe_hero_image) wins over the article image,
+  # so the article image can stay landscape for cards/og while the hero gets a portrait crop.
+  assign hero_image = article.metafields.custom.recipe_hero_image.value | default: article.image
+
+  # Hero photo cell follows the image's own ratio so cover-cropping is minimal.
+  # Floor 0.78 caps the cell height (~820px at 640px column) for very tall portrait shots.
+  assign hero_ratio = hero_image.aspect_ratio | default: 0.85 | at_least: 0.78
+-%}
+
+<article
+  class="rcp"
+  style="
+    --rcp-ink: {{ section.settings.color_ink }};
+    --rcp-cream: {{ cream }};
+    --rcp-cream-85: {{ cream | color_modify: 'alpha', 0.85 }};
+    --rcp-cream-75: {{ cream | color_modify: 'alpha', 0.75 }};
+    --rcp-cream-70: {{ cream | color_modify: 'alpha', 0.7 }};
+    --rcp-cream-25: {{ cream | color_modify: 'alpha', 0.25 }};
+    --rcp-cream-22: {{ cream | color_modify: 'alpha', 0.22 }};
+    --rcp-cream-15: {{ cream | color_modify: 'alpha', 0.15 }};
+    --rcp-accent: {{ section.settings.color_accent }};
+    --rcp-panel: {{ section.settings.color_panel }};
+    --rcp-mint: {{ section.settings.color_step_1 }};
+    --rcp-lilac: {{ section.settings.color_step_2 }};
+    --rcp-yellow: {{ section.settings.color_step_3 }};
+    --rcp-rail-span: {{ main_rows }};
+    --rcp-hero-ratio: {{ hero_ratio }};
+  "
+>
+  {%- comment -%} ── 1. Split hero: color panel + photo ── {%- endcomment -%}
+  <header class="rcp-hero">
+    <div class="rcp-hero__panel">
+      <div class="rcp-hero__top">
+        <p class="rcp-eyebrow rcp-eyebrow--mint">
+          {{- blog.title -}}
+          {%- if article.tags.first != blank %} / {{ article.tags.first }}{% endif -%}
+        </p>
+        <h1 class="rcp-hero__title">
+          {{- title_text -}}
+          {%- if title_bang -%}<span class="rcp-hero__bang">!</span>{%- endif -%}
+        </h1>
+        {%- if article.excerpt != blank -%}
+          <div class="rcp-hero__deck">{{ article.excerpt | strip_html }}</div>
+        {%- endif -%}
+      </div>
+
+      {%- if recipe_time != blank or recipe_servings != blank or recipe_difficulty != blank -%}
+        <dl class="rcp-hero__meta">
+          {%- if recipe_time != blank -%}
+            <div>
+              <dt class="rcp-hero__meta-label">{{ 'boom.recipe.time' | t }}</dt>
+              <dd class="rcp-hero__meta-value">{{ recipe_time }}</dd>
+            </div>
+          {%- endif -%}
+          {%- if recipe_servings != blank -%}
+            <div>
+              <dt class="rcp-hero__meta-label">{{ 'boom.recipe.servings' | t }}</dt>
+              <dd class="rcp-hero__meta-value">{{ recipe_servings }}</dd>
+            </div>
+          {%- endif -%}
+          {%- if recipe_difficulty != blank -%}
+            <div>
+              <dt class="rcp-hero__meta-label">{{ 'boom.recipe.difficulty' | t }}</dt>
+              <dd class="rcp-hero__meta-value">{{ recipe_difficulty }}</dd>
+            </div>
+          {%- endif -%}
+        </dl>
+      {%- endif -%}
+    </div>
+
+    <div class="rcp-hero__media">
+      {%- if hero_image != blank -%}
+        {% render 'core-image',
+          image: hero_image,
+          cover: true,
+          preload: true,
+          class: 'rcp-hero__img'
+        %}
+      {%- endif -%}
+    </div>
+  </header>
+
+  {%- comment -%} ── 2. Body grid: intro / ingredients rail / content / steps ── {%- endcomment -%}
+  <div class="rcp-container">
+    <div class="rcp-bodygrid">
+      {%- if recipe_intro != blank -%}
+        <div class="rcp-col-main rcp-intro">{{ recipe_intro }}</div>
+      {%- endif -%}
+
+      {%- comment -%} Ingredients rail — sticky on desktop, inline after the intro on mobile {%- endcomment -%}
+      {%- if recipe_ingredients.size > 0 -%}
+        <aside class="rcp-rail">
+          <div class="rcp-rail__card">
+            <h2 class="rcp-rail__title">{{ 'boom.recipe.ingredients' | t }}</h2>
+            {%- if recipe_servings != blank -%}
+              <p class="rcp-eyebrow rcp-eyebrow--mint">{{ 'boom.recipe.for_servings' | t: count: recipe_servings }}</p>
+            {%- endif -%}
+            <ul class="rcp-rail__list">
+              {%- for item in recipe_ingredients -%}
+                {%- assign parts = item | split: ' — ' -%}
+                {%- if parts.size < 2 -%}
+                  {%- assign parts = item | split: ' – ' -%}
+                {%- endif -%}
+                <li class="rcp-rail__row">
+                  {%- if parts.size > 1 -%}
+                    <span class="rcp-rail__name">{{ parts | first }}</span>
+                    <span class="rcp-rail__amount">{{ parts | last }}</span>
+                  {%- else -%}
+                    <span class="rcp-rail__name">{{ item }}</span>
+                  {%- endif -%}
+                </li>
+              {%- endfor -%}
+            </ul>
+            {%- if recipe_note != blank -%}
+              <p class="rcp-rail__note">{{ recipe_note }}</p>
+            {%- endif -%}
+            {%- if author_name != blank -%}
+              <div class="rcp-rail__author">
+                <span class="rcp-rail__avatar">
+                  {%- if author_image != blank -%}
+                    {{ author_image.value | image_url: width: 80, height: 80, crop: 'center' | image_tag: loading: 'lazy', alt: author_name }}
+                  {%- else -%}
+                    <span aria-hidden="true">{{ author_name | slice: 0, 1 }}</span>
+                  {%- endif -%}
+                </span>
+                <span>
+                  <span class="rcp-rail__author-name">{{ author_name }}</span>
+                  {%- if author_role != blank -%}
+                    <span class="rcp-rail__author-role">{{ author_role }}</span>
+                  {%- endif -%}
+                </span>
+              </div>
+            {%- endif -%}
+          </div>
+        </aside>
+      {%- endif -%}
+
+      {%- if article.content != blank -%}
+        <div class="rcp-col-main rcp-body prose max-w-full">
+          {%- if article.content contains '[[doza_' -%}
+            {%- render 'replace-dose-placeholders', text: article.content -%}
+          {%- else -%}
+            {{ article.content }}
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      {%- comment -%} Steps as colour blocks; palette cycles, the last step is always ink {%- endcomment -%}
+      {%- if recipe_steps.size > 0 -%}
+        <section class="rcp-col-main rcp-steps">
+          <h2 class="rcp-h2">{{ 'boom.recipe.steps' | t }}</h2>
+          <ol class="rcp-steps__list">
+            {%- for step in recipe_steps -%}
+              {%- liquid
+                if forloop.last
+                  assign step_class = 'rcp-step--ink'
+                else
+                  assign pi = forloop.index0 | modulo: 4
+                  case pi
+                    when 0
+                      assign step_class = 'rcp-step--mint'
+                    when 1
+                      assign step_class = 'rcp-step--lilac'
+                    when 2
+                      assign step_class = 'rcp-step--yellow'
+                    else
+                      assign step_class = 'rcp-step--accent'
+                  endcase
+                endif
+              -%}
+              <li class="rcp-step {{ step_class }}">
+                <span class="rcp-step__num" aria-hidden="true">
+                  {%- if forloop.index < 10 -%}0{%- endif -%}{{ forloop.index }}
+                </span>
+                <span class="rcp-step__text">{{ step }}</span>
+              </li>
+            {%- endfor -%}
+          </ol>
+        </section>
+      {%- endif -%}
+
+      {%- comment -%} ── Product CTA (keeps existing behaviour) ── {%- endcomment -%}
+      {%- if show_product and recipe_product != blank -%}
+        {%- assign p = recipe_product -%}
+        <div class="rcp-col-main rcp-product">
+          {%- if p.featured_image != blank -%}
+            <div class="rcp-product__media">
+              {% render 'core-image', image: p.featured_image, aspect_ratio: 1, cover: true, class: 'w-full' %}
+            </div>
+          {%- endif -%}
+          <div class="rcp-product__body">
+            <p class="rcp-eyebrow rcp-eyebrow--accent">{{ 'boom.recipe.used_product' | t }}</p>
+            <h3 class="type-h4 uppercase">{{ p.title }}</h3>
+          </div>
+          <div class="rcp-product__cta">
+            {%- assign view_product_label = 'boom.recipe.view_product' | t -%}
+            {% render 'core-button',
+              tag: 'a',
+              label: view_product_label,
+              href: p.url,
+              color: 'primary',
+              appearance: 'solid',
+              sizing: 'md'
+            %}
+          </div>
+        </div>
+      {%- endif -%}
+
+      {%- if show_share -%}
+        <div class="rcp-col-main">
+          {% assign share_label = 'blog.article.share' | t %}
+          {% render 'share', label: share_label, article: article %}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+
+  {%- comment -%} ── 3. Video: dark full-bleed ── {%- endcomment -%}
+  {%- if has_video -%}
+    <section class="rcp-video">
+      <div class="rcp-video__inner">
+        <div class="rcp-video__copy">
+          <p class="rcp-eyebrow rcp-eyebrow--accent">{{ 'boom.recipe.video' | t }}</p>
+          <h2 class="rcp-video__title">{{ 'boom.recipe.video_title' | t }}</h2>
+          {%- if article.metafields.custom.recipe_video_caption != blank -%}
+            <p class="rcp-video__caption">{{ article.metafields.custom.recipe_video_caption }}</p>
+          {%- endif -%}
+        </div>
+        {%- assign video_ratio = recipe_video.aspect_ratio | default: 1.78 -%}
+        <div class="rcp-video__player{% if video_ratio < 1 %} rcp-video__player--portrait{% endif %}">
+          {% render 'core-video',
+            video: recipe_video,
+            id: section.id,
+            controls: true,
+            show_custom_controls: true,
+            class: 'w-full'
+          %}
+        </div>
+      </div>
+    </section>
+  {%- endif -%}
+
+  {%- comment -%} ── 4. Related recipes ── {%- endcomment -%}
+  {%- if show_related and blog.articles_count > 1 -%}
+    <section class="rcp-related rcp-container">
+      <header class="rcp-related__head">
+        <h2 class="rcp-h2 rcp-related__title">{{ 'boom.recipe.related_title' | t }}</h2>
+        <a class="rcp-related__all" href="{{ blog.url }}">{{ 'boom.recipe.all_recipes' | t }} &rarr;</a>
+      </header>
+      <ul class="rcp-related__grid">
+        {%- assign shown = 0 -%}
+        {%- for other in blog.articles -%}
+          {%- if other.id == article.id -%}{%- continue -%}{%- endif -%}
+          {%- if shown >= 3 -%}{%- break -%}{%- endif -%}
+          {%- assign shown = shown | plus: 1 -%}
+          <li>
+            <a class="rcp-card" href="{{ other.url }}">
+              <span class="rcp-card__media">
+                {%- if other.image != blank -%}
+                  {% render 'core-image', image: other.image, aspect_ratio: 1.33, cover: true, class: 'rcp-card__img' %}
+                {%- endif -%}
+              </span>
+              <span class="rcp-card__text">
+                <span class="rcp-eyebrow rcp-eyebrow--muted">
+                  {{- other.tags.first | default: blog.title -}}
+                  {%- if other.metafields.custom.recipe_time != blank %} &middot; {{ other.metafields.custom.recipe_time }}{% endif -%}
+                </span>
+                <span class="rcp-card__title">{{ other.title }}</span>
+              </span>
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+    </section>
+  {%- endif -%}
+
+  {%- if blog.comments_enabled? -%}
+    <div class="rcp-container rcp-comments">
+      {% render 'article-comments', article: article %}
+    </div>
+  {%- endif -%}
+</article>
+
+{% render 'schema-recipe', article: article %}
+
+{%- if article.metafields.custom.seo_faq_schema != blank -%}
+  {%- assign faq_items = article.metafields.custom.seo_faq_schema.value -%}
+  {% render 'schema-faq', faq_items: faq_items %}
+{%- endif -%}
+
+{% stylesheet %}
+  .rcp {
+    background: var(--rcp-cream);
+    color: var(--rcp-ink);
+  }
+  .rcp-hero__title,
+  .rcp-hero__meta-value,
+  .rcp-rail__title,
+  .rcp-h2,
+  .rcp-step__num,
+  .rcp-video__title,
+  .rcp-card__title {
+    font-family: var(--root-font-stack-heading);
+    font-style: var(--root-font-style-heading);
+  }
+  .rcp-container {
+    max-width: 1280px;
+    margin-inline: auto;
+    padding-inline: 48px;
+  }
+  .rcp-eyebrow {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .rcp-eyebrow--mint {
+    color: var(--rcp-mint);
+  }
+  .rcp-eyebrow--accent {
+    color: var(--rcp-accent);
+  }
+  .rcp-eyebrow--muted {
+    color: #8a8275;
+    letter-spacing: 0.12em;
+  }
+  .rcp-h2 {
+    font-size: 34px;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+
+  /* ── Hero ── */
+  .rcp-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .rcp-hero__panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 28px 20px;
+    background: var(--rcp-panel);
+    color: var(--rcp-cream);
+  }
+  .rcp-hero__top {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .rcp-hero__title {
+    font-size: 44px;
+    font-weight: 900;
+    line-height: 0.9;
+    letter-spacing: 0;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+  .rcp-hero__bang {
+    color: var(--rcp-accent);
+  }
+  .rcp-hero__deck {
+    max-width: 440px;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.45;
+    color: var(--rcp-cream-85);
+  }
+  .rcp-hero__meta {
+    display: flex;
+    gap: 24px;
+    margin: 0;
+    padding-top: 20px;
+    border-top: 1px solid var(--rcp-cream-25);
+  }
+  .rcp-hero__meta-label {
+    margin-bottom: 6px;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--rcp-mint);
+  }
+  .rcp-hero__meta-value {
+    font-size: 18px;
+    font-weight: 800;
+  }
+  .rcp-hero__media {
+    position: relative;
+    min-width: 0;
+    height: 300px;
+    overflow: hidden;
+    background: var(--rcp-ink);
+  }
+  .rcp-hero__img,
+  .rcp-hero__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  @media (min-width: 1024px) {
+    .rcp-hero {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      min-height: 600px;
+    }
+    .rcp-hero__panel {
+      gap: 40px;
+      padding: 64px 48px;
+    }
+    .rcp-hero__top {
+      gap: 24px;
+    }
+    .rcp-hero__title {
+      font-size: clamp(56px, 6.7vw, 86px);
+    }
+    .rcp-hero__deck {
+      font-size: 21px;
+    }
+    .rcp-hero__meta {
+      gap: 36px;
+      padding-top: 24px;
+    }
+    .rcp-hero__meta-label {
+      font-size: 11px;
+    }
+    .rcp-hero__meta-value {
+      font-size: 24px;
+    }
+    .rcp-hero__media {
+      height: auto;
+      aspect-ratio: var(--rcp-hero-ratio, 0.85);
+    }
+    /* Absolutely position the photo so a tall portrait image can never stretch the hero row —
+       the panel content (min 600px) defines the height and the photo covers it */
+    .rcp-hero__img,
+    .rcp-hero__media img {
+      position: absolute;
+      inset: 0;
+    }
+  }
+
+  /* ── Body grid + rail ── */
+  .rcp-bodygrid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+    padding-block: 28px 0;
+  }
+  .rcp-intro {
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1.6;
+    color: #2a2721;
+    border-left: 4px solid var(--rcp-accent);
+    padding-left: 16px;
+    text-wrap: pretty;
+  }
+  .rcp-body {
+    font-size: 16px;
+    line-height: 1.7;
+    color: #3a362e;
+  }
+  @media (min-width: 1024px) {
+    .rcp-bodygrid {
+      grid-template-columns: minmax(0, 1fr) 340px;
+      column-gap: 64px;
+      row-gap: 56px;
+      padding-block: 72px 0;
+    }
+    .rcp-col-main {
+      grid-column: 1;
+      max-width: 660px;
+    }
+    .rcp-rail {
+      grid-column: 2;
+      grid-row: 1 / span var(--rcp-rail-span, 1);
+    }
+    .rcp-intro {
+      font-size: 22px;
+      padding-left: 24px;
+    }
+    .rcp-body {
+      font-size: 19px;
+    }
+  }
+
+  /* ── Ingredients rail ── */
+  .rcp-rail__card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 24px 20px;
+    background: var(--rcp-ink);
+    color: var(--rcp-cream);
+    border-radius: 14px;
+  }
+  .rcp-rail__title {
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+  }
+  .rcp-rail__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .rcp-rail__row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 11px 0;
+    border-top: 1px solid var(--rcp-cream-22);
+  }
+  .rcp-rail__row:last-child {
+    border-bottom: 1px solid var(--rcp-cream-22);
+  }
+  .rcp-rail__name {
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .rcp-rail__amount {
+    font-size: 15px;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+  .rcp-rail__note {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.5;
+    color: var(--rcp-cream-75);
+  }
+  .rcp-rail__author {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 18px;
+    border-top: 1px solid var(--rcp-cream-22);
+  }
+  .rcp-rail__avatar {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    overflow: hidden;
+    font-weight: 800;
+    background: var(--rcp-cream-15);
+    border-radius: 50%;
+  }
+  .rcp-rail__avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .rcp-rail__author-name {
+    display: block;
+    font-size: 14px;
+    font-weight: 800;
+  }
+  .rcp-rail__author-role {
+    display: block;
+    font-size: 12px;
+    color: var(--rcp-mint);
+  }
+  @media (min-width: 1024px) {
+    .rcp-rail__card {
+      position: sticky;
+      top: 24px;
+      gap: 20px;
+      padding: 32px 30px;
+      border-radius: 18px;
+    }
+    .rcp-rail__title {
+      font-size: 26px;
+    }
+    .rcp-rail__row {
+      padding: 13px 0;
+    }
+    .rcp-rail__name,
+    .rcp-rail__amount {
+      font-size: 16px;
+    }
+  }
+
+  /* ── Steps ── */
+  .rcp-steps .rcp-h2 {
+    margin-bottom: 22px;
+  }
+  .rcp-steps__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .rcp-step {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    gap: 14px;
+    align-items: center;
+    margin-bottom: 14px;
+    padding: 20px;
+    border-radius: 12px;
+  }
+  .rcp-step__num {
+    font-size: 30px;
+    font-weight: 900;
+    line-height: 0.8;
+  }
+  .rcp-step__text {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.55;
+  }
+  .rcp-step--mint {
+    background: var(--rcp-mint);
+    color: var(--rcp-ink);
+  }
+  .rcp-step--lilac {
+    background: var(--rcp-lilac);
+    color: var(--rcp-ink);
+  }
+  .rcp-step--yellow {
+    background: var(--rcp-yellow);
+    color: var(--rcp-ink);
+  }
+  .rcp-step--accent {
+    background: var(--rcp-accent);
+    color: #ffffff;
+  }
+  .rcp-step--ink {
+    background: var(--rcp-ink);
+    color: var(--rcp-cream);
+  }
+  .rcp-step--ink .rcp-step__num {
+    color: var(--rcp-mint);
+  }
+  @media (min-width: 1024px) {
+    .rcp-step {
+      grid-template-columns: 64px 1fr;
+      gap: 22px;
+      padding: 30px 32px;
+      border-radius: 16px;
+    }
+    .rcp-step__num {
+      font-size: 46px;
+    }
+    .rcp-step__text {
+      font-size: 18px;
+    }
+  }
+
+  /* ── Product CTA ── */
+  .rcp-product {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 24px;
+    border: 2px solid var(--rcp-ink);
+    border-radius: 14px;
+  }
+  .rcp-product__media {
+    flex: none;
+    width: 96px;
+    overflow: hidden;
+    border-radius: 10px;
+  }
+  .rcp-product__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 6px;
+  }
+  @media (min-width: 640px) {
+    .rcp-product {
+      flex-direction: row;
+      align-items: center;
+    }
+  }
+
+  /* ── Video ── */
+  .rcp-video {
+    margin-top: 40px;
+    background: var(--rcp-ink);
+    color: var(--rcp-cream);
+  }
+  .rcp-video__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+    align-items: center;
+    max-width: 1280px;
+    margin-inline: auto;
+    padding: 28px 20px;
+  }
+  .rcp-video__copy {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .rcp-video__title {
+    font-size: 28px;
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: normal;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+  .rcp-video__caption {
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 1.55;
+    color: var(--rcp-cream-70);
+  }
+  .rcp-video__player {
+    overflow: hidden;
+    background: #000;
+    border-radius: 12px;
+  }
+  /* Vertical (social) video: cap the player width so the section stays compact */
+  .rcp-video__player--portrait {
+    width: 100%;
+    max-width: min(400px, 100%);
+    margin-inline: auto;
+  }
+  @media (min-width: 1024px) {
+    .rcp-video {
+      margin-top: 80px;
+    }
+    .rcp-video__inner {
+      grid-template-columns: 1fr 1.4fr;
+      gap: 48px;
+      padding: 64px 48px;
+    }
+    .rcp-video__title {
+      font-size: 52px;
+      line-height: 0.92;
+    }
+    .rcp-video__player {
+      border-radius: 18px;
+    }
+  }
+
+  /* ── Related ── */
+  .rcp-related {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding-block: 28px;
+  }
+  .rcp-related__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 18px;
+    border-bottom: 2px solid var(--rcp-ink);
+  }
+  .rcp-related__title {
+    font-size: 26px;
+  }
+  .rcp-related__all {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--rcp-accent);
+  }
+  .rcp-related__grid {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .rcp-card {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    min-height: 44px;
+    color: inherit;
+    text-decoration: none;
+  }
+  .rcp-card__media {
+    display: block;
+    flex: none;
+    width: 96px;
+    overflow: hidden;
+    border-radius: 10px;
+    background: var(--rcp-ink);
+  }
+  .rcp-card__img,
+  .rcp-card__media img {
+    display: block;
+    transition: transform 250ms ease-out;
+  }
+  .rcp-card__text {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .rcp-card__title {
+    font-size: 18px;
+    font-weight: 800;
+    line-height: 1.1;
+    transition: color 180ms ease-out;
+  }
+  .rcp-card:hover .rcp-card__title {
+    color: var(--rcp-accent);
+  }
+  .rcp-card:hover .rcp-card__img,
+  .rcp-card:hover .rcp-card__media img {
+    transform: scale(1.03);
+  }
+  @media (min-width: 1024px) {
+    .rcp-related {
+      gap: 32px;
+      padding-block: 64px;
+    }
+    .rcp-related__title {
+      font-size: 40px;
+    }
+    .rcp-related__grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+    }
+    .rcp-card {
+      flex-direction: column;
+      gap: 14px;
+      align-items: stretch;
+    }
+    .rcp-card__media {
+      width: 100%;
+      border-radius: 14px;
+    }
+    .rcp-card__title {
+      font-size: 23px;
+    }
+  }
+
+  .rcp-comments {
+    padding-block: 28px;
+  }
+
+  /* Focus + reduced motion */
+  .rcp a:focus-visible,
+  .rcp button:focus-visible {
+    outline: 3px solid var(--rcp-accent);
+    outline-offset: 3px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rcp-card__img,
+    .rcp-card__media img {
+      transition: none;
+    }
+    .rcp-card:hover .rcp-card__img,
+    .rcp-card:hover .rcp-card__media img {
+      transform: none;
+    }
+  }
+  @media (max-width: 1023.9px) {
+    .rcp-container {
+      padding-inline: 20px;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Article: Recipe",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_video",
+      "label": "Show recipe video",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product",
+      "label": "Show product card",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_share",
+      "label": "Show link sharing",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_related",
+      "label": "Show related recipes",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "color_ink",
+      "label": "Ink",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "color_cream",
+      "label": "Background",
+      "default": "#F2EDE4"
+    },
+    {
+      "type": "color",
+      "id": "color_accent",
+      "label": "Accent",
+      "default": "#F2564B"
+    },
+    {
+      "type": "color",
+      "id": "color_panel",
+      "label": "Hero panel",
+      "default": "#2E3192"
+    },
+    {
+      "type": "color",
+      "id": "color_step_1",
+      "label": "Step color 1",
+      "default": "#8FD9C6"
+    },
+    {
+      "type": "color",
+      "id": "color_step_2",
+      "label": "Step color 2",
+      "default": "#C9C6F5"
+    },
+    {
+      "type": "color",
+      "id": "color_step_3",
+      "label": "Step color 3",
+      "default": "#F2C94C"
+    }
+  ]
+}
+{% endschema %}

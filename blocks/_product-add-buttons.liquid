@@ -1,0 +1,451 @@
+<!-- blocks/_product-add-buttons.liquid -->
+
+{% liquid
+  assign product = closest.product
+
+  if product == blank and request.visual_preview_mode
+    assign product = collections.all.products.first
+  endif
+
+  assign current_variant = product.selected_or_first_available_variant
+  assign price = current_variant.price
+  assign add_to_cart_button_class = 'w-full relative'
+  assign add_to_cart_button_label_class = 'w-full leading-[--leading-block] whitespace-normal'
+
+  # Select current selling plan if it's specified in the URL
+  assign selected_selling_plan = product.selected_selling_plan
+  if product.requires_selling_plan and selected_selling_plan == blank
+    # Fallback to the first available selling plan
+    assign selected_selling_plan = product.selected_or_first_available_selling_plan_allocation.selling_plan | default: product.selling_plan_groups[0].selling_plans[0]
+  endif
+
+  # Subscription price
+  if selected_selling_plan
+    assign price_adjustment = selected_selling_plan.price_adjustments[0]
+    case price_adjustment.value_type
+      when 'percentage'
+        assign plan_discount_amount = price | times: price_adjustment.value | divided_by: 100
+      when 'fixed_amount'
+        assign plan_discount_amount = price_adjustment.value
+      when 'price'
+        assign plan_discount_amount = 0
+        assign price = price_adjustment.value
+    endcase
+    assign price = price | minus: plan_discount_amount
+  endif
+
+  assign button_text = 'product.add_to_cart' | t
+  assign bundle_empty_label = block.settings.bundle_empty_label | default: 'Избери поне 1 продукт'
+%}
+
+{% comment %} This assumes that products are unique within the current section {% endcomment %}
+{% assign product_form_id = 'product-form-' | append: product.handle | append: '-' | append: section.id %}
+
+{% capture alert %}
+  {% capture alert_attributes %}
+    :hidden="$productForm.state !== 'error'"
+    x-show="$productForm.state === 'error'"
+    x-cloak
+    x-transition.duration.900ms
+    aria-label="{{ "product.error_adding_to_cart" | t }}"
+    {% comment %} Reset error state when variant/sibling is changed {% endcomment %}
+    @theme:variant:change.window="if ($productForm.state === 'error' && $event.detail.productId === {{ product.id }}) $productForm.reset()"
+    @theme:sibling:change.window="if ($productForm.state === 'error' && $event.detail.productId === {{ product.id }}) $productForm.reset()"
+  {% endcapture %}
+  {% capture alert_icon %}
+    {% render 'core-icon', icon: 'fill-circle-alert' %}
+  {% endcapture %}
+  {% capture alert_content %}
+    {% assign default_error_message = "product.error_adding_to_cart" | t %}
+    <p x-html="$productForm.errorDescription || $productForm.errorMessage || '{{ default_error_message | escape }}'"></p>
+  {% endcapture %}
+  {% render 'alert',
+    icon: alert_icon,
+    content: alert_content,
+    type: 'error',
+    attributes: alert_attributes,
+    class: 'rounded-sm'
+  %}
+{% endcapture %}
+
+{% assign add_to_cart_button_label = 'product.add_to_cart' | t %}
+
+{% comment %} Available {% endcomment %}
+{% if current_variant.available == true %}
+  {% assign add_to_cart_button_label = null %}
+  {% liquid
+    # Pre-order button text
+    if settings.metafield_preorder != blank
+      assign preorder_metafield_namespace = settings.metafield_preorder | split: '.' | first
+      assign preorder_metafield_key = settings.metafield_preorder | split: '.' | last
+      assign preorder_metafield = product.metafields[preorder_metafield_namespace][preorder_metafield_key]
+      if preorder_metafield.value == true
+        assign button_text = 'product.pre_order.add_button' | t
+      endif
+    endif
+  %}
+
+  {% capture add_to_cart_button_content %}
+    <span
+      aria-hidden="true"
+      class="absolute z-10 inset-0 flex flex-center transition-[opacity,transform]"
+      x-cloak
+      x-show="$productForm.state === 'pending'"
+      x-transition:enter="delay-100"
+      x-transition:enter-start="opacity-0 scale-0"
+      x-transition:enter-end="opacity-100 scale-100"
+      x-transition:leave-start="opacity-100 scale-100"
+      x-transition:leave-end="opacity-0 scale-0"
+    >
+      {% render 'spinner' %}
+    </span>
+    <span
+      aria-hidden="true"
+      class="absolute z-10 inset-0 flex flex-center transition-[opacity,transform]"
+      x-cloak
+      x-show="$productForm.state === 'success'"
+      x-transition:enter="delay-100"
+      x-transition:enter-start="opacity-0 scale-90"
+      x-transition:enter-end="opacity-100 scale-100"
+      x-transition:leave-start="opacity-100 scale-100"
+      x-transition:leave-end="opacity-0 scale-90"
+    >
+      {% render 'core-icon', icon: 'stroke-bare-check', size: 'lg' %} {{- "product.added_to_cart" | t -}}
+    </span>
+    <span
+      class="transition-transform relative flex flex-row flex-center gap-x-r3 group-has-[:invalid]/product-form:animate-wiggle transition-[opacity,transform]"
+      :class="{
+        'opacity-0 scale-95': $productForm.state === 'pending' || $productForm.state === 'success',
+      }"
+    >
+      <span aria-hidden="true" class="absolute inset-0 flex flex-center h-full pointer-events-none hover-effect-text-highlight">
+        <span x-text="(bundleActive && !bundleHasItems) ? {{ bundle_empty_label | json | escape }} : {{ button_text | json | escape }}">{{ button_text }}</span>
+      </span>
+      <span x-text="(bundleActive && !bundleHasItems) ? {{ bundle_empty_label | json | escape }} : {{ button_text | json | escape }}">{{ button_text }}</span>
+    </span>
+  {% endcapture %}
+{% endif %}
+
+{% comment %} Sold out {% endcomment %}
+{% if current_variant.available == false %}
+  {% assign add_to_cart_button_content = null %}
+  {% assign add_to_cart_button_label = 'product.sold_out' | t %}
+  {% assign add_to_cart_button_class = add_to_cart_button_class | append: ' opacity-50' %}
+  {% capture add_to_cart_button_attributes %}
+    {% comment %} Disable button if product is sold out {% endcomment %}
+    @click="$el.setCustomValidity(`{{ 'product.sold_out_error_message' | t }}`)"
+  {% endcapture %}
+{% endif %}
+
+{% comment %} Unavailable {% endcomment %}
+{% if current_variant == null %}
+  {% assign add_to_cart_button_content = null %}
+  {% assign add_to_cart_button_label = 'product.unavailable' | t %}
+  {% assign add_to_cart_button_class = add_to_cart_button_class | append: ' opacity-50' %}
+  {% capture add_to_cart_button_attributes %}
+    {% comment %} Disable button if product is unavailable {% endcomment %}
+    @click="$el.setCustomValidity(`{{ 'product.unavailable_error_message' | t }}`)"
+  {% endcapture %}
+{% endif %}
+
+{% capture add_to_cart_button_attributes %}
+  {{ add_to_cart_button_attributes }}
+  key="{{ current_variant.id }}"
+
+  {% comment %} We dont want users clicking the button while the section is loading since that might add the previous variant to the cart not the new one{% endcomment %}
+  {% comment %}
+    Bundle-template guard: if a bundle-builder block is present on the page
+    (window.__boomBundleTotalBags is defined), prevent submit until the
+    customer has selected at least one item.
+  {% endcomment %}
+  :disabled="$sectionApi.state === 'loading' || (bundleActive && !bundleHasItems)"
+  :class="(bundleActive && !bundleHasItems) ? 'opacity-50 cursor-not-allowed' : ''"
+{% endcapture %}
+
+{% capture add_to_cart_button %}
+  {% render 'core-button',
+    type: 'submit',
+    content: add_to_cart_button_content,
+    label: add_to_cart_button_label,
+    _settings: block.settings,
+    class: add_to_cart_button_class,
+    attributes: add_to_cart_button_attributes,
+    label_class: add_to_cart_button_label_class
+  %}
+{% endcapture %}
+
+{% capture content %}
+  <product-add-buttons
+    class="
+      flex flex-col gap-y-r5 w-full
+      vars-btn-{{ block.settings.sizing }}
+      vars-btn-{{ block.settings.color }}
+    "
+  >
+    {{ alert }}
+
+    {% if product != blank %}
+      {% form 'product', product, id: product_form_id, class: 'shopify-product-form flex flex-col gap-y-r3 group/product-form' %}
+        <div
+          class="{% if request.visual_preview_mode %}block{% else %}contents{% endif %}"
+          x-data="{
+            bundleActive: typeof window.__boomBundleTotalBags !== 'undefined',
+            bundleHasItems: (window.__boomBundleTotalBags || 0) > 0
+          }"
+          @boom:bundle-change.window="bundleActive = true; bundleHasItems = $event.detail.totalBags > 0"
+          {% # The presence of data-morph-root here prevents anything else in the product form from being morphed %}
+          {% # This prevents wiping out an inputs injected by apps, etc %}
+          data-morph-root='{{ block.id }}-product-form'
+        >
+          {% if block.settings.enable_gift_card_recipient and product.gift_card? %}
+            {% render 'product-gift-card-recipient', product: product %}
+          {% endif %}
+
+          {% comment %} The input with name="id" indicates the variant to add to cart {% endcomment %}
+          <input type="hidden" name="id" key="{{ product.id }}-{{ current_variant.id }}" value="{{ current_variant.id }}">
+
+          {% render 'product-preorder-properties', product: product %}
+          {% render 'product-line-item-properties', product: product %}
+
+          {{ add_to_cart_button }}
+        </div>
+
+        {% if block.settings.enable_payment_button and current_variant.available == true %}
+          <div class="{% render 'props-class-type-preset', _settings: block.settings %}">
+            {{ form | payment_button }}
+          </div>
+
+          {% comment %} Shop pay split payment terms {% endcomment %}
+          <div class="shop-pay-terms prose text-r3 empty:hidden">{{- form | payment_terms -}}</div>
+        {% endif %}
+      {% endform %}
+    {% elsif settings.placeholder_mode or request.design_mode %}
+      <div class="flex flex-col gap-y-r3">
+        {{ add_to_cart_button }}
+      </div>
+    {% endif %}
+  </product-add-buttons>
+{% endcapture %}
+
+{% render 'product-block',
+  morph: false,
+  _settings: block.settings,
+  content: content,
+  attributes: block.shopify_attributes,
+  class: 'w-full'
+%}
+
+{% schema %}
+{
+	"name": "Form buttons",
+	"tag": null,
+	"settings": [
+		{
+			"type": "header",
+			"content": "Add to cart button"
+		},
+		{
+			"type": "text",
+			"id": "bundle_empty_label",
+			"label": "Bundle empty label",
+			"default": "Избери поне 1 продукт",
+			"info": "Shown on the ATC button when used on a bundle-builder template and no items have been selected yet."
+		},
+		{
+			"type": "select",
+			"id": "appearance",
+			"label": "Style",
+			"default": "solid",
+			"options": [
+				{
+					"value": "solid",
+					"label": "Solid"
+				},
+				{
+					"value": "outline",
+					"label": "Outline"
+				},
+				{
+					"value": "soft",
+					"label": "Soft"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "sizing",
+			"label": "Height",
+			"default": "xl",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "color",
+			"label": "Color",
+			"default": "content",
+			"options": [
+				{
+					"value": "content",
+					"label": "Text default"
+				},
+				{
+					"value": "primary",
+					"label": "Primary accent"
+				},
+				{
+					"value": "secondary",
+					"label": "Link accent"
+				},
+				{
+					"value": "sale",
+					"label": "Sale"
+				}
+			]
+		},
+		{
+			"type": "header",
+			"content": "Text style",
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_preset",
+			"label": "Text style",
+			"default": "btn",
+			"options": [
+				{
+					"value": "btn",
+					"label": "Button"
+				},
+				{
+					"value": "p",
+					"label": "Paragraph"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_resize",
+			"label": "Text size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset != 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_font",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 4,
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "header",
+			"content": "Dynamic checkout"
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_payment_button",
+			"label": "Show dynamic checkout button",
+			"info": "Lets customers check out directly using a familiar payment method. [Learn More](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+			"default": true
+		},
+		{
+			"type": "header",
+			"content": "Gift cards",
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_gift_card_recipient",
+			"label": "Enable \"send as a gift\" option",
+			"default": true,
+			"info": "Gift card products can be sent directly to a recipient along with a personal message."
+		},
+	],
+	"presets": [
+		{
+			"name": "Form buttons"
+		}
+	]
+}
+{% endschema %}

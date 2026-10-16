@@ -1,0 +1,328 @@
+<!-- blocks/_tile.liquid -->
+
+{% capture content_blocks %}
+  {% content_for 'blocks' %}
+{% endcapture %}
+
+{% render 'tile',
+  id: block.id,
+  _settings: block.settings,
+  content: content_blocks,
+  attributes: block.shopify_attributes,
+  content_class: 'entrance-container',
+  padding: false
+%}
+
+{% schema %}
+{
+	"name": "Image tile",
+	"tag": null,
+	"settings": [
+		{
+			"type": "select",
+			"id": "media_type",
+			"label": "Type",
+			"options": [
+				{
+					"value": "image",
+					"label": "Image"
+				},
+				{
+					"value": "video",
+					"label": "Video"
+				}
+			],
+			"default": "image"
+		},
+		{
+			"type": "image_picker",
+			"id": "image",
+			"label": "Image",
+			"visible_if": "{{ block.settings.media_type == 'image' }}"
+		},
+		{
+			"type": "video",
+			"id": "video_bg",
+			"label": "Video",
+			"visible_if": "{{ block.settings.media_type == 'video' }}"
+		},
+		{
+			"type": "paragraph",
+			"content": "Background videos autoplay and are muted",
+			"visible_if": "{{ block.settings.media_type == 'video' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_image_on_mobile",
+			"label": "Show image on mobile",
+			"default": false,
+			"visible_if": "{{ block.settings.media_type == 'video' }}"
+		},
+		{
+			"type": "image_picker",
+			"id": "image_mobile",
+			"label": "Image mobile",
+			"visible_if": "{{ block.settings.media_type == 'image' or block.settings.media_type == 'video' and block.settings.show_image_on_mobile == true }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_aspect_ratio",
+			"label": "Set aspect ratio",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "aspect_ratio",
+			"min": 0.5,
+			"max": 5,
+			"step": 0.1,
+			"unit": ":1",
+			"label": "Aspect ratio",
+			"info": "Width to height",
+			"default": 1,
+			"visible_if": "{{ block.settings.set_aspect_ratio }}"
+		},
+		{
+			"type": "url",
+			"id": "href",
+			"label": "Link"
+		},
+		{
+			"type": "checkbox",
+			"id": "open_in_new_window",
+			"label": "Open link in new window",
+			"default": false
+		},
+		{
+			"type": "header",
+			"content": "Overlay"
+		},
+		{
+			"type": "range",
+			"id": "overlay_opacity",
+			"label": "Opacity",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 8
+		},
+		{
+			"type": "color",
+			"id": "overlay_color",
+			"label": "Color",
+			"default": "#000000"
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "vertical_placement",
+			"label": "Placement",
+			"default": "middle",
+			"options": [
+				{
+					"value": "full",
+					"label": "↕"
+				},
+				{
+					"value": "top",
+					"label": "⤒"
+				},
+				{
+					"value": "middle",
+					"label": "—"
+				},
+				{
+					"value": "bottom",
+					"label": "⤓"
+				}
+			]
+		},
+		{
+			"type": "text_alignment",
+			"id": "horizontal_placement",
+			"label": "Alignment",
+			"default": "center"
+		},
+		{
+			"type": "select",
+			"id": "padding",
+			"label": "Padding",
+			"default": "lg",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "padding_custom",
+			"label": "Custom padding",
+			"default": 0,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ block.settings.padding == 'custom'  }}"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color_scheme",
+			"id": "color_scheme",
+			"label": "Color scheme",
+			"default": "scheme-opposite"
+		},
+		{
+			"type": "header",
+			"content": "Border"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_border",
+			"label": "Set border",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "border_width",
+			"label": "Thickness",
+			"unit": "px",
+			"min": 0,
+			"max": 10,
+			"step": 0.5,
+			"default": 1,
+			"visible_if": "{{ block.settings.set_border }}"
+		},
+		{
+			"type": "color",
+			"id": "border_color",
+			"label": "Color",
+			"alpha": true,
+			"default": "#000000",
+			"visible_if": "{{ block.settings.set_border }}"
+		},
+		{
+			"type": "header",
+			"content": "Rounding"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_rounding",
+			"label": "Set rounding",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "rounding_radius",
+			"label": "Radius",
+			"default": "lg",
+			"options": [
+				{
+					"value": "none",
+					"label": "0"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			],
+			"visible_if": "{{ block.settings.set_rounding  }}"
+		},
+		{
+			"type": "range",
+			"id": "rounding_radius_custom",
+			"label": "Radius",
+			"unit": "px",
+			"min": 0,
+			"max": 50,
+			"step": 1,
+			"default": 20,
+			"visible_if": "{{ block.settings.set_rounding and block.settings.rounding_radius == 'custom'  }}"
+		},
+		{
+			"type": "header",
+			"content": "Parallax"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_parallax",
+			"label": "Set parallax amount",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "parallax",
+			"min": -100,
+			"max": 100,
+			"step": 2,
+			"label": "Parallax Amount",
+			"default": 14,
+			"info": "Positive values move the background in the opposite direction of the scroll direction. Negative values move the background in the same direction as the scroll direction.",
+			"visible_if": "{{ block.settings.set_parallax }}"
+		},
+	],
+	"blocks": [
+		{
+			"type": "@theme"
+		},
+		{
+			"type": "@app"
+		},
+		{
+			"type": "_group-grid"
+		}
+	],
+	"presets": [
+		{
+			"name": "Image tile",
+			"category": "Cards",
+			"blocks": [
+				{
+					"type": "theme-text",
+					"settings": {
+						"text": "Your Title",
+						"type_preset": "h2"
+					}
+				},
+				{
+					"type": "theme-richtext",
+					"settings": {
+						"text": "<p>Use this text to share information about your brand.</p>"
+					}
+				}
+			]
+		}
+	]
+}
+{% endschema %}

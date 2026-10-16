@@ -1,0 +1,133 @@
+{% liquid
+  assign filter_mode = filter_mode | default: section.settings.filter_mode
+  assign sidebar_open = sidebar_open | default: section.settings.filter_sidebar_open_by_default, allow_false: true
+  assign hide_filters_label = 'collection.filters.hide_filters' | t
+  assign show_filters_label = 'collection.filters.show_filters' | t
+  assign filters_label = 'collection.filters.filters' | t
+
+  assign show_sidebar = false
+  if filter_mode == 'sidebar' and sidebar_open
+    assign show_sidebar = true
+  endif
+
+  assign active_filter_values_count = 0
+  for filter in collection.filters
+    assign is_active_filter = false
+    case filter.type
+      when 'price_range'
+        if filter.max_value.value < filter.range_max or filter.min_value.value > 0
+          assign is_active_filter = true
+        endif
+      else
+        if filter.active_values.size > 0
+          assign is_active_filter = true
+        endif
+    endcase
+    if is_active_filter
+      assign new_active_filter_values_count = filter.active_values.size | at_least: 1
+      assign active_filter_values_count = active_filter_values_count | plus: new_active_filter_values_count
+    endif
+  endfor
+%}
+
+{% capture sidebar_button_content %}
+  {% render 'core-icon', icon: 'fill-filter', size: 'md' %}
+
+  {% capture toggle_button_label %}
+    {% if show_sidebar %}
+      {{ hide_filters_label }}
+    {% else %}
+      {{ filters_label }}
+    {% endif %}
+  {% endcapture %}
+
+  {% comment %} Desktop text {% endcomment %}
+  <span class="type-btn relative">
+    <span
+      aria-hidden="true" class="absolute inset-0 flex flex-center hover-effect-text-highlight h-full pointer-events-none"
+      x-text="showFilterSidebar ? '{{ hide_filters_label | escape }}' : '{{ filters_label | escape }}'"
+    >
+      {{ toggle_button_label }}
+    </span>
+    <span x-text="showFilterSidebar ? '{{ hide_filters_label | escape }}' : '{{ filters_label | escape }}'">
+      {{ toggle_button_label }}
+    </span>
+  </span>
+{% endcapture %}
+
+{% capture drawer_button_content %}
+  {% render 'core-icon', icon: 'fill-filter', size: 'md', class: drawer_button_icon_class, color: 'content' %}
+  <span class="type-btn relative">
+    <span aria-hidden="true" class="absolute inset-0 flex flex-center hover-effect-text-highlight h-full pointer-events-none">
+      {{ filters_label }}
+    </span>
+    {{ filters_label }}
+  </span>
+  {% if active_filter_values_count > 0 %}
+    <span class="bg-[oklch(from_var(--btn-text-color)_l_c_h_/_20%)] [--badge-size:--r6] h-[--badge-size] min-w-[--badge-size] px-r2 flex items-center justify-center rounded-full text-r1">
+      <span class="font-bold relative">
+        <span aria-hidden="true" class="absolute inset-0 flex flex-center hover-effect-text-highlight h-full pointer-events-none">
+          {{ active_filter_values_count }}
+        </span>
+        {{ active_filter_values_count }}
+      </span>
+    </span>
+  {% endif %}
+{% endcapture %}
+
+{% capture sidebar_button_class %}
+  hidden
+  {% if filter_mode == 'sidebar' %}
+    md:flex
+  {% endif %}
+{% endcapture %}
+
+{% capture sidebar_button_attributes %}
+  @click="showFilterSidebar = !showFilterSidebar"
+  :aria-expanded="showFilterSidebar"
+  aria-controls="{{ section.id }}-filter-sidebar"
+  :aria-label="showFilterSidebar ? '{{ hide_filters_label | escape }}' : '{{ show_filters_label | escape }}'"
+{% endcapture %}
+
+{% liquid
+  if active_filter_values_count > 0
+    assign drawer_button_color = 'secondary'
+  else
+    assign drawer_button_color = 'content'
+  endif
+%}
+
+{% capture drawer_button_class %}
+  {% if filter_mode == 'sidebar' %}
+    md:hidden
+  {% endif %}
+{% endcapture %}
+
+{% capture drawer_button_attributes %}
+  aria-controls="{{ section.id }}-filter-drawer"
+  :aria-expanded="showFilterDrawer"
+  @click="showFilterDrawer = true"
+  aria-label="{{ show_filters_label }}"
+{% endcapture %}
+
+{% comment %} Sidebar Button {% endcomment %}
+{% render 'core-button',
+  content: sidebar_button_content,
+  color: 'content',
+  appearance: 'outline',
+  sizing: 'sm',
+  type_resize: 'sm',
+  class: sidebar_button_class,
+  attributes: sidebar_button_attributes
+%}
+
+{% comment %} Drawer Button {% endcomment %}
+{% render 'core-button',
+  content: drawer_button_content,
+  color: drawer_button_color,
+  appearance: 'outline',
+  sizing: 'sm',
+  type_resize: 'sm',
+  class: drawer_button_class,
+  attributes: drawer_button_attributes
+%}

@@ -1,0 +1,21 @@
+{%- liquid
+  assign target_device = target_device | default: _settings.target_device | default: 'both'
+  assign tag = tag | default: 'div'
+  assign morph = morph | default: true, allow_false: true
+-%}
+
+{% capture class %}
+  {% render 'props-class-target-device', target_device: target_device %}
+  {{ class }}
+{% endcapture %}
+
+<{{ tag }}
+  class="{{ class | strip }}"
+  style="{{ style | strip }}"
+  {% if content == blank %}
+    hidden
+  {% endif %}
+  {{ attributes }}
+>
+  {{ content }}
+</{{ tag }}>

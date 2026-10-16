@@ -1,0 +1,101 @@
+{% liquid
+  assign offset = 0
+  assign color_scheme = _settings.color_scheme
+  assign target_device = target_device | default: _settings.target_device
+%}
+
+{% capture class %}
+  {{ class }}
+  origin-top
+  hit-area-t-after-[--offset]
+  top-[--float-y] left-[--float-x]
+  {{ animation_setting_class }}
+  [--max-width:200px]
+  [--dropdown-px:theme(space.r7)]
+  [--dropdown-py:theme(space.r4)]
+  {% render 'props-class-target-device', target_device: target_device %}
+{% endcapture %}
+
+{% capture style %}
+  {{ style }}
+  --offset: {{ offset }}px;
+{% endcapture %}
+
+{% capture link_class %}
+  block overflow-hidden truncate py-r3
+
+  {% comment %} Dim link when other link is being hovered {% endcomment %}
+  transition-[color] duration-500
+
+  text-content
+  group-[:has(:hover)]/link-list:text-muted
+  hover:!text-content
+{% endcapture %}
+
+<div
+  class="{{ class }} origin-top group/dropdown vars-{{ color_scheme.id }} fixed overflow-visible"
+  x-init="$store.headerMenu.popups.set('{{ menu_id }}', {type: 'dropdown', el: $el})"
+  x-popover:panel.notrap.css.bottom-start.shift.match.offset.{{ offset }}px
+  {% comment %} Prevent morphing from messing with the state of any open dropdowns {% endcomment %}
+  data-morph-skip
+  @scroll.window.throttle.750ms="
+    if ($popover.isOpen) {
+      $popover.close()
+    }
+  "
+
+  {{ attributes }}
+  {% if style %}
+    style="{{ style }}"
+  {% endif %}
+>
+  <div
+    class="
+      {{ bg_class }} z-20 relative transition-none
+
+      {% comment %} Attempt to match the width of the reference element, but don't exceed the max width {% endcomment %}
+      min-w-[min(var(--float-width),var(--max-width))]
+      max-w-[--max-width]
+
+      pb-[--dropdown-py]
+
+      {% comment %} Use a psuedo element for background so that dropdown items align with the menu item {% endcomment %}
+      before:absolute before:inset-y-0 before:-inset-x-[--dropdown-px] before:bg-canvas before:z-[-1]
+      before:border-line-subtle before:border-x before:border-b before:rounded-b-subtle
+    "
+    x-show="$popover.isOpen"
+    x-transition:enter="animate-in animate-duration-[--header-menu-dropdown-enter-duration] fade-in slide-in-from-top-[5px]"
+    x-transition:leave="animate-out animate-duration-[--header-menu-dropdown-exit-duration] fade-out slide-out-to-top-[5px]"
+  >
+    <ul class="group/link-list">
+      {% for link in link.links %}
+        {% assign link_label = link.title | strip_html | escape %}
+        {% capture link_attributes %}
+          href="{{ link.url }}"
+          {% if link.current %}
+            aria-current="page"
+          {% endif %}
+        {% endcapture %}
+
+        <li
+          role="none"
+          class="
+            animate-in fade-in slide-in-from-top-[3px] stagger-animation
+            animate-transform-duration-1000
+            animate-opacity-duration-1500
+          "
+          style="--stagger-order: {{ forloop.index }}"
+        >
+          {% render 'core-text-preset',
+            tag: 'a',
+            text: link_label,
+            class: link_class,
+            attributes: link_attributes,
+            settings_suffix: 'dropdown',
+            _settings: _settings
+          %}
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>

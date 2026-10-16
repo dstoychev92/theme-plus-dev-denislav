@@ -1,0 +1,45 @@
+{%- liquid
+  assign rating_show_count = rating_show_count | default: false
+
+  assign rating_count = product.metafields.reviews.rating_count
+  assign rating_value = product.metafields.reviews.rating.value.rating | round: 1
+  assign rating_max = product.metafields.reviews.rating.value.scale_max
+
+  if placeholder == true
+    assign rating_show_count = true
+    assign rating_count = 21
+    assign rating_value = 4.5
+    assign rating_max = 5
+  endif
+
+  assign rating_label = 'other.accessibility.star_reviews_info' | t: rating_value: rating_value, rating_max: rating_max
+
+  assign show_rating = false
+  if rating_value and rating_value != 0
+    assign show_rating = true
+  endif
+-%}
+
+{%- if rating_show_count and rating_count != null -%}
+  {%- capture rating_label -%}
+    {{ rating_label }}, {{ rating_count }} {{ 'other.accessibility.total_reviews' | t }}
+  {%- endcapture -%}
+{%- endif -%}
+
+{%- if show_rating -%}
+  <div
+    class="flex items-center gap-x-r2 {{ class }}"
+    aria-label="{{ rating_label }}"
+    role="group"
+  >
+    {% render 'core-icon', icon: 'fill-star', class: 'opacity-60' %}
+
+    <span aria-hidden="true">
+      {{ rating_value }}
+    </span>
+
+    {% if rating_show_count %}
+      <span aria-hidden="true">({{ rating_count }})</span>
+    {% endif %}
+  </div>
+{%- endif -%}

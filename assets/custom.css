@@ -1,0 +1,27 @@
+/*
+ * Pipeline Theme
+ *
+ * Use this file to add custom CSS to the Pipeline Theme.  Keeping your custom
+ * CSS in this fill will make it easier to update Pipeline. In order
+ * to use this file you will need to open layout/theme.liquid and uncomment
+ * the custom.css script import line near the bottom of the file.
+ *
+ */
+
+.card-alt {
+  box-shadow: 0 2px 8px rgba(59, 33, 33, 0.06);
+  border-radius: 16px;
+}
+
+.shadow-alt {
+  box-shadow: 0 2px 8px rgba(59, 33, 33, 0.06);
+}
+
+:root {
+  --root-font-size-h2-sm: 24px;
+}
+
+card-lg .jdgm-prev-badge__stars,
+card-lg .jdgm-prev-badge__text {
+  font-size: 12px !important;
+}

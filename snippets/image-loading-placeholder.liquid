@@ -1,0 +1,70 @@
+{% comment %}
+  Place as a sibling to another image tag to show a placeholder image while the image loads.
+
+  IMPORTANT NOTE: set the z-index of the placeholder at a lower value than the image it's replacing until
+  theme javascript has loaded in case the user is on a slow connection, JS fails to load, etc
+
+  @param {boolean} auto_show - Whether to automatically hide the placeholder when the image loads. Defaults to true.
+    When true, adds the x-img-loading-placeholder Alpine directive which handles showing/hiding the placeholder.
+    Pass false to manually control when the placeholder is shown/hidden via Alpine or other means.
+
+  @example
+    <div class="relative size-[20px]">
+      {% render 'core-image', image: my_image, class: "relative z-10" %}
+      {% render 'image-loading-placeholder', image: my_image, class: "absolute inset-0 size-full z-0" %}
+    </div>
+{% endcomment %}
+
+{% liquid
+  assign placeholder_width = placeholder_width | default: 2
+
+  # Pass auto_show: false to control when the placeholder is shown manually
+  if auto_show != false
+    assign auto_show = true
+  endif
+
+  if target_image == null
+    assign target_image = false
+  endif
+%}
+
+{% if image %}
+  <div
+    class="
+      overflow-hidden
+      {{ wrapper_class }}
+    "
+
+    {% if auto_show %}
+      {% if target_image %}
+        x-img-loading-placeholder="{{ target_image }}"
+      {% else %}
+        x-img-loading-placeholder
+      {% endif %}
+    {% endif %}
+    {{ attributes }}
+  >
+    {% capture placeholder_image_class %}
+      size-full z-0
+      {{ class }}
+    {% endcapture %}
+
+    <div class="inset-0 z-20 absolute backdrop-blur-md"></div>
+
+    {% render 'core-image',
+      image: image,
+      cover: cover,
+      aspect_ratio: aspect_ratio,
+      class: placeholder_image_class,
+      image_mobile: image_mobile,
+      preload: preload,
+      fetchpriority: 'high',
+      style: image_style,
+      width: placeholder_width,
+      role: 'presentation',
+      aria_hidden: true,
+      alt: 'Placeholder',
+      alt_default: 'Placeholder'
+    %}
+  </div>
+{% endif %}

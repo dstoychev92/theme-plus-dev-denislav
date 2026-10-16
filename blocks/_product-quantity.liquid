@@ -1,0 +1,151 @@
+<!-- blocks/_product-quantity.liquid -->
+
+{% liquid
+  assign label = 'cart.quantity_label' | t
+  assign current_variant = product.selected_or_first_available_variant
+  assign min_quantity = current_variant.quantity_rule.min | default: 1
+%}
+
+{% comment %} This assumes that products are unique within the current section {% endcomment %}
+{% assign product_form_id = 'product-form-' | append: product.handle | append: '-' | append: section.id %}
+
+{% assign id = product_form_id | append: '-quantity' %}
+
+{% capture field_style %}
+  {% if block.settings.set_rounding %}
+    --radius-form-field: var(--radius-{{ block.settings.rounding_style }});
+  {% endif %}
+  {% if block.settings.set_border %}
+    --field-default-border-color: {{ block.settings.border_color }};
+    --field-border-width: {{ block.settings.border_width }}px;
+  {% endif %}
+{% endcapture %}
+
+{% capture content %}
+  {% render 'product-quantity-stepper',
+    label: label,
+    name: 'quantity',
+    size: block.settings.size,
+    value: min_quantity,
+    min: min_quantity,
+    stepper_attributes: 'data-morph-skip',
+    stepper_input_attributes: 'x-model.fill.number="quantity" required',
+    id: id,
+    form: product_form_id,
+    class: 'w-full',
+    style: field_style
+  %}
+{% endcapture %}
+
+{% render 'product-block',
+  _settings: block.settings,
+  content: content,
+  attributes: block.shopify_attributes,
+  class: 'flex flex-col'
+%}
+
+{% schema %}
+{
+	"name": "Form quantity",
+	"tag": null,
+	"settings": [
+		{
+			"type": "select",
+			"id": "size",
+			"label": "Size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			]
+		},
+		{
+			"type": "header",
+			"content": "Rounding"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_rounding",
+			"label": "Set rounding",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "rounding_style",
+			"label": "Rounding",
+			"default": "none",
+			"options": [
+				{
+					"value": "none",
+					"label": "0"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "pill",
+					"label": "L"
+				}
+			],
+			"visible_if": "{{ block.settings.set_rounding }}"
+		},
+		{
+			"type": "header",
+			"content": "Border"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_border",
+			"label": "Set border",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "border_width",
+			"label": "Thickness",
+			"unit": "px",
+			"min": 0,
+			"max": 4,
+			"step": 0.5,
+			"default": 1,
+			"visible_if": "{{ block.settings.set_border }}"
+		},
+		{
+			"type": "color",
+			"id": "border_color",
+			"label": "Color",
+			"alpha": true,
+			"default": "#000000",
+			"visible_if": "{{ block.settings.set_border }}"
+		}
+	],
+	"presets": [
+		{
+			"name": "Form quantity"
+		}
+	]
+}
+{% endschema %}

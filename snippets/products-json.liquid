@@ -1,0 +1,23 @@
+{% comment %} Render the JSON of the products and their siblings and filter them to avoid duplication {% endcomment %}
+{%- assign products_id = '' -%}
+
+{%- if products -%}
+  {%- capture products_json -%}
+  {
+    {%- for product in products limit: limit -%}
+      {%- unless products_id contains product.id -%}
+        {%- capture product_json -%}
+          {%- render 'product-json', product: product, render_options: render_options -%}
+        {%- endcapture -%}
+        {% if product_json != blank %}
+          {% unless forloop.first %},{% endunless %}
+          "{{ product.id }}": {{ product_json }}
+        {% endif %}
+        {%- assign products_id = products_id | append: product.id | append: ',' -%}
+      {%- endunless -%}
+    {%- endfor -%}
+  }
+  {% endcapture %}
+
+  {{ products_json | strip | strip_newlines }}
+{% endif %}

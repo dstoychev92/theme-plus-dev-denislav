@@ -1,0 +1,218 @@
+<!-- blocks/_timeline-step.liquid -->
+<!-- A single step card for section-timeline. Renders a connector dot + a card
+     (badge + accent step title + bullet body). Reuses the theme's standard
+     appearance settings (color scheme, background, padding, border, rounding).
+     Accent (orange/blue) is inherited from the parent section's `accent` setting. -->
+
+{% liquid
+  if section.settings.accent == 'secondary'
+    assign accent = 'var(--secondary, #10069F)'
+  else
+    assign accent = 'var(--primary, #FF6900)'
+  endif
+
+  # Card background
+  case block.settings.background
+    when 'tint'
+      assign card_bg = 'color-mix(in srgb, var(--content) 4%, var(--canvas))'
+    when 'custom'
+      assign card_bg = block.settings.background_color
+    else
+      assign card_bg = 'var(--canvas, #fff)'
+  endcase
+
+  # Padding
+  case block.settings.padding
+    when 'sm'
+      assign card_pad = 20
+    when 'lg'
+      assign card_pad = 32
+    when 'custom'
+      assign card_pad = block.settings.padding_custom
+    else
+      assign card_pad = 26
+  endcase
+
+  # Rounding
+  case block.settings.rounding_radius
+    when 'none'
+      assign card_radius = 0
+    when 'sm'
+      assign card_radius = 8
+    when 'md'
+      assign card_radius = 14
+    when 'full'
+      assign card_radius = 28
+    when 'custom'
+      assign card_radius = block.settings.rounding_radius_custom
+    else
+      assign card_radius = 20
+  endcase
+%}
+
+{% capture card_style %}
+  background: {{ card_bg }};
+  padding: {{ card_pad }}px;
+  border-radius: {{ card_radius }}px;
+  {%- if block.settings.set_border %}
+    border: {{ block.settings.border_width | default: 1 }}px solid {{ block.settings.border_color | default: 'var(--line-bold, #e0e0e0)' }};
+  {%- endif %}
+{% endcapture %}
+
+<article
+  class="boom-tl-step{% if block.settings.color_scheme != blank %} vars-{{ block.settings.color_scheme.id }}{% endif %}"
+  style="--boom-accent: {{ accent }};"
+  {{ block.shopify_attributes }}
+>
+  <span class="boom-tl-step__dot" aria-hidden="true"></span>
+  <div class="boom-tl-step__card{% if section.settings.set_shadow %} shadow-alt{% endif %}" style="{{ card_style }}">
+    {% if block.settings.badge != blank or block.settings.title != blank %}
+      <div class="boom-tl-step__head">
+        {% if block.settings.badge != blank %}
+          <span class="boom-tl-step__badge">{{ block.settings.badge }}</span>
+        {% endif %}
+        {% if block.settings.title != blank %}
+          <span class="boom-tl-step__title">{{ block.settings.title }}</span>
+        {% endif %}
+      </div>
+    {% endif %}
+    {% if block.settings.body != blank %}
+      <div class="boom-tl-step__body">{{ block.settings.body }}</div>
+    {% endif %}
+  </div>
+</article>
+
+{% schema %}
+{
+  "name": "Timeline step",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "badge",
+      "label": "Badge",
+      "default": "ДЕН 1"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Step title",
+      "default": "СЪЩИЯТ РИТУАЛ"
+    },
+    {
+      "type": "richtext",
+      "id": "body",
+      "label": "Bullets",
+      "default": "<ul><li>Разбъркваш и пиеш. Същото кафе, само че надградено.</li><li>10g протеин и 11 витамина влизат с първата чаша.</li><li>Без добавена захар и без излишни калории.</li></ul>"
+    },
+    {
+      "type": "header",
+      "content": "Appearance"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme"
+    },
+    {
+      "type": "select",
+      "id": "background",
+      "label": "Background",
+      "default": "tint",
+      "options": [
+        { "value": "canvas", "label": "Default" },
+        { "value": "tint", "label": "Tint" },
+        { "value": "custom", "label": "⋯" }
+      ]
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#F8F6F4",
+      "alpha": false,
+      "visible_if": "{{ block.settings.background == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "padding",
+      "label": "Padding",
+      "default": "md",
+      "options": [
+        { "value": "sm", "label": "S" },
+        { "value": "md", "label": "M" },
+        { "value": "lg", "label": "L" },
+        { "value": "custom", "label": "⋯" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "padding_custom",
+      "label": "Custom padding",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 26,
+      "visible_if": "{{ block.settings.padding == 'custom' }}"
+    },
+    {
+      "type": "header",
+      "content": "Border"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_border",
+      "label": "Set border",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "border_width",
+      "label": "Width",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "unit": "px",
+      "default": 1,
+      "visible_if": "{{ block.settings.set_border }}"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Color",
+      "default": "#E0E0E0",
+      "visible_if": "{{ block.settings.set_border }}"
+    },
+    {
+      "type": "header",
+      "content": "Rounding"
+    },
+    {
+      "type": "select",
+      "id": "rounding_radius",
+      "label": "Radius",
+      "default": "lg",
+      "options": [
+        { "value": "none", "label": "None" },
+        { "value": "sm", "label": "S" },
+        { "value": "md", "label": "M" },
+        { "value": "lg", "label": "L" },
+        { "value": "full", "label": "XL" },
+        { "value": "custom", "label": "⋯" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "rounding_radius_custom",
+      "label": "Custom radius",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 20,
+      "visible_if": "{{ block.settings.rounding_radius == 'custom' }}"
+    }
+  ]
+}
+{% endschema %}

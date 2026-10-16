@@ -1,0 +1,623 @@
+<!-- sections/header-toolbar.liquid -->
+
+{% liquid
+  assign type_preset = section.settings.type_preset
+  assign icon_stroke_weight = section.settings.icon_stroke_weight
+
+  # Note: Toolbar has a different curve than the menu bar
+  assign icon_size = section.settings.icon_size | plus: 100.0 | divided_by: 120.0
+%}
+
+{% capture class %}
+  group/header-toolbar vars-control-xs
+  [--header-row-gap-x:theme(space.r6)]
+  {% render 'props-class-type-preset', _settings: section.settings %}
+{% endcapture %}
+
+{% capture inner_class %}
+  {% comment %} Make sure the announcement text is centered when it is by itself {% endcomment %}
+  justify-center
+
+  {% comment %} Toolbar is full bleed on mobile to show the marquee. When the width
+     is set to Full, go full bleed on every breakpoint so the marquee runs
+     edge-to-edge instead of being cropped by the section side padding. {% endcomment %}
+  {% if section.settings.content_width == 'full' %}
+    col-fullbleed
+  {% else %}
+    max-md:col-fullbleed
+  {% endif %}
+
+  {% comment %} Draw line below toolbar using a shadow {% endcomment %}
+  border-b border-b-content border-opacity-[--toolbar-border-opacity]
+
+  [--control-font-size:--font-size-calc]
+
+  {% case section.settings.bottom_border_mode %}
+    {% when 'always' %}
+      [--toolbar-border-opacity:--line-alpha-subtle]
+    {% when 'transparent' %}
+      [--toolbar-border-opacity:calc(var(--line-alpha-subtle)*(1-var(--header-auto-border)))]
+    {% when 'never' %}
+      [--toolbar-border-opacity:0.0]
+  {% endcase %}
+{% endcapture %}
+
+{% capture style %}
+  --icon-size: {{ icon_size }}em;
+  {% case icon_stroke_weight %}
+    {% when 'light' %}
+      --icon-stroke-weight: var(--icon-stroke-weight-light);
+    {% when 'bold' %}
+      --icon-stroke-weight: var(--icon-stroke-weight-bold);
+  {% endcase %}
+{% endcapture %}
+
+{% capture attributes %}
+  aria-label="{{ 'header.accessibility.global' | t }}"
+{% endcapture %}
+
+{% assign left_items_desktop = '' %}
+{% assign left_items_mobile = '' %}
+{% assign right_items = '' %}
+
+{% for block in section.blocks %}
+  {% capture left_items_mobile %}
+    {{ left_items_mobile }}
+
+    <div class="flex">
+      {% render block %}
+
+      {% comment %} Separator {% endcomment %}
+      {% unless forloop.last %}
+        {% render 'header-toolbar-spacer', line_style: 'line', spacer_x: 25, class: 'self-center' %}
+      {% endunless %}
+    </div>
+  {% endcapture %}
+
+  {% capture left_items_desktop %}
+    {{ left_items_desktop }}
+
+    <div class="flex" x-carousel:item>
+      {% render block %}
+
+      {% comment %} Separator {% endcomment %}
+      {% unless forloop.last %}
+        {% render 'header-toolbar-spacer', line_style: 'line', spacer_x: 25, class: 'self-center' %}
+      {% endunless %}
+    </div>
+  {% endcapture %}
+{% endfor %}
+
+{% comment %} Handle action buttons (always go to right) {% endcomment %}
+{% if section.settings.show_search_button or section.settings.show_account_button %}
+  {% capture right_items %}
+    {{ right_items }}
+
+    <div
+      class="
+        flex-row-center h-full
+        {% comment %} Modify right padding when icons are the last thing in the toolbar {% endcomment %}
+        {% unless section.settings.show_language or section.settings.show_country %}
+          last:*:pe-0
+          last:*:hit-area-e-[--last-item-hit-area]
+        {% endunless %}
+      "
+    >
+      {% if section.settings.show_search_button %}
+        {% render 'header-search-button', _settings: section.settings, label_style: 'icon', target_device: 'desktop' %}
+      {% endif %}
+      {% if section.settings.show_account_button %}
+        {% render 'header-account-button', _settings: section.settings, label_style: 'icon', target_device: 'desktop' %}
+      {% endif %}
+    </div>
+  {% endcapture %}
+{% endif %}
+
+{% if section.settings.show_language or section.settings.show_country %}
+  {% capture right_items %}
+    {{ right_items }}
+    {% render 'header-localization',
+      _settings: section.settings,
+      placement: 'bottom-end',
+      offset: '5px',
+      class: 'h-full',
+      button_class: 'h-full keyboard-focus:outline-offset-[-2px]'
+    %}
+  {% endcapture %}
+{% endif %}
+
+{% capture content %}
+  {% comment %} Mobile {% endcomment %}
+  <div
+    class="flex-row-center overflow-hidden edge-mask edge-mask-x h-[--header-row-height] md:hidden"
+    x-data
+    x-marquee.speed.15.fill.pause
+    x-screen:sm="$marquee.play()"
+    x-screen:md="$marquee.pause()"
+  >
+    <div class="flex shrink-0 flex-row whitespace-nowrap" x-marquee:source>
+      {{ left_items_mobile }}
+
+      {% comment %} Separator - to make the cloned element look nicer next to the original element {% endcomment %}
+      {% render 'header-toolbar-spacer', line_style: 'line', spacer_x: 25, class: 'self-center' %}
+    </div>
+    <div class="flex shrink-0 flex-row whitespace-nowrap" x-marquee:target aria-hidden="true"></div>
+  </div>
+
+  {% comment %} Desktop {% endcomment %}
+  <div
+    class="relative flex-row-center overflow-hidden max-md:hidden"
+    x-carousel
+    x-overflow.autoregister
+  >
+    <button
+      aria-label="{{ 'other.accessibility.prev' | t }}"
+      class="absolute left-0 top-1/2 -translate-y-1/2 z-10 hit-area-x-r3 h-full"
+      :disabled="!$overflow.start"
+      :class="
+        {
+          'opacity-0 pointer-events-none': !$overflow.start,
+          'opacity-100 pointer-events-auto': $overflow.start
+        }
+      "
+      x-carousel:prev
+      x-cloak
+    >
+      {% render 'core-icon', icon: 'stroke-chevron-left', size: 'sm' %}
+    </button>
+
+    <div
+      class="w-full edge-mask"
+      :class="
+        {
+          'edge-mask-r': $overflow.end,
+          'edge-mask-l': $overflow.start,
+        }
+      "
+      x-carousel:viewport
+      x-overflow:viewport
+    >
+      <div
+        class="
+          flex
+          scroll-area-x
+          whitespace-nowrap
+        "
+        x-carousel:track
+        x-overflow:container
+      >
+        {{ left_items_desktop }}
+      </div>
+    </div>
+
+    <button
+      aria-label="{{ 'other.accessibility.next' | t }}"
+      class="absolute right-0 top-1/2 -translate-y-1/2 z-10 hit-area-x-r3 h-full"
+      :disabled="!$overflow.end"
+      :class="
+        {
+          'opacity-0 pointer-events-none': !$overflow.end,
+          'opacity-100 pointer-events-auto': $overflow.end
+        }
+      "
+      x-carousel:next
+      x-cloak
+    >
+      {% render 'core-icon', icon: 'stroke-chevron-right', size: 'sm' %}
+    </button>
+  </div>
+  <div
+    class="basis-[max-content] flex-row-center gap-x-[calc(var(--header-row-gap-x)/2)] justify-end ms-auto shrink-0 max-md:hidden"
+    style="
+      --last-item-hit-area: min(calc(var(--header-row-gap-x) / 2 + var(--section-content-margin)), 50px);
+    "
+  >
+    {{ right_items }}
+  </div>
+{% endcapture %}
+
+{% render 'header-section',
+  _settings: section.settings,
+  class: class,
+  attributes: attributes,
+  inner_class: inner_class,
+  style: style,
+  tag: 'aside',
+  content: content
+%}
+
+{% schema %}
+{
+	"name": "Toolbar",
+	"tag": "section",
+	"limit": 1,
+	"settings": [
+		{
+			"type": "color_scheme",
+			"id": "color_scheme",
+			"label": "Color scheme",
+			"default": "scheme-default"
+		},
+		{
+			"type": "select",
+			"id": "background",
+			"label": "Background",
+			"default": "tint",
+			"options": [
+				{
+					"value": "canvas",
+					"label": "Default"
+				},
+				{
+					"value": "tint",
+					"label": "Tint"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background color",
+			"default": "#f2f2f2",
+			"alpha": false,
+			"visible_if": "{{ section.settings.background == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "transparent",
+			"label": "Allow transparent toolbar",
+			"info": "First section must support transparent headers and have transparent header options enabled.",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "bottom_border_mode",
+			"label": "Border",
+			"default": "transparent",
+			"options": [
+				{
+					"value": "always",
+					"label": "Always"
+				},
+				{
+					"value": "transparent",
+					"label": "When Transparent"
+				},
+				{
+					"value": "never",
+					"label": "Never"
+				}
+			]
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "content_width",
+			"label": "Width",
+			"default": "full",
+			"options": [
+				{
+					"value": "full",
+					"label": "Full"
+				},
+				{
+					"value": "page",
+					"label": "Page"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "padding_y",
+			"label": "Padding",
+			"min": 0,
+			"max": 40,
+			"step": 2,
+			"unit": "px",
+			"default": 6
+		},
+		{
+			"type": "header",
+			"content": "Typography"
+		},
+		{
+			"type": "select",
+			"id": "type_preset",
+			"label": "Text style",
+			"default": "btn",
+			"options": [
+				{
+					"value": "p",
+					"label": "Paragraph"
+				},
+				{
+					"value": "btn",
+					"label": "Button"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_resize",
+			"label": "Text size",
+			"default": "sm",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			],
+			"visible_if": "{{ section.settings.type_preset != 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_font",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ section.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 3,
+			"visible_if": "{{ section.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ section.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "header",
+			"content": "Sticky"
+		},
+		{
+			"type": "select",
+			"id": "sticky_style",
+			"label": "Sticky scroll",
+			"default": "never",
+			"options": [
+				{
+					"value": "always",
+					"label": "Sticky"
+				},
+				{
+					"value": "scroll",
+					"label": "Scroll up"
+				},
+				{
+					"value": "never",
+					"label": "None"
+				}
+			]
+		},
+		{
+			"type": "header",
+			"content": "Buttons"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_search_button",
+			"label": "Search",
+			"default": false
+		},
+		{
+			"type": "checkbox",
+			"id": "show_account_button",
+			"label": "Account",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "icon_size",
+			"label": "Icon size",
+			"min": 50,
+			"max": 200,
+			"step": 10,
+			"default": 100,
+			"unit": "%",
+			"info": "Percentage of text size",
+			"visible_if": "{{ section.settings.show_search_button or section.settings.show_account_button }}"
+		},
+		{
+			"type": "select",
+			"id": "icon_stroke_weight",
+			"label": "Icon stroke weight",
+			"default": "regular",
+			"options": [
+				{
+					"value": "light",
+					"label": "Light"
+				},
+				{
+					"value": "regular",
+					"label": "Regular"
+				},
+				{
+					"value": "bold",
+					"label": "Bold"
+				}
+			],
+			"visible_if": "{{ section.settings.show_search_button or section.settings.show_account_button }}"
+		},
+		{
+			"type": "header",
+			"content": "Language selector",
+			"info": "To add a language, go to your [language settings](/admin/settings/languages).",
+			"visible_if": "{{ section.settings.show_language == true }}"
+		},
+		{
+			"type": "header",
+			"content": "Language selector",
+			"visible_if": "{{ section.settings.show_language != true }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_language",
+			"label": "Show language selector",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "language_style",
+			"label": "Style",
+			"default": "short",
+			"options": [
+				{
+					"value": "long",
+					"label": "Long"
+				},
+				{
+					"value": "short",
+					"label": "Short"
+				}
+			],
+			"visible_if": "{{ section.settings.show_language == true }}"
+		},
+		{
+			"type": "header",
+			"content": "Country/Region selector",
+			"info": "To add a currency, go to your [markets settings](/admin/settings/markets).",
+			"visible_if": "{{ section.settings.show_country == true }}"
+		},
+		{
+			"type": "header",
+			"content": "Country/Region selector",
+			"visible_if": "{{ section.settings.show_country != true }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_country",
+			"label": "Show country selector",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "country_display_style",
+			"label": "Country display",
+			"default": "flag",
+			"options": [
+				{
+					"value": "name",
+					"label": "Country name"
+				},
+				{
+					"value": "symbol",
+					"label": "Country symbol"
+				},
+				{
+					"value": "flag_name",
+					"label": "Flag + Country name"
+				},
+				{
+					"value": "flag_symbol",
+					"label": "Flag + Country symbol"
+				},
+				{
+					"value": "flag",
+					"label": "Flag"
+				}
+			],
+			"visible_if": "{{ section.settings.show_country == true }}"
+		},
+		{
+			"type": "select",
+			"id": "currency_display_style",
+			"label": "Currency display",
+			"default": "short",
+			"options": [
+				{
+					"value": "long",
+					"label": "Name"
+				},
+				{
+					"value": "short",
+					"label": "Symbol"
+				},
+				{
+					"value": "none",
+					"label": "None"
+				}
+			],
+			"visible_if": "{{ section.settings.show_country == true }}"
+		},
+	],
+	"blocks": [
+		{
+			"type": "_toolbar-announcement"
+		},
+		{
+			"type": "_toolbar-countdown"
+		}
+	],
+	"presets": [
+		{
+			"name": "Toolbar",
+			"blocks": [
+				{
+					"type": "_toolbar-announcement",
+					"settings": {
+						"announcement_text": "This is announcement richtext from an announcement block"
+					}
+				}
+			]
+		}
+	],
+	"enabled_on": {
+		"groups": [
+			"header"
+		]
+	}
+}
+{% endschema %}

@@ -1,0 +1,77 @@
+{% capture wrapper_attributes %}
+  x-init="$hotspots.register($el)"
+
+  x-data="{
+    get index() {
+      return $hotspots.indexOf($el)
+    },
+    get isSelected() {
+      return $hotspots.isSelected(this.index)
+    },
+    set isSelected(value) {
+      if (value) {
+        $hotspots.select(this.index)
+      } else {
+        $hotspots.deselect(this.index)
+      }
+    },
+  }"
+
+  {% if request.design_mode %}
+    x-effect="
+      if ($containsSelectedBlock) {
+        isSelected = true
+      } else {
+        isSelected = false
+      }
+    "
+  {% endif %}
+  {{ attributes }}
+{% endcapture %}
+
+{% capture button_attributes %}
+  :id="`{{section.id}}-${ensembleId}-hotspot-${index}`"
+  :aria-labelledby="
+    ensemblePeerId ? `{{section.id}}-${ensemblePeerId}-element-${index}` : null
+  "
+  {% comment %} This is a fallback in case the aria-labelledby and aria-controls are not set {% endcomment %}
+  :aria-label="`{{ 'other.accessibility.hotspot' | t }}`"
+
+  x-custom-cursor:snap-point
+  :aria-selected="isSelected"
+  aria-label="{{ 'other.accessibility.hotspot' | t }}"
+
+  @click.stop.prevent="isSelected = true;"
+  x-hover:start="isSelected = true;"
+  x-hover:end="isSelected = false;"
+{% endcapture %}
+
+{% capture hotspot_class %}
+  entrance-item animate-in fill-mode-backwards !scale-in !fade-in stagger-animation
+{% endcapture %}
+
+{% capture dot %}
+  {% render 'hotspot-dot',
+    _settings: _settings,
+    attributes: button_attributes,
+    class: hotspot_class,
+  %}
+{% endcapture %}
+
+<div
+  class="
+    {% render 'props-class-float',
+      _settings: _settings
+    %}
+    {{ class }}
+  "
+  style="
+    {% render 'props-style-float',
+      _settings: _settings,
+      z_index: 10
+    %}
+  "
+  {{ wrapper_attributes }}
+>
+  {{ dot }}
+</div>

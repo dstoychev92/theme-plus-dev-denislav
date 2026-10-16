@@ -1,0 +1,47 @@
+{%- liquid
+  assign default_success_message = _settings.success_message | default: 'page.contact.post_success' | t
+  assign success_message = success_message | default: default_success_message
+-%}
+
+{%- capture style -%}
+  {% render 'props-style-gap', _settings: _settings %}
+  {{ style }}
+{%- endcapture -%}
+
+{% capture class %}
+  flex flex-col w-full
+  {{ class }}
+{% endcapture %}
+
+{% form 'contact', id: id, class: class, attributes: attributes, style: style %}
+  {%- if form.errors -%}
+    <div class="vars-scheme-error bg-canvas p-r5 text-start text-r2 text-content">
+      <span>{{ 'other.form.error_heading' | t }}</span>
+
+      <ul class="list-disc pl-r5">
+        {%- for field in form.errors -%}
+          <li>
+            {%- if field == 'form' -%}
+              {{ form.errors.messages[field] }}
+            {%- else -%}
+              <span class="text-r2">
+                {{ form.errors.translated_fields[field] | capitalize }}
+                {{ form.errors.messages[field] }}
+              </span>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    </div>
+  {%- endif -%}
+
+  {% if form.posted_successfully? %}
+    <p>
+      {{ success_message }}
+    </p>
+  {% endif %}
+
+  {{ form.errors | default_errors }}
+
+  {{ content }}
+{% endform %}

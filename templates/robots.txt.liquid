@@ -1,0 +1,52 @@
+{% comment %}
+  Robots.txt for Boom! Coffee
+  - Preserves Shopify's maintained default rules
+  - Adds query param blocks to prevent duplicate content
+  - Explicitly allows all AI search crawlers
+{% endcomment %}
+
+{%- for group in robots.default_groups -%}
+  {{- group.user_agent -}}
+
+  {%- for rule in group.rules -%}
+    {{ rule }}
+  {%- endfor -%}
+
+  {%- if group.user_agent.value == '*' -%}
+    {{ 'Disallow: /*?*variant=*' }}
+    {{ 'Disallow: /*?*q=*' }}
+    {{ 'Disallow: /*?*sort_by=*' }}
+  {%- endif -%}
+
+  {%- if group.sitemap != blank -%}
+    {{ group.sitemap }}
+  {%- endif -%}
+{%- endfor -%}
+
+# ── AI search crawlers (explicitly allowed) ──
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: GoogleOther
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: cohere-ai
+Allow: /

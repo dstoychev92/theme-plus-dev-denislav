@@ -1,0 +1,445 @@
+<!-- blocks/_group-grid.liquid -->
+
+<div
+  class="w-full relative @container"
+  style="
+    --cols: 12;
+    --cell-size: calc(100cqw/var(--cols));
+    {% if block.settings.set_gap %}
+      {% render 'props-style-gap', _settings: block.settings, apply: false, vars: false %}
+      --grid-gap: min(var(--custom-gutter-x), calc(100cqw/(var(--cols) - 1)));
+    {% else %}
+      --grid-gap: 0px;
+    {% endif %}
+  "
+  x-data
+  {% if request.design_mode %}
+    x-grid-inspector
+  {% endif %}
+
+  {{ block.shopify_attributes }}
+>
+  {% if request.design_mode %}
+    {% comment %} Debug grid lines for theme editor {% endcomment %}
+    <div
+      class="
+        z-0 absolute inset-0 pointer-events-none grid h-full w-full
+        gap-[--grid-gap]
+        opacity-0 transition-opacity duration-300
+      "
+      aria-hidden="true"
+      :class="
+        {
+          '!opacity-100': $containsSelectedBlock || $isSelectedBlock
+        }
+      "
+      ,
+      :style="
+        {
+          'grid-template-rows': debugGridRows.join(' '),
+          'grid-template-columns': debugGridCols.join(' '),
+        }
+      "
+    >
+      <div data-debug-grid-rows class="contents">
+        <template x-for="(row, index) in debugGridRows">
+          <div
+            class="
+              flex flex-row justify-start items-start col-span-full w-full relative
+              pointer-events-none min-h-0 overflow-hidden
+
+              {% if block.settings.set_gap == false %}
+                shadow-[0_1px_0_0_var(--content-alpha-20),0_2px_0_0_var(--canvas-alpha-20)] last:shadow-none
+              {% else %}
+                bg-content/5
+                shadow-[0_1px_0_0_var(--canvas-alpha-20),0_-1px_0_0_var(--canvas-alpha-20)]
+              {% endif %}
+            "
+            :style="
+              {
+                'grid-row-start': String(index + 1)
+              }
+            "
+            data-design-mode-grid-row
+          >
+            <span
+              class="absolute top-r2 left-r2 font-bold text-content/50 text-r4 [text-shadow:_1px_1px_0_var(--canvas-alpha-30)]"
+              :class="
+                {
+                  {% comment %} Hide first row number since it will overlap the first column number {% endcomment %}
+                  'hidden': index == 0
+                }
+              "
+              x-text="index + 1"
+            ></span>
+          </div>
+        </template>
+      </div>
+      <div data-debug-grid-cols class="contents">
+        <template x-for="(col, index) in debugGridCols">
+          <div
+            class="
+              flex flex-row justify-start items-start h-full
+              relative pointer-events-none min-h-0 overflow-hidden
+
+              {% if block.settings.set_gap == false %}
+                shadow-[1px_0px_0_0_var(--content-alpha-20),2px_0_0_0_var(--canvas-alpha-20)] last:shadow-none
+              {% else %}
+                bg-content/5
+                shadow-[1px_0px_0_0_var(--canvas-alpha-20),-1px_0px_0_0_var(--canvas-alpha-20)]
+              {% endif %}
+            "
+            :style="
+              {
+                'grid-column': String(index + 1),
+                'grid-row-start': 1,
+                'grid-row-end': debugGridRows.length + 1
+              }
+            "
+            data-design-mode-grid-col
+          >
+            <span
+              class="absolute top-r2 left-r2 text-content/50 text-r4 font-bold [text-shadow:_1px_1px_0_var(--canvas-alpha-30)]"
+              x-text="index + 1"
+            ></span>
+          </div>
+        </template>
+      </div>
+    </div>
+  {% endif %}
+
+  <div
+    class="
+      grid h-fit w-full items-start
+      reverse-z-stack
+      relative
+      gap-[--grid-gap]
+      {% if block.settings.row_height == 'auto' %}
+        auto-rows-[minmax(0,min-content)]
+      {% else %}
+        auto-rows-[--cell-size]
+      {% endif %}
+      grid-cols-[repeat(var(--cols),minmax(0,var(--cell-size)))]
+    "
+    {% if request.design_mode %}
+      x-grid-inspector:source
+      x-effect="
+        if ($containsSelectedBlock || $isSelectedBlock) {
+          observeSourceGrid();
+        } else {
+          unobserveSourceGrid();
+        }
+      "
+      :class="
+        {
+          '*:opacity-60': $containsSelectedBlock,
+        }
+      "
+    {% endif %}
+  >
+    {% content_for 'blocks' %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Group: 12 Column Grid",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Gap"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_gap",
+      "label": "Set gap",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "gap",
+      "label": "Gap",
+      "default": "md",
+      "visible_if": "{{ block.settings.set_gap }}",
+      "options": [
+        {
+          "value": "sm",
+          "label": "S"
+        },
+        {
+          "value": "md",
+          "label": "M"
+        },
+        {
+          "value": "lg",
+          "label": "L"
+        },
+        {
+          "value": "custom",
+          "label": "⋯"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "gap_custom",
+      "label": "Custom gap",
+      "default": 2,
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "visible_if": "{{ block.settings.gap == 'custom'  and block.settings.set_gap }}"
+    },
+    {
+      "type": "select",
+      "id": "row_height",
+      "label": "Row height",
+      "default": "auto",
+      "options": [
+        {
+          "value": "auto",
+          "label": "Auto"
+        },
+        {
+          "value": "fixed",
+          "label": "Fixed"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "Rows expand to fit the content of the tallest grid item.",
+      "visible_if": "{{ block.settings.row_height == 'auto' }}"
+    },
+    {
+      "type": "paragraph",
+      "content": "Rows have a fixed height, making a grid of even squares. If blocks are taller than their row span, they will be clipped.",
+      "visible_if": "{{ block.settings.row_height == 'fixed' }}"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "_grid-item"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Group: 12 Column Grid",
+      "category": "Pro",
+      "settings": {
+        "set_gap": true,
+        "gap": "md",
+        "row_height": "auto"
+      },
+      "blocks": [
+        {
+          "type": "_grid-item",
+          "settings": {
+            "col_start": 1,
+            "col_end": 6,
+            "row_start": 1,
+            "set_row_span": true,
+            "row_span": 3,
+            "set_grid_tablet": false,
+            "col_start_md": 1,
+            "col_end_md": 12,
+            "row_start_md": 1,
+            "set_row_span_md": false,
+            "row_span_md": 2,
+            "set_grid_mobile": true,
+            "col_start_sm": 1,
+            "col_end_sm": 12,
+            "row_start_sm": 1,
+            "set_row_span_sm": false,
+            "row_span_sm": 2,
+            "set_layout": false,
+            "content_align": "center",
+            "gap": "md",
+            "gap_custom": 0,
+            "set_parallax": false,
+            "parallax": 0,
+            "target_device": "both"
+          },
+          "blocks": [
+            {
+              "type": "theme-image",
+              "settings": {
+                "image_size_mode": "full",
+                "image_max_limit": 120,
+                "set_aspect_ratio": false,
+                "aspect_ratio": 1,
+                "click_action": "link",
+                "href": "",
+                "open_in_new_window": false,
+                "set_rounding": false,
+                "rounding_radius": "sm",
+                "rounding_radius_custom": 20
+              }
+            }
+          ]
+        },
+        {
+          "type": "_grid-item",
+          "settings": {
+            "col_start": 7,
+            "col_end": 12,
+            "row_start": 1,
+            "set_row_span": false,
+            "row_span": 2,
+            "set_grid_tablet": false,
+            "col_start_md": 1,
+            "col_end_md": 12,
+            "row_start_md": 1,
+            "set_row_span_md": false,
+            "row_span_md": 2,
+            "set_grid_mobile": true,
+            "col_start_sm": 1,
+            "col_end_sm": 12,
+            "row_start_sm": 3,
+            "set_row_span_sm": false,
+            "row_span_sm": 2,
+            "set_layout": true,
+            "content_align": "left",
+            "gap": "md",
+            "gap_custom": 0,
+            "set_parallax": false,
+            "parallax": 0,
+            "target_device": "both"
+          },
+          "blocks": [
+            {
+              "type": "theme-group-frame",
+              "name": "Frame",
+              "settings": {
+                "set_width": true,
+                "width_unit": "percent",
+                "width_px": 500,
+                "width_percent": 100,
+                "enable_width_fluid": false,
+                "width_fluid_limit": 100,
+                "set_layout": true,
+                "content_align": "center",
+                "gap": "sm",
+                "gap_custom": 0,
+                "full_height": true,
+                "justification_column": "center",
+                "set_color_scheme": true,
+                "color_scheme": "",
+                "background": "tint",
+                "background_custom": "#f7f7f730",
+                "background_blur": false,
+                "set_border": false,
+                "border_width": 1,
+                "border_color": "#000000",
+                "set_rounding": false,
+                "rounding_radius": "lg",
+                "rounding_radius_custom": 20,
+                "set_padding": false,
+                "padding": "lg",
+                "padding_custom": 0,
+                "padding_border": "custom",
+                "padding_custom_border": 0
+              },
+              "blocks": []
+            }
+          ]
+        },
+        {
+          "type": "_grid-item",
+          "settings": {
+            "col_start": 7,
+            "col_end": 9,
+            "row_start": 2,
+            "set_row_span": true,
+            "row_span": 2,
+            "set_grid_tablet": false,
+            "col_start_md": 1,
+            "col_end_md": 12,
+            "row_start_md": 1,
+            "set_row_span_md": false,
+            "row_span_md": 2,
+            "set_grid_mobile": true,
+            "col_start_sm": 1,
+            "col_end_sm": 6,
+            "row_start_sm": 2,
+            "set_row_span_sm": false,
+            "row_span_sm": 2,
+            "set_layout": false,
+            "content_align": "center",
+            "gap": "md",
+            "gap_custom": 0,
+            "set_parallax": false,
+            "parallax": 0,
+            "target_device": "both"
+          },
+          "blocks": [
+            {
+              "type": "theme-image",
+              "settings": {
+                "image_size_mode": "full",
+                "image_max_limit": 120,
+                "set_aspect_ratio": true,
+                "aspect_ratio": 1.4,
+                "click_action": "link",
+                "href": "",
+                "open_in_new_window": false,
+                "set_rounding": false,
+                "rounding_radius": "sm",
+                "rounding_radius_custom": 20
+              }
+            }
+          ]
+        },
+        {
+          "type": "_grid-item",
+          "settings": {
+            "col_start": 10,
+            "col_end": 12,
+            "row_start": 2,
+            "set_row_span": true,
+            "row_span": 2,
+            "set_grid_tablet": false,
+            "col_start_md": 1,
+            "col_end_md": 12,
+            "row_start_md": 1,
+            "set_row_span_md": false,
+            "row_span_md": 2,
+            "set_grid_mobile": true,
+            "col_start_sm": 7,
+            "col_end_sm": 12,
+            "row_start_sm": 2,
+            "set_row_span_sm": false,
+            "row_span_sm": 2,
+            "set_layout": false,
+            "content_align": "center",
+            "gap": "md",
+            "gap_custom": 0,
+            "set_parallax": false,
+            "parallax": 0,
+            "target_device": "both"
+          },
+          "blocks": [
+            {
+              "type": "theme-image",
+              "settings": {
+                "image_size_mode": "full",
+                "image_max_limit": 120,
+                "set_aspect_ratio": true,
+                "aspect_ratio": 1.4,
+                "click_action": "link",
+                "href": "",
+                "open_in_new_window": false,
+                "set_rounding": false,
+                "rounding_radius": "sm",
+                "rounding_radius_custom": 20
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

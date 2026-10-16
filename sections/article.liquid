@@ -1,0 +1,238 @@
+<!-- sections/article.liquid -->
+
+{%- liquid
+  assign show_image = section.settings.show_image
+  assign show_author = section.settings.show_author
+  assign show_date = section.settings.show_date
+  assign show_read_time = section.settings.show_read_time
+  assign show_tags = section.settings.show_tags
+  assign show_share = section.settings.show_share
+
+  # enable/disable the placeholder products based on request.design_mode
+  assign enable_placeholder_product = false
+  if settings.placeholder_mode or request.design_mode
+    assign enable_placeholder_product = true
+  endif
+-%}
+
+{%- capture article_content -%}
+  <article>
+    <div class="grid grid-cols-1 gap-r8">
+      <div class="flex flex-col gap-r5 bg-canvas">
+        <h1 class="type-h1">{{ article.title }}</h1>
+
+        {% if show_read_time %}
+          {% render 'read-time', content: article.content %}
+        {% endif %}
+
+        <div class="flex-row-center gap-r4">
+          {%- liquid
+            if show_author and article.user.image != blank
+              render 'core-image', image: article.user.image, width: 40, aspect_ratio: 1.0, class: 'rounded-full', preload: true
+            endif
+          -%}
+
+          <div class="flex flex-col items-start gap-r1">
+            {%- if show_author -%}
+              <span class="font-bold text-r5">
+								{%- if article.metafields.custom.author != blank -%}
+									{{- article.metafields.custom.author -}}
+								{%- else -%}
+									{{ article.author }}
+								{%- endif -%}
+							</span>
+            {%- endif -%}
+
+            {%- if show_date -%}
+              {%- assign published_at = article.published_at | date: "%b %d, %Y" -%}
+              <time
+                datetime="{{ published_at }}"
+                class="text-r3 text-muted"
+              >
+                {{- published_at -}}
+              </time>
+            {%- endif -%}
+          </div>
+        </div>
+
+        {%- if article.tags.size > 0 and show_tags -%}
+          <div class="flex flex-wrap gap-r5">
+            {%- liquid
+              for tag in article.tags
+                render 'blog-tag', tag: tag
+              endfor
+            -%}
+          </div>
+        {%- endif -%}
+
+        {%- liquid
+          if show_image and article.image != blank
+            render 'core-image', image: article.image, class: 'w-full', preload: true
+          endif
+        -%}
+
+        {%- if article.content != blank -%}
+          <div class="prose max-w-full">
+            {%- if article.content contains '[[doza_' -%}
+              {%- render 'replace-dose-placeholders', text: article.content -%}
+            {%- else -%}
+              {{ article.content }}
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+
+
+        {% if show_share %}
+          {% assign share_label = 'blog.article.share' | t %}
+          {% render 'share', label: share_label, article: article %}
+        {% endif %}
+      </div>
+
+      {%- if blog.comments_enabled? -%}
+        <div class="my-r8">
+          {% render 'article-comments', article: article %}
+        </div>
+      {%- endif -%}
+    </div>
+  </article>
+{%- endcapture -%}
+
+{%- render 'core-section', _settings: section.settings, content: article_content -%}
+
+{% # Article schema.org markup for Google search results. %}
+<script type="application/ld+json">
+  {{ article | structured_data }}
+</script>
+
+{%- if article.metafields.custom.seo_faq_schema != blank -%}
+  {%- assign faq_items = article.metafields.custom.seo_faq_schema.value -%}
+
+  {% render 'schema-faq', faq_items: faq_items %}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Article",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_image",
+      "label": "Show featured image",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_author",
+      "label": "Show author",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_date",
+      "label": "Show date",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_read_time",
+      "label": "Show estimated read time",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_tags",
+      "label": "Show article tags",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_share",
+      "label": "Show link sharing",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "content_width",
+      "label": "Content width",
+      "default": "page",
+      "options": [
+        {
+          "value": "full",
+          "label": "Full"
+        },
+        {
+          "value": "page",
+          "label": "Page"
+        },
+        {
+          "value": "custom",
+          "label": "⋯"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "content_width_custom",
+      "label": "Desktop width",
+      "visible_if": "{{ section.settings.content_width == 'custom' }}",
+      "min": 25,
+      "max": 100,
+      "step": 5,
+      "default": 65,
+      "unit": "%"
+    },
+    {
+      "type": "range",
+      "id": "content_width_custom_mobile",
+      "label": "Mobile width",
+      "visible_if": "{{ section.settings.content_width == 'custom'  }}",
+      "min": 25,
+      "max": 100,
+      "step": 5,
+      "default": 100,
+      "unit": "%"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_rhythm",
+      "label": "Custom rhythm",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "section_padding_top",
+      "label": "Spacing top",
+      "min": 0,
+      "max": 200,
+      "step": 2,
+      "unit": "px",
+      "default": 40,
+      "visible_if": "{{ section.settings.set_rhythm == true  }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding_bottom",
+      "label": "Spacing bottom",
+      "min": 0,
+      "max": 200,
+      "step": 2,
+      "unit": "px",
+      "default": 40,
+      "visible_if": "{{ section.settings.set_rhythm == true  }}"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,69 @@
+<!-- blocks/_form-input-name.liquid -->
+
+{% liquid
+  assign label_handle = block.settings.label | handleize
+  assign id = label_handle | append: '-' | append: block.id
+  assign name = 'contact[' | append: label_handle | append: ']'
+%}
+
+{% capture input_attributes %}
+  {% if block.settings.required %}
+    required
+  {% endif %}
+{% endcapture %}
+
+{% render 'field-input',
+  name: name,
+  id: id,
+  label: block.settings.label,
+  size: block.settings.sizing,
+  input_attributes: input_attributes,
+  wrapper_attributes: block.shopify_attributes,
+  class: 'min-w-[150px]'
+%}
+
+{% schema %}
+{
+	"name": "Input name",
+	"tag": null,
+	"settings": [
+		{
+			"type": "text",
+			"id": "label",
+			"label": "Label",
+			"default": "Name"
+		},
+		{
+			"type": "select",
+			"id": "sizing",
+			"label": "Size",
+			"default": "md",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				}
+			]
+		},
+		{
+			"type": "checkbox",
+			"id": "required",
+			"label": "Required",
+			"default": false
+		}
+	],
+	"presets": [
+		{
+			"name": "Input name"
+		}
+	]
+}
+{% endschema %}

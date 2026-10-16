@@ -1,0 +1,15 @@
+<span
+  class="
+    block rounded bg-canvas border border-line-subtle
+    text-r2 text-content
+    whitespace-nowrap
+    px-r2 py-r1 shrink-0
+    {{ class }}
+  "
+  style="{{ style }}"
+  aria-label="({{ 'collection.filters.accessibility.filters_matching_count' | t: count: count }})"
+  role="note"
+  {{ attributes }}
+>
+  {{ count }}
+</span>

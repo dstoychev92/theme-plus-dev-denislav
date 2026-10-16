@@ -1,0 +1,83 @@
+<!-- blocks/_form-input-email.liquid -->
+
+{%- liquid
+  assign label_handle = block.settings.label | handleize
+  assign id = label_handle | append: '-' | append: block.id
+  assign value = ''
+  assign error_message = ''
+
+  if form.email
+    assign value = form.email
+  endif
+
+  if form.errors contains 'email'
+    assign error_message = form.errors.translated_fields.email | capitalize | append: ' ' | append: form.errors.messages.email | append: '.'
+  endif
+%}
+
+{% capture input_attributes %}
+  spellcheck="false"
+  autocapitalize="off"
+  autocomplete="email"
+  {% if block.settings.required %}
+    required
+  {% endif %}
+{% endcapture %}
+
+{% render 'field-input',
+  type: 'email',
+  name: 'contact[email]',
+  id: id,
+  size: block.settings.sizing,
+  label: block.settings.label,
+  value: value,
+  input_attributes: input_attributes,
+  error_message: error_message,
+  wrapper_attributes: block.shopify_attributes
+%}
+
+{% schema %}
+{
+	"name": "Input email",
+	"tag": null,
+	"settings": [
+		{
+			"type": "text",
+			"id": "label",
+			"label": "Label",
+			"default": "Email"
+		},
+		{
+			"type": "select",
+			"id": "sizing",
+			"label": "Size",
+			"default": "md",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				}
+			]
+		},
+		{
+			"type": "checkbox",
+			"id": "required",
+			"label": "Required",
+			"default": true
+		}
+	],
+	"presets": [
+		{
+			"name": "Input email"
+		}
+	]
+}
+{% endschema %}

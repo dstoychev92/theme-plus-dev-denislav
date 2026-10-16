@@ -1,0 +1,198 @@
+{% comment %}
+  Usage:
+  {% render 'card-article',
+    article: article,
+    size: 'sm',
+    show_author: show_author,
+    show_tags: show_tags,
+    show_date: show_date,
+    show_preview: show_preview,
+    show_link: show_link
+   %}
+{% endcomment %}
+
+{%- liquid
+  assign url = url | default: article.url, allow_false: true | default: false, allow_false: true
+  assign image = article.image
+  assign title = article.title
+  assign first_tag = article.tags.first
+  assign aspect_ratio = aspect_ratio | default: settings.card_aspect_ratio
+
+  if size == 'xs'
+    assign icon = icon | default: 'fill-article'
+  endif
+
+  # Safety measure to only show placeholder when on request.design_mode
+  assign enable_placeholder_product = false
+  if settings.placeholder_mode or request.design_mode
+    assign enable_placeholder_product = true
+  endif
+
+  # Disable placeholder when we need to show the loader - for example, when we are ajaxing the products
+  if loader == true
+    assign placeholder = false
+  endif
+  # Disable placeholder outside of design mode
+  if enable_placeholder_product == false
+    assign placeholder = false
+  endif
+  # Hide filler when not on design mode and image/icon are null
+  if enable_placeholder_product == false and image == null and icon == null
+    assign media = false
+  endif
+
+  if placeholder
+    assign url = null
+    assign image = null
+    assign title = 'homepage.placeholder.article_card_title' | t
+    assign excerpt_or_content = 'homepage.placeholder.article_card_excerpt' | t
+    assign first_tag = 'homepage.placeholder.article_card_tag' | t
+    # Use SVG placeholder
+    capture media
+      render 'core-image', aspect_ratio: aspect_ratio
+    endcapture
+  endif
+%}
+
+{% if size == 'lg' and placeholder != true %}
+  {% comment %} Tags {% endcomment %}
+  {% if show_tags and article.tags.size > 0 %}
+    {% capture tags %}
+      <ul
+        class="flex justify-end flex-wrap gap-r2"
+        {% comment %} comma at the begining to separate the image alt text from the tags for screen readers {% endcomment %}
+        aria-label=", {{ article.tags | join: ', ' }}"
+      >
+        {% for tag in article.tags %}
+          <li>
+            {% render 'card-product-lg-media-badges-style', content: tag %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% endcapture %}
+  {% endif %}
+
+  {% comment %} Date and Author {% endcomment %}
+  {% if show_date %}
+    {% assign date_format = 'other.date_formats.month_day_year' | t %}
+
+    {% capture published_at_temp %}
+      **{{ article.published_at | date: date_format }}*/*
+    {% endcapture %}
+
+    {% capture published_at_date %}
+      {% if show_author %}
+        {{ 'blog.article.on_date' | t: date: published_at_temp }}
+      {% else %}
+        {{ published_at_temp }}
+      {% endif %}
+    {% endcapture %}
+
+    {% assign published_at_date = published_at_date | replace: '**', '<time>' | replace: '*/*', '</time>' %}
+  {% endif %}
+
+  {% if show_author %}
+    {% capture author_image %}
+      {% if article.user.image %}
+        {% assign author_alt = article.author | escape %}
+        {% assign author_width = 24 %}
+        {% capture author_sizes %}{{ author_width }}px{% endcapture %}
+
+        <div class="shrink-0 rounded-full">
+          {{ article.user.image
+            | image_url: width: author_width
+            | image_tag: alt: author_alt, loading: 'eager', sizes: author_sizes
+          }}
+        </div>
+      {% endif %}
+    {% endcapture %}
+
+    {% capture author_name_temp %}
+      **{{ article.author }}*/*
+    {% endcapture %}
+    {% capture author_name %}
+      {{ 'blog.article.by_author' | t: author: author_name_temp }}
+    {% endcapture %}
+    {% capture author_link_tag %}<a href="{{ article.user.homepage }}" class="keyboard-focus:outline-offset-[-2px]">||</a>{% endcapture %}
+    {% assign author_link_tag = author_link_tag | split: '||' %}
+
+    {% if article.user.homepage %}
+      {% assign author_name = author_name | replace: '**', author_link_tag[0] | replace: '*/*', author_link_tag[1] %}
+    {% else %}
+      {% assign author_name = author_name | remove: '**' | remove: '*/*' %}
+    {% endif %}
+  {% endif %}
+
+  {% if show_author or show_date %}
+    {% capture author_and_date %}
+      <div class="flex items-center gap-x-r4 type-p type-resize-sm text-muted-subtle">
+        {{ author_image }}
+
+        {% if show_author %}
+          <span class="line-clamp-1">
+            {{ author_name }}
+            {{ published_at_date }}
+          </span>
+        {% elsif show_author %}
+          <span class="line-clamp-1">
+            {{ author_name }}
+          </span>
+        {% elsif show_date %}
+          {{ published_at_date }}
+        {% endif %}
+      </div>
+    {% endcapture %}
+  {% endif %}
+
+  {% comment %} Excerpt {% endcomment %}
+  {% if show_preview and article.excerpt_or_content != blank %}
+    {% capture excerpt_or_content %}
+      <div class="line-clamp-2">
+        <p class="type-p type-resize-sm">{{ article.excerpt_or_content | strip_html | truncatewords: 25 }}</p>
+      </div>
+    {% endcapture %}
+  {% endif %}
+
+  {% comment %} Read more link {% endcomment %}
+  {% if show_link %}
+    {% capture link %}
+      {% assign link_text = 'blog.article.read_more' | t %}
+      {% capture attributes %}
+        aria-label="{{ 'other.accessibility.read_more' | t: title: title }}"
+      {% endcapture %}
+      {% render 'core-link',
+        href: article.url,
+        text: link_text,
+        appearance: 'line',
+        type_preset: 'p',
+        type_resize: 'sm',
+        attributes: attributes
+      %}
+    {% endcapture %}
+  {% endif %}
+
+  {% if author_and_date or excerpt_or_content or link %}
+    {% capture details %}
+      <div class="flex flex-col gap-y-r2 text-start items-start">
+        {{- author_and_date -}}
+        {{- excerpt_or_content -}}
+        {{- link -}}
+      </div>
+    {% endcapture %}
+  {% endif %}
+{% endif %}
+
+{% liquid
+  if article or placeholder
+    case size
+      when 'xs'
+        render 'card-layout-xs', url: url, image: image, icon: icon, title: title, details: first_tag, class: class, attributes: attributes, media: media
+      when 'sm'
+        render 'card-layout-sm', url: url, image: image, icon: icon, title: title, details: first_tag, class: class, attributes: attributes, media: media
+      when 'md'
+        render 'card-layout-md', url: url, image: image, icon: icon, title: title, details: first_tag, class: class, attributes: attributes, media: media
+      when 'lg'
+        render 'card-layout-lg', url: url, image: image, icon: icon, title: title, details: details, class: class, attributes: attributes, media: media, aspect_ratio: aspect_ratio, image_loading: image_loading, image_fetchpriority: image_fetchpriority, image_overlay: tags
+    endcase
+  endif
+-%}

@@ -1,0 +1,60 @@
+{% liquid
+  assign id = id | default: name | handleize
+%}
+
+{% capture field_class %}
+  {{ class }}
+
+  {% comment %} Hide the label when the field is not focused {% endcomment %}
+  has-[[aria-selected='true'][aria-disabled='true']]:[--field-active:0]
+{% endcapture %}
+
+{% capture button_class %}
+  h-control ps-[--input-padding-s] pe-[--input-padding-e] py-[--input-padding-y]
+
+  text-[color:var(--input-text-color)] text-size-input leading-control
+  bg-transparent
+
+  {% comment %} Turn off default keyboard focus style since field should handle that {% endcomment %}
+  keyboard-focus:!outline-none
+
+  {{ button_class }}
+{% endcapture %}
+
+{% capture select %}
+  {% render 'custom-select',
+    name: name,
+    size: size,
+    options: options,
+    label: label,
+    value: value,
+    initial_display: initial_display,
+    attributes: attributes,
+    disabled: disabled,
+    class: class,
+    button_class: button_class,
+    placement: placement,
+    flip: flip,
+    edge_padding: edge_padding
+  %}
+{% endcapture %}
+
+{% comment %}
+  We need rewrite the overwrite the padding on the right so the label doesn't overlap with the icon when text is too long.
+  The calculation consists of "input padding" + "gap size" + "icon size"
+{% endcomment %}
+{% assign placeholder_class = 'h-control !pe-[calc(var(--input-padding-e)+theme(space.r4)+var(--icon-size))]' %}
+
+{% render 'field',
+  label: label,
+  id: id,
+  name: name,
+  class: field_class,
+  label_class: label_class,
+  placeholder_class: placeholder_class,
+  input: select,
+  size: size,
+  error_message: error_message,
+  success_message: success_message,
+  hide_label: hide_label
+%}

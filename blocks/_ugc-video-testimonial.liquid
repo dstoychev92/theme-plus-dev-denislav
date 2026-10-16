@@ -1,0 +1,125 @@
+{%- comment -%}
+  UGC Video Testimonial block.
+
+  Emits a JSON script tag with this block's settings. The parent section
+  collects all such tags inside its own scope and feeds the data into the
+  Alpine carousel component. Each block self-renders because Shopify's
+  theme blocks system scopes `block.settings` to the block file's render
+  context — the section cannot read them directly from `section.blocks`.
+{%- endcomment -%}
+
+{%- liquid
+  assign video_url = ''
+  if block.settings.video != blank
+    for src in block.settings.video.sources
+      case src.mime_type
+        when 'video/mp4', 'video/quicktime', 'video/webm'
+          assign video_url = src.url
+          break
+      endcase
+    endfor
+  endif
+
+  assign poster_url = ''
+  if block.settings.poster != blank
+    assign poster_url = block.settings.poster | image_url: width: 720
+  elsif block.settings.video != blank and block.settings.video.preview_image != blank
+    assign poster_url = block.settings.video.preview_image | image_url: width: 720
+  endif
+
+  assign product_url = ''
+  assign product_title = ''
+  assign product_image = ''
+  if block.settings.product != blank
+    assign product_url = block.settings.product.url
+    assign product_title = block.settings.product.title
+    if block.settings.product.featured_image != blank
+      assign product_image = block.settings.product.featured_image | image_url: width: 120
+    endif
+  endif
+-%}
+
+<script type="application/json" class="ugc-testimonial-data" {{ block.shopify_attributes }}>
+{
+  "id": {{ block.id | json }},
+  "name": {{ block.settings.name | default: '' | json }},
+  "role": {{ block.settings.role | default: '' | json }},
+  "quote": {{ block.settings.quote | default: '' | json }},
+  "rating": {{ block.settings.rating | default: 5 | json }},
+  "gradient_1": {{ block.settings.gradient_1 | default: '#c4a484' | json }},
+  "gradient_2": {{ block.settings.gradient_2 | default: '#6b4423' | json }},
+  "video": {{ video_url | json }},
+  "poster": {{ poster_url | json }},
+  "product_url": {{ product_url | json }},
+  "product_title": {{ product_title | json }},
+  "product_image": {{ product_image | json }}
+}
+</script>
+
+{% schema %}
+{
+  "name": "Video testimonial",
+  "settings": [
+    {
+      "type": "video",
+      "id": "video",
+      "label": "Video (9:16 MP4)"
+    },
+    {
+      "type": "image_picker",
+      "id": "poster",
+      "label": "Poster image (optional)",
+      "info": "Shown before the video frame is ready. Falls back to the gradient when empty."
+    },
+    {
+      "type": "text",
+      "id": "name",
+      "label": "Name",
+      "default": "Мария"
+    },
+    {
+      "type": "text",
+      "id": "role",
+      "label": "Role",
+      "default": "Маркетинг мениджър"
+    },
+    {
+      "type": "textarea",
+      "id": "quote",
+      "label": "Quote",
+      "default": "Заместих 3 кафета на ден с едно BOOM. Енергията е друга."
+    },
+    {
+      "type": "range",
+      "id": "rating",
+      "label": "Rating",
+      "min": 1,
+      "max": 5,
+      "step": 1,
+      "default": 5
+    },
+    {
+      "type": "color",
+      "id": "gradient_1",
+      "label": "Gradient color 1",
+      "default": "#d4b896"
+    },
+    {
+      "type": "color",
+      "id": "gradient_2",
+      "label": "Gradient color 2",
+      "default": "#7a5230"
+    },
+    {
+      "type": "header",
+      "content": "Linked product"
+    },
+    {
+      "type": "product",
+      "id": "product",
+      "label": "Product",
+      "info": "Shown as a pill at the bottom of the active video. Tapping opens the product page."
+    }
+  ]
+}
+{% endschema %}

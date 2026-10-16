@@ -1,0 +1,420 @@
+{% comment %}
+  snippets/cart-boom-tier-bar.liquid
+  ──────────────────────────────────
+  BOOM! BOX volume tier bar — renders at top of cart (below free shipping bar).
+  Only visible if at least one product from the qualifying collection is in the cart.
+
+  Accepts:
+    _settings  — section.settings (passed from cart-drawer / cart section)
+
+  Features:
+    • Counts all line items belonging to the qualifying collection
+    • Displays a progress meter matching the bundle-builder style
+    • Shows volume discount tiers with configurable thresholds
+    • Auto-adds / removes a free gift via Cart API based on active tier
+    • Gift identified by line item property `_boom_gift`
+
+  Architecture (April 2026 refactor):
+    • Styles  → assets/custom.boom-gift-sync.css
+    • Script  → assets/custom.boom-gift-sync.js
+    • Config  → inline <script type="application/json" id="boom-gift-sync-config">
+    • Markup  → this file, Liquid-rendered, a11y-first
+
+  Dependencies:
+    • Alpine.js (already loaded by Pipeline theme)
+    • Cart API (/cart/add.js, /cart/update.js)
+    • data-cart-api-section on the parent section for theme-level re-renders
+{% endcomment %}
+
+{%- liquid
+  assign enabled = _settings.boom_tier_enabled | default: false
+  unless enabled
+    break
+  endunless
+
+  assign collection_handle = _settings.boom_tier_collection
+  unless collection_handle != blank
+    break
+  endunless
+
+  # ── Count qualifying items ──
+  assign qualifying_qty = 0
+  for item in cart.items
+    assign is_gift_item = false
+    for prop in item.properties
+      if prop.first == '_boom_gift' and prop.last == 'true'
+        assign is_gift_item = true
+      endif
+    endfor
+    if is_gift_item
+      continue
+    endif
+    for col in item.product.collections
+      if col.handle == collection_handle
+        assign qualifying_qty = qualifying_qty | plus: item.quantity
+        break
+      endif
+    endfor
+  endfor
+
+  # NOTE: we do NOT break when qualifying_qty == 0.
+  # The UI is hidden, but the config blob and data-attrs must still render
+  # so the sync engine can hydrate after the user adds products to an empty cart.
+
+  # ── Build tiers array ──
+  assign tier_1_min = _settings.boom_tier_1_min | default: 1
+  assign tier_1_disc = _settings.boom_tier_1_disc | default: 0
+  assign tier_2_min = _settings.boom_tier_2_min | default: 3
+  assign tier_2_disc = _settings.boom_tier_2_disc | default: 0
+  assign tier_3_min = _settings.boom_tier_3_min | default: 5
+  assign tier_3_disc = _settings.boom_tier_3_disc | default: 0
+  assign tier_4_min = _settings.boom_tier_4_min | default: 8
+  assign tier_4_disc = _settings.boom_tier_4_disc | default: 0
+
+  # Gift products (optional per tier) — resolved from handle via all_products
+  assign gift_2_handle = _settings.boom_tier_2_gift | strip
+  assign gift_2_product = blank
+  if gift_2_handle != blank
+    assign gift_2_product = all_products[gift_2_handle]
+    unless gift_2_product.id
+      assign gift_2_product = blank
+    endunless
+  endif
+  assign gift_3_handle = _settings.boom_tier_3_gift | strip
+  assign gift_3_product = blank
+  if gift_3_handle != blank
+    assign gift_3_product = all_products[gift_3_handle]
+    unless gift_3_product.id
+      assign gift_3_product = blank
+    endunless
+  endif
+  assign gift_4_handle = _settings.boom_tier_4_gift | strip
+  assign gift_4_product = blank
+  if gift_4_handle != blank
+    assign gift_4_product = all_products[gift_4_handle]
+    unless gift_4_product.id
+      assign gift_4_product = blank
+    endunless
+  endif
+
+  # ── Determine active tier index (0-based) ──
+  assign active_tier = -1
+  assign current_disc = 0
+
+  if qualifying_qty >= tier_4_min
+    assign active_tier = 3
+    assign current_disc = tier_4_disc
+  elsif qualifying_qty >= tier_3_min
+    assign active_tier = 2
+    assign current_disc = tier_3_disc
+  elsif qualifying_qty >= tier_2_min
+    assign active_tier = 1
+    assign current_disc = tier_2_disc
+  elsif qualifying_qty >= tier_1_min
+    assign active_tier = 0
+    assign current_disc = tier_1_disc
+  endif
+
+  # ── Build list of ALL expected gift variant IDs (gifts accumulate across tiers) ──
+  assign expected_gift_ids = ''
+  if active_tier >= 1 and gift_2_product != blank
+    assign g2_vid = gift_2_product.selected_or_first_available_variant.id | default: 0
+    if g2_vid > 0
+      if expected_gift_ids != ''
+        assign expected_gift_ids = expected_gift_ids | append: ','
+      endif
+      assign expected_gift_ids = expected_gift_ids | append: g2_vid
+    endif
+  endif
+  if active_tier >= 2 and gift_3_product != blank
+    assign g3_vid = gift_3_product.selected_or_first_available_variant.id | default: 0
+    if g3_vid > 0
+      if expected_gift_ids != ''
+        assign expected_gift_ids = expected_gift_ids | append: ','
+      endif
+      assign expected_gift_ids = expected_gift_ids | append: g3_vid
+    endif
+  endif
+  if active_tier >= 3 and gift_4_product != blank
+    assign g4_vid = gift_4_product.selected_or_first_available_variant.id | default: 0
+    if g4_vid > 0
+      if expected_gift_ids != ''
+        assign expected_gift_ids = expected_gift_ids | append: ','
+      endif
+      assign expected_gift_ids = expected_gift_ids | append: g4_vid
+    endif
+  endif
+
+  # ── Check what gifts ARE currently in cart ──
+  # current_gift_ids:  variants already present AS gifts (used for REMOVE logic)
+  # cart_variant_ids:  every variant id in the cart (used for ADD-skip logic so
+  #                    we don't duplicate a product the user already owns)
+  assign current_gift_ids = ''
+  assign current_gift_keys = ''
+  assign cart_variant_ids = ''
+  for item in cart.items
+    if cart_variant_ids != ''
+      assign cart_variant_ids = cart_variant_ids | append: ','
+    endif
+    assign cart_variant_ids = cart_variant_ids | append: item.variant_id
+
+    assign is_gift_item = false
+    for prop in item.properties
+      if prop.first == '_boom_gift' and prop.last == 'true'
+        assign is_gift_item = true
+      endif
+    endfor
+    if is_gift_item
+      if current_gift_ids != ''
+        assign current_gift_ids = current_gift_ids | append: ','
+        assign current_gift_keys = current_gift_keys | append: '|||'
+      endif
+      assign current_gift_ids = current_gift_ids | append: item.variant_id
+      assign current_gift_keys = current_gift_keys | append: item.key
+    endif
+  endfor
+
+  # ── Gift icons for tier 4: gifts stack (tier 3 gift + tier 4 gift), each may be unset ──
+  assign tier_4_gift_icons = ''
+  if gift_3_product != blank
+    assign tier_4_gift_icons = tier_4_gift_icons | append: '🎁'
+  endif
+  if gift_4_product != blank
+    assign tier_4_gift_icons = tier_4_gift_icons | append: '🎁'
+  endif
+
+  # ── Next tier info ──
+  assign next_tier_min = 0
+  assign next_tier_reward = ''
+  if active_tier < 0
+    assign next_tier_min = tier_1_min
+    assign next_tier_reward = tier_1_disc | append: '%'
+  elsif active_tier == 0
+    assign next_tier_min = tier_2_min
+    if tier_2_disc > 0
+      assign next_tier_reward = '−' | append: tier_2_disc | append: '%'
+    endif
+    if gift_2_product != blank
+      assign next_tier_reward = next_tier_reward | append: ' + 🎁'
+    endif
+  elsif active_tier == 1
+    assign next_tier_min = tier_3_min
+    assign next_tier_reward = '−' | append: tier_3_disc | append: '%'
+    if gift_3_product != blank
+      assign next_tier_reward = next_tier_reward | append: ' + 🎁'
+    endif
+  elsif active_tier == 2
+    assign next_tier_min = tier_4_min
+    assign next_tier_reward = '−' | append: tier_4_disc | append: '%'
+    if tier_4_gift_icons != ''
+      assign next_tier_reward = next_tier_reward | append: ' + ' | append: tier_4_gift_icons
+    endif
+  endif
+
+  assign next_tier_delta = next_tier_min | minus: qualifying_qty
+  assign has_next_tier = false
+  if next_tier_min > 0 and next_tier_delta > 0
+    assign has_next_tier = true
+  endif
+
+  # ── Bar title ──
+  assign bar_title = _settings.boom_tier_title | default: 'BOOM! BOX'
+  assign collection_label = collections[collection_handle].title | default: collection_handle
+
+  # ── Tier labels & rewards for the meter ──
+  assign tier_1_label = tier_1_min | append: ''
+  assign tier_2_label = tier_2_min | append: ''
+  assign tier_3_label = tier_3_min | append: ''
+  assign tier_4_label = tier_4_min | append: '+'
+
+  assign tier_1_reward = 'boom.tier_bar.tier_standard' | t
+  if tier_1_disc > 0
+    assign tier_1_reward = '−' | append: tier_1_disc | append: '%'
+  endif
+
+  assign tier_2_reward = '−' | append: tier_2_disc | append: '%'
+  if tier_2_disc == 0
+    assign tier_2_reward = 'boom.tier_bar.tier_standard' | t
+  endif
+  if gift_2_product != blank
+    assign tier_2_reward = tier_2_reward | append: ' + 🎁'
+  endif
+
+  assign tier_3_reward = '−' | append: tier_3_disc | append: '%'
+  if gift_3_product != blank
+    assign tier_3_reward = tier_3_reward | append: ' + 🎁'
+  endif
+
+  assign tier_4_reward = '−' | append: tier_4_disc | append: '%'
+  if tier_4_gift_icons != ''
+    assign tier_4_reward = tier_4_reward | append: ' + ' | append: tier_4_gift_icons
+  endif
+
+  # ── Meter fill width calculation ──
+  # Line spans from 12.5% to 87.5% of container (4-column grid, dots centered in each column).
+  # Effective line span = 75% of container, so fill = frac * 75%.
+  # frac = activeTierIdx / (numTiers - 1) → 0, 25%, 50%, 75%.
+  assign meter_fill = '0%'
+  if active_tier >= 0
+    case active_tier
+      when 0
+        assign meter_fill = '0%'
+      when 1
+        assign meter_fill = '25%'
+      when 2
+        assign meter_fill = '50%'
+      when 3
+        assign meter_fill = '75%'
+    endcase
+  endif
+
+  # ── A11y values ──
+  assign aria_now = qualifying_qty
+  assign aria_max = tier_4_min
+  # `next_tier_reward` may carry inline gift SVG — strip it so the announced text stays clean.
+  assign aria_reward = next_tier_reward | strip_html | strip
+  capture aria_text
+    if has_next_tier
+      echo 'boom.tier_bar.aria_progress' | t: count: qualifying_qty, total: tier_4_min, delta: next_tier_delta, reward: aria_reward
+    elsif active_tier == 3
+      echo 'boom.tier_bar.max_unlocked' | t
+    else
+      echo 'boom.tier_bar.aria_progress_short' | t: count: qualifying_qty, total: tier_4_min
+    endif
+  endcapture
+-%}
+
+{%- comment -%} ═══ JSON config for custom.boom-gift-sync.js ═══ {%- endcomment -%}
+{%- comment -%}
+  Rendered once per page load. The JS engine reads this instead of parsing
+  individual data-attrs — cleaner contract, easier to evolve.
+{%- endcomment -%}
+<script type="application/json" id="boom-gift-sync-config">
+{
+  "collection": {{ collection_handle | json }},
+  "tiers": [
+    { "min": {{ tier_1_min }}, "discount": {{ tier_1_disc }}, "gift": null },
+    { "min": {{ tier_2_min }}, "discount": {{ tier_2_disc }}, "gift": {% if gift_2_product != blank %}{{ gift_2_product.selected_or_first_available_variant.id }}{% else %}null{% endif %} },
+    { "min": {{ tier_3_min }}, "discount": {{ tier_3_disc }}, "gift": {% if gift_3_product != blank %}{{ gift_3_product.selected_or_first_available_variant.id }}{% else %}null{% endif %} },
+    { "min": {{ tier_4_min }}, "discount": {{ tier_4_disc }}, "gift": {% if gift_4_product != blank %}{{ gift_4_product.selected_or_first_available_variant.id }}{% else %}null{% endif %} }
+  ],
+  "state": {
+    "qualifyingQty": {{ qualifying_qty }},
+    "activeTier": {{ active_tier }},
+    "expectedGiftIds": [{{ expected_gift_ids }}],
+    "currentGiftIds": [{{ current_gift_ids }}]
+  },
+  "copy": {
+    "syncing": {{ 'boom.tier_bar.syncing' | t | json }},
+    "giftLabel": {{ 'boom.tier_bar.gift_label' | t | json }}
+  }
+}
+</script>
+
+{%- comment -%}
+  ═══ MARKUP ═══
+  The wrapper (with the data-attrs the sync engine reads) renders even at
+  qualifying_qty == 0 — otherwise, after the last qualifying product is
+  removed, the engine can't see that expected = [] and orphaned free gifts
+  stay orderable in the cart. Only the visual UI inside is conditional.
+{%- endcomment -%}
+<div
+  class="boom-tb"
+  {% if qualifying_qty == 0 %}hidden{% endif %}
+  data-boom-expected-gifts="{{ expected_gift_ids }}"
+  data-boom-current-gifts="{{ current_gift_ids }}"
+  data-boom-current-keys="{{ current_gift_keys }}"
+  data-boom-cart-variants="{{ cart_variant_ids }}"
+  {{ attributes }}
+>
+{%- if qualifying_qty > 0 -%}
+  <div class="boom-tb-hd">
+    <span class="boom-tb-title">{{ bar_title | split: ' ' | first }} <span>{{ bar_title | split: ' ' | last }}</span></span>
+    <span class="boom-tb-count"><strong>{{ qualifying_qty }}</strong> {{ collection_label }} {{ 'boom.tier_bar.in_cart' | t }}</span>
+  </div>
+
+  <div
+    class="boom-tb-meter"
+    role="progressbar"
+    aria-valuemin="0"
+    aria-valuemax="{{ aria_max }}"
+    aria-valuenow="{{ aria_now }}"
+    aria-valuetext="{{ aria_text | strip }}"
+    aria-label="{{ 'boom.tier_bar.progress_label' | t }}"
+  >
+    {%- capture gift_icon -%}{%- render 'boom-gift-icon', size: 14 -%}{%- endcapture -%}
+    <div class="boom-tb-items">
+      <div class="boom-tb-line" aria-hidden="true"></div>
+      <div class="boom-tb-fill" style="width: {{ meter_fill }};" aria-hidden="true"></div>
+
+      {%- comment -%} Tier 1 {%- endcomment -%}
+      <div class="boom-tb-item">
+        <span class="boom-tb-qlabel{% if active_tier >= 0 %} on{% endif %}">{{ tier_1_label }}</span>
+        <div class="boom-tb-dot{% if active_tier >= 0 %} on{% endif %}{% if active_tier == 0 %} active{% endif %}" aria-hidden="true"></div>
+        <span class="boom-tb-reward{% if active_tier >= 0 %} on{% endif %}">{{ tier_1_reward }}</span>
+      </div>
+
+      {%- comment -%} Tier 2 {%- endcomment -%}
+      <div class="boom-tb-item">
+        <span class="boom-tb-qlabel{% if active_tier >= 1 %} on{% endif %}">{{ tier_2_label }}</span>
+        <div class="boom-tb-dot{% if active_tier >= 1 %} on{% endif %}{% if active_tier == 1 %} active{% endif %}" aria-hidden="true"></div>
+        <span class="boom-tb-reward{% if active_tier >= 1 %} on{% endif %}">
+          {%- if gift_2_product != blank -%}
+            {{ tier_2_reward | replace: '🎁', gift_icon }}
+          {%- else -%}
+            {{ tier_2_reward }}
+          {%- endif -%}
+        </span>
+      </div>
+
+      {%- comment -%} Tier 3 {%- endcomment -%}
+      <div class="boom-tb-item">
+        <span class="boom-tb-qlabel{% if active_tier >= 2 %} on{% endif %}">{{ tier_3_label }}</span>
+        <div class="boom-tb-dot{% if active_tier >= 2 %} on{% endif %}{% if active_tier == 2 %} active{% endif %}" aria-hidden="true"></div>
+        <span class="boom-tb-reward{% if active_tier >= 2 %} on{% endif %}">
+          {%- if gift_3_product != blank -%}
+            {{ tier_3_reward | replace: '🎁', gift_icon }}
+          {%- else -%}
+            {{ tier_3_reward }}
+          {%- endif -%}
+        </span>
+        {%- if gift_3_product != blank and gift_4_product == blank -%}
+          <span class="boom-tb-best">{{ _settings.boom_tier_best_label | default: 'Най-изгодно' }}</span>
+        {%- endif -%}
+      </div>
+
+      {%- comment -%} Tier 4 {%- endcomment -%}
+      <div class="boom-tb-item">
+        <span class="boom-tb-qlabel{% if active_tier >= 3 %} on{% endif %}">{{ tier_4_label }}</span>
+        <div class="boom-tb-dot{% if active_tier >= 3 %} on{% endif %}{% if active_tier == 3 %} active{% endif %}" aria-hidden="true"></div>
+        <span class="boom-tb-reward{% if active_tier >= 3 %} on{% endif %}">
+          {%- if gift_4_product != blank -%}
+            {{ tier_4_reward | replace: '🎁', gift_icon }}
+          {%- else -%}
+            {{ tier_4_reward }}
+          {%- endif -%}
+        </span>
+        <span class="boom-tb-best">{{ _settings.boom_tier_best_label | default: 'Най-изгодно' }}</span>
+      </div>
+    </div>
+
+    {%- comment -%} Nudge / unlocked / syncing — visible one-at-a-time. aria-live so SR users hear sync start. {%- endcomment -%}
+    <div aria-live="polite" aria-atomic="true">
+      {%- if has_next_tier -%}
+        {%- assign nudge_reward = next_tier_reward | replace: '🎁', gift_icon -%}
+        <div class="boom-tb-nudge">
+          {{ 'boom.tier_bar.add_more_html' | t: count: next_tier_delta, reward: nudge_reward }}
+        </div>
+      {%- elsif active_tier == 3 -%}
+        <div class="boom-tb-done">
+          ✓ {{ 'boom.tier_bar.max_unlocked' | t }}
+        </div>
+      {%- endif -%}
+
+      <div class="boom-tb-sync-msg" role="status">
+        {{ 'boom.tier_bar.syncing' | t }}
+      </div>
+    </div>
+  </div>
+{%- endif -%}
+</div>

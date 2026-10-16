@@ -1,0 +1,176 @@
+{%- liquid
+  assign image_size = image_size | default: 50
+  assign thumbnail_spacing = thumbnail_spacing | default: 3
+  assign product_media_size_count = product_media.size | default: product_media.count
+  assign orientation = orientation | default: 'horizontal'
+  assign aspect_ratio = aspect_ratio | default: 1
+
+  case orientation
+    when 'vertical'
+      assign orientation_class = 'flex-col'
+      assign scroll_class = 'scroll-area-y'
+    else
+      # defaults to 'horizontal'
+      assign orientation = 'horizontal'
+      assign orientation_class = 'flex-row'
+      assign scroll_class = 'scroll-area-x snap-x'
+  endcase
+
+  assign scroll_by_distance = image_size | plus: thumbnail_spacing
+
+  if orientation == 'vertical'
+    assign thumbnail_indicator_spacing_class = 'ps-[calc(var(--active-indicator-spacing)*2)]'
+  else
+    assign thumbnail_indicator_spacing_class = 'pb-[calc(var(--active-indicator-spacing)*2)]'
+  endif
+-%}
+
+{% comment %} Thumbnails {% endcomment %}
+{% capture thumbnails %}
+  {% for media in product_media %}
+    <div
+      class="
+        relative flex flex-center shrink-0
+        {% if orientation == 'horizontal' %}
+          snap-start
+        {% endif %}
+
+      "
+      x-data="{
+        get isCurrentSlide() {
+          return currentSlideIndex == {{ forloop.index0 }}
+        },
+      }"
+      x-scroll-list:item
+      x-ref="thumbnail"
+    >
+      {% assign preview_image = media.preview_image %}
+      {% capture image %}
+        {% render 'core-image',
+          image: preview_image,
+          width: image_size,
+          alt: media.alt,
+          class: "relative z-10 js:z-0 min-w-[--image-size]",
+          aspect_ratio: aspect_ratio,
+        %}
+        {% render 'image-loading-placeholder',
+          image: preview_image,
+          wrapper_class: "absolute inset-0 z-0 w-full"
+        %}
+      {% endcapture %}
+
+      {% capture thumbnail_image_class %}
+        border-0 transition-none relative p-0 bg-transparent [--control-height:var(--image-size)]
+        overflow-hidden
+        {% if section.settings.contain_section %}
+          md:rounded-[--media-rounding]
+        {% endif %}
+        {% if block.settings.contain_media_mobile %}
+          max-md:rounded-[--media-rounding-mobile]
+        {% endif %}
+      {% endcapture %}
+
+      {% capture thumbnail_image_attributes %}
+        @click.prevent="setCurrentSlide({{ forloop.index0 }})"
+        aria-label="{{ 'product.gallery.accessibility.show_slide' | t: index: forloop.index, total: product_media_size_count }}"
+        :aria-current="isCurrentSlide"
+        :aria-controls="$id('{{ id }}') + '_{{ forloop.index }}/{{ product_media_size_count }}'"
+      {% endcapture %}
+      <a href="{{ media.preview_image.src | image_url }}" :role="'button'" class="{{ thumbnail_image_class }}" {{ thumbnail_image_attributes }}>
+        {{ image }}
+      </a>
+      <template x-if="isCurrentSlide">
+        <div class="h-px bg-content absolute left-0 right-0 bottom-[-2px]" data-layout-id="{{section.id}}-{{block.id}}-thumbnail-underline"></div>
+      </template>
+    </div>
+  {% endfor %}
+{% endcapture %}
+
+{% liquid
+  assign show_overflow_initially = false
+
+  if product_media_size_count > 4
+    assign show_overflow_initially = true
+  endif
+%}
+
+<div
+  class="
+    relative flex duration-300 size-full overflow-hidden
+    {{ class }}
+  "
+  style="
+    --thumbnail-spacing: {{ thumbnail_spacing }}px;
+    --active-indicator-spacing: 2px;
+  "
+  x-scroll-list
+  x-overflow.autoregister
+  x-data="
+    {
+      scrollByDistance: {{ scroll_by_distance }},
+      async setCurrentSlide(index) {
+        const animateLayout = await $m.loadAnimateLayout();
+
+        animateLayout(
+          $el,
+          () => {
+            currentSlideIndex = index;
+          },
+          {duration: 0.3, ease: [0.4, 0, 0.2, 1]},
+        )
+      }
+    }
+  "
+  x-id="['product-media-thumbnail-picker']"
+>
+  {% render 'product-media-thumbnail-picker-button', direction: 'prev', orientation: orientation, id: id %}
+
+  <div
+    class="
+      relative z-0 whitespace-nowrap edge-mask w-full
+      {% if show_overflow_initially %}
+        {% if orientation == 'vertical' %}
+          edge-mask-b
+        {% else %}
+          edge-mask-r
+        {% endif %}
+      {% endif %}
+    "
+    :class="
+      {
+        {% if orientation == 'vertical' %}
+          'edge-mask-t': $overflow.start,
+          'edge-mask-b': $overflow.end,
+        {% else %}
+          'edge-mask-r': $overflow.end,
+          'edge-mask-l': $overflow.start,
+        {% endif %}
+      }
+    "
+    style="--image-size: {{ image_size }}px"
+    :id="$id('product-media-thumbnail-picker')"
+    x-scroll-list:viewport
+    x-overflow:viewport
+    x-roving-tab
+    aria-orientation="{{ orientation }}"
+    role="group"
+  >
+    <div
+      class="
+        flex items-stretch justify-start gap-[--thumbnail-spacing]
+        scroll-p-r5 scrollbar-hide
+        {{ scroll_class }}
+        {{ orientation_class }}
+        {{ thumbnail_indicator_spacing_class }}
+      "
+      x-scroll-list:scroller
+      x-overflow:container
+      x-roving-tab:list
+      x-ref="scrollTrack"
+    >
+      {{ thumbnails }}
+    </div>
+  </div>
+
+  {% render 'product-media-thumbnail-picker-button', direction: 'next', orientation: orientation, id: id %}
+</div>

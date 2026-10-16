@@ -1,0 +1,60 @@
+{% comment %}
+  Renders a YouTube video
+
+  Accepts:
+  - video_id: {String} YouTube video ID
+  - lazy: {Boolean} Whether or not to prevent the video from initializing. We can manually initialize it by calling this.loadPlayer()
+
+  {% render 'video-youtube',
+    video_id: '9VUPq3SxOc',
+    class: class,
+    attributes: attributes
+  %}
+{% endcomment %}
+
+{% liquid
+  assign placeholder = placeholder | default: 'image', allow_false: true
+  assign autoplay = autoplay | default: false
+  assign aspect_ratio = aspect_ratio | default: '16 / 9'
+
+  if autoplay
+    assign autoplay_modifier = '.autoplay'
+  endif
+%}
+
+{% if video_id != blank %}
+  <div
+    class="aspect-[--aspect-ratio] {{ class }}"
+    style="--aspect-ratio: {{ aspect_ratio }};"
+
+    {% if lazy %}
+      x-product-media:youtube.lazy{{ autoplay_modifier }}="{{ video_id }}"
+    {% else %}
+      x-product-media:youtube{{ autoplay_modifier }}="{{ video_id }}"
+    {% endif %}
+
+    {% if on_init %}
+      x-init="{{ on_init }}"
+    {% endif %}
+
+    {% if on_load_video %}
+      x-on:theme:youtube:loaded="{{ on_load_video }}"
+    {% endif %}
+    {{ attributes }}
+  >
+    <div
+      class="size-full"
+      data-youtube-player
+      enablejsapi="true"
+    ></div>
+  </div>
+{% elsif placeholder %}
+  {% assign class = class | append: ' h-auto max-w-full' %}
+  {% render 'image-placeholder',
+    placeholder: placeholder,
+    aspect_ratio: aspect_ratio,
+    class: class,
+    style: style,
+    attributes: attributes
+  %}
+{% endif %}

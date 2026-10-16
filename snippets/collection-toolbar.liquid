@@ -1,0 +1,96 @@
+{% liquid
+  assign columns_sm = columns_sm | default: section.settings.columns_sm
+  assign columns_md = columns_md | default: section.settings.columns_md
+  assign columns_lg = columns_lg | default: section.settings.columns_lg
+
+  assign enable_sorting = enable_sorting | default: section.settings.enable_sorting | default: true, allow_false: true
+  assign enable_layout_buttons = enable_layout_buttons | default: section.settings.enable_layout_buttons | default: true, allow_false: true
+
+  # Allow passing "false" to disable filters from outside this snippet
+  if enable_filters == null
+    assign enable_filters = section.settings.enable_filters | default: true, allow_false: true
+  endif
+
+  assign filters = filters | default: collection.filters
+  assign filter_url = filter_url | default: collection.url
+  assign sort_by = sort_by | default: collection.sort_by
+  assign default_sort_by = default_sort_by | default: collection.default_sort_by
+  assign show_products_count = show_products_count | default: section.settings.show_products_count | default: true, allow_false: true
+  assign products_count = products_count | default: collection.products_count
+  assign all_products_count = all_products_count | default: collection.all_products_count
+%}
+
+<collection-toolbar
+  class="
+    flex items-center justify-between gap-x-r5
+    {% comment %} Toolbar is only sticky on mobile {% endcomment %}
+    max-md:sticky max-md:top-[var(--header-bottom)] max-md:z-30
+    {% comment %} Add background for when the toolbar is sticky {% endcomment %}
+    max-md:bg-canvas
+    max-md:px-layout-buffer-x
+     {{ class }}
+  "
+>
+  <div class="flex items-center justify-start gap-x-r5 min-w-0 flex-1">
+    {% comment %} Filters Button {% endcomment %}
+    {% if enable_filters %}
+      {% render 'collection-filters-button', collection: collection %}
+    {% endif %}
+
+    {% render 'collection-filter-tags',
+      url: filter_url,
+      filters: filters,
+      sort_by: sort_by,
+      default_sort_by: default_sort_by,
+      products_count: products_count,
+      all_products_count: all_products_count,
+      tag_button_type_resize: 'xs',
+      tag_button_type_preset: 'p',
+      tag_button_appearance: 'soft',
+      wrap: false,
+      class: 'max-md:hidden'
+    %}
+  </div>
+
+  <div class="flex items-center justify-end gap-x-r5 flex-none">
+    {%- comment -%} Layout Buttons {%- endcomment -%}
+    {%- if enable_layout_buttons -%}
+      {%- render 'collection-layout-select', columns_sm: columns_sm, columns_md: columns_md, columns_lg: columns_lg %}
+    {%- endif -%}
+
+    {% comment %} Sorting Button {% endcomment %}
+    {%- if enable_sorting -%}
+      {% render 'collection-sort-select', collection: collection, form: form_id %}
+    {%- endif -%}
+    {%- if show_products_count -%}
+      {% if products_count and all_products_count %}
+        <output
+          aria-live="polite"
+          class="md:shrink-0 text-r2 text-end font-family-body text-muted-subtle"
+          aria-label="{{ 'collection.accessibility.product_results' | t }}"
+        >
+          {% capture product_count_temp %}
+            **{{ products_count }}*/*
+          {% endcapture %}
+          {% capture all_product_count_temp %}
+            **{{ all_products_count }}*/*
+          {% endcapture %}
+
+          {%- if products_count == all_products_count -%}
+            {% assign product_count_label = 'collection.product_count' | t: count: product_count_temp %}
+          {%- else -%}
+            {% assign product_count_label = 'collection.product_count_long'
+              | t: product_count: product_count_temp, count: all_product_count_temp
+            %}
+          {%- endif -%}
+
+          {{
+            product_count_label
+            | replace: '**', '<strong class="text-content font-bold">'
+            | replace: '*/*', '</strong>'
+          }}
+        </output>
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+</collection-toolbar>

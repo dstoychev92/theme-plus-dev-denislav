@@ -1,0 +1,643 @@
+<!-- blocks/_product-layout-media.liquid -->
+
+
+
+{% liquid
+  assign product = closest.product
+  assign current_variant = product.selected_or_first_available_variant
+  assign product_media = product.media
+
+  if block.settings.layout_desktop == 'showcase' and block.settings.set_aspect_ratio_desktop
+    assign aspect_ratio = block.settings.aspect_ratio_desktop
+  endif
+  if block.settings.set_aspect_ratio_mobile
+    assign aspect_ratio_mobile = block.settings.aspect_ratio_mobile
+  endif
+
+  #
+  # Option media list
+  #
+
+  assign has_option_media_list = false
+
+  # Render a list of images for a specific option (usually color option) instead of product media
+  # Note: If two options have values with the same label, the first one will be used
+  if settings.metafield_product_option_media != blank and settings.metafield_product_option_media_list != blank and settings.metafield_product_option_media_swatch != blank
+    assign product_option_media_metafield_namespace = settings.metafield_product_option_media | split: '.' | first
+    assign product_option_media_metafield_key = settings.metafield_product_option_media | split: '.' | last
+    assign product_option_media_metafield = product.metafields[product_option_media_metafield_namespace][product_option_media_metafield_key]
+
+    if product_option_media_metafield.value
+      assign selected_options_array = product.options_with_values | map: 'selected_value'
+      for metaobject_item in product_option_media_metafield.value
+        for selected in selected_options_array
+          assign value_is_found = metaobject_item[settings.metafield_product_option_media_swatch].value | where: 'label', selected.name | first
+          if value_is_found
+            assign product_media = metaobject_item[settings.metafield_product_option_media_list].value
+            assign has_option_media_list = true
+            break
+          endif
+        endfor
+
+        if value_is_found
+          break
+        endif
+      endfor
+    endif
+  endif
+
+  #
+  # Sorted product media
+  #
+
+  # If there is a variant selected that has featured media, show that media first
+
+  unless has_option_media_list
+    if current_variant.featured_media
+      assign sorted_product_media = null | sort
+
+      assign featured_item = product_media | where: 'id', current_variant.featured_media.id
+      assign sorted_product_media = sorted_product_media | concat: featured_item
+
+      for media in product_media
+        if media.id == current_variant.featured_media.id
+          continue
+        endif
+        assign new_sorted_product_media = media | sort
+        assign sorted_product_media = sorted_product_media | concat: new_sorted_product_media
+      endfor
+
+      assign product_media = sorted_product_media
+    endif
+  endunless
+
+  assign product_media_size_count = product_media.size | default: product_media.count
+
+  assign wrapper_id = 'product-media-' | append: block.id
+%}
+
+{% # "Contain" the whole media area (including breadcrumbs) %}
+{% if block.settings.contain_media_mobile == true %}
+  {% capture contain_spacing_class %}
+    
+      max-md:px-root-buffer
+    
+  {% endcapture %}
+{% else %}
+  {% # Only "contain" breadcrumbs %}
+  {% capture breadcrumbs_class %}
+    
+      max-md:px-root-buffer
+    
+  {% endcapture %}
+{% endif %}
+
+{% capture attributes %}
+  :style="{ 'height': slideshowHeight ? `${slideshowHeight}px` : '' }"
+{% endcapture %}
+
+{% if block.settings.layout_desktop == 'showcase' %}
+  {% capture desktop_attributes %}
+    x-init="
+      {% comment %} We need to wait for the $slideshow to initialize {% endcomment %}
+      $nextTick(() => {
+        $watch('currentSlideIndex', (index) => {
+          {% comment %} We need to wait for the slide to switch from "display: none" to "display: block" so we don't end up with "null" height which will disrupt the transition {% endcomment %}
+          $nextTick(() => {
+            updateSlideshowHeight(Array.from($slideshow.slides)[index]?.offsetHeight)
+          });
+        });
+      })
+    "
+    x-resize="updateSlideshowHeight(Array.from($slideshow.slides)[currentSlideIndex]?.offsetHeight)"
+    {{ attributes }}
+  {% endcapture %}
+{% endif %}
+
+{% comment %}
+  The mobile showcase slider intentionally does NOT animate its height to the
+  current slide (unlike desktop). Resizing the scroll-snap container as a swipe
+  settles makes iOS Safari abandon native scroll-snap, so slides would rest
+  between positions. The mobile container therefore keeps a stable height (the
+  tallest slide), exactly like the carousel layout, which snaps reliably.
+{% endcomment %}
+
+{% comment %} Lazily load CSS that is never needed in the critical path {% endcomment %}
+<link rel="stylesheet" href="{{ 'theme.photoswipe.css' | asset_url }}" media="print" onload="this.media='all'">
+
+
+<div
+  role="region"
+  class="
+    md:row-span-full
+    {{ class_static }}
+  "
+  x-sticky-column
+  aria-label="{{ 'product.accessibility.media_label' | t }}"
+>
+  
+
+  <div
+    class="
+       md:sticky md:top-0 
+      {{ contain_spacing_class }}
+      w-full [&_img]:brightness-[--photo-correction]
+      [--frosted-glass-color:var(--canvas-alpha-20)]
+      [--media-overlay-inset:theme(space.r7)]
+    "
+    style="
+      {% if aspect_ratio_mobile %}
+        --mobile-image-aspect-ratio: {{ aspect_ratio_mobile | default: 1 }};
+      {% endif %}
+      {% if section.settings.contain_section %}
+        {% if block.settings.set_media_rounding %}
+          --media-rounding: var(--radius-{{ block.settings.media_rounding }});
+        {% else %}
+          --media-rounding: var(--radius-banner-default);
+        {% endif %}
+      {% endif %}
+      {% if block.settings.contain_media_mobile %}
+        {% if block.settings.set_media_rounding_mobile %}
+          --media-rounding-mobile: var(--radius-{{ block.settings.media_rounding_mobile }});
+        {% else %}
+          --media-rounding-mobile: var(--radius-banner-default);
+        {% endif %}
+      {% endif %}
+    "
+    {% comment %} Force Alpine.morph to re-render media if product or variant changes {% endcomment %}
+    key="{{ product.id }}-{{ current_variant.id }}"
+    id="{{ wrapper_id }}"
+    data-morph-root="product-media-{{ section.id }}"
+    x-data="
+      {
+        slideshowHeight: null,
+        init() {
+          {% comment %} Initialize 3d model library {% endcomment %}
+          {% assign has_3d_model = product_media | where: 'media_type', 'model' | first %}
+          {% if has_3d_model %}
+            window.Shopify.loadFeatures([
+              {
+                name: 'shopify-xr',
+                version: '1.0'
+              }
+            ]);
+            document.addEventListener('shopify_xr_initialized', () => {
+              const modelsArray = Object.values(this.$cache.models.records);
+              window.ShopifyXR.addModels(modelsArray);
+              window.ShopifyXR.setupXRElements();
+              this.$dispatch('theme:models:loaded');
+            });
+          {% endif %}
+        },
+        get hasMeasuredHeight() {
+          return this.slideshowHeight !== null;
+        },
+        updateSlideshowHeight: $debounce(function (newHeight) {
+          this.slideshowHeight = newHeight;
+        }, 100)
+      }
+    "
+    data-morph-children-only
+    {{ block.shopify_attributes }}
+  >
+    {% if section.settings.enable_breadcrumbs %}
+      {% assign breadcrumbs_class = breadcrumbs_class | append: ' pb-r4' %}
+
+      {% comment %} Product section {% endcomment %}
+      
+      {% if section.settings.breadcrumbs_position == 'content' %}
+        {% assign breadcrumbs_class = breadcrumbs_class | append: ' md:hidden' %}
+      {% endif %}
+      
+
+      {% render 'product-breadcrumbs', class: breadcrumbs_class %}
+    {% endif %}
+
+    {%- capture product_media_image_sizes_single -%}
+      {%- render 'image-grid-sizes',
+        columns_lg: 1,
+        columns_md: 1,
+        columns_sm: 1,
+        section_width: section.settings.content_width
+      %}
+    {%- endcapture -%}
+    {%- capture product_media_image_widths_single -%}
+      {%- render 'image-grid-widths',
+        columns_lg: 1,
+        columns_md: 1,
+        columns_sm: 1
+      -%}
+    {%- endcapture -%}
+    {%- capture product_media_image_sizes_grid -%}
+      {%- render 'image-grid-sizes',
+        columns_lg: 2,
+        columns_md: 2,
+        columns_sm: 1,
+        section_width: section.settings.content_width
+      %}
+    {%- endcapture -%}
+    {%- capture product_media_image_widths_grid -%}
+      {%- render 'image-grid-widths',
+        columns_lg: 2,
+        columns_md: 2,
+        columns_sm: 1
+      -%}
+    {%- endcapture -%}
+
+    {% if product_media_size_count > 1 %}
+      {% if block.settings.layout_desktop %}
+        {% assign mobile_media_class = 'md:hidden' %}
+        {% assign desktop_id = 'product-media-desktop-' | append: block.id %}
+        {% render 'product-media-desktop',
+          _settings: block.settings,
+          product_media: product_media,
+          id: desktop_id,
+          media_attributes: desktop_attributes,
+          aspect_ratio: aspect_ratio,
+          image_sizes_single: product_media_image_sizes_single,
+          image_widths_single: product_media_image_widths_single,
+          image_sizes_grid: product_media_image_sizes_grid,
+          image_widths_grid: product_media_image_widths_grid
+        %}
+      {% endif %}
+
+      {% assign mobile_id = 'product-media-mobile-' | append: block.id %}
+      {% render 'product-media-mobile',
+        _settings: block.settings,
+        product_media: product_media,
+        contain_media: block.settings.contain_media_mobile,
+        id: mobile_id,
+        class: mobile_media_class,
+        aspect_ratio: aspect_ratio_mobile,
+        image_sizes_single: product_media_image_sizes_single,
+        image_widths_single: product_media_image_widths_single,
+        image_sizes_grid: product_media_image_sizes_grid,
+        image_widths_grid: product_media_image_widths_grid
+      %}
+    {% elsif product_media_size_count == 1 %}
+      {% assign single_id = 'product-media-single-' | append: block.id %}
+      {% render 'product-media-item',
+        _settings: block.settings,
+        product: product,
+        product_media: product_media,
+        media: product_media[0],
+        id: single_id,
+        aspect_ratio: aspect_ratio,
+        is_featured_media: true,
+        image_sizes_single: product_media_image_sizes_single,
+        image_widths_single: product_media_image_widths_single,
+        image_sizes_grid: product_media_image_sizes_grid,
+        image_widths_grid: product_media_image_widths_grid
+      %}
+    {% else %}
+      {% render 'image-filler', size_class: 'w-full aspect-square' %}
+    {% endif %}
+  </div>
+
+  
+</div>
+
+
+{% schema %}
+{
+	"name": "Media",
+	"tag": null,
+	"settings": [
+		{
+			"type": "header",
+			"content": "Desktop"
+		},
+		{
+			"type": "select",
+			"id": "layout_desktop",
+			"label": "Style",
+			"default": "showcase",
+			"options": [
+				{
+					"value": "showcase",
+					"label": "Showcase"
+				},
+				{
+					"value": "stack",
+					"label": "Stack"
+				}
+			]
+		},
+		{
+			"type": "checkbox",
+			"id": "set_aspect_ratio_desktop",
+			"label": "Set aspect ratio",
+			"visible_if": "{{ block.settings.layout_desktop == 'showcase' }}",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "aspect_ratio_desktop",
+			"min": 0.5,
+			"max": 3,
+			"step": 0.1,
+			"unit": ":1",
+			"label": "Aspect Ratio",
+			"default": 1,
+			"visible_if": "{{ block.settings.set_aspect_ratio_desktop == true  and block.settings.layout_desktop == 'showcase' }}"
+		},
+		{
+			"type": "select",
+			"id": "stack_style",
+			"label": "Stack style",
+			"default": "columns",
+			"visible_if": "{{ block.settings.layout_desktop == 'stack' }}",
+			"options": [
+				{
+					"value": "single",
+					"label": "Simple"
+				},
+				{
+					"value": "columns",
+					"label": "Grid"
+				},
+				{
+					"value": "mosaic",
+					"label": "Mosaic"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "carousel_indicator_photo_position",
+			"label": "Indicator photo position",
+			"default": "below",
+			"visible_if": "{{ block.settings.layout_desktop == 'showcase' }}",
+			"options": [
+				{
+					"value": "beside",
+					"label": "Beside"
+				},
+				{
+					"value": "below",
+					"label": "Below"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "carousel_indicator_photo_position_beside_alignment",
+			"label": "Indicator photo alignment",
+			"default": "top",
+			"visible_if": "{{ block.settings.layout_desktop == 'showcase' and block.settings.carousel_indicator_photo_position == 'beside' }}",
+			"options": [
+				{
+					"value": "top",
+					"label": "Top"
+				},
+				{
+					"value": "bottom",
+					"label": "Bottom"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "carousel_indicator_photo_size",
+			"label": "Indicator photo size",
+			"visible_if": "{{ block.settings.layout_desktop == 'showcase' }}",
+			"unit": "px",
+			"min": 20,
+			"max": 200,
+			"step": 10,
+			"default": 50
+		},
+		{
+			"type": "range",
+			"id": "carousel_media_spacing",
+			"label": "Image spacing",
+			"visible_if": "{{ block.settings.layout_desktop == 'showcase' }}",
+			"unit": "px",
+			"min": 0,
+			"max": 10,
+			"step": 1,
+			"default": 3
+		},
+		{
+			"type": "range",
+			"id": "stack_media_spacing",
+			"label": "Image spacing",
+			"visible_if": "{{ block.settings.layout_desktop == 'stack' }}",
+			"unit": "px",
+			"min": 0,
+			"max": 50,
+			"step": 1,
+			"default": 5
+		},
+		{
+			"type": "checkbox",
+			"id": "set_media_rounding",
+			"label": "Set rounding",
+			"default": false,
+			"visible_if": "{{ section.settings.contain_section }}"
+		},
+		{
+			"type": "select",
+			"id": "media_rounding",
+			"label": "Media rounding",
+			"default": "sm",
+			"visible_if": "{{ section.settings.contain_section and block.settings.set_media_rounding }}",
+			"options": [
+				{
+					"value": "none",
+					"label": "0"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				}
+			]
+		},
+		{
+			"type": "paragraph",
+			"content": "Desktop images have no rounding when 'Contain section' is disabled in section settings.",
+			"visible_if": "{{ section.settings.contain_section == false }}"
+		},
+		{
+			"type": "header",
+			"content": "Mobile"
+		},
+		{
+			"type": "checkbox",
+			"id": "contain_media_mobile",
+			"label": "Contain media",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "set_media_rounding_mobile",
+			"label": "Set rounding",
+			"default": false,
+			"visible_if": "{{ block.settings.contain_media_mobile }}"
+		},
+		{
+			"type": "select",
+			"id": "media_rounding_mobile",
+			"label": "Media rounding",
+			"default": "sm",
+			"visible_if": "{{ block.settings.contain_media_mobile and block.settings.set_media_rounding_mobile }}",
+			"options": [
+				{
+					"value": "none",
+					"label": "0"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+			]
+		},
+		{
+			"type": "select",
+			"id": "layout_mobile",
+			"label": "Style",
+			"default": "carousel",
+			"options": [
+				{
+					"value": "carousel",
+					"label": "Carousel"
+				},
+				{
+					"value": "showcase",
+					"label": "Showcase"
+				}
+			]
+		},
+		{
+			"type": "checkbox",
+			"id": "set_aspect_ratio_mobile",
+			"label": "Set aspect ratio",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "aspect_ratio_mobile",
+			"min": 0.5,
+			"max": 3,
+			"step": 0.1,
+			"unit": ":1",
+			"label": "Aspect Ratio",
+			"default": 1,
+			"visible_if": "{{ block.settings.set_aspect_ratio_mobile == true  }}"
+		},
+		{
+			"type": "range",
+			"id": "layout_carousel_visible_images_mobile",
+			"label": "Visible images",
+			"visible_if": "{{ block.settings.layout_mobile == 'carousel' }}",
+			"min": 1,
+			"max": 2,
+			"step": 0.1,
+			"default": 1
+		},
+		{
+			"type": "range",
+			"id": "layout_carousel_spacing_mobile",
+			"label": "Image spacing",
+			"visible_if": "{{ block.settings.layout_mobile == 'carousel' }}",
+			"unit": "px",
+			"min": 0,
+			"max": 50,
+			"step": 1,
+			"default": 5
+		},
+		{
+			"type": "select",
+			"id": "pagination_style_mobile",
+			"visible_if": "{{ block.settings.layout_mobile == 'showcase' }}",
+			"label": "Slide indicator",
+			"default": "photo",
+			"options": [
+				{
+					"value": "photo",
+					"label": "Photo"
+				},
+				{
+					"value": "position",
+					"label": "Position"
+				},
+				{
+					"value": "none",
+					"label": "None"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "carousel_indicator_photo_spacing_mobile",
+			"label": "Indicator spacing",
+			"visible_if": "{{ block.settings.layout_mobile == 'showcase' and block.settings.pagination_style_mobile == 'photo' }}",
+			"unit": "px",
+			"min": 0,
+			"max": 10,
+			"step": 1,
+			"default": 3
+		},
+		{
+			"type": "range",
+			"id": "carousel_indicator_photo_size_mobile",
+			"label": "Indicator image size",
+			"visible_if": "{{ block.settings.layout_mobile == 'showcase' and block.settings.pagination_style_mobile == 'photo' }}",
+			"unit": "px",
+			"min": 20,
+			"max": 100,
+			"step": 5,
+			"default": 50
+		},
+		{
+			"type": "header",
+			"content": "Video",
+			"info": "Applies to Shopify-hosted video files. YouTube and Vimeo videos inherit default player settings."
+		},
+		{
+			"type": "checkbox",
+			"id": "video_autoplay",
+			"label": "Autoplay video",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "custom_controls",
+			"label": "Show custom controls",
+			"default": true
+		},
+		{
+			"type": "paragraph",
+			"content": "Volume control is hidden for autoplayed videos.",
+			"visible_if": "{{ block.settings.video_autoplay and block.settings.custom_controls }}"
+		},
+		{
+			"type": "header",
+			"content": "Image zoom"
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_zoom",
+			"label": "Enable image zoom",
+			"default": true
+		},
+	]
+}
+{% endschema %}
+

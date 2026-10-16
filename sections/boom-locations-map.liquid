@@ -1,0 +1,747 @@
+<!-- sections/boom-locations-map.liquid -->
+
+{%- liquid
+  assign s = section.settings
+  assign root_id = 'BoomLocations-' | append: section.id
+  assign map_id = 'LocationsMap-' | append: section.id
+
+  assign loc_set = shop.metaobjects.location
+
+  assign brand_logo_url = ''
+  if s.brand_logo != blank
+    assign brand_logo_url = s.brand_logo | image_url: width: 120
+  endif
+
+  assign call_border_width = 0
+  if s.call_border
+    assign call_border_width = 1
+  endif
+-%}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link
+  href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Expanded:wght@600;700;800&display=swap"
+  rel="stylesheet"
+>
+
+{%- comment -%}
+  Liquid caps `for` loops at 50 iterations unless the array is wrapped in `paginate`.
+  Metaobject entries allow up to 1000 per page; 250 keeps us within Theme Check's
+  PaginationSize limit while rendering every location on a single page.
+{%- endcomment -%}
+{%- if loc_set == blank -%}
+  {%- if request.design_mode -%}
+    <div class="boom-loc">
+      <div class="boom-loc__inner">
+        <div class="boom-loc__empty">{{ 'boom.locations.empty_html' | t }}</div>
+      </div>
+    </div>
+  {%- endif -%}
+{%- else -%}
+{%- paginate loc_set.values by 250 -%}
+{%- liquid
+  assign locs = loc_set.values | sort: 'order'
+
+  comment
+    Build the unique city list for the filter: the "all" pill first, then each city once.
+  endcomment
+  assign cities = ''
+  for l in locs
+    unless cities contains l.city.value
+      assign cities = cities | append: l.city.value | append: '~|~'
+    endunless
+  endfor
+  assign city_list = cities | split: '~|~'
+-%}
+
+<div
+  id="{{ root_id }}"
+  class="boom-loc"
+  data-locations-root
+  data-section-id="{{ section.id }}"
+  data-map-id="{{ map_id }}"
+  data-api-key="{{ s.maps_api_key }}"
+  data-focus-zoom="{{ s.focus_zoom }}"
+  data-overview-zoom="{{ s.overview_zoom }}"
+  data-map-style="{{ s.map_style_json | escape }}"
+  data-brand-logo="{{ brand_logo_url }}"
+  style="
+    --accent: {{ s.accent }};
+    --ink: {{ s.ink }};
+    --surface: {{ s.surface }};
+    --call-bg: {{ s.call_bg }};
+    --call-text: {{ s.call_text }};
+    --call-bd: {{ s.call_border_color }};
+    --call-bw: {{ call_border_width }}px;
+  "
+>
+  <div class="boom-loc__inner">
+    {%- comment -%} Header + city filter {%- endcomment -%}
+    <div class="boom-loc__head">
+      <div class="boom-loc__head-titles">
+        {% content_for 'block', type: '_section-title', id: 'title' %}
+      </div>
+
+      {%- if city_list.size > 0 -%}
+        <div class="boom-loc__filter" role="group" aria-label="{{ 'boom.locations.filter_label' | t }}">
+          <button type="button" class="boom-loc__pill is-active" data-city="" aria-pressed="true">{{ 'boom.locations.all' | t }}</button>
+          {%- for city in city_list -%}
+            <button type="button" class="boom-loc__pill" data-city="{{ city | escape }}" aria-pressed="false">
+              {{- city -}}
+            </button>
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+    </div>
+
+    <div class="boom-loc__grid">
+      {%- comment -%} Left: scrollable list of location cards {%- endcomment -%}
+      <div class="boom-loc__list" data-list>
+        {%- for l in locs -%}
+          {%- liquid
+            assign wd = l.hours_weekday.value
+            assign we = l.hours_weekend.value
+            assign logo_url = ''
+            if l.logo.value != blank
+              assign logo_url = l.logo.value | image_url: width: 120
+            elsif brand_logo_url != blank
+              assign logo_url = brand_logo_url
+            endif
+          -%}
+          <button
+            type="button"
+            class="boom-loc__card"
+            data-id="{{ l.system.handle }}"
+            data-city="{{ l.city.value | escape }}"
+            aria-pressed="false"
+          >
+            <div class="boom-loc__card-head">
+              <span class="boom-loc__logo">
+                {%- if logo_url != blank -%}
+                  <img src="{{ logo_url }}" alt="" loading="lazy" width="46" height="46">
+                {%- else -%}
+                  <span class="boom-loc__badge"><span class="boom-loc__badge-b">boom</span><span class="boom-loc__badge-c">COFFEE</span></span>
+                {%- endif -%}
+              </span>
+              <span class="boom-loc__card-titles">
+                <span class="boom-loc__card-name">{{ l.name.value }}</span>
+                <span class="boom-loc__card-sub">
+                  {%- if l.type.value != blank -%}<span class="boom-loc__tag">{{ l.type.value }}</span>{%- endif -%}
+                  <span class="boom-loc__status" data-status></span>
+                </span>
+              </span>
+            </div>
+
+            {%- if l.address.value != blank -%}
+              <span class="boom-loc__addr"><span class="boom-loc__pin" aria-hidden="true">◦</span>{{ l.address.value }}</span>
+            {%- endif -%}
+
+            <span class="boom-loc__foot">
+              <span class="boom-loc__col">
+                <span class="boom-loc__label">{{ 'boom.locations.hours' | t }}</span>
+                <span class="boom-loc__hours">
+                  {%- if wd == we and wd != blank -%}
+                    {{ 'boom.locations.every_day' | t }} {{ wd }}
+                  {%- else -%}
+                    {{ 'boom.locations.weekdays' | t }} {% if wd != blank %}{{ wd }}{% else %}{{ 'boom.locations.closed' | t }}{% endif %}<br>
+                    {{ 'boom.locations.weekend' | t }} {% if we != blank %}{{ we }}{% else %}{{ 'boom.locations.closed' | t }}{% endif %}
+                  {%- endif -%}
+                </span>
+              </span>
+              {%- if l.phone.value != blank -%}
+                <span class="boom-loc__col">
+                  <span class="boom-loc__label">{{ 'boom.locations.phone' | t }}</span>
+                  <span class="boom-loc__phone">{{ l.phone.value }}</span>
+                </span>
+              {%- endif -%}
+            </span>
+          </button>
+        {%- endfor -%}
+
+        {%- if locs == blank and request.design_mode -%}
+          <div class="boom-loc__empty">{{ 'boom.locations.empty_html' | t }}</div>
+        {%- endif -%}
+      </div>
+
+      {%- comment -%} Right: map + floating info card {%- endcomment -%}
+      <div class="boom-loc__map-wrap">
+        <div id="{{ map_id }}" class="boom-loc__map" data-map>
+          {%- unless s.maps_api_key != blank -%}
+            <div class="boom-loc__map-note">{{ 'boom.locations.missing_api_key' | t }}</div>
+          {%- endunless -%}
+        </div>
+        <div class="boom-loc__info" data-info hidden></div>
+      </div>
+    </div>
+  </div>
+
+  {%- comment -%}
+    Strings for custom.locations-map.js. `__TIME__` is a sentinel the script
+    swaps for the formatted time, so translations keep their own word order.
+  {%- endcomment -%}
+  <script type="application/json" data-locations-i18n>
+    {
+      "open": {{ 'boom.locations.open_now' | t | json }},
+      "closed": {{ 'boom.locations.closed_now' | t | json }},
+      "closesAt": {{ 'boom.locations.closes_at' | t: time: '__TIME__' | json }},
+      "opensAt": {{ 'boom.locations.opens_at' | t: time: '__TIME__' | json }},
+      "everyDay": {{ 'boom.locations.every_day' | t | json }},
+      "weekdays": {{ 'boom.locations.weekdays' | t | json }},
+      "weekend": {{ 'boom.locations.weekend' | t | json }},
+      "dayOff": {{ 'boom.locations.closed' | t | json }},
+      "close": {{ 'boom.locations.close' | t | json }},
+      "call": {{ 'boom.phone.call' | t | json }},
+      "mapError": {{ 'boom.locations.map_error' | t | json }}
+    }
+  </script>
+
+  <script type="application/json" data-locations-data>
+    [
+      {%- for l in locs -%}
+        {%- liquid
+          assign logo_url = ''
+          if l.logo.value != blank
+            assign logo_url = l.logo.value | image_url: width: 120
+          endif
+        -%}
+        {
+          "id": {{ l.system.handle | json }},
+          "name": {{ l.name.value | json }},
+          "type": {{ l.type.value | json }},
+          "city": {{ l.city.value | json }},
+          "address": {{ l.address.value | json }},
+          "phone": {{ l.phone.value | json }},
+          "lat": {{ l.lat.value | default: 0 }},
+          "lng": {{ l.lng.value | default: 0 }},
+          "hoursWeekday": {{ l.hours_weekday.value | json }},
+          "hoursWeekend": {{ l.hours_weekend.value | json }},
+          "logo": {{ logo_url | json }}
+        }{%- unless forloop.last -%},{%- endunless -%}
+      {%- endfor -%}
+    ]
+  </script>
+</div>
+{%- endpaginate -%}
+{%- endif -%}
+
+<script src="{{ 'custom.locations-map.js' | asset_url }}" defer></script>
+
+{% stylesheet %}
+  .boom-loc {
+    --surface-2: #fbf7ee;
+    --white: #ffffff;
+    --text-2: #5e5346;
+    --muted: #9a8e7c;
+    --tag: #a8743f;
+    --open: #2f9e52;
+    --line: rgba(21, 17, 13, 0.07);
+
+    background: var(--surface, #f3ecdd);
+    color: var(--ink, #15110d);
+    padding: 56px 0;
+    font-family: 'Archivo', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    /* The section is a grid item of the theme page-grid; without this its
+       default min-width:auto lets the map's intrinsic width force horizontal
+       overflow on mobile. */
+    min-width: 0;
+  }
+
+  .boom-loc__inner {
+    width: 100%;
+    max-width: calc(var(--page-width, 1340px) + var(--root-buffer, 48px) * 2);
+    margin-inline: auto;
+    padding-inline: var(--root-buffer, 48px);
+  }
+
+  /* ---- Header ---- */
+  .boom-loc__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
+  }
+
+  .boom-loc__head-titles {
+    min-width: 0;
+  }
+
+  /* ---- City filter (segmented) ---- */
+  .boom-loc__filter {
+    display: inline-flex;
+    flex-wrap: wrap;
+    padding: 5px;
+    background: var(--white);
+    border: 1px solid rgba(21, 17, 13, 0.08);
+    border-radius: 999px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  }
+
+  .boom-loc__pill {
+    border: none;
+    cursor: pointer;
+    font-family: 'Archivo', sans-serif;
+    font-weight: 600;
+    font-size: 13.5px;
+    padding: 9px 18px;
+    border-radius: 999px;
+    background: transparent;
+    color: #6e6256;
+    transition: background 0.18s ease, color 0.18s ease;
+  }
+
+  .boom-loc__pill.is-active {
+    font-weight: 700;
+    background: var(--ink, #15110d);
+    color: var(--surface, #f3ecdd);
+  }
+
+  /* ---- Grid ---- */
+  .boom-loc__grid {
+    display: grid;
+    grid-template-columns: 466px 1fr;
+    gap: 20px;
+  }
+
+  /* ---- List ---- */
+  .boom-loc__list {
+    height: 552px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-right: 6px;
+  }
+
+  .boom-loc__list::-webkit-scrollbar {
+    width: 8px;
+  }
+  .boom-loc__list::-webkit-scrollbar-thumb {
+    background: rgba(140, 120, 95, 0.35);
+    border-radius: 8px;
+  }
+  .boom-loc__list::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .boom-loc__card {
+    display: block;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 14px;
+    padding: 16px 18px;
+    background: var(--surface-2);
+    border: 1.5px solid var(--line);
+    transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    font-family: 'Archivo', sans-serif;
+  }
+
+  .boom-loc__card.is-selected {
+    background: var(--white);
+    border-color: var(--accent, #ff4e16);
+    box-shadow: 0 12px 28px rgba(255, 78, 22, 0.14);
+  }
+
+  .boom-loc__card-head {
+    display: flex;
+    gap: 13px;
+    align-items: center;
+  }
+
+  .boom-loc__logo {
+    flex: none;
+    width: 46px;
+    height: 46px;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--white);
+    color: var(--ink, #15110d);
+    border: 1px solid var(--line);
+  }
+
+  .boom-loc__logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .boom-loc__badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .boom-loc__badge-b {
+    font-family: 'Archivo Expanded', 'Archivo', sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    line-height: 1;
+  }
+  .boom-loc__badge-c {
+    font-weight: 600;
+    font-size: 7px;
+    letter-spacing: 0.24em;
+    opacity: 0.65;
+    margin-top: 2px;
+  }
+
+  .boom-loc__card-titles {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .boom-loc__card-name {
+    display: block;
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: -0.01em;
+    color: var(--ink, #15110d);
+  }
+
+  .boom-loc__card-sub {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 5px;
+    flex-wrap: wrap;
+  }
+
+  .boom-loc__tag {
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--tag);
+    background: color-mix(in srgb, var(--accent, #ff4e16) 12%, transparent);
+    padding: 3px 8px;
+    border-radius: 5px;
+  }
+
+  .boom-loc__status {
+    font-weight: 600;
+    font-size: 12px;
+  }
+  .boom-loc__status[data-open='true'] {
+    color: var(--open);
+  }
+  .boom-loc__status[data-open='false'] {
+    color: var(--muted);
+  }
+
+  .boom-loc__addr {
+    display: flex;
+    gap: 8px;
+    margin-top: 13px;
+    color: var(--text-2);
+    font-weight: 500;
+    font-size: 13.5px;
+    line-height: 1.35;
+  }
+  .boom-loc__pin {
+    color: var(--accent, #ff4e16);
+  }
+
+  .boom-loc__foot {
+    display: flex;
+    gap: 16px;
+    margin-top: 11px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+
+  .boom-loc__col:first-child {
+    flex: 1;
+  }
+
+  .boom-loc__label {
+    display: block;
+    font-weight: 700;
+    font-size: 9.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 3px;
+  }
+
+  .boom-loc__hours,
+  .boom-loc__phone {
+    font-weight: 600;
+    font-size: 12.5px;
+    color: #3a332a;
+    line-height: 1.4;
+  }
+
+  .boom-loc__empty {
+    padding: 24px;
+    border-radius: 14px;
+    background: var(--surface-2);
+    border: 1.5px dashed var(--line);
+    color: var(--text-2);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ---- Map ---- */
+  .boom-loc__map-wrap {
+    position: relative;
+    height: 552px;
+    overflow: hidden;
+    border-radius: 18px;
+    background: #e4dac6;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+
+  .boom-loc__map {
+    position: absolute;
+    inset: 0;
+  }
+
+  .boom-loc__map-note {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    max-width: 70%;
+    font-weight: 600;
+    font-size: 13px;
+    color: #6e6256;
+  }
+
+  .boom-loc__info {
+    position: absolute;
+    left: 18px;
+    bottom: 18px;
+    width: 300px;
+    max-width: calc(100% - 36px);
+    background: var(--white);
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
+    border: 1px solid rgba(21, 17, 13, 0.06);
+    z-index: 2;
+  }
+
+  .boom-loc__info-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    cursor: pointer;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--ink, #15110d) 8%, transparent);
+    color: var(--ink, #15110d);
+  }
+  .boom-loc__info-close:hover {
+    background: color-mix(in srgb, var(--ink, #15110d) 16%, transparent);
+  }
+  .boom-loc__info-close:focus-visible {
+    outline: 2px solid var(--ink, #15110d);
+    outline-offset: 2px;
+  }
+
+  .boom-loc__info-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding-right: 24px;
+  }
+
+  .boom-loc__info-logo {
+    width: 38px;
+    height: 38px;
+    flex: none;
+    border-radius: 9px;
+    overflow: hidden;
+    background: var(--white);
+    color: var(--ink, #15110d);
+    border: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .boom-loc__info-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .boom-loc__info-logo .boom-loc__badge-b {
+    font-size: 11px;
+  }
+
+  .boom-loc__info-titles {
+    display: flex;
+    align-items: center;
+    flex-flow: row wrap;
+    gap: 5px;
+  }
+
+  .boom-loc__info-name {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--ink, #15110d);
+    line-height: 1.1;
+  }
+  .boom-loc__info-type {
+    font-weight: 600;
+    font-size: 11px;
+    color: var(--tag);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .boom-loc__info-addr {
+    font-weight: 500;
+    font-size: 13px;
+    color: var(--text-2);
+    display: flex;
+    gap: 7px;
+    margin-bottom: 8px;
+  }
+  .boom-loc__info-hours {
+    font-weight: 600;
+    font-size: 12.5px;
+    color: #3a332a;
+    line-height: 1.45;
+    margin-bottom: 14px;
+  }
+  .boom-loc__info-status {
+    font-weight: 600;
+  }
+  .boom-loc__info-status[data-open='true'] {
+    color: var(--open);
+  }
+  .boom-loc__info-status[data-open='false'] {
+    color: var(--muted);
+  }
+
+  .boom-loc__call {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+    background: var(--call-bg, var(--accent, #ff4e16));
+    color: var(--call-text, var(--ink, #15110d));
+    border: var(--call-bw, 0) solid var(--call-bd, transparent);
+    font-weight: 600;
+    font-size: 14px;
+    padding: 0 18px;
+    min-height: var(--row-md, 40px);
+    border-radius: var(--radius-btn, var(--radius-md, 9px));
+  }
+  .boom-loc__call:hover {
+    filter: brightness(1.05);
+  }
+
+  /* ---- Focus (keyboard) ---- */
+  .boom-loc__card:focus-visible,
+  .boom-loc__pill:focus-visible,
+  .boom-loc__call:focus-visible {
+    outline: 3px solid var(--ink, #15110d);
+    outline-offset: 2px;
+  }
+
+  /* ---- Responsive ---- */
+  @media (max-width: 900px) {
+    .boom-loc {
+      padding: 40px 0;
+    }
+    .boom-loc__head {
+      align-items: flex-start;
+    }
+    .boom-loc__filter {
+      max-width: 100%;
+      overflow-x: auto;
+      flex-wrap: nowrap;
+    }
+    .boom-loc__grid {
+      grid-template-columns: 1fr;
+    }
+    .boom-loc__map-wrap {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      height: 340px;
+      order: -1;
+      transition: top 0.2s ease;
+      margin-inline: calc(var(--root-buffer, 16px) * -1);
+      border-radius: 0;
+    }
+    html[data-boom-scrolldir='up'] .boom-loc__map-wrap {
+      top: var(--header-height, 0px);
+    }
+    .boom-loc__list {
+      height: auto;
+      max-height: none;
+      overflow-y: visible;
+      padding-right: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .boom-loc__card,
+    .boom-loc__pill {
+      transition: none;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "BOOM Локации — карта",
+  "tag": "section",
+  "settings": [
+    { "type": "header", "content": "Карта" },
+    { "type": "text", "id": "maps_api_key", "label": "Google Maps API ключ" },
+    { "type": "range", "id": "focus_zoom", "label": "Зум при избор", "min": 12, "max": 18, "step": 1, "default": 15 },
+    { "type": "range", "id": "overview_zoom", "label": "Начален зум", "min": 5, "max": 13, "step": 1, "default": 11 },
+    { "type": "textarea", "id": "map_style_json", "label": "Google Maps style JSON (по избор)" },
+    { "type": "header", "content": "Цветове" },
+    { "type": "color", "id": "accent", "label": "Акцент", "default": "#FF4E16" },
+    { "type": "color", "id": "ink", "label": "Тъмно", "default": "#15110D" },
+    { "type": "color", "id": "surface", "label": "Фон секция", "default": "#F3ECDD" },
+    { "type": "header", "content": "Лого" },
+    { "type": "image_picker", "id": "brand_logo", "label": "Лого бадж (по избор)" },
+    { "type": "header", "content": "Бутон „Обади се“" },
+    { "type": "color", "id": "call_bg", "label": "Цвят на фон", "default": "#FF4E16" },
+    { "type": "color", "id": "call_text", "label": "Цвят на текст", "default": "#15110D" },
+    { "type": "checkbox", "id": "call_border", "label": "Бордър", "default": false },
+    { "type": "color", "id": "call_border_color", "label": "Цвят на бордър", "default": "#15110D", "visible_if": "{{ section.settings.call_border }}" }
+  ],
+  "blocks": [{ "type": "_section-title" }],
+  "presets": [
+    {
+      "name": "BOOM Локации — карта",
+      "blocks": [
+        {
+          "id": "title",
+          "type": "_section-title",
+          "static": true,
+          "settings": { "text": "Къде може да ни откриеш?" },
+          "blocks": [
+            { "type": "theme-text", "settings": { "text": "Намери своя boom" } }
+          ]
+        }
+      ]
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "footer", "custom.overlays", "custom.drawers"]
+  }
+}
+{% endschema %}

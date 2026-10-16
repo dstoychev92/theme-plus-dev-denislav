@@ -1,0 +1,28 @@
+{% liquid
+  assign set_color_scheme = set_color_scheme | default: _settings.set_color_scheme | default: true, allow_false: true
+
+  if set_color_scheme
+    assign color_scheme = color_scheme | default: _settings.color_scheme
+    assign background = background | default: _settings.background
+    assign background_custom = background_custom | default: _settings.background_custom
+    assign background_blur = background_blur | default: _settings.background_blur
+  endif
+%}
+
+{% if set_color_scheme %}
+  text-content
+  {% if color_scheme %}
+    vars-{{ color_scheme }}
+  {% endif %}
+  {% case background %}
+    {% when 'canvas' %}
+      bg-canvas
+    {% when 'tint' %}
+      bg-content-mix-5
+    {% when 'transparent' %}
+      bg-transparent
+  {% endcase %}
+  {% if background == 'custom' and background_blur == true %}
+    backdrop-blur-md
+  {% endif %}
+{% endif %}

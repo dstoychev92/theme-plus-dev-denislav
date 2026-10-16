@@ -1,0 +1,318 @@
+{% doc %}
+  Product card for products that do not have siblings.
+
+  The idea here is that when product cards are first rendered to the page (and if there is no collection filter that would select a product variant)
+  then the card is in "unselected variant mode". That means we render the _product_ price, _product_ media,
+  etc. Once the user clicks a swatch, then the card is in "selected variant mode". that means we render
+  the price, media, etc for _that variant_
+{% enddoc %}
+
+{% liquid
+  assign selected_variant = product.selected_variant
+  assign stripped_title = product.title | strip_html
+
+  #
+  # Variant swatches
+  #
+
+  assign swatch_limit = settings.card_swatch_limit | default: 5
+  assign swatch_size = 'xs'
+
+  # Product option which can be used to generate swatches
+  assign swatch_option = null
+
+  # Loop through product options and their values to find a "swatch option"
+  for option in product.options_with_values
+    if option.values.first.swatch != null
+      assign swatch_option = option
+      break
+    endif
+  endfor
+
+  # Array that will hold variants that can be swapped in for the current variant on this card. Initialized with the selected variant
+  assign swappable_variants = product.selected_or_first_available_variant | sort
+
+  # Array that will hold swatch values to render swatches for on this card. Initialized with the selected variant's value
+  assign visible_swatch_values = swatch_option.selected_value | sort
+
+  # If there is a selected swatch it will have already been added to the visible swatch values array and so we need to subtract one from the remaining swatch limit
+  if swatch_option.selected_value
+    assign remaining_swatch_limit = swatch_limit | minus: 1
+  else
+    assign remaining_swatch_limit = swatch_limit
+  endif
+
+  assign unselected_swatch_values = swatch_option.values | where: 'selected', false
+
+  # Built an array of swatch values to render swatches for
+  for value in unselected_swatch_values limit: remaining_swatch_limit
+    # Wrap value in an array
+    assign new_visible_swatch_values = value | sort
+    # Concat it with existing array of visible swatch values
+    assign visible_swatch_values = visible_swatch_values | concat: new_visible_swatch_values
+  endfor
+
+  # Add other variants that can be swapped in for the current variant on this card to the swappable_variants
+  for value in visible_swatch_values
+    if product.selected_or_first_available_variant.id == value.variant.id
+      continue
+    endif
+
+    # Using `| sort` and `| concat` is a tricky technique to allow us to build up an array of variants
+    # that can be swapped in for the current variant on this card.
+    assign new_swappable_variants = value.variant | sort
+    assign swappable_variants = swappable_variants | concat: new_swappable_variants
+  endfor
+
+  assign total_swatches = swatch_option.values.size
+  assign swatch_option_name = swatch_option.name | escape_once | handleize
+%}
+
+{% if swappable_variants.size > 1 %}
+  {% capture swappable_variants_attribute %}
+    x-show="!hasSelectedVariant"
+  {% endcapture %}
+{% endif %}
+
+{% comment %} Some very basic JSON  that lets us render the right url and stuff. We will probably end up refactoring the product card to get rid of the need for this {% endcomment %}
+{%- capture product_json -%}
+  {%- render 'product-json', product: product, variants: swappable_variants -%}
+{%- endcapture -%}
+
+{% capture title %}
+  {% comment %} Title is dynamic only when metafield cardslot title is enabled {% endcomment %}
+  <span {% if settings.enable_metafield_cardslot_title %}{{ swappable_variants_attribute }}{% endif %}>
+    {% render 'card-product-lg-title', title: stripped_title, product: product, variant: null %}
+  </span>
+{% endcapture %}
+
+{% capture price %}
+  {% comment %} Price for the "main" card product {% endcomment %}
+  <span {{ swappable_variants_attribute }}>
+    {% comment %} Note: Using "Free" instead of $0 only makes sense for gift with purchase and sample products. Not intended for full cards in a collection {% endcomment %}
+    {% render 'card-product-lg-price', product: product %}
+  </span>
+{% endcapture %}
+
+{% capture media %}
+  {% render 'card-product-lg-media',
+    product: product,
+    initial_image_loading: image_loading,
+    initial_image_fetchpriority: image_fetchpriority,
+    attributes: "
+      x-show='!hasSelectedVariant'
+    ",
+    image_widths: image_widths,
+    image_sizes: image_sizes
+  %}
+
+  {% comment %}
+   This snippet renders the featured media for all of the variants, and shows the media for the selected variant when
+   the user clicks a swatch, or one of the variants is related to a collection filter.
+  {% endcomment %}
+  {% render 'card-product-lg-variant-media',
+    product: product,
+    variants: swappable_variants,
+    selected_variant: selected_variant,
+    attributes: "
+      x-cloak
+      x-show='hasSelectedVariant'
+    ",
+    image_widths: image_widths,
+    image_sizes: image_sizes
+  %}
+{% endcapture %}
+
+{% capture quick_actions %}
+  {%- render 'card-product-lg-quick-actions-wrapper', product: product -%}
+{% endcapture %}
+
+{% capture badges %}
+  {% comment %} The badge for the "main" card product {% endcomment %}
+  <div x-show="
+    {% if swappable_variants.size > 1 %}
+      !hasSelectedVariant && !$productCard.isActive
+    {% else %}
+      !$productCard.isActive
+    {% endif %}
+    "
+  >
+    {% render 'card-product-lg-media-badges', product: product %}
+  </div>
+{% endcapture %}
+
+{% capture link_attributes %}
+  :href="productCardUrl"
+{% endcapture %}
+
+{% for value in visible_swatch_values %}
+  {% liquid
+    assign swatch_index = forloop.index0
+    assign swatch_value = value
+    assign swatch_variant = value.variant
+
+    # Check if this variant is in swappable_variants (available variants)
+    assign variant_is_swappable = false
+    for variant in swappable_variants
+      if variant.id == swatch_variant.id
+        assign variant_is_swappable = true
+        break
+      endif
+    endfor
+  %}
+
+  {% if variant_is_swappable and swappable_variants.size > 1 %}
+    {% capture price %}
+      {{ price }}
+      {% comment %} Prices for "swappable" variants {% endcomment %}
+      <template x-if="variantId == {{ swatch_variant.id }}">
+        {% comment %}
+          Need the extra <span> because the wrapping element is a <template> and it requires
+          just 1 child element to function but 'card-price' snippet renders 2 siblings (price and compare-price) when on sale
+        {% endcomment %}
+        <span>
+          {% render 'card-product-lg-price', product: product, variant: swatch_variant %}
+        </span>
+      </template>
+    {% endcapture %}
+
+    {% if settings.enable_metafield_cardslot_title %}
+      {% capture title %}
+        {{ title }}
+        {% comment %} Support variant metafields for title cardslot {% endcomment %}
+        <template x-if="variantId == {{ swatch_variant.id }}">
+          <span>
+            {% render 'card-product-lg-title', title: stripped_title, product: product, variant: swatch_variant %}
+          </span>
+        </template>
+      {% endcapture %}
+    {% endif %}
+
+    {% capture badges %}
+      {{ badges }}
+      {% comment %} Badges for "swappable" variants {% endcomment %}
+      <template x-if="variantId == {{ swatch_variant.id }}">
+        {%- render 'card-product-lg-media-badges', product: product, variant: swatch_variant -%}
+      </template>
+    {% endcapture %}
+  {% endif %}
+
+  {% if settings.enable_card_variant_swatches and total_swatches > 1 %}
+    {% capture swatches %}
+      {{ swatches }}
+      <div
+        class="
+          group/swatch-radio-button relative flex overflow-clip
+          hover:brightness-75 focus-within:brightness-75
+        "
+        x-id="['swatch', 'swatch-input']"
+        x-data="
+          {
+            get selected() {
+              {% if swatch_variant != null %}
+                return variantId == {{ swatch_variant.id }}
+              {% else %}
+                return false
+              {% endif %}
+            }
+          }
+        "
+      >
+        {% comment %} Render a variant link as a fallback in case JS hasn't loaded. Once it loads, prevent the link from navigating {% endcomment %}
+        <a
+          @click.prevent.stop=""
+          class="peer absolute inset-0 z-40 opacity-0"
+          :hidden="true"
+          href="{{ swatch_variant.url }}"
+          aria-label="{{ swatch_variant.title }}"
+        >
+        </a>
+
+        <input
+          type="radio"
+          name="options[{{ swatch_option_name }}]"
+          value="{{ swatch_variant.id }}"
+          class="peer sr-only absolute inset-0 z-0"
+          :id="$id('swatch-input')"
+          x-model.number.fill="variantId"
+          {% if swatch_variant.id == product.selected_variant.id %}
+            checked
+          {% endif %}
+        >
+        <label
+          :for="$id('swatch-input')"
+          class="hit-area-[4px] md:hit-area-[2px] {% if swatch_variant.available %}cursor-pointer{% else %}cursor-not-allowed{% endif %}"
+          title="{{ value.name }} {% if swatch_variant.available == false %} - {{ 'product.unavailable' | t }}{% endif %}"
+        >
+          <span class="sr-only">
+            {{ value.name }}
+            {% if swatch_variant.available == false %}
+              - {{ 'product.unavailable' | t }}
+            {% endif %}
+          </span>
+
+          {% capture swatch_attributes %}
+            :data-selected="selected"
+            role="presentation"
+            aria-hidden="true"
+            data-preload-url="{{ swatch_variant.url }}"
+          {% endcapture %}
+
+          {% render 'swatch',
+            custom_size: settings.card_swatch_custom_size,
+            image: swatch_value.swatch.image,
+            color: swatch_value.swatch.color,
+            available: swatch_variant.available,
+            attributes: swatch_attributes
+          %}
+        </label>
+
+        {% comment %} Button to display over top of swatch once swatch is selected to allow de-selecting {% endcomment %}
+        <button
+          x-show="selected"
+          title="{{ 'product.accessibility.deselect_option' | t: name: value.name }}"
+          class="
+            absolute inset-0 z-10 cursor-pointer
+            flex flex-center rounded-full
+            p-r3 text-r3 text-black/50 opacity-0 outline-none transition-opacity
+            hit-area-[4px] hover:opacity-100
+            md:hit-area-[2px]
+          "
+          tabindex="-1"
+          {% comment %} If option is already selected, clicking again unselects it {% endcomment %}
+          @click.stop.prevent="clearVariant"
+        ></button>
+      </div>
+    {% endcapture %}
+  {% endif %}
+{% endfor %}
+
+{% if settings.enable_card_variant_swatches and total_swatches > 1 %}
+  {% assign swatches_attributes = '' %}
+{% endif %}
+
+{% capture attributes %}
+  x-data="productCardVariantData({{ product.id }}, {{ selected_variant.id | default: 'null' }})"
+
+  {{ attributes }}
+{% endcapture %}
+
+{% render 'card-product-lg-layout',
+  url: product.url,
+  product: product,
+  product_json: product_json,
+  link_attributes: link_attributes,
+  title: title,
+  price: price,
+  media: media,
+  badges: badges,
+  swatches: swatches,
+  total_swatches: total_swatches,
+  swatches_attributes: swatches_attributes,
+  quick_actions: quick_actions,
+  class: class,
+  attributes: attributes,
+  placeholder: placeholder,
+  appearance: appearance,
+  aspect_ratio: aspect_ratio
+%}

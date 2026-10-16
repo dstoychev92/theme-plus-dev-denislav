@@ -1,0 +1,26 @@
+{%- assign rounding_radius = rounding_radius | default: _settings.rounding_radius | default: 'custom' -%}
+{%- assign rounding_radius_custom = rounding_radius_custom | default: _settings.rounding_radius_custom | default: 0 -%}
+{%- if rounding_radius -%}
+  {%- case rounding_radius -%}
+    {%- when 'none' -%}
+      --custom-radius: var(--radius-none);
+    {%- when 'xs' -%}
+      --custom-radius: var(--radius-sm);
+    {%- when 'sm' -%}
+      --custom-radius: var(--radius-sm);
+    {%- when 'md' -%}
+      --custom-radius: var(--radius-md);
+    {%- when 'lg' -%}
+      --custom-radius: var(--radius-lg);
+    {%- when 'custom' -%}
+      --custom-radius:
+      {{- rounding_radius_custom -}}
+      px;
+  {%- endcase -%}
+  {% unless vars == false %}
+    --layout-radius: var(--custom-radius);
+  {% endunless %}
+  {% unless apply == false %}
+    border-radius: var(--custom-radius);
+  {% endunless %}
+{%- endif -%}

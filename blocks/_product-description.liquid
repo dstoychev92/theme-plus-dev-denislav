@@ -1,0 +1,254 @@
+<!-- blocks/_product-description.liquid -->
+
+{% liquid
+  assign product = closest.product
+
+  assign enable_placeholder = false
+  if settings.placeholder_mode or request.design_mode or request.visual_preview_mode
+    assign enable_placeholder = true
+  endif
+
+  if product == blank and enable_placeholder
+    assign description = 'product.placeholder.product_description' | t
+  else
+    assign description = product.description | strip
+  endif
+%}
+{%- if description contains '[[doza_' -%}
+  {%- capture description -%}
+    {%- render 'replace-dose-placeholders', text: description -%}
+  {%- endcapture -%}
+{%- endif -%}
+{% liquid
+
+  assign limit_width = block.settings.limit_width
+  assign max_width = block.settings.max_width
+%}
+
+{% capture style %}
+  {% if limit_width %}
+    {% render 'style-max-width', max_width: max_width %}
+  {% endif %}
+
+  {% if block.settings.set_color and block.settings.color == 'custom' %}
+    --color-custom-text: {{ block.settings.color_custom }};
+  {% endif %}
+{% endcapture %}
+
+{% capture class %}
+  {% if block.settings.set_color %}
+    text-{{ block.settings.color | default: 'content' }}
+  {% else %}
+    text-default
+  {% endif %}
+{% endcapture %}
+
+{% if description.size > 0 %}
+  {% capture description_class %}
+    prose type-resize-all-{{ block.settings.richtext_size }}
+  {% endcapture %}
+
+  {% capture content %}
+    {% if block.settings.enable_truncate %}
+      {% comment %} Truncated description needs a wrapping container with specific classes in order to work {% endcomment %}
+      {% assign truncated_description_class = description_class %}
+      {% assign description_class = 'overflow-clip ease-in-out will-change-[height]' %}
+      {% capture description_attributes %}
+        x-data="
+          {
+            isExpanded: false,
+            get showReadMoreButton() {
+              return this.needsTruncation && !this.isExpanded
+            },
+            get needsTruncation() {
+              return $overflow.detector
+            }
+          }
+        "
+        x-overflow
+        x-transition-height="isExpanded"
+      {% endcapture %}
+
+      {% capture description_html %}
+        <div
+          class="line-clamp-[--truncate-lines] {{ truncated_description_class }}"
+          style="--truncate-lines: {{ block.settings.truncate_lines }}"
+          :style="{ '--truncate-lines': isExpanded ? 'none' : {{ block.settings.truncate_lines }} }"
+        >
+          {{ description }}
+
+          {% comment %} This is a hidden element that is used to detect if the description has been truncated {% endcomment %}
+          <div class="w-full h-px" x-overflow:detector aria-hidden="true"></div>
+        </div>
+
+        {% assign read_more = 'product.read_more' | t %}
+        {% capture read_more_attributes %}
+          :class="
+            {
+              'opacity-100': showReadMoreButton,
+              'invisible opacity-0': !showReadMoreButton
+            }
+          "
+          @click.prevent.stop="isExpanded=true; $el.remove();"
+          aria-label="{{ 'other.accessibility.read_more' | t: title: product.title }}"
+        {% endcapture %}
+        {% render 'core-link',
+          text: read_more,
+          tag: 'button',
+          type_preset: 'p',
+          type_resize: block.settings.richtext_size,
+          appearance: 'line',
+          class: 'mt-r5 invisible opacity-0 transition-opacity duration-100',
+          attributes: read_more_attributes
+        %}
+      {% endcapture %}
+    {% else %}
+      {% capture description_html %}
+        {{ description }}
+      {% endcapture %}
+    {% endif %}
+
+    <div class="{{ description_class }}" {{ description_attributes }}>
+      {{ description_html }}
+    </div>
+  {% endcapture %}
+{% endif %}
+
+{% render 'product-block',
+  _settings: block.settings,
+  content: content,
+  class: class,
+  style: style,
+  attributes: block.shopify_attributes
+%}
+
+{% schema %}
+{
+	"name": "Product description",
+	"tag": null,
+	"settings": [
+		{
+			"type": "select",
+			"id": "richtext_size",
+			"label": "Text size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			]
+		},
+		{
+			"type": "checkbox",
+			"id": "limit_width",
+			"label": "Limit width",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "max_width",
+			"label": "Limit",
+			"unit": "px",
+			"min": 100,
+			"max": 1100,
+			"step": 10,
+			"default": 500,
+			"visible_if": "{{ block.settings.limit_width == true }}"
+		},
+		{
+			"type": "header",
+			"content": "Color"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_color",
+			"label": "Set color",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "color",
+			"label": "Color",
+			"default": "content",
+			"visible_if": "{{ block.settings.set_color == true  }}",
+			"options": [
+				{
+					"value": "content",
+					"label": "Text default"
+				},
+				{
+					"value": "muted",
+					"label": "Text muted"
+				},
+				{
+					"value": "primary",
+					"label": "Primary accent"
+				},
+				{
+					"value": "secondary",
+					"label": "Link accent"
+				},
+				{
+					"value": "sale",
+					"label": "Sale"
+				},
+				{
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "color",
+			"id": "color_custom",
+			"alpha": true,
+			"default": "#000000",
+			"visible_if": "{{ block.settings.color == 'custom' and block.settings.set_color == true  }}",
+			"label": "Custom color"
+		},
+		{
+			"type": "header",
+			"content": "Limit lines",
+			"info": "Truncate the product description and show a link to 'read more'"
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_truncate",
+			"label": "Enable read more limit",
+			"default": true
+		},
+		{
+			"type": "range",
+			"id": "truncate_lines",
+			"min": 1,
+			"max": 20,
+			"step": 1,
+			"label": "Line limit",
+			"default": 5,
+			"visible_if": "{{ block.settings.enable_truncate }}"
+		},
+	],
+	"presets": [
+		{
+			"name": "Product description"
+		}
+	]
+}
+{% endschema %}

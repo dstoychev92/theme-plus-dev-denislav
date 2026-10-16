@@ -1,0 +1,350 @@
+{% comment %}
+  Accepts either a line_item or a product, never both
+
+  {% render 'cart-line-item-product', line_item: line_item %}
+  {% render 'cart-line-item-product', product: product %}
+{% endcomment %}
+
+{% liquid
+  assign aspect_ratio = settings.card_aspect_ratio
+  assign quantity_size = quantity_size | default: 'md'
+  assign show_quantity_selector = show_quantity_selector | default: false
+  assign show_quantity_text = false
+
+  if line_item != null
+    # Line item
+    assign url = line_item.url
+    assign title = line_item.product.title | strip_html
+    assign image = line_item.image
+    assign variant = line_item.variant
+    assign selling_plan_allocation = line_item.selling_plan_allocation
+    assign quantity = line_item.quantity
+
+    # Auto-added gifts (_boom_gift) are managed by the tier-bar sync engine —
+    # hide the quantity stepper so the customer can't change their quantity
+    for prop in line_item.properties
+      if prop.first == '_boom_gift' and prop.last == 'true'
+        assign show_quantity_selector = false
+      endif
+    endfor
+    assign price = line_item.final_line_price
+    assign compare_at_price = selling_plan_allocation.compare_at_price | default: variant.compare_at_price
+
+    # Show the automatic discount or compare at price, but not both
+    # Automatic discount gets priority
+    if line_item.original_line_price > price
+      assign comparison_price = line_item.original_line_price
+    elsif compare_at_price > line_item.original_price
+      assign comparison_price = quantity | times: compare_at_price
+    endif
+
+    # For subscription items the comparison should reflect the full one-time
+    # price (variant.price × qty) so the customer sees total savings vs buying
+    # without a subscription. Pick the highest reference: variant.price or
+    # variant.compare_at_price (if set).
+    if selling_plan_allocation
+      assign one_time_ref = variant.price
+      if variant.compare_at_price and variant.compare_at_price > one_time_ref
+        assign one_time_ref = variant.compare_at_price
+      endif
+      assign one_time_total = quantity | times: one_time_ref
+      if one_time_total > comparison_price
+        assign comparison_price = one_time_total
+      endif
+    endif
+
+    # Store-wide discount (visual only): Shopify applies the real order-level
+    # discount at cart level, not per line, so mirror it here on top of
+    # final_line_price. See specs/2026-07-09-storewide-discount.
+    assign sw_pct = settings.storewide_discount_pct | default: 0
+    if settings.storewide_discount_enabled and sw_pct > 0 and price > 0
+      assign sw_original = price
+      assign sw_off = price | times: sw_pct | divided_by: 100
+      assign price = price | minus: sw_off
+      if comparison_price == blank or comparison_price < sw_original
+        assign comparison_price = sw_original
+      endif
+    endif
+  elsif product != null
+    # Product
+    assign url = product.url
+    assign image = product.selected_variant.featured_image | default: product.featured_image
+    assign title = product.title | strip_html
+    assign variant = product.selected_variant
+    assign selling_plan_allocation = product.selected_selling_plan_allocation
+    assign price = selling_plan_allocation.price | default: variant.price
+    assign compare_at_price = selling_plan_allocation.compare_at_price | default: variant.compare_at_price
+
+    if compare_at_price > price
+      assign comparison_price = compare_at_price
+    endif
+
+    # Preorder metafield
+    if settings.metafield_preorder != blank
+      assign preorder_metafield_namespace = settings.metafield_preorder | split: '.' | first
+      assign preorder_metafield_key = settings.metafield_preorder | split: '.' | last
+      assign preorder_metafield = product.metafields[preorder_metafield_namespace][preorder_metafield_key]
+    endif
+
+    # Line item property metafield
+    if settings.metafield_line_item_property != blank
+      assign lip_namespace = settings.metafield_line_item_property | split: '.' | first
+      assign lip_key = settings.metafield_line_item_property | split: '.' | last
+      assign lip_value = product.metafields[lip_namespace][lip_key].value
+    endif
+  endif
+
+  assign image_width = 90 | at_most: image.width
+
+  if settings.product_card_image_fit == 'uneven'
+    assign aspect_ratio = image.aspect_ratio
+  endif
+
+  assign cover = false
+  case settings.product_card_image_fit
+    when 'scale'
+      assign cover = false
+    when 'crop'
+      assign cover = true
+    when 'uneven'
+      assign cover = true
+  endcase
+
+  # Show quantity text when selector is disabled
+  if show_quantity_selector == false
+    assign show_quantity_text = true
+  endif
+  # Hide both if no quantity
+  if quantity == null
+    assign show_quantity_selector = false
+    assign show_quantity_text = false
+  endif
+%}
+
+{% comment %} Quantity selector {% endcomment %}
+{% if show_quantity_selector %}
+  {% assign quantity_label = 'cart.quantity_label' | t %}
+  {% assign quantity_input_id = 'cart-item-quantity-' | append: index %}
+
+  {% capture quantity_stepper_input_attributes %}
+    x-model.fill.number.lazy="$cartItem.quantity"
+    required
+
+    {% # data-morph-sync causes morphing to update the `value` property of this element as well as the attribute so the UI is updated to reflect the actual cart quantity %}
+    data-morph-sync
+
+    {% # When morphing does change the input value propery, this event lets us know so we can sync that back %}
+    @morph:sync="$cartItem.quantity = parseInt($event.detail.value)"
+
+    @blur="
+      if ($el.checkValidity()) {
+        $cartItem.submitAsync()
+      }
+    "
+    x-ref="quantityInput"
+    @focus="$el.select()"
+    key="{{ quantity }}"
+  {% endcapture %}
+
+  {% capture quantity_stepper_attributes %}
+    {% comment %} Wrap the submitAsync function so that if user hits stockout, the picker animates to the amount of items actually added to cart {% endcomment %}
+    @increment.debounce.500ms="
+      if ($refs.quantityInput.checkValidity()) {
+        $animatedPicker.updatePosition(async () => {
+          await $cartItem.submitAsync()
+        })
+      }
+    "
+    @decrement.debounce.500ms="
+      if ($refs.quantityInput.checkValidity()) {
+        $animatedPicker.updatePosition(async () => {
+          await $cartItem.submitAsync()
+        })
+      }
+    "
+    :class="{
+      'pointer-events-none opacity-50 cursor-not-allowed': $cartItem.state === 'pending' && !$cartItem.isRemoving
+    }"
+  {% endcapture %}
+
+  {% capture quantity_input %}
+    {% render 'product-quantity-stepper',
+      id: quantity_input_id,
+      label: quantity_label,
+      name: 'updates[]',
+      size: quantity_size,
+      value: quantity,
+      stepper_input_attributes: quantity_stepper_input_attributes,
+      stepper_attributes: quantity_stepper_attributes,
+      min: 1
+    %}
+  {% endcapture %}
+{% endif %}
+
+{% comment %} Image {% endcomment %}
+{% capture image %}
+  <div
+    class="relative overflow-hidden rounded-sm"
+    {{ attributes }}
+  >
+    {%- render 'core-image',
+      image: image,
+      alt_default: title,
+      width: image_width,
+      aspect_ratio: aspect_ratio,
+      cover: cover,
+      preload: preload_image
+    -%}
+
+    {% render 'image-loading-placeholder',
+      cover: cover,
+      image: image,
+      wrapper_class: 'absolute inset-0 z-0 size-full'
+    %}
+  </div>
+{% endcapture %}
+
+{% comment %} Title and options {% endcomment %}
+{% capture title_and_options %}
+  <div class="flex flex-1 flex-col gap-y-r3">
+    <a href="{{ url }}" class="flex-0 line-clamp-2 type-p text-r4 font-bold mb-r3">{{ title }}</a>
+    {% if variant.options[0] != 'Default Title' %}
+      <p class="flex flex-row flex-wrap gap-x-r2 text-r2 text-content-mix-70">
+        {% for option in variant.options -%}
+          <span>{{ option }}</span>
+          {% unless forloop.last %}/{% endunless %}
+        {%- endfor %}
+      </p>
+    {% endif %}
+
+    {% if line_item != null %}
+      {% comment %} Line item properties, including files {% endcomment %}
+      {%- assign prop_count = line_item.properties | size -%}
+      {%- if prop_count != 0 -%}
+        {%- for p in line_item.properties -%}
+          {%- assign property_first_char = p.first | slice: 0 -%}
+          {%- if p.last != blank and property_first_char != '_' -%}
+            <p class="flex flex-wrap gap-x-r2 text-r2">
+              <span class="font-bold">{{ p.first }}: </span>
+              <span>
+                {%- if p.last contains '/uploads/' -%}
+                  <a href="{{ p.last }}">{{ p.last | split: '/' | last }}</a>
+                {%- else -%}
+                  {{ p.last }}
+                {%- endif -%}
+              </span>
+            </p>
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+
+    {% elsif product != null %}
+      {% comment %} Force metafield-based line item properties to show in pop-up notification {% endcomment %}
+
+      {% comment %} Product line item property {% endcomment %}
+      {%- if lip_value != blank -%}
+        <p class="flex flex-wrap gap-x-r2 text-r2">
+          <span class="font-bold">{{ 'product.line_item_property.label' | t }}: </span>
+          <span>{{ lip_value }}</span>
+        </p>
+      {%- endif -%}
+
+      {% comment %} Product preorder label {% endcomment %}
+      {%- if preorder_metafield.value == true -%}
+        <p class="flex flex-wrap gap-x-r2 text-r2">
+          <span class="font-bold">{{ 'product.pre_order.cart_line_label' | t }}: </span>
+          <span>{{ 'product.pre_order.cart_line_value' | t }}</span>
+        </p>
+      {% endif %}
+    {% endif %}
+
+    {% comment %} Subscription plan name {% endcomment %}
+    {% if selling_plan_allocation %}
+      <p class="text-r2 text-content-mix-70">{{ selling_plan_allocation.selling_plan.name }}</p>
+    {% endif %}
+
+    {% if show_quantity_text %}
+      <p class="text-r2 text-content-mix-70">{{ 'cart.quantity_label' | t }}: {{ quantity }}</p>
+    {% endif %}
+  </div>
+{% endcapture %}
+
+{% comment %} Price {% endcomment %}
+{% capture price %}
+  <div class="flex flex-col items-start justify-between gap-y-r2">
+    <div class="w-max flex flex-row flex-wrap justify-end gap-x-r4 text-end text-r4">
+      {% if comparison_price %}
+        <span class="line-through text-muted">
+          <span class="sr-only">{{ 'product.accessibility.item_on_sale_compare_at' | t }}</span>
+          {% render 'money', price: comparison_price, show_currency: false %}
+        </span>
+      {% endif %}
+      <span class="font-bold">
+        {% render 'money', price: price, hide_trailing_zeros: false %}
+      </span>
+    </div>
+    {% render 'price-per-unit', variant: variant, class: 'text-r2 text-muted' %}
+
+    {%- if line_item and comparison_price and comparison_price > price -%}
+      {%- assign total_savings = comparison_price | minus: price -%}
+      {%- capture savings_text -%}{{ 'cart.savings' | t }} {{ total_savings | money }}{%- endcapture -%}
+      {% render 'badge',
+        content: savings_text,
+        bg_color: '#FF6900',
+        text_color: '#fff',
+        size: 'sm'
+      %}
+    {%- endif -%}
+  </div>
+{% endcapture %}
+
+<div class="grid gap-x-r5 gap-y-r6 grid-cols-[80px_1fr_minmax(0,min-content)] md:grid-cols-[90px_1fr_minmax(0,min-content)] grid-rows-[1fr_minmax(0,min-content)]">
+  <a
+    href="{{ url }}"
+    class="col-start-1 row-span-2 flex flex-col self-start shrink-0 aspect-[--aspect-ratio] [&_img]:bg-[--photo-background]"
+    style="--aspect-ratio: {{ aspect_ratio }}"
+  >
+    {{ image }}
+  </a>
+
+  <div class="col-start-2 row-start-1">
+    {{ title_and_options }}
+
+    {{ price }}
+  </div>
+
+  {% if line_item %}
+    <div class="col-start-2 col-span-2 row-start-2 self-end flex flex-row items-center justify-between gap-x-r6">
+      {% if show_quantity_selector %}
+        {{ quantity_input }}
+      {% endif %}
+
+      <div class="flex flex-row items-center gap-x-r6 justify-end">
+        <span x-cloak x-show="$cartItem.state === 'pending' && !$cartItem.isRemoving">
+          {% render 'spinner' %}
+        </span>
+
+        {% assign remove_label = 'cart.remove' | t %}
+        {% assign remove_aria_label = remove_label | append: ' ' | append: title %}
+
+        {% capture remove_button_attributes %}
+          :role="'button'"
+          @click.stop.prevent="$cartItem.remove()"
+          title="{{ remove_label }} {{ title }}"
+          aria-label="{{ remove_label }}"
+        {% endcapture %}
+
+        <a
+          href="{{ line_item.url_to_remove }}"
+          {{ remove_button_attributes }}
+          class="
+            btn-appearance rounded-form-field flex flex-center w-[--btn-height] h-[--btn-height] vars-btn-outline vars-btn-md vars-btn-content
+            hover:!vars-stain-error
+          "
+        >
+          {% render 'core-icon', icon: 'fill-trash', size: 'sm' %}
+        </a>
+      </div>
+    </div>
+  {% endif %}
+</div>

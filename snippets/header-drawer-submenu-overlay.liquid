@@ -1,0 +1,59 @@
+{% assign back_aria_label = 'header.accessibility.menu_back' | t %}
+{% assign menu_id = link.title | downcase | strip_html | escape | handleize %}
+
+<div
+  x-data="
+    {
+      close() {
+        activeSubmenuOverlay = null
+      },
+      get isVisible() {
+        return visibleSubmenuOverlay == '{{ menu_id }}'
+      },
+      get isActive() {
+        return activeSubmenuOverlay == '{{ menu_id }}'
+      }
+    }
+  "
+
+  id="header-drawer-menu-submenu-overlay-{{ menu_id }}"
+  aria-labelledby="header-drawer-link-{{ menu_id }}"
+  role="group"
+  class="flex flex-col z-20 bg-canvas h-full absolute inset-0"
+  :inert="!(isActive || isVisible)"
+  x-trap="isVisible"
+  x-show="isActive"
+  x-transition:enter="animate-in slide-in-from-right animate-duration-300"
+  x-transition:leave="animate-out slide-out-to-right animate-duration-500"
+  {{ attributes }}
+>
+  <div class="bg-canvas flex-row-center border-b border-b-line min-h-control">
+    <div
+      class="flex-row-center size-full"
+      x-transition:enter="animate-in animate-duration-400 slide-in-from-right fade-in"
+      x-transition:leave="animate-out animate-duration-500 slide-out-to-right fade-out"
+      x-show="isActive || isVisible"
+    >
+      <button
+        class="h-full px-[calc(var(--drawer-padding)*1.5)] text-r3 transition-transform hover:opacity-70 rtl:rotate-180"
+        aria-label="{{ back_aria_label }}"
+        @click="close"
+      >
+        {% render 'core-icon', icon: 'stroke-chevron-left' %}
+      </button>
+      <a
+        href="{{ link.url }}"
+        class="h-full flex items-center py-r4 text-start type-kicker font-bold"
+      >
+        {{ link.title | strip_html }}
+      </a>
+    </div>
+  </div>
+
+  <div
+    class="scroll-area-y"
+    x-show="isActive || isVisible"
+  >
+    {{ content }}
+  </div>
+</div>

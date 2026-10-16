@@ -1,0 +1,337 @@
+<!-- blocks/_product-option-siblings.liquid -->
+
+{% liquid
+  assign product = closest.product
+
+  if product == blank and request.visual_preview_mode
+    assign product = collections.all.products.first
+  endif
+
+  assign history = section.settings.enable_history
+  assign swatch_size = block.settings.swatch_option_sizing
+  assign default_label = 'product.sibling_label' | t
+
+  if block.settings.set_custom_list
+    assign siblings = block.settings.custom_list
+  elsif settings.metafield_siblings != blank
+    assign siblings_metafield_namespace = settings.metafield_siblings | split: '.' | first
+    assign siblings_metafield_key = settings.metafield_siblings | split: '.' | last
+    assign siblings_metafield = product.metafields[siblings_metafield_namespace][siblings_metafield_key]
+
+    assign siblings = null | sort
+    assign sibling_label = default_label
+
+    case siblings_metafield.type
+      when 'single_line_text_field'
+        # Metafield is set to a collection handle. This is the legacy way to define siblings and not the preferable way.
+        assign collection_handle = siblings_metafield.value
+        assign siblings_collection = collections[collection_handle]
+        assign siblings = siblings_collection.products
+      when 'metaobject_reference'
+        # Metafield is set to a metaobject which has a field that is a list of products
+        assign siblings_metaobject = siblings_metafield.value
+
+        assign product_list_field_name = settings.metafield_siblings_inner_name | default: 'products'
+
+        assign siblings = siblings_metaobject[product_list_field_name].value
+    endcase
+  endif
+
+  # Allow custom label even if custom sibings are not set
+  if block.settings.set_custom_label
+    assign sibling_label = block.settings.custom_label
+  else
+    assign sibling_label = default_label
+  endif
+
+  # Some metafield types return a size property, others return a count property so we need to handle both
+  assign siblings_size_count = siblings.size | default: siblings.count
+%}
+
+{% if siblings_size_count > 0 %}
+  {% capture content %}
+    <div
+      style="{% render 'props-style-gap', _settings: block.settings, apply: false %}"
+      class="{{ class }} flex flex-col gap-y-r10"
+    >
+      {% liquid
+        assign selected_sibling_label = null
+        assign match_product = siblings | where: "id", product.id
+
+        if match_product != blank
+          assign selected_sibling_label = product.title
+
+          if settings.metafield_sibling_label != blank and settings.enable_sibling_custom_swatch == true
+            assign sibling_label_metafield_namespace = settings.metafield_sibling_label | split: '.' | first
+            assign sibling_label_metafield_key = settings.metafield_sibling_label | split: '.' | last
+            assign sibling_label_metafield = product.metafields[sibling_label_metafield_namespace][sibling_label_metafield_key]
+            if sibling_label_metafield != blank
+              assign selected_sibling_label = sibling_label_metafield.value
+            endif
+          elsif product.metafields.shopify['color-pattern']
+            assign swatch_metafield = product.metafields.shopify['color-pattern'].value | first
+            assign selected_sibling_label = swatch_metafield.label.value
+          endif
+        endif
+
+        # Helpers for the sibling label liquid logic
+        if sibling_label == ''
+          assign sibling_label = null
+        endif
+        assign starting_opacity = 'opacity-0'
+        if sibling_label and selected_sibling_label
+          assign starting_opacity class = 'opacity-100'
+        endif
+      %}
+
+      {% comment %} Use div with role group instead of fieldset to avoid fieldset styling difficulties {% endcomment %}
+      <div
+        role="group"
+        @mouseleave="hoverValue = null"
+        x-data="
+          {
+            hoverValue: null,
+          }
+        "
+        aria-label="{{ sibling_label | default: default_label | default: 'Color' | escape }}"
+      >
+        <div class="mb-r5 flex-row-center justify-content-align gap-x-r5 type-p type-resize-sm">
+          {% if sibling_label %}
+            <span class="font-bold">{{ sibling_label }}</span>
+          {% endif %}
+          {%# This line has to dissapear if there is no current or over value %}
+          <span
+            role="presentation"
+            class="block w-px h-[12px] border-r border-line-bold {{ starting_opacity }}"
+            :class="hoverValue || '{{ selected_sibling_label | escape }}' != '' ? 'opacity-100' : 'opacity-0'"
+          ></span>
+          {%# We are escaping the " symbol to &quot; which requires using x-html here to render correctly %}
+          <span x-html="hoverValue || '{{ selected_sibling_label | escape }}'">
+            {{ selected_sibling_label }}
+          </span>
+        </div>
+        <ul
+          class="group w-full flex flex-row justify-content-align flex-wrap gap-layout"
+          x-roving-tab
+          x-roving-tab:list
+          role="toolbar"
+          aria-label="{{ sibling_label | escape }}"
+        >
+          {% for sibling in siblings %}
+            {% liquid
+              assign swatch_index = forloop.index0
+
+              assign selected = false
+
+              if sibling.id == product.id
+                assign selected = true
+              endif
+
+              assign swatch_label = sibling.title
+
+              if settings.metafield_sibling_label != blank and settings.enable_sibling_custom_swatch == true
+                assign sibling_label_metafield_namespace = settings.metafield_sibling_label | split: '.' | first
+                assign sibling_label_metafield_key = settings.metafield_sibling_label | split: '.' | last
+                assign sibling_label_metafield = sibling.metafields[sibling_label_metafield_namespace][sibling_label_metafield_key]
+                if sibling_label_metafield != blank
+                  assign swatch_label = sibling_label_metafield.value
+                endif
+              elsif sibling.metafields.shopify['color-pattern']
+                assign swatch_metafield = sibling.metafields.shopify['color-pattern'].value | first
+                assign swatch_label = swatch_metafield.label.value
+              endif
+
+              # Build a Sibling URL that keeps the current options selected, despite sibling products having different IDs
+              # The sibling option position (1,2,3,n) and value string (xs,9.5,etc) must match
+              assign sibling_url = sibling.url
+              assign sibling_option_values = ''
+
+              for product_option in product.options_with_values
+                # Requirement: In order to make this code fast, we need the order of option values to match between product and sibling
+                if sibling.options_with_values[forloop.index0].name == product_option.name
+                  # find the sibling "xs" option in the same array position
+                  assign sibling_matched_value = sibling.options_with_values[forloop.index0].values | where: 'name', product_option.selected_value | first
+                  # be paranoid about empty values, there are a lot of filters
+                  if sibling_matched_value != '' and sibling_matched_value != empty and sibling_matched_value != blank and sibling_matched_value != null
+                    assign sibling_option_values = sibling_option_values | append: sibling_matched_value.id | append: ','
+                  endif
+                endif
+              endfor
+
+              if sibling_option_values != ''
+                # remove the last comma
+                assign sibling_option_values = sibling_option_values | replace_last: ',', ''
+                # append the option values to the root URL
+                assign sibling_url = sibling_url | append: '?option_values=' | append: sibling_option_values
+              endif
+            %}
+
+            {% capture option_item_attributes %}
+              @mouseenter="if (!$media.matches.touch) { hoverValue = '{{ swatch_label | escape }}' }"
+            {% endcapture %}
+
+            {% capture swatch_attributes %}
+              {% comment %} Unfortunatly we can't use the fancy sibling update if the sibling and product have different template suffixes since section rendering API will return sibling with the wrong template {% endcomment %}
+              {% if sibling.template_suffix == product.template_suffix %}
+                data-preload-url="{{- sibling_url -}}"
+                @focus.once="
+                  $sectionApi.load({baseUrl: '{{- sibling_url -}}', abortPending: false, waitForIdle: false, priority: 'high'});
+                "
+                @pointerenter.once="
+                  $sectionApi.load({baseUrl: '{{- sibling_url -}}', abortPending: false, waitForIdle: false, priority: 'high'});
+                "
+
+                @click="$dispatch('theme:sibling:change', { siblingId: {{ sibling.id }}, productId: {{ product.id }}, url: `{{ sibling_url }}`, handle: `{{ sibling.handle }}` })"
+
+                {% comment %} Disable default navigation behaviour of link and instead update the product form via section rendering API when clicked {% endcomment %}
+                {% if history %}
+                  x-section-api:link.replace
+                {% else %}
+                  x-section-api:link.nopush
+                {% endif %}
+              {% endif %}
+
+              {% if selected %}
+                aria-current="true"
+              {% endif %}
+            {% endcapture %}
+
+            <li role="none" class="relative group/swatch-link flex-none has-[:focus]:z-10" {{ option_item_attributes }}>
+              {% render 'product-sibling-swatch',
+                size: swatch_size,
+                sibling: sibling,
+                selected: selected,
+                tag: 'link',
+                url: sibling_url,
+                attributes: swatch_attributes
+              %}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  {% endcapture %}
+{% endif %}
+
+{% capture attributes %}
+  x-data
+  x-preloader
+  key="{{ product.id }}-{{ product.selected_or_first_available_variant.id }}"
+  {{ attributes }}
+{% endcapture %}
+
+{% render 'product-block', _settings: block.settings, content: content, attributes: attributes, class: 'w-full' %}
+
+{% schema %}
+{
+	"name": "Form siblings",
+	"tag": null,
+	"settings": [
+		{
+			"type": "header",
+			"content": "Sibling swatch options",
+		},
+		{
+			"type": "select",
+			"id": "swatch_option_sizing",
+			"label": "Size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "gap",
+			"label": "Gap",
+			"default": "sm",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "gap_custom",
+			"label": "Custom gap",
+			"default": 10,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ block.settings.gap == 'custom'  }}"
+		},
+		{
+			"type": "header",
+			"content": "Custom label"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_custom_label",
+			"label": "Set custom label",
+			"default": false
+		},
+		{
+			"type": "text",
+			"id": "custom_label",
+			"label": "Custom label",
+			"visible_if": "{{ block.settings.set_custom_label == true }}"
+		},
+		{
+			"type": "header",
+			"content": "Custom sibling list",
+			"info": "Defaults to the [product siblings metafield](/editor?context=theme&category=Metafields) in global settings"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_custom_list",
+			"label": "Set custom sibling list",
+			"default": false
+		},
+		{
+			"type": "product_list",
+			"id": "custom_list",
+			"label": "Siblings",
+			"info": "Select the siblings to display"
+		}
+	],
+	"presets": [
+		{
+			"name": "Form siblings"
+		}
+	]
+}
+{% endschema %}

@@ -1,0 +1,223 @@
+{% comment %}
+  Usage:
+  {% render 'card-layout-lg',
+    url: url,
+    image: image,
+    title: "Title",
+    details: "Description",
+    image_overlay: "Tag name",
+    class: class,
+    loader: false
+  %}
+{% endcomment %}
+
+{% liquid
+  assign loader = loader | default: false
+  assign url = url | default: false
+  assign aspect_ratio = aspect_ratio | default: settings.card_aspect_ratio
+  assign title_tag = title_tag | default: 'div'
+  assign media_tag = media_tag | default: 'div'
+  assign title = title | default: false
+  assign details = details | default: false
+  assign aria_label = aria_label | default: title
+%}
+
+{% if loader %}
+  {% capture media %}
+    {% render 'spinner', class: 'absolute top-1/2 left-1/2 -mx-r4 -mt-r4 z-10' %}
+  {% endcapture %}
+  {% capture content %}
+    <span class="line-clamp-2 type-p opacity-0">
+      Loading...
+    </span>
+  {% endcapture %}
+{% endif %}
+
+{% if url != false %}
+  {% capture link_attributes %}
+    {{ link_attributes }}
+    href="{{ url }}"
+  {% endcapture %}
+  {% assign title_tag = 'a' %}
+  {% assign media_tag = 'a' %}
+{% endif %}
+
+<card-lg
+  role="article"
+  class="
+    rounded-[--card-lg-radius] bg-[--card-lg-bg-color,transparent] text-[color:--card-lg-text-color,var(--content)] p-[--card-lg-inner-padding]
+    ring-1 ring-[color:var(--card-lg-border-color,transparent)]
+    group/card font-family-body relative flex
+    flex-col overflow-hidden
+
+    keyboard-active:has-[:focus]:ring-focus-outline
+    keyboard-active:has-[:focus]:ring-2
+
+    {% comment %} Bottom out at really small half-width card on small phone {% endcomment %}
+    w-[--card-lg-width]
+    max-w-full
+
+    vars-card-lg
+    {% if appearance != blank %}
+      vars-card-lg-appearance-{{ appearance }}
+    {% endif %}
+
+    card-alt
+
+    {{ class }}
+  "
+  {{ attributes }}
+  style="{{ style }}"
+>
+  {% comment %} Media {% endcomment %}
+  <card-lg-media
+    class="
+      group/media relative z-20 flex flex-none rounded-[--card-lg-media-radius] flex-col overflow-hidden
+      {% if content == false %}h-full{% endif %}
+    "
+    style="aspect-ratio: {{ aspect_ratio }}"
+    {% if id != blank %}
+      id="{{ id }}-media"
+    {% endif %}
+    {{ media_wrapper_attributes }}
+  >
+    {% comment %} Wrap card media in a link {% endcomment %}
+    <{{ media_tag }}
+      class="relative size-full z-20 {{ media_class }} entrance-item entrance-image-scale"
+      tabindex="0"
+      {{ media_attributes }}
+      {% if media_tag == 'a' %}
+        {{ link_attributes }}
+        {% if aria_label %}
+          aria-label="{{ aria_label }}"
+        {% elsif id != blank %}
+          aria-labelledby="{{ id }}-content"
+        {% endif %}
+      {% endif %}
+    >
+      {% if media %}
+        {{ media }}
+      {% elsif image %}
+        {%- liquid
+          if image_sizes == blank
+            capture sizes
+              render 'image-grid-sizes'
+            endcapture
+          else
+            assign sizes = image_sizes
+          endif
+          if image_widths == blank
+            capture widths
+              render 'image-grid-widths'
+            endcapture
+          else
+            assign widths = image_widths
+          endif
+        -%}
+
+        {%- render 'core-image',
+          cover: true,
+          image: image,
+          class: 'size-full rounded-[--card-lg-media-radius]',
+          sizes: sizes,
+          widths: widths,
+          loading: image_loading,
+          fetchpriority: image_fetchpriority
+        -%}
+
+        {% if image_loading == 'lazy' %}
+          {% render 'image-loading-placeholder',
+            image: image,
+            wrapper_class: 'absolute inset-0 z-0 js:z-10',
+            class: image_class
+          %}
+        {% endif %}
+
+        {%- if image_overlay -%}
+          <div
+            class="
+              pointer-events-none absolute inset-0
+              z-30 flex flex-col justify-between
+              p-card-lg-media
+            "
+          >
+            <div class="flex-row-center">
+              <div class="flex-1">
+                {{ image_overlay }}
+              </div>
+            </div>
+          </div>
+        {%- endif -%}
+      {% elsif icon %}
+        <div class="flex size-full flex-none flex-center bg-content-mix-5">
+          {% render 'core-icon', icon: icon %}
+        </div>
+      {% else %}
+        {% comment %} Always show filler on 'lg' cards to avoid disrupting the layout consisitency {% endcomment %}
+        {% render 'image-filler', size_class: 'size-full' %}
+      {% endif %}
+    </{{ media_tag }}>
+
+    {% comment %} Media overlay goes _after_ media tag so that the media link is the first focusable element {% endcomment %}
+    {% if media_overlay %}
+      <card-lg-media-overlay
+        class="
+          pointer-events-none absolute inset-0
+          z-30 flex flex-col justify-between
+          p-card-lg-media
+        "
+        style="
+          --badge-bg-color: var(--badge-bg-color-card);
+          --badge-text-color: var(--badge-text-color-card);
+        "
+      >
+        {{ media_overlay }}
+      </card-lg-media-overlay>
+    {% endif %}
+  </card-lg-media>
+
+  {% comment %} Content {% endcomment %}
+  {% unless content == false %}
+    <card-lg-details
+      style="--card-lg-text-padding: max(calc(var(--text-buffer) - var(--layout-gutter-x)), 0px);"
+      class="relative z-10 flex flex-1 flex-col gap-y-card-lg-text p-r6 pt-0"
+      {% if id != blank %}
+        id="{{ id }}-content"
+      {% endif %}
+    >
+      {% if content != blank %}
+        {{ content }}
+      {% else %}
+        <div class="flex flex-col gap-y-r2 text-start">
+          {%- if title -%}
+            <{{ title_tag }}
+              {{ link_attributes }}
+              {% comment %} We don't want to expose this tag as a link to screen readers since we already have a link for this card {% endcomment %}
+              role="presentation"
+              aria-hidden="true"
+              tabindex="-1"
+              class="line-clamp-2 type-p"
+              {% if title_tag == 'a' %}
+                {% if aria_label %}
+                  aria-label="{{ aria_label }}"
+                {% elsif id != blank %}
+                  aria-labelledby="{{ id }}-content"
+                {% endif %}
+              {% endif %}
+            >
+              <strong class="font-bold">
+                {{ title | strip_html }}
+              </strong>
+            </{{ title_tag }}>
+          {%- endif -%}
+
+          {%- if details -%}
+            <div class="flex-1 flex flex-col type-p">
+              {{ details }}
+            </div>
+          {%- endif -%}
+        </div>
+      {% endif %}
+    </card-lg-details>
+  {% endunless %}
+</card-lg>

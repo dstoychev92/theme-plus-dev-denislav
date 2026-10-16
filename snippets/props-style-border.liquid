@@ -1,0 +1,14 @@
+{% liquid
+  assign border_width = border_width | default: _settings.border_width | default: 0
+  assign border_color = border_color | default: _settings.border_color | default: '#ffffff00'
+%}
+
+{% if border_width != blank %}
+  --border-width: {{ border_width }}px;
+  border-width: var(--border-width);
+{% endif %}
+
+{% if border_color != blank %}
+  --border-color: {{ border_color }};
+  border-color: var(--border-color);
+{% endif %}

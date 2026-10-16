@@ -1,0 +1,124 @@
+<!-- blocks/_form-radio-group.liquid -->
+
+{% liquid
+  assign label_handle = block.settings.label | handleize
+  assign id = label_handle | append: '-' | append: block.id
+  assign name = 'contact[' | append: label_handle | append: ']'
+
+  case block.settings.sizing
+    when 'sm'
+      assign size_class = 'vars-control-sm'
+    when 'md'
+      assign size_class = 'vars-control-md'
+    when 'lg'
+      assign size_class = 'vars-control-lg'
+  endcase
+%}
+
+{% capture blocks %}
+  {% content_for 'blocks' %}
+{% endcapture %}
+
+<div
+  class="
+    flex flex-col w-full
+    {{ size_class }}
+  "
+  style="{% render 'props-style-gap', _settings: block.settings %}"
+  x-data="
+    {
+      radioGroupName: 'contact[{{ block.id }}]'
+    }
+  "
+  {{ block.shopify_attributes }}
+>
+  {{ blocks }}
+</div>
+
+{% schema %}
+{
+	"name": "Radio group",
+	"tag": null,
+	"settings": [
+		{
+			"type": "select",
+			"id": "sizing",
+			"label": "Size",
+			"default": "md",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "gap",
+			"label": "Gap",
+			"default": "sm",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "gap_custom",
+			"label": "Custom gap",
+			"default": 0,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ block.settings.gap == 'custom'  }}"
+		},
+	],
+	"blocks": [
+		{
+			"type": "_form-radio"
+		}
+	],
+	"presets": [
+		{
+			"name": "Radio group",
+			"blocks": [
+				{
+					"type": "_form-radio",
+					"settings": {
+						"label": "Radio item 1"
+					}
+				},
+				{
+					"type": "_form-radio",
+					"settings": {
+						"label": "Radio item 2"
+					}
+				}
+			]
+		}
+	]
+}
+{% endschema %}

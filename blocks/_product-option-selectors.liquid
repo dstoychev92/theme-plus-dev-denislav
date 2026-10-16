@@ -1,0 +1,506 @@
+<!-- blocks/_product-option-selectors.liquid -->
+
+{% liquid
+  assign product = closest.product
+  assign input_type = block.settings.input_type
+
+  if product == blank and request.visual_preview_mode
+    assign product = collections.all.products.first
+  endif
+%}
+
+{% unless product.has_only_default_variant %}
+  {% capture content %}
+    <div
+      class="{{ class }} flex flex-col gap-y-r10"
+      {{ attributes }}
+    >
+      {% for option in product.options_with_values %}
+        {% liquid
+          # Use 'select' over 'options' for long inputs
+          assign longest_value = 0
+          for value in option.values
+            if value.size > longest_value
+              assign longest_value = value.size
+            endif
+          endfor
+
+          if input_type == 'auto' and longest_value > 16
+            assign input_type = 'select'
+          endif
+
+          assign is_swatch_option = false
+
+          if option.values.first.swatch != null
+            assign is_swatch_option = true
+          elsif settings.custom_swatch_names != blank
+            assign group_name_down = option.name | downcase | strip
+            assign custom_swatch_list = settings.custom_swatch_names | downcase | replace: ' ,', ',' | replace: ', ', ',' | split: ','
+            if custom_swatch_list contains group_name_down
+              assign is_swatch_option = true
+            endif
+          endif
+        %}
+
+        {% comment %} Use div with role group instead of fieldset to avoid fieldset styling difficulties {% endcomment %}
+        <div
+          role="group"
+          @mouseleave="hoverValue = null"
+          x-data="
+            {
+              hoverValue: null
+            }
+          "
+          aria-label="{{ option.name | escape }}"
+        >
+          <div class="
+            {% render 'props-class-type-preset', _settings: block.settings, settings_suffix: 'indicator' %}
+            mb-r5 flex-row-center justify-content-align gap-x-r5
+          ">
+            <span class="font-bold">{{ option.name }}</span>
+            <span role="presentation" class="block w-px h-[12px] border-r border-line-bold"></span>
+            {% comment %} We are escaping the " symbol to &quot; which requires using x-html here to render correctly {% endcomment %}
+            <span x-html="hoverValue || '{{ option.selected_value.name | escape }}'">
+              {{- option.selected_value.name -}}
+            </span>
+          </div>
+
+          {% if input_type == 'select' and is_swatch_option == false %}
+            {% capture select_class %}
+              {% render 'props-class-type-preset', _settings: block.settings, settings_suffix: 'select' %}
+              [--control-font-size:--font-size-calc]
+              [--input-font-size:--font-size-calc]
+            {% endcapture %}
+            {% render 'product-form-option-select', product: product, option: option, history: section.settings.enable_history, select_size: block.settings.variant_select_row_height, class: select_class %}
+          {% else %}
+            {% capture buttons_class %}{% render 'props-class-type-preset', _settings: block.settings, settings_suffix: 'button' %}{% endcapture %}
+            {% render 'product-form-option-buttons', product: product, option: option, is_swatch_option: is_swatch_option, history: section.settings.enable_history, swatch_size: block.settings.swatch_option_sizing, option_size: block.settings.variant_button_row_height, class: buttons_class %}
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% endcapture %}
+{% endunless %}
+
+{% render 'product-block',
+  _settings: block.settings,
+  content: content,
+  attributes: block.shopify_attributes,
+  class: 'w-full'
+%}
+
+{% schema %}
+{
+	"name": "Form options",
+	"tag": null,
+	"settings": [
+		{
+			"type": "header",
+			"content": "Option style"
+		},
+		{
+			"type": "select",
+			"id": "input_type",
+			"label": "Display as",
+			"default": "auto",
+			"info": "Auto will use a dropdown for long options and buttons for short options",
+			"options": [
+				{
+					"value": "auto",
+					"label": "Auto"
+				},
+				{
+					"value": "select",
+					"label": "Dropdown"
+				},
+				{
+					"value": "buttons",
+					"label": "Buttons"
+				}
+			],
+		},
+		{
+			"type": "header",
+			"content": "Swatch options"
+		},
+		{
+			"type": "select",
+			"id": "swatch_option_sizing",
+			"label": "Size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "gap_swatch",
+			"label": "Gap",
+			"default": "sm",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "gap_custom_swatch",
+			"label": "Custom gap",
+			"default": 0,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ block.settings.gap_swatch == 'custom'  }}"
+		},
+		{
+			"type": "header",
+			"content": "Button options",
+		},
+		{
+			"type": "select",
+			"id": "variant_button_row_height",
+			"label": "Button size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "gap_button",
+			"label": "Gap",
+			"default": "sm",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "gap_custom_button",
+			"label": "Custom gap",
+			"default": 0,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ block.settings.gap_button == 'custom'  }}"
+		},
+		{
+			"type": "select",
+			"id": "type_preset_button",
+			"label": "Text style",
+			"default": "btn",
+			"options": [
+				{
+					"value": "btn",
+					"label": "Button"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_font_button",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset_button == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size_button",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 4,
+			"visible_if": "{{ block.settings.type_preset_button == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase_button",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ block.settings.type_preset_button == 'custom' }}"
+		},
+		{
+			"type": "header",
+			"content": "Dropdown options",
+		},
+		{
+			"type": "select",
+			"id": "variant_select_row_height",
+			"label": "Dropdown size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_preset_select",
+			"label": "Text style",
+			"default": "p",
+			"options": [
+				{
+					"value": "p",
+					"label": "Paragraph"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_font_select",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset_select == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size_select",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 4,
+			"visible_if": "{{ block.settings.type_preset_select == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase_select",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ block.settings.type_preset_select == 'custom' }}"
+		},
+		{
+			"type": "header",
+			"content": "Variant indicator",
+		},
+		{
+			"type": "select",
+			"id": "type_preset_indicator",
+			"label": "Text style",
+			"default": "p",
+			"options": [
+				{
+					"value": "p",
+					"label": "Paragraph"
+				},
+				{
+					"value": "btn",
+					"label": "Button"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_resize_indicator",
+			"label": "Text size",
+			"default": "sm",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset_indicator != 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_font_indicator",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset_indicator == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size_indicator",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 4,
+			"visible_if": "{{ block.settings.type_preset_indicator == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase_indicator",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ block.settings.type_preset_indicator == 'custom' }}"
+		},
+	],
+	"presets": [
+		{
+			"name": "Form options"
+		}
+	]
+}
+{% endschema %}

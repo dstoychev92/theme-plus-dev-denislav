@@ -1,0 +1,164 @@
+{% liquid
+  assign icon_class = 'rtl:rotate-180'
+  assign set_pagination_style = set_pagination_style | default: _settings.set_pagination_style
+
+  # Default to global setting, can be overridden by parameter or section settings
+  assign overlay_controls_background_style = overlay_controls_background_style | default: settings.overlay_controls_background_style
+  assign pagination_style = pagination_style | default: settings.carousel_pagination_style
+
+  # Section-level override if set_pagination_style is enabled
+  if set_pagination_style
+    assign overlay_controls_background_style = _settings.overlay_controls_background_style
+    assign pagination_style = _settings.pagination_style
+  endif
+
+  case pagination_style
+    when 'dots'
+      assign icon_size = 'xs'
+    when 'lines'
+      assign icon_size = 'xs'
+    when 'counter'
+      assign icon_size = 'md'
+  endcase
+%}
+
+{% capture button_class %}
+  transition hover:opacity-50 relative vars-btn-md flex flex-center rounded-pill px-btn
+  max-md:hidden
+  {% if overlay_controls_background_style == 'bare' %}
+    hit-area [--hit-area-top:var(--btn-padding)] [--hit-area-bottom:var(--btn-padding)]
+    first:ps-0 first:[--hit-area-left:var(--btn-padding)]
+    last:pe-0 last:[--hit-area-right:var(--btn-padding)]
+  {% else %}
+    h-btn
+  {% endif %}
+{% endcapture %}
+
+{% capture prev_button %}
+  <button
+    aria-label="{{ 'other.accessibility.prev_slide' | t }}"
+    class="{{ button_class }}"
+    x-slideshow:prev
+  >
+    {% render 'core-icon', icon: 'stroke-chevron-left', class: icon_class, size: icon_size %}
+  </button>
+{% endcapture %}
+
+{% capture next_button %}
+  <button
+    aria-label="{{ 'other.accessibility.next_slide' | t }}"
+    class="{{ button_class }}"
+    x-slideshow:next
+  >
+    {% render 'core-icon', icon: 'stroke-chevron-right', class: icon_class, size: icon_size %}
+  </button>
+{% endcapture %}
+
+<div
+  class="flex relative items-center h-row-sm pointer-events-auto scale-100 origin-center transition gap-x-r7 entrance-item entrance-fade {{ class }}"
+  {% comment %} Disable custom cursor for this element {% endcomment %}
+  x-custom-cursor:snap-point
+  {% comment %} Prevent changing the slide when clicking on the controls {% endcomment %}
+  @click.stop
+  x-cloak
+  {{ attributes }}
+>
+  <div
+    class="
+      flex items-center gap-x-r3 text-stain relative z-10
+      max-md:px-r6
+
+      {% case overlay_controls_background_style %}
+        {% when 'blur' %}
+          frosted-glass border-highlight vars-stain-content
+          [text-shadow:_0_1px_0_rgb(0_0_0_/_8%)] rounded-pill
+          h-row-sm
+        {% when 'solid' %}
+          rounded-pill vars-stain-canvas bg-stain-contrast
+          h-row-sm
+        {% when 'bare' %}
+          bg-transparent vars-stain-content
+      {% endcase %}
+
+      {% case pagination_style %}
+        {% when 'dots' %}
+        {% when 'lines' %}
+        {% when 'counter' %}
+          text-r2
+      {% endcase %}
+    "
+  >
+    {{ prev_button }}
+
+    {% case pagination_style %}
+      {% when 'lines' %}
+        <template x-for="(_, index) in $slideshow.totalSlides" :key="index">
+          <button
+            class="relative rounded-sm w-r9 h-r1 hit-area-y-r5"
+            @click="$slideshow.currentSlideIndex = index"
+            :aria-label="index + 1"
+            :key="index"
+            x-data="
+              {
+                get wasLastSlide() {
+                  return $slideshow.lastSlideIndex == index;
+                },
+                get isCurrentSlide() {
+                  return $slideshow.currentSlideIndex == index;
+                },
+                get goingRight() {
+                  return $slideshow.lastSlideIndex < $slideshow.currentSlideIndex;
+                },
+                get goingLeft() {
+                  return $slideshow.lastSlideIndex > $slideshow.currentSlideIndex;
+                },
+              }
+            "
+          >
+            {% comment %} Active segment {% endcomment %}
+            <span
+              class="block h-full bg-stain scale-x-0 transition-none"
+              :class="
+                {
+                  '!scale-x-100': isCurrentSlide,
+                  'origin-right !transition !duration-200': wasLastSlide && goingRight,
+                  'origin-left !transition !duration-200': wasLastSlide && goingLeft,
+                  'origin-right !transition !scale-x-100 !duration-200': isCurrentSlide && goingLeft,
+                  'origin-left !transition !scale-x-100 !duration-200': isCurrentSlide && goingRight,
+                }
+              "
+            ></span>
+            {% comment %} Background {% endcomment %}
+            <span class="block size-full absolute top-0 left-0 bg-stain-mix-50 opacity-30"> </span>
+          </button>
+        </template>
+      {% when 'dots' %}
+        <template x-for="(_, index) in $slideshow.totalSlides">
+          <div
+            class="rounded-full size-r2 bg-stain opacity-40 transition-opacity duration-400"
+            :key="index"
+            :class="
+              {
+                '!opacity-100': $slideshow.currentSlideIndex == index,
+              }
+            "
+          ></div>
+        </template>
+      {% when 'counter' %}
+        {% comment %} Can hide this because the slides themselves are labelled as e.g. "1 of 2" {% endcomment %}
+        <div aria-hidden="true" class="flex items-baseline gap-x-r2">
+          <span class="font-family-body font-bold text-r2" x-text="$slideshow.currentSlideIndex + 1">
+            {{- initial_slide | default: 1 -}}
+          </span>
+          <span class="font-family-body italic text-stain/50">
+            {{- 'product.gallery.index_indicator_separator' | t -}}
+          </span>
+          <span class="font-family-body font-bold text-r2" x-text="$slideshow.totalSlides">
+            {{- total_slides | default: '…' -}}
+          </span>
+        </div>
+    {% endcase %}
+
+    {{ next_button }}
+  </div>
+</div>

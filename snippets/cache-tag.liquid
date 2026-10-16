@@ -1,0 +1,21 @@
+{% comment %}
+  Populate the JSON cache for a given resource.
+  resource {string} - cache resource name
+  key {string} - cache key (optional)
+  value {any} - value to populate cache with, will be JSON encoded
+
+  {% capture product_json %}{{ product | json }}{% endcapture %}
+  {% render 'cache-tag', resource: "products", key: 123, value: product_json %}
+{% endcomment %}
+
+<script
+  x-data
+  type="application/json"
+  {% if key %}
+    x-cache.{{ resource }}="{{ key }}"
+  {% else %}
+    x-cache.{{ resource }}
+  {% endif %}
+>
+  {{ value }}
+</script>

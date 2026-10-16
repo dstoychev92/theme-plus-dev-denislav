@@ -1,0 +1,140 @@
+{%- liquid
+  assign layout_desktop = layout_desktop | default: _settings.layout_desktop | default: 'grid'
+
+  #
+  # Desktop
+  #
+
+  assign columns_lg = columns_lg | default: _settings.columns_lg
+
+  #
+  # Tablet
+  #
+
+  # Tablet should just default to desktop if not set.
+  assign layout_tablet = layout_tablet | default: _settings.layout_tablet | default: layout_desktop
+
+  assign columns_md = columns_md | default: _settings.columns_md
+
+  #
+  # Mobile
+  #
+
+  # If desktop layout is grid we check the desktop-dependent mobile layout setting
+  assign layout_mobile = layout_mobile | default: _settings.layout_mobile | default: 'slider'
+
+  if layout_mobile == 'grid'
+    assign columns_sm = columns_sm | default: _settings.columns_sm_grid
+  else
+    assign columns_sm = columns_sm | default: _settings.columns_sm | default: settings.slider_columns_mobile
+  endif
+
+  if label == blank
+    assign label = 'other.accessibility.card_carousel' | t
+  endif
+
+  assign set_gap_tab_y = _settings.set_gap_tab_y
+  assign gap_tab_y = _settings.gap_tab_y
+  assign gap_custom_tab_y = _settings.gap_custom_tab_y
+
+  # Slider progress-bar
+  assign progress_bar_visibility = progress_bar_visibility | default: _settings.progress_bar_visibility | default: 'desktop'
+  assign show_progress_bar_mobile = false
+  assign show_progress_bar_desktop = false
+
+  if progress_bar_visibility == 'mobile' or progress_bar_visibility == 'both'
+    assign show_progress_bar_mobile = true
+  endif
+
+  if progress_bar_visibility == 'desktop' or progress_bar_visibility == 'both'
+    assign show_progress_bar_desktop = true
+  endif
+
+  if progress_bar_visibility == 'never'
+    assign show_progress_bar_mobile = false
+    assign show_progress_bar_desktop = false
+  endif
+%}
+
+{% comment %} Grid layout {% endcomment %}
+{% capture grid_layout_class %}
+  {% if footer == null %}
+    {% comment %} Check if progress-bar is enabled {% endcomment %}
+    {% if show_progress_bar_desktop == true and show_progress_bar_mobile == false %}
+      {% comment %} Grid with Desktop footer {% endcomment %}
+      vars-section-grid-layout-card-list-rows-extended-desktop
+    {% elsif show_progress_bar_desktop == false and show_progress_bar_mobile == true %}
+      {% comment %} Grid with Mobile footer {% endcomment %}
+      vars-section-grid-layout-card-list-rows-extended-mobile
+    {% elsif show_progress_bar_desktop == true and show_progress_bar_mobile == true %}
+      {% comment %} Grid with footer {% endcomment %}
+      vars-section-grid-layout-card-list-rows-extended
+    {% else %}
+      {% comment %} Grid without footer {% endcomment %}
+      vars-section-grid-layout-card-list-rows
+    {% endif %}
+  {% else %}
+    {% comment %} Grid with footer {% endcomment %}
+    vars-section-grid-layout-card-list-rows-extended
+  {% endif %}
+
+  vars-section-grid-layout-card-list-title-{{ _settings.title_placement }}
+{% endcapture %}
+
+{% capture section_card_list_elements %}
+  {% render 'core-section-card-list-elements',
+    _settings: _settings,
+    header: header,
+    list_items: list_items,
+    footer: footer,
+    layout_desktop: layout_desktop,
+    layout_tablet: layout_tablet,
+    layout_mobile: layout_mobile,
+    columns_lg: columns_lg,
+    columns_md: columns_md,
+    columns_sm: columns_sm,
+    progress_bar_visibility: progress_bar_visibility
+  %}
+{% endcapture %}
+
+{% capture class %}
+  {{ class }} grid-flow-col gap-y-layout
+
+  {% comment %} Ensure overflow buttons don't ... cause overflow {% endcomment %}
+  overflow-x-clip
+
+  {{ grid_layout_class }}
+{% endcapture %}
+
+{% capture style %}
+  {{ style }}
+  {% if set_gap_tab_y %}
+    {% render 'props-style-gap', gap: gap_tab_y, gap_custom: gap_custom_tab_y, vars: false, apply: false %}
+    --layout-gutter-y: var(--custom-gutter-y);
+  {% endif %}
+{% endcapture %}
+
+{% capture attributes %}
+  x-carousel
+  x-overflow.autoregister
+  aria-label="{{ label }}"
+  aria-live="off"
+  x-data="
+    {
+      sidePrevInView: false,
+      sideNextInView: false,
+      get overflowButtonPlacement() {
+        return (this.sidePrevInView && this.sideNextInView) ? 'side' : 'top'
+      }
+    }
+  "
+{% endcapture %}
+
+{% render 'core-section-wrapper',
+  _settings: _settings,
+  content: section_card_list_elements,
+  class: class,
+  attributes: attributes,
+  style: style,
+  content_align: content_align
+%}

@@ -1,0 +1,16 @@
+<button
+  class="absolute left-1/2 -translate-x-1/2 translate-y-1/2 !z-20 px-r10 py-r3 pointer-events-all {{ class }}"
+  aria-label="{{ 'other.accessibility.scroll_down' | t }}"
+  style="bottom: var(--bottom-buffer, calc(var(--section-setting-space)/2))"
+  {% comment %} Scroll down to the next section {% endcomment %}
+  @click.prevent.stop="
+    window.scroll({
+      top: $sectionEl.offsetTop + $sectionEl.clientHeight,
+      left: 0,
+      behavior: 'smooth'
+    })
+  "
+  {{ attributes }}
+>
+  {% render 'core-icon', icon: 'stroke-chevron-down', size: 'xl', class: 'animate-bounce pointer-events-none' %}
+</button>

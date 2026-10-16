@@ -1,0 +1,197 @@
+{% comment %}
+  Cart line item subscription toggle
+  Renders a "Switch to subscription" or "Switch to one-time" toggle for line items
+  whose product has selling plans. Always picks the plan with the biggest discount
+  and shows a badge with the discount %.
+
+  Uses a global JS function + simple inline x-data (no async in attributes).
+
+  Accepts:
+    - line_item {object} — the cart line item
+{% endcomment %}
+
+{% liquid
+  assign has_selling_plans = false
+  assign best_plan_id = ''
+  assign best_discount_pct = 0
+  assign is_subscribed = false
+
+  if line_item.selling_plan_allocation
+    assign is_subscribed = true
+  endif
+
+  if line_item.product.selling_plan_groups.size > 0
+    assign has_selling_plans = true
+
+    for group in line_item.product.selling_plan_groups
+      for plan in group.selling_plans
+        assign adj = plan.price_adjustments[0]
+        assign this_pct = 0
+
+        if adj.value_type == 'percentage'
+          assign this_pct = adj.value
+        elsif adj.value_type == 'fixed_amount' and line_item.variant.price > 0
+          assign this_pct = adj.value | times: 100 | divided_by: line_item.variant.price
+        endif
+
+        if this_pct > best_discount_pct
+          assign best_discount_pct = this_pct
+          assign best_plan_id = plan.id
+        endif
+      endfor
+    endfor
+
+    if best_plan_id == ''
+      assign best_plan_id = line_item.product.selling_plan_groups[0].selling_plans[0].id
+    endif
+  endif
+%}
+
+{% if has_selling_plans %}
+  {%- capture props_json -%}
+    {
+      {%- assign prop_count = 0 -%}
+      {%- for p in line_item.properties -%}
+        {%- assign first_char = p.first | slice: 0 -%}
+        {%- if p.last != blank and first_char != '_' -%}
+          {%- if prop_count > 0 -%},{%- endif -%}
+          {{ p.first | json }}: {{ p.last | json }}
+          {%- assign prop_count = prop_count | plus: 1 -%}
+        {%- endif -%}
+      {%- endfor -%}
+    }
+  {%- endcapture -%}
+
+  <style>
+    .boom-sub-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #d4d0cb;
+      border-radius: 6px;
+      background: transparent;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, opacity 0.2s;
+      font-family: var(--font-body, Jost, sans-serif);
+      -webkit-appearance: none;
+      appearance: none;
+      outline: none;
+    }
+    .boom-sub-toggle:hover {
+      border-color: #bbb;
+    }
+    .boom-sub-toggle[data-active='true'] {
+      border-color: #ff6900;
+      background: rgba(255, 105, 0, 0.04);
+    }
+    .boom-sub-toggle[data-active='true']:hover {
+      border-color: #e55e00;
+    }
+    .boom-sub-toggle[disabled] {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    /* Toggle track */
+    .boom-sub-track {
+      position: relative;
+      flex-shrink: 0;
+      width: 38px;
+      height: 22px;
+      border-radius: 11px;
+      background: #d4d0cb;
+      transition: background-color 0.25s ease;
+    }
+    .boom-sub-track[data-on='true'] {
+      background: #ff6900;
+    }
+
+    /* Toggle knob */
+    .boom-sub-knob {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .boom-sub-track[data-on='true'] .boom-sub-knob {
+      transform: translateX(16px);
+    }
+
+    /* Badge */
+    .boom-sub-badge {
+      display: inline-flex;
+      align-items: center;
+      font-weight: 700;
+      font-size: 11px;
+      line-height: 1;
+      padding: 4px 9px;
+      border-radius: 4px;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+      background: rgba(255, 105, 0, 0.08);
+      color: #ff6900;
+      transition: background 0.2s, color 0.2s;
+    }
+    .boom-sub-badge[data-on='true'] {
+      background: #ff6900;
+      color: #fff;
+    }
+
+    /* Spinner */
+    @keyframes boom-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    .boom-sub-spinner {
+      display: inline-flex;
+      animation: boom-spin 0.7s linear infinite;
+    }
+  </style>
+
+  <div
+    x-data="{ lineItemKey: {{ line_item.key | json | escape }}, variantId: {{ line_item.variant.id }}, quantity: {{ line_item.quantity }}, isSub: {{ is_subscribed }}, bestPlanId: {{ best_plan_id | json | escape }}, discPct: {{ best_discount_pct }}, curPlanId: {{ line_item.selling_plan_allocation.selling_plan.id | default: 'null' }}, props: {{ props_json | strip_newlines | escape }}, busy: false }"
+  >
+    <button
+      type="button"
+      class="boom-sub-toggle"
+      @click="window.__boomCartSubToggle($data)"
+      :disabled="busy"
+      :data-active="isSub"
+    >
+      {%- comment -%} Left side: toggle switch + label {%- endcomment -%}
+      <span style="display: flex; align-items: center; gap: 10px;">
+        <span class="boom-sub-track" :data-on="isSub">
+          <span class="boom-sub-knob"></span>
+        </span>
+
+        <span
+          style="font-weight: 600; font-size: 12.5px; line-height: 1.3; color: #3B2121;"
+          x-text='isSub ? {{ "boom.subscription_toggle.switch_to_onetime" | t | json }} : {{ "boom.subscription_toggle.switch_to_subscription" | t | json }}'
+        >
+          {% if is_subscribed %}{{ 'boom.subscription_toggle.switch_to_onetime' | t }}{% else %}{{ 'boom.subscription_toggle.switch_to_subscription' | t }}{% endif %}
+        </span>
+      </span>
+
+      {%- comment -%} Right side: discount badge (only when one-time) + loading spinner {%- endcomment -%}
+      <span style="display: flex; align-items: center; gap: 8px;">
+        {% if best_discount_pct > 0 %}
+          <span class="boom-sub-badge" x-show="!isSub" x-cloak> {{ 'boom.subscription_toggle.save' | t }} {{ best_discount_pct }}% </span>
+        {% endif %}
+
+        <span x-show="busy" x-cloak class="boom-sub-spinner">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="#FF6900" stroke-width="2.5" stroke-dasharray="31.4 31.4" stroke-linecap="round" opacity="0.9"/>
+          </svg>
+        </span>
+      </span>
+    </button>
+  </div>
+{% endif %}

@@ -1,0 +1,91 @@
+<!-- blocks/_inline-spacer.liquid -->
+
+{% liquid
+  assign break_newline = block.settings.break_newline | default: false
+  assign spacer_padding = block.settings.spacer_padding | default: 0
+  assign target_device = block.settings.target_device | default: 'both'
+%}
+
+{% capture class %}
+  {% render 'props-class-target-device', target_device: target_device %}
+{% endcapture %}
+
+{% capture attributes %}
+  {{ block.shopify_attributes }}
+{% endcapture %}
+
+{% capture style %}
+  --spacer-size:{{- spacer_padding -}}px;
+  {%- if break_newline -%}
+    display: block;
+    {% # All elements should have at least 1px width and height in order to appear in the visual preview window %}
+    width: 1px;
+    height: calc(var(--spacer-size) * var(--r-multiplier));
+  {% else %}
+    display: inline-block;
+    width: calc(var(--spacer-size) * var(--r-multiplier));
+    height: 1px;
+  {%- endif -%}
+{% endcapture %}
+
+<span
+  style="{{ style | strip }}"
+  class="{{ class | strip }}"
+  {{ attributes }}
+>
+</span>
+
+{% schema %}
+{
+	"name": "Spacer",
+	"tag": null,
+	"settings": [
+		{
+			"type": "range",
+			"id": "spacer_padding",
+			"min": 0,
+			"max": 500,
+			"step": 5,
+			"unit": "px",
+			"label": "Size",
+			"default": 20
+		},
+		{
+			"type": "checkbox",
+			"id": "break_newline",
+			"label": "Break to new line",
+			"default": false
+		},
+		{
+			"type": "header",
+			"content": "Limit by screen size"
+		},
+		{
+			"type": "select",
+			"label": "Show on",
+			"id": "target_device",
+			"default": "both",
+			"options": [
+				{
+					"value": "mobile",
+					"label": "Mobile"
+				},
+				{
+					"value": "desktop",
+					"label": "Desktop"
+				},
+				{
+					"value": "both",
+					"label": "Both"
+				}
+			]
+		},
+	],
+	"presets": [
+		{
+			"name": "Spacer",
+			"category": "Layout"
+		}
+	]
+}
+{% endschema %}

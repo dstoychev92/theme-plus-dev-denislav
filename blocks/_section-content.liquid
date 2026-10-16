@@ -1,0 +1,34 @@
+<!-- blocks/_section-content.liquid -->
+
+{% capture blocks %}
+  {% content_for "blocks" %}
+{% endcapture %}
+
+{% capture placement %}
+  {% render 'core-placement-grid',
+    _settings: section.settings,
+    content: blocks,
+    attributes: block.shopify_attributes
+  %}
+{% endcapture %}
+
+{% render 'core-section-content', content: placement, _settings: section.settings %}
+
+{% schema %}
+{
+	"name": "Content",
+	"tag": null,
+	"settings": [],
+	"blocks": [
+		{
+			"type": "@theme"
+		},
+		{
+			"type": "@app"
+		},
+		{
+			"type": "_group-grid"
+		}
+	]
+}
+{% endschema %}

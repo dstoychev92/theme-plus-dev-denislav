@@ -1,0 +1,70 @@
+{% liquid
+  assign visible_limit = visible_limit | default: false
+  assign base_id = base_id | default: 'filter'
+  assign aspect_ratio = 1
+%}
+
+<ul
+  class="grid grid-cols-3 gap-r5"
+  x-data="{ showAllFilterItems: false }"
+  x-roving-tab.vertical
+  x-roving-tab:list
+>
+  {% for filter_value in filter.values %}
+    {% assign disabled = false %}
+    {%- capture id -%}
+      {{ base_id }}-{{- filter.label | handle -}}-{{- forloop.index -}}
+    {%- endcapture -%}
+
+    {%- if filter_value.count == 0 and filter_value.active == false -%}
+      {%- assign disabled = true -%}
+    {%- endif -%}
+
+    {% capture image_content %}
+      {% assign filter_image = filter_value.image %}
+      {% if filter_image != blank %}
+        {% render 'core-image', image: filter_image, aspect_ratio: aspect_ratio, cover: false, class: 'ring-1 ring-transparent ring-offset-1 rounded-subtle overflow-clip p-[2px] group-has-[:checked]:!ring-content' %}
+      {% else %}
+        <div class="w-full aspect-[--aspect-ratio]" style="--aspect-ratio: {{ aspect_ratio }}"></div>
+      {% endif %}
+    {% endcapture %}
+
+    {% capture filter_value_label %}
+      {{ image_content }}
+      <span class="truncate">{{- filter_value.label -}}</span>
+    {% endcapture %}
+
+    <li
+      {% if forloop.index > visible_limit %}
+        x-show="showAllFilterItems"
+        x-cloak
+      {% endif %}
+      {% comment %} Force Alpine.morph to replace the current checkbox with the one from the server so it has the right checked state... {% endcomment %}
+      key="{{ filter.param_name }}-{{ filter_value.param_name }}-{{ filter_value.value }}-{{ filter_value.active }}"
+      class="group"
+    >
+      {% render 'field-checkbox',
+        label: filter_value_label,
+        id: id,
+        name: filter_value.param_name,
+        value: filter_value.value,
+        checked: filter_value.active,
+        disabled: disabled,
+        form: form,
+        input_class: 'hidden',
+        label_class: 'flex-col gap-y-r3 w-full flex-center text-r3 text-center peer-checked:font-bold',
+        label_attributes: 'tabindex="0" @keydown.space.prevent="$el.click()" @keydown.enter.prevent="$el.click()"',
+        class: 'border border-transparent p-[2px]'
+      %}
+    </li>
+  {% endfor %}
+
+  {% if filter.values.size > visible_limit %}
+    <li
+      x-show="!showAllFilterItems"
+      class="flex-row-center *:flex-1 justify-between h-[--filter-row-height]"
+    >
+      {% render 'filter-show-all-button' %}
+    </li>
+  {% endif %}
+</ul>

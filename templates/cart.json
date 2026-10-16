@@ -1,0 +1,38 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "cart",
+      "blocks": {
+        "message_custom": {
+          "type": "message_custom",
+          "settings": {}
+        },
+        "shipping_estimate": {
+          "type": "shipping_estimate",
+          "settings": {}
+        },
+        "quantity": {
+          "type": "customer_notes",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "message_custom",
+        "shipping_estimate"
+      ],
+      "settings": {}
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

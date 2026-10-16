@@ -1,0 +1,231 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "type": "footer",
+  "name": "Footer",
+  "sections": {
+    "footer_94UbbU": {
+      "type": "footer",
+      "blocks": {
+        "footer_grid_item_GVdJEg": {
+          "type": "_footer-grid-item",
+          "settings": {
+            "title": "",
+            "enable_accordion": false,
+            "expand_mobile": false,
+            "show_top_border": false,
+            "col_span_lg": 1,
+            "col_span_md": 1
+          },
+          "blocks": {
+            "theme_icon_YpzBMK": {
+              "type": "theme-icon",
+              "name": "Icon",
+              "settings": {
+                "icon_set": "image",
+                "icon_list_core": "fill-circle-check",
+                "icon_list_art": "fill-art-commerce-award-wreath",
+                "stroke_weight": "regular",
+                "image": "shopify://shop_images/logo_simple_white_1.svg",
+                "set_width": true,
+                "icon_width": "custom",
+                "icon_width_custom": 140,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000",
+                "color_shade": "#00000080",
+                "set_offset": false,
+                "offset_unit": "pixel",
+                "offset_pixels_y": 0,
+                "offset_pixels_x": 0,
+                "offset_percent_y": 0,
+                "offset_percent_x": 0,
+                "href": "",
+                "open_in_new_window": false
+              },
+              "blocks": {}
+            },
+            "theme_richtext_Y88EXL": {
+              "type": "theme-richtext",
+              "name": "Rich Text",
+              "settings": {
+                "text": "<p>Създаваме напитки, носещи жажда за живот, без ограниченията на обикновена чаша кафе.</p>",
+                "richtext_size": "sm",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "theme_icon_YpzBMK",
+            "theme_richtext_Y88EXL"
+          ]
+        },
+        "footer_grid_item_HqWWGm": {
+          "type": "_footer-grid-item",
+          "settings": {
+            "title": "МАГАЗИН",
+            "enable_accordion": true,
+            "expand_mobile": false,
+            "show_top_border": false,
+            "col_span_lg": 1,
+            "col_span_md": 1
+          },
+          "blocks": {
+            "footer_link_list_84q3p9": {
+              "type": "_footer-link-list",
+              "settings": {
+                "linklist": "main-menu-footer",
+                "type_preset": "p",
+                "type_resize": "md",
+                "type_font": "body",
+                "type_size": 4,
+                "type_uppercase": false,
+                "color": "content"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "footer_link_list_84q3p9"
+          ]
+        },
+        "footer_grid_item_WGWrwh": {
+          "type": "_footer-grid-item",
+          "settings": {
+            "title": "ИНФОРМАЦИЯ",
+            "enable_accordion": true,
+            "expand_mobile": false,
+            "show_top_border": false,
+            "col_span_lg": 1,
+            "col_span_md": 1
+          },
+          "blocks": {
+            "footer_link_list_EGkx8w": {
+              "type": "_footer-link-list",
+              "settings": {
+                "linklist": "link-list",
+                "type_preset": "p",
+                "type_resize": "md",
+                "type_font": "body",
+                "type_size": 4,
+                "type_uppercase": false,
+                "color": "content"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "footer_link_list_EGkx8w"
+          ]
+        },
+        "footer_grid_item_NBzJr9": {
+          "type": "_footer-grid-item",
+          "settings": {
+            "title": "НЮЗЛЕТЪР",
+            "enable_accordion": true,
+            "expand_mobile": true,
+            "show_top_border": false,
+            "col_span_lg": 1,
+            "col_span_md": 1
+          },
+          "blocks": {
+            "theme_form_newsletter_mMVXpx": {
+              "type": "theme-form-newsletter",
+              "settings": {
+                "newsletter_appearance": "line",
+                "success_message": "Благодарим ти, че се абонира за нашия бюлетин!",
+                "show_captcha_terms": false
+              },
+              "blocks": {}
+            },
+            "theme_social_links_CH8P7P": {
+              "type": "theme-social-links",
+              "settings": {
+                "sizing": "md",
+                "icon_width_custom": 20,
+                "gap": "sm",
+                "gap_custom": 0
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "theme_form_newsletter_mMVXpx",
+            "theme_social_links_CH8P7P"
+          ]
+        }
+      },
+      "block_order": [
+        "footer_grid_item_GVdJEg",
+        "footer_grid_item_HqWWGm",
+        "footer_grid_item_WGWrwh",
+        "footer_grid_item_NBzJr9"
+      ],
+      "name": "Footer",
+      "settings": {
+        "color_scheme": "scheme-opposite",
+        "background": "canvas",
+        "background_color": "#f2f2f2",
+        "background_svg": "shopify://shop_images/bg_footer_1.svg",
+        "color": "content",
+        "color_custom": "#000000",
+        "type_preset": "accordion",
+        "type_resize": "md",
+        "type_font": "body",
+        "type_size": 4,
+        "type_uppercase": false,
+        "set_heading_tag": false,
+        "heading_tag": "h2",
+        "content_width": "page",
+        "custom_col_span": false,
+        "columns_lg": 4,
+        "columns_md": 4
+      }
+    },
+    "footer-sub": {
+      "type": "footer-sub",
+      "settings": {
+        "color_scheme": "scheme-opposite",
+        "background": "canvas",
+        "background_color": "#f2f2f2",
+        "type_preset": "p",
+        "type_resize": "xs",
+        "type_font": "body",
+        "type_size": 3,
+        "type_uppercase": false,
+        "footer_secondary_linklist": "policies",
+        "enable_footer_payment": true,
+        "enable_footer_social": false,
+        "social_sizing": "md",
+        "social_width_custom": 20,
+        "gap": "md",
+        "gap_custom": 0,
+        "show_language": false,
+        "language_style": "long",
+        "show_country": false,
+        "country_display_style": "flag_name",
+        "currency_display_style": "short",
+        "set_rhythm": true,
+        "section_padding_top": 0,
+        "section_padding_bottom": 20,
+        "content_width": "page"
+      }
+    }
+  },
+  "order": [
+    "footer_94UbbU",
+    "footer-sub"
+  ]
+}

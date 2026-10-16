@@ -1,0 +1,583 @@
+<!-- sections/section-tabs.liquid -->
+
+{% capture content %}
+  <div
+    class="
+      flex flex-col h-full gap-y-md items-content-align
+      vars-placement-top-left
+      [justify-content:var(--placement-content-vertical-mobile,var(--placement-content-vertical))]
+    "
+  >
+    {% content_for 'block', type: '_section-title', id: 'section-title' %}
+    {% render 'core-tabs', _settings: section.settings, blocks: section.blocks %}
+  </div>
+{% endcapture %}
+
+{% capture style %}
+  {%- if section.settings.background_image -%}
+    background-image: url({{ section.settings.background_image | image_url: width: 2000 }});
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  {%- endif -%}
+{% endcapture %}
+
+<style>
+  #shopify-section-{{ section.id }} [role="tab"] {
+    --tab-px: calc(var(--control-padding) * 3);
+    line-height: 1;
+    transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  {% if section.settings.filled_tabs %}
+    #shopify-section-{{ section.id }} [data-layout-id="{{ section.id }}-tab-outline"] {
+      background-color: var(--content);
+    }
+    #shopify-section-{{ section.id }} [role="tab"][aria-selected="true"] {
+      color: var(--canvas);
+    }
+  {% endif %}
+</style>
+
+{% render 'core-section', _settings: section.settings, content: content, style: style %}
+
+{% schema %}
+{
+	"name": "Tabs",
+	"tag": "section",
+	"settings": [
+		{
+			"type": "text_alignment",
+			"id": "content_align",
+			"label": "Alignment",
+			"default": "center"
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_height",
+			"label": "Set height",
+			"default": true
+		},
+		{
+			"type": "select",
+			"id": "height",
+			"label": "Height",
+			"default": "screen-one-half",
+			"visible_if": "{{ section.settings.set_height == true }}",
+			"options": [
+				{
+					"value": "screen",
+					"label": "Full screen height"
+				},
+				{
+					"value": "screen-five-sixths",
+					"label": "Five sixths screen"
+				},
+				{
+					"value": "screen-three-quarters",
+					"label": "Three quarters screen"
+				},
+				{
+					"value": "screen-one-half",
+					"label": "One half screen"
+				},
+				{
+					"value": "screen-one-third",
+					"label": "One third screen"
+				},
+				{
+					"value": "screen-one-quarter",
+					"label": "One quarter screen"
+				},
+				{
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "custom_height_type",
+			"label": "Height type",
+			"default": "percentage",
+			"options": [
+				{
+					"value": "percentage",
+					"label": "%"
+				},
+				{
+					"value": "px",
+					"label": "px"
+				}
+			],
+			"visible_if": "{{ section.settings.set_height == true and section.settings.height == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "custom_height_percentage",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"unit": "%",
+			"label": "Custom height",
+			"default": 33,
+			"visible_if": "{{ section.settings.set_height == true and section.settings.height == 'custom' and section.settings.custom_height_type == 'percentage' }}",
+			"info": "Percentage of screen height"
+		},
+		{
+			"type": "range",
+			"id": "custom_height_px",
+			"min": 0,
+			"max": 1000,
+			"step": 50,
+			"unit": "px",
+			"label": "Custom height",
+			"default": 350,
+			"visible_if": "{{ section.settings.set_height == true and section.settings.height == 'custom' and section.settings.custom_height_type == 'px' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_height_mobile",
+			"label": "Set mobile height",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "height_mobile",
+			"label": "Mobile height",
+			"default": "screen-one-half",
+			"visible_if": "{{ section.settings.set_height_mobile == true }}",
+			"options": [
+				{
+					"value": "screen",
+					"label": "Full screen height"
+				},
+				{
+					"value": "screen-five-sixths",
+					"label": "Five sixths screen"
+				},
+				{
+					"value": "screen-three-quarters",
+					"label": "Three quarters screen"
+				},
+				{
+					"value": "screen-one-half",
+					"label": "One half screen"
+				},
+				{
+					"value": "screen-one-third",
+					"label": "One third screen"
+				},
+				{
+					"value": "screen-one-quarter",
+					"label": "One quarter screen"
+				},
+				{
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "custom_height_type_mobile",
+			"label": "Mobile height type",
+			"default": "percentage",
+			"options": [
+				{
+					"value": "percentage",
+					"label": "%"
+				},
+				{
+					"value": "px",
+					"label": "px"
+				}
+			],
+			"visible_if": "{{ section.settings.height_mobile == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "custom_height_percentage_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"unit": "%",
+			"label": "Mobile custom height",
+			"default": 33,
+			"visible_if": "{{ section.settings.height_mobile == 'custom' and section.settings.custom_height_type_mobile == 'percentage' }}"
+		},
+		{
+			"type": "range",
+			"id": "custom_height_px_mobile",
+			"min": 0,
+			"max": 1000,
+			"step": 50,
+			"unit": "px",
+			"label": "Mobile custom height",
+			"default": 350,
+			"visible_if": "{{ section.settings.height_mobile == 'custom' and section.settings.custom_height_type_mobile == 'px' }}"
+		},
+		{
+			"type": "select",
+			"id": "content_width",
+			"label": "Content width",
+			"default": "page",
+			"options": [
+				{
+					"value": "full",
+					"label": "Full"
+				},
+				{
+					"value": "page",
+					"label": "Page"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "content_width_custom",
+			"label": "Desktop width",
+			"visible_if": "{{ section.settings.content_width == 'custom' }}",
+			"min": 25,
+			"max": 100,
+			"step": 5,
+			"default": 65,
+			"unit": "%"
+		},
+		{
+			"type": "range",
+			"id": "content_width_custom_mobile",
+			"label": "Mobile width",
+			"visible_if": "{{ section.settings.content_width == 'custom'  }}",
+			"min": 25,
+			"max": 100,
+			"step": 5,
+			"default": 100,
+			"unit": "%"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_rhythm",
+			"label": "Custom rhythm",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "section_padding_top",
+			"label": "Spacing top",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 40,
+			"visible_if": "{{ section.settings.set_rhythm == true  }}"
+		},
+		{
+			"type": "range",
+			"id": "section_padding_bottom",
+			"label": "Spacing bottom",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 40,
+			"visible_if": "{{ section.settings.set_rhythm == true  }}"
+		},
+		{
+			"type": "color_scheme",
+			"id": "color_scheme",
+			"label": "Color scheme"
+		},
+		{
+			"type": "select",
+			"id": "background",
+			"label": "Background",
+			"default": "canvas",
+			"options": [
+				{
+					"value": "canvas",
+					"label": "Default"
+				},
+				{
+					"value": "tint",
+					"label": "Tint"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background color",
+			"default": "#f2f2f2",
+			"alpha": false,
+			"visible_if": "{{ section.settings.background == 'custom' }}"
+		},
+		{
+			"type": "image_picker",
+			"id": "background_image",
+			"label": "Background image"
+		},
+		{
+			"type": "checkbox",
+			"id": "filled_tabs",
+			"label": "Filled active tab",
+			"info": "Active tab fills with the section's text color; the active label switches to the canvas color.",
+			"default": false
+		},
+		{
+			"type": "header",
+			"content": "Typography"
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_typography",
+			"label": "Set typography",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "type_font",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ section.settings.enable_typography == true }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 4,
+			"visible_if": "{{ section.settings.enable_typography == true }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ section.settings.enable_typography == true }}"
+		},
+		{
+			"type": "header",
+			"content": "Spacing"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_gap_tab_x",
+			"label": "Set tab spacing",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "gap_tab_x",
+			"label": "Tab",
+			"default": "sm",
+			"visible_if": "{{ section.settings.set_gap_tab_x }}",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "gap_custom_tab_x",
+			"label": "Custom",
+			"default": 0,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ section.settings.gap_tab_x == 'custom'  and section.settings.set_gap_tab_x }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_gap_tab_y",
+			"label": "Set vertical gap",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "gap_tab_y",
+			"label": "Vertical gap",
+			"default": "sm",
+			"visible_if": "{{ section.settings.set_gap_tab_y }}",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "gap_custom_tab_y",
+			"label": "Custom",
+			"default": 0,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ section.settings.gap_tab_y == 'custom'  and section.settings.set_gap_tab_y }}"
+		},
+		{
+			"type": "header",
+			"content": "Target device",
+			"visible_if": "{{ settings.show_target_device_settings == true }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_target_device",
+			"label": "Set target device",
+			"visible_if": "{{ settings.show_target_device_settings == true }}",
+			"default": false
+		},
+		{
+			"type": "select",
+			"label": "Show on",
+			"id": "target_device",
+			"default": "desktop",
+			"visible_if": "{{ settings.show_target_device_settings == true and section.settings.set_target_device == true }}",
+			"options": [
+				{
+					"value": "mobile",
+					"label": "Mobile"
+				},
+				{
+					"value": "desktop",
+					"label": "Desktop"
+				}
+			]
+		},
+	],
+	"blocks": [
+		{
+			"type": "_tab"
+		}
+	],
+	"presets": [
+		{
+			"name": "Tabs",
+			"category": "Text",
+			"settings": {
+				"content_width": "custom",
+				"content_width_custom": 65
+			},
+			"blocks": [
+				{
+					"id": "section-title",
+					"type": "_section-title",
+					"static": true,
+					"settings": {
+						"text": "Common Questions"
+					}
+				},
+				{
+					"type": "_tab",
+					"settings": {
+						"title": "Returns"
+					},
+					"blocks": [
+						{
+							"type": "theme-richtext",
+							"settings": {
+								"text": "<p>Free returns within 30 days, no questions asked.  We believe in our products and we stand behind them.  We will return any of our items within 30 days just mail them back with your purchase receipt.</p>"
+							}
+						}
+					]
+				},
+				{
+					"type": "_tab",
+					"settings": {
+						"title": "Security"
+					},
+					"blocks": [
+						{
+							"type": "theme-richtext",
+							"settings": {
+								"text": "<p>We accept all major credit cards.  All of our transactions are handled on a secure server using bank-grade encryption.  Payments can be handled through trusted third parties like Shopify Pay, Apple Pay, and PayPal.</p>"
+							}
+						}
+					]
+				},
+				{
+					"type": "_tab",
+					"settings": {
+						"title": "Support"
+					},
+					"blocks": [
+						{
+							"type": "theme-richtext",
+							"settings": {
+								"text": "<p>Let us know what you think of your items.  If you are not satisfied your purchase can be replaced at any time or returned after 30 days. All of our products come with a 30 day free return and one year manufacturers guarantee against defects.</p>"
+							}
+						}
+					]
+				}
+			]
+		}
+	],
+	"disabled_on": {
+		"groups": [
+			"header",
+			"custom.overlays",
+			"custom.drawers"
+		]
+	}
+}
+{% endschema %}

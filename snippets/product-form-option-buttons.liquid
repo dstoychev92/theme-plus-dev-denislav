@@ -1,0 +1,255 @@
+{% liquid
+  if is_swatch_option
+    assign gap = block.settings.gap_swatch
+    assign gap_custom = block.settings.gap_custom_swatch
+  else
+    assign gap = block.settings.gap_button
+    assign gap_custom = block.settings.gap_custom_button
+  endif
+
+  # Logic to determine layout mode
+  assign longest_value = 0
+  assign shortest_value = 100
+
+  for value in option.values
+    if value.size > longest_value
+      assign longest_value = value.size
+    endif
+
+    if value.size < shortest_value
+      assign shortest_value = value.size
+    endif
+  endfor
+
+  assign layout_mode = 'flex'
+
+  unless is_swatch_option
+    # Display in grid mode in cases where the values are similar in length and all quite short
+    # Otherwise display in flex mode where the values are all different in length and/or are long
+    assign chars_diff = longest_value | minus: shortest_value
+    if chars_diff < 5 and longest_value < 6
+      assign layout_mode = 'grid'
+    endif
+  endunless
+
+  if layout_mode == 'flex'
+    assign values_size = option.values.size
+    assign cols_desktop_max = values_size | at_most: 4 | at_least: 2
+    assign remainder_desktop = values_size | modulo: cols_desktop_max
+    if remainder_desktop == 1 and cols_desktop_max > 2
+      assign cols_desktop = cols_desktop_max | minus: 1
+    else
+      assign cols_desktop = cols_desktop_max
+    endif
+  endif
+%}
+
+<ul
+  class="
+    group w-full justify-content-align gap-layout
+    {% if layout_mode == "grid" %}
+      grid grid-cols-[--grid-cols]
+    {% else %}
+      flex flex-row flex-wrap
+      [--option-cols:var(--option-cols-mobile)] md:[--option-cols:var(--option-cols-desktop)]
+    {% endif %}
+    {{ class }}
+  "
+  style="
+    {% render 'props-style-gap', gap: gap, gap_custom: gap_custom %}
+    --option-size: var(--row-{{- option_size -}});
+    --option-min-width: max(calc(var(--option-size) * 1.25), 4em);
+    {% if gap =='custom' and gap_custom == 0 %}
+      --radius-btn: 0px;
+      --btn-border-width: 0.5px;
+    {% endif %}
+    {% if layout_mode == "grid" %}
+      --grid-cols: repeat(auto-fill, minmax(max(calc(var(--option-size)), calc(6em + 4px)), 1fr));
+    {% else %}
+      --option-cols-mobile: 2;
+      --option-cols-desktop: {{ cols_desktop }};
+      --option-basis: calc(100% / var(--option-cols) - var(--layout-gutter-x) / var(--option-cols) * (var(--option-cols) - 1));
+    {% endif %}
+  "
+  x-roving-tab
+  x-roving-tab:list
+  role="toolbar"
+  aria-label="{{ option.name | escape }}"
+  x-preloader.interact.intersect
+  key="{{ option.name | escape }}-{{ option.selected_value.name | escape }}-{{ option.selected_value.variant.id }}"
+>
+  {% for value in option.values %}
+    {% liquid
+      assign can_buy = true
+      assign has_variant = true
+      assign available = true
+      assign unavailable_variant_option_values_ids = null
+
+      if value.variant == null
+        assign has_variant = false
+        assign can_buy = false
+      elsif value.available == false
+        assign can_buy = false
+      endif
+
+      if can_buy == false or has_variant == false
+        assign available = false
+      endif
+    %}
+
+    {%- capture option_url -%}
+      {%- if value.variant == null and value.product_url != null -%}
+        {%- render 'product-url',
+          product: product,
+          base_url: value.product_url,
+          option_position: option.position,
+          value_id: value.id
+        -%}
+      {%- else -%}
+        {%- render 'product-url',
+          product: product,
+          variant: value.variant,
+          option_position: option.position,
+          value_id: value.id
+        -%}
+      {%- endif -%}
+    {%- endcapture -%}
+
+    {% assign escaped_option_value = value.name | replace: '"', '&quot;' | escape %}
+
+    {% capture option_item_attributes %}
+      @mouseenter="if (!$media.matches.touch) { hoverValue = '{{ escaped_option_value }}' }"
+    {% endcapture %}
+
+    {% capture option_value_link_attributes %}
+      href="{{- option_url -}}"
+      data-preload-url="{{- option_url -}}"
+      data-selected="{{ value.selected }}"
+      data-available="{{ available }}"
+
+      {% if value.variant != null %}
+        @click="
+          $dispatch('theme:variant:change', { variantId: {{ value.variant.id }}, productId: {{ product.id }} })
+        "
+      {% endif %}
+
+      {% comment %} Disable default navigation behaviour of link and instead update the product form via section rendering API when clicked {% endcomment %}
+      {% if history %}
+        x-section-api:link.replace
+      {% else %}
+        x-section-api:link.nopush
+      {% endif %}
+
+      {% if value.selected %}
+        aria-current="true"
+      {% endif %}
+
+      {% if has_variant == false %}
+        title="{{- value.name | escape }} - {{ 'product.unavailable' | t }}"
+        aria-label="{{- value.name | escape }} - {{ 'product.unavailable' | t }}"
+      {% elsif can_buy == false %}
+        title="{{- value.name | escape }} - {{ 'product.sold_out' | t }}"
+        aria-label="{{- value.name | escape }} - {{ 'product.sold_out' | t }}"
+      {% else %}
+        title="{{- value.name | escape -}}"
+        aria-label="{{- value.name | escape -}}"
+      {% endif %}
+    {% endcapture %}
+
+    {% if is_swatch_option %}
+      {% liquid
+        assign swatch_object = value.swatch
+        if swatch_object == null
+          # Manual swatch lookup for settings.custom_swatch_names
+          assign swatch_handle = value.name | handleize
+          assign swatch_object = metaobjects['shopify--color-pattern'][swatch_handle]
+        endif
+      %}
+      <li
+        key="{{ value.id }}"
+        class="relative group/swatch-link flex-none max-w-full has-[:focus]:z-10"
+        role="none"
+        {{ option_item_attributes }}
+      >
+        <a
+          {{ option_value_link_attributes }}
+          class="
+            {% comment %} Display block fixes the focus outline {% endcomment %}
+            block
+            transition-[filter]
+            group-focus/swatch-link:brightness-75
+            group-hover/swatch-link:brightness-75
+            has-[[data-selected=true]]:pointer-events-none
+          "
+        >
+          {% render 'swatch',
+            image: swatch_object.image,
+            color: swatch_object.color,
+            available: available,
+            selected: value.selected,
+            size: swatch_size
+          %}
+        </a>
+      </li>
+    {% else %}
+      <li
+        key="{{ value.id }}"
+        class="max-w-full basis-[--option-basis]"
+        role="none"
+        {{ option_item_attributes }}
+      >
+        <a
+          {{ option_value_link_attributes }}
+          class="
+            btn vars-btn-outline vars-btn-content
+            flex flex-center cursor-pointer whitespace-nowrap
+            data-[selected=true]:vars-btn-solid
+            min-w-[--option-min-width] min-h-[--option-size]
+            px-[calc(var(--option-size)/4)] py-r5 max-w-full
+            relative z-10 focus-visible:z-30
+            hover-effect-target
+            hover-effect-bg-highlight
+            {% if gap =='custom' and gap_custom == 0 %}
+              {% comment %} Hack to make borders between buttons only 1px when gap is zero {% endcomment %}
+              [box-shadow:0_0_0_0.5px_var(--btn-border-hover-color,var(--btn-border-color)),inset_0_0_0_0.5px_var(--btn-border-hover-color,var(--btn-border-color))]
+            {% endif %}
+          "
+          x-cursor-position
+        >
+          {% comment %} Strikethrough {% endcomment %}
+          <svg
+            role="presentation"
+            class="pointer-events-none absolute inset-0 z-20 h-full p-r3 m-auto opacity-0 [[data-available=false]_&]:opacity-100"
+            viewBox="0 0 38 38"
+          >
+            <path
+              d="M38 0 L0 38"
+              fill="none"
+              stroke-width="3"
+              vector-effect="non-scaling-stroke"
+              stroke-linecap="round"
+              class="stroke-canvas [[data-selected=true]_&]:stroke-content"
+            />
+            <path
+              d="M38 0 L0 38"
+              fill="none"
+              stroke-width="1"
+              vector-effect="non-scaling-stroke"
+              stroke-linecap="round"
+              class="stroke-content [[data-selected=true]_&]:stroke-canvas"
+            />
+          </svg>
+          <span class="truncate">
+            <span
+              aria-hidden="true"
+              class="absolute inset-0 flex flex-center h-full pointer-events-none hover-effect-text-highlight"
+            >
+              {{- value.name -}}
+            </span>
+            {{- value.name -}}
+          </span>
+        </a>
+      </li>
+    {% endif %}
+  {% endfor %}
+</ul>

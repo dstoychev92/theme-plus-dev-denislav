@@ -1,0 +1,390 @@
+<!-- blocks/theme-group-flex.liquid -->
+
+{% liquid
+  assign direction = block.settings.direction
+  if direction == 'row'
+    assign justify = block.settings.justify_row
+    assign align = block.settings.align_row
+  else
+    assign justify = block.settings.justify_column
+    assign align = block.settings.align_column
+  endif
+
+  if block.settings.set_flex_mobile
+    assign direction_mobile = block.settings.direction_mobile
+    if direction_mobile == 'row'
+      assign justify_mobile = block.settings.justify_row_mobile
+      assign align_mobile = block.settings.align_row_mobile
+    else
+      assign justify_mobile = block.settings.justify_column_mobile
+      assign align_mobile = block.settings.align_column_mobile
+    endif
+  endif
+%}
+
+<div
+  class="
+    flex
+    {% if block.settings.full_width %}
+      w-full
+    {% endif %}
+    [--flex-direction:var(--flex-direction-md)]
+    [--justify-content:var(--justify-content-md)]
+    [--align-items:var(--align-items-md)]
+    {% if block.settings.set_flex_mobile %}
+      max-md:[--flex-direction:var(--flex-direction-sm)]
+      max-md:[--justify-content:var(--justify-content-sm)]
+      max-md:[--align-items:var(--align-items-sm)]
+    {% endif %}
+  "
+  style="
+    --flex-direction-md: {{ direction }};
+    --justify-content-md: {{ justify }};
+    --align-items-md: {{ align }};
+    {% if block.settings.set_flex_mobile %}
+      --flex-direction-sm: {{ direction_mobile }};
+      --justify-content-sm: {{ justify_mobile }};
+      --align-items-sm: {{ align_mobile }};
+    {% endif %}
+    flex-direction: var(--flex-direction, var(--flex-direction-md));
+    justify-content: var(--justify-content, var(--justify-content-md));
+    align-items: var(--align-items, var(--align-items-md));
+    {% render 'props-style-gap', _settings: block.settings %}
+  "
+  {{ block.shopify_attributes }}
+>
+  {% content_for "blocks" %}
+</div>
+
+{% schema %}
+{
+	"name": "Flex",
+	"tag": null,
+	"settings": [
+		{
+			"type": "select",
+			"id": "direction",
+			"label": "Direction",
+			"default": "row",
+			"options": [
+				{
+					"value": "row",
+					"label": "→"
+				},
+				{
+					"value": "column",
+					"label": "↓"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "justify_row",
+			"label": "Justify",
+			"default": "start",
+			"options": [
+				{
+					"value": "start",
+					"label": "⇤"
+				},
+				{
+					"value": "center",
+					"label": "|"
+				},
+				{
+					"value": "end",
+					"label": "⇥"
+				},
+				{
+					"value": "space-between",
+					"label": "↔"
+				},
+				{
+					"value": "space-around",
+					"label": "⟷"
+				}
+			],
+			"visible_if": "{{ block.settings.direction == 'row' }}"
+		},
+		{
+			"type": "select",
+			"id": "justify_column",
+			"label": "Justify",
+			"default": "start",
+			"options": [
+				{
+					"value": "start",
+					"label": "⤒"
+				},
+				{
+					"value": "center",
+					"label": "—"
+				},
+				{
+					"value": "end",
+					"label": "⤓"
+				},
+				{
+					"value": "space-between",
+					"label": "↕"
+				},
+				{
+					"value": "space-around",
+					"label": "⟷"
+				}
+			],
+			"visible_if": "{{ block.settings.direction == 'column' }}"
+		},
+		{
+			"type": "select",
+			"id": "align_row",
+			"label": "Align",
+			"default": "stretch",
+			"options": [
+				{
+					"value": "start",
+					"label": "⤒"
+				},
+				{
+					"value": "center",
+					"label": "—"
+				},
+				{
+					"value": "end",
+					"label": "⤓"
+				},
+				{
+					"value": "stretch",
+					"label": "↕"
+				}
+			],
+			"visible_if": "{{ block.settings.direction == 'row' }}"
+		},
+		{
+			"type": "select",
+			"id": "align_column",
+			"label": "Align",
+			"default": "stretch",
+			"options": [
+				{
+					"value": "start",
+					"label": "⇤"
+				},
+				{
+					"value": "center",
+					"label": "|"
+				},
+				{
+					"value": "end",
+					"label": "⇥"
+				},
+				{
+					"value": "stretch",
+					"label": "↕"
+				}
+			],
+			"visible_if": "{{ block.settings.direction == 'column' }}"
+		},
+		{
+			"type": "select",
+			"id": "gap",
+			"label": "Gap",
+			"default": "md",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "gap_custom",
+			"label": "Custom gap",
+			"default": 0,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ block.settings.gap == 'custom'  }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "full_width",
+			"label": "Full width",
+			"default": false
+		},
+		{
+			"type": "header",
+			"content": "Mobile"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_flex_mobile",
+			"label": "Set mobile flex",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "direction_mobile",
+			"label": "Direction",
+			"default": "column",
+			"options": [
+				{
+					"value": "row",
+					"label": "→"
+				},
+				{
+					"value": "column",
+					"label": "↓"
+				}
+			],
+			"visible_if": "{{ block.settings.set_flex_mobile }}"
+		},
+		{
+			"type": "select",
+			"id": "justify_row_mobile",
+			"label": "Justify",
+			"default": "start",
+			"options": [
+				{
+					"value": "start",
+					"label": "⇤"
+				},
+				{
+					"value": "center",
+					"label": "|"
+				},
+				{
+					"value": "end",
+					"label": "⇥"
+				},
+				{
+					"value": "space-between",
+					"label": "↔"
+				},
+				{
+					"value": "space-around",
+					"label": "⟷"
+				},
+				{
+					"value": "space-evenly",
+					"label": "⇄"
+				}
+			],
+			"visible_if": "{{ block.settings.set_flex_mobile and block.settings.direction_mobile == 'row' }}"
+		},
+		{
+			"type": "select",
+			"id": "justify_column_mobile",
+			"label": "Justify",
+			"default": "start",
+			"options": [
+				{
+					"value": "start",
+					"label": "⤒"
+				},
+				{
+					"value": "center",
+					"label": "—"
+				},
+				{
+					"value": "end",
+					"label": "⤓"
+				},
+				{
+					"value": "space-between",
+					"label": "↕"
+				},
+				{
+					"value": "space-around",
+					"label": "⟷"
+				}
+			],
+			"visible_if": "{{ block.settings.set_flex_mobile and block.settings.direction_mobile == 'column' }}"
+		},
+		{
+			"type": "select",
+			"id": "align_row_mobile",
+			"label": "Align",
+			"default": "stretch",
+			"options": [
+				{
+					"value": "start",
+					"label": "⤒"
+				},
+				{
+					"value": "center",
+					"label": "—"
+				},
+				{
+					"value": "end",
+					"label": "⤓"
+				},
+				{
+					"value": "stretch",
+					"label": "↕"
+				}
+			],
+			"visible_if": "{{ block.settings.set_flex_mobile and block.settings.direction_mobile == 'row' }}"
+		},
+		{
+			"type": "select",
+			"id": "align_column_mobile",
+			"label": "Align",
+			"default": "stretch",
+			"options": [
+				{
+					"value": "start",
+					"label": "⇤"
+				},
+				{
+					"value": "center",
+					"label": "|"
+				},
+				{
+					"value": "end",
+					"label": "⇥"
+				},
+				{
+					"value": "stretch",
+					"label": "↕"
+				}
+			],
+			"visible_if": "{{ block.settings.set_flex_mobile and block.settings.direction_mobile == 'column' }}"
+		}
+	],
+	"blocks": [
+		{
+			"type": "_flex-item"
+		}
+	],
+	"presets": [
+		{
+			"name": "Group: flex",
+			"category": "Pro",
+			"blocks": [
+				{
+					"type": "_flex-item"
+				},
+				{
+					"type": "_flex-item"
+				}
+			]
+		}
+	]
+}
+{% endschema %}
+

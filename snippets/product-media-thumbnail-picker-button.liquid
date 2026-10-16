@@ -1,0 +1,97 @@
+{% comment %}
+  Renders a product-media-thumbnail-picker button
+
+  Accepts:
+  - direction: {String} The button direction.
+    values: 'prev', 'next'
+    default: 'prev'
+  - orientation: {String} The thumbnail-picker orientation.
+    values: 'horizontal', 'vertical'
+    defaults: 'horizontal'
+  - id: {String} Unique id
+  - class: {String} Additional classes
+  - attributes: {String} Additional attributes
+
+  Usage:
+  {% render 'product-media-thumbnail-picker-button',
+    direction: 'prev',
+    orientation: 'horizontal',
+    id: 'product-media'
+  %}
+{% endcomment %}
+
+{% liquid
+  assign button_size = 32
+
+  case orientation
+    when 'vertical'
+      assign size_class = 'min-h-[--picker-btn-size]'
+      if direction == 'next'
+        assign icon = 'stroke-chevron-down'
+        assign position_class = '-translate-x-1/2 left-1/2 bottom-0 size-full'
+      else
+        # defaults to 'prev'
+        assign direction = 'prev'
+        assign icon = 'stroke-chevron-up'
+        assign position_class = '-translate-x-1/2 left-1/2 top-0 size-full'
+      endif
+    else
+      # defaults to 'horizontal'
+      assign orientation = 'horizontal'
+      assign size_class = 'w-[--picker-btn-size]'
+      if direction == 'next'
+        assign icon = 'stroke-chevron-right'
+        assign position_class = '-translate-y-1/2 top-1/2 right-0 min-h-full h-full'
+      else
+        # defaults to 'prev'
+        assign direction = 'prev'
+        assign icon = 'stroke-chevron-left'
+        assign position_class = '-translate-y-1/2 top-1/2 left-0 min-h-full h-full'
+      endif
+  endcase
+%}
+
+{% capture attributes %}
+  {% if direction == 'prev' %}
+    {% comment %} Prev {% endcomment %}
+    aria-label="{{ 'other.accessibility.prev' | t }}"
+    :class="$overflow.start ? 'flex' : 'hidden'"
+    :disabled="!$overflow.start"
+    :aria-hidden="!$overflow.start"
+    {% if orientation == 'vertical' %}
+      @click="$refs.scrollTrack.scrollBy({ top: -scrollByDistance, behavior: 'smooth' })"
+    {% else %}
+      @click="$refs.scrollTrack.scrollBy({ left: -scrollByDistance, behavior: 'smooth' })"
+    {% endif %}
+  {% elsif direction == 'next' %}
+    {% comment %} Next {% endcomment %}
+    aria-label="{{ 'other.accessibility.next' | t }}"
+    :class="$overflow.end ? 'flex' : 'hidden'"
+    :disabled="!$overflow.end"
+    :aria-hidden="!$overflow.end"
+    {% if orientation == 'vertical' %}
+      @click="$refs.scrollTrack.scrollBy({ top: scrollByDistance, behavior: 'smooth' })"
+    {% else %}
+      @click="$refs.scrollTrack.scrollBy({ left: scrollByDistance, behavior: 'smooth' })"
+    {% endif %}
+  {% endif %}
+  {{ attributes }}
+{% endcapture %}
+
+{% if direction %}
+  <button
+    class="
+      vars-btn-content
+      absolute z-10 flex flex-center
+      {{ size_class }}
+      {{ position_class }}
+      {{ class }}
+    "
+    style="--picker-btn-size: {{ button_size }}px"
+    :aria-controls="$id('product-media-thumbnail-picker') + ' ' + $id('{{ id }}')"
+    x-cloak
+    {{ attributes }}
+  >
+    {% render 'core-icon', icon: icon, class: 'shrink-0' %}
+  </button>
+{% endif %}

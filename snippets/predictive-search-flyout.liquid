@@ -1,0 +1,201 @@
+{% liquid
+  assign menu_id = menu_id | default: 'predictive-search-flyout'
+  assign menu_type = 'flyout'
+  assign default_label = 'search.title' | t
+  assign label = label | default: default_label
+  assign icon_size = icon_size | default: 'md'
+  assign search_form_id = search_form_id | default: 'predictive-search-flyout-form'
+%}
+
+<div
+  x-popover:panel.nofloat
+  x-init="$store.headerMenu.popups.set('{{ menu_id }}', {type: '{{ menu_type }}', el: $el});"
+  x-data
+  x-transition:enter="transition-opacity ease-out duration-[--header-menu-flyout-enter-duration]"
+  x-transition:enter-start="opacity-0"
+  x-transition:enter-end="opacity-100"
+  x-transition:leave="transition-opacity ease-out duration-[--header-menu-flyout-exit-duration] {% comment %} Prevent user from accidentally re-opening flyout by hovering while it's closing {% endcomment %} pointer-events-none"
+  x-transition:leave-start="opacity-100"
+  x-transition:leave-end="opacity-0"
+  x-cloak
+  {{ attributes }}
+  class="
+    {% if color_scheme %}
+      vars-{{ color_scheme.id }}
+    {% endif %}
+    flex flex-col w-full h-screen origin-top text-content bg-canvas
+    fixed top-0 left-0 right-0
+    {% comment %} "mt-0" makes sure the flyout is top aligned. We can't use "bottom-auto" because it breaks the scrolling of the inner container {% endcomment %}
+    md:mt-0
+    {{ class }}
+  "
+  style="--predictive-search-flyout-padding: var(--predictive-search-flyout-padding-custom, var(--layout-buffer-x))"
+  x-effect="
+    if ($disclosure.isCollapsed) {
+      $predictiveSearch.reset()
+    } else {
+      {% comment %} $nextTick gives it time to render before taking measurements {% endcomment %}
+      $nextTick(() => $el.style.setProperty('--predictive-search-max-height', (($store.page.visualViewportHeight - $refs.form.offsetHeight) + 'px')))
+    }
+  "
+  {% unless scroll_lock == false %}
+    x-scroll-lock="$disclosure.isExpanded"
+  {% endunless %}
+  x-predictive-search="predictive-search-results"
+  x-init=""
+  :data-open="$disclosure.isExpanded"
+>
+  <div role="search">
+    <div
+      class="sr-only"
+      role="status"
+      x-text="$predictiveSearch.state == 'loading' ? '{{ 'search.accessibility.searching' | t }}' : ''"
+    ></div>
+    <form
+      action="{{ routes.search_url }}"
+      x-predictive-search:form
+      id="{{ search_form_id }}"
+      x-ref="form"
+      class="
+        relative w-full flex-none flex flex-row group bg-canvas border-b border-line-subtle
+        px-[--predictive-search-flyout-padding]
+        {% comment %} Mobile {% endcomment %}
+        h-row-lg
+        {% comment %} Desktop: We want the search form to match the height but use a minimum height to prevent a very narrow flyout when the header is short {% endcomment %}
+        md:h-[--header-height]
+        md:min-h-row-sm
+        {{ form_class }}
+      "
+    >
+      {% assign input_label = 'search.accessibility.input_label' | t %}
+
+      <input
+        name="q"
+        type="search"
+        autocomplete="off"
+        placeholder="{{ 'search.placeholder' | t }}"
+        class="self-stretch flex-1 w-full hide-search-clear text-content bg-transparent text-r4 md:text-r5 {{ input_class }}"
+        x-predictive-search:input
+        aria-label="{{ input_label }}"
+        autofocus
+        x-effect="
+          if ($disclosure.isExpanded) {
+            setTimeout(async () => {
+              if (document.activeElement !== $el) {
+                await $disclosure.waitForAnimations()
+                console.log('focusing')
+                $el.focus()
+              }
+            }, 0)
+          }
+        "
+      >
+      <div class="flex-none flex flex-row animate-in slide-in-from-right-[10px]">
+        {% capture button_class %}
+          keyboard-focus:outline-offset-[-2px]
+          flex flex-center min-w-row-lg
+          px-[--drawer-padding]
+        {% endcapture %}
+
+        {% assign close_button_label = 'other.accessibility.close' | t %}
+        <button
+          @click="$disclosure.collapse()"
+          type="reset"
+          class="{{ button_class }}"
+          aria-label="{{ close_button_label }}"
+        >
+          {% render 'core-icon', size: icon_size, icon: 'fill-x-md' %}
+        </button>
+        {% assign submit_button_label = 'search.accessibility.submit_button_label' | t %}
+        <button
+          type="submit"
+          class="{{ button_class }}"
+          aria-label="{{ submit_button_label }}"
+        >
+          {% render 'core-icon', size: icon_size, icon: 'fill-magnify' %}
+        </button>
+      </div>
+    </form>
+
+    <div
+      data-skip-animation-wait
+      class="
+        scroll-area-y edge-mask text-content
+        max-h-[--predictive-search-max-height]
+        px-[--predictive-search-flyout-padding] pt-[calc(var(--predictive-search-flyout-padding)/2)] pb-[--predictive-search-flyout-padding]
+      "
+      x-overflow
+      x-overflow:viewport
+      :class="
+        {
+          'edge-mask-t-[5%]': $overflow.start,
+          'edge-mask-b-[5%]': $overflow.end
+        }
+      "
+    >
+      <div x-overflow:start class="w-full h-px" aria-hidden="true" role="presentation"></div>
+
+      {% comment %} Render search suggestions before search has been entered {% endcomment %}
+      <div class="h-full" x-show="$predictiveSearch.resultHtml == null">
+        {% capture wrapper_class %}
+          @container/results-container
+          flex flex-col h-full
+        {% endcapture %}
+
+        {% capture heading_class %}
+          flex-row-center min-h-row-sm
+          text-r3 text-muted
+        {% endcapture %}
+
+        {% capture item_class %}
+          flex-row-center min-h-row-lg
+          animate-in fade-in slide-in-from-left-[10px] stagger-animation animate-delay-[calc(var(--enter-duration)/4)]
+          animate-transform-duration-1000
+          animate-opacity-duration-1500
+        {% endcapture %}
+
+        {% capture result_group_list_class %}
+          flex flex-col
+        {% endcapture %}
+
+        {% render 'predictive-search-suggestions',
+          wrapper_class: wrapper_class,
+          heading_class: heading_class,
+          item_class: item_class,
+          result_group_list_class: result_group_list_class
+        %}
+      </div>
+
+      {% comment %} Once search has been entered, render results {% endcomment %}
+      <div x-show="$predictiveSearch.state != 'idle'">
+        <div x-predictive-search:results></div>
+        {% capture show_results_label %}
+          {{ 'search.view_all_results' | t }}
+        {% endcapture %}
+        {% capture submit_button_label_class %}
+          [--shimmer-btn-text-color:color-mix(in_srgb,_var(--btn-text-color)_80%,_black)]
+          [:not(:hover)>&]:text-shimmer-[--shimmer-btn-text-color] [:not(:hover)>&]:animate-text-shimmer
+          repeat-infinite animate-ease-linear
+        {% endcapture %}
+        <div
+          class="pt-[calc(var(--predictive-search-flyout-padding)/2)]"
+          x-show="$predictiveSearch.state == 'success'"
+        >
+          {% render 'core-button',
+            label: show_results_label,
+            type: 'submit',
+            appearance: 'outline',
+            color: 'content',
+            sizing: 'lg',
+            class: 'max-md:w-full',
+            label_class: submit_button_label_class,
+            form: search_form_id,
+            attributes: submit_button_attributes
+          %}
+        </div>
+      </div>
+
+      <div x-overflow:end class="w-full h-px" aria-hidden="true" role="presentation"></div>
+    </div>
+  </div>
+</div>

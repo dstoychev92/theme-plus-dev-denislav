@@ -1,0 +1,80 @@
+{% liquid
+  assign class_param = class
+  assign attributes_param = attributes
+
+  assign appearance = appearance | default: _settings.tab_style
+
+  if appearance == blank or appearance == 'inherit'
+    assign appearance = settings.tab_style
+  endif
+
+  if _settings != blank
+    assign enable_typography = _settings.enable_typography
+    assign set_gap_tab_x = _settings.set_gap_tab_x
+    assign gap_tab_x = _settings.gap_tab_x
+    assign gap_custom_tab_x = _settings.gap_custom_tab_x
+  endif
+%}
+
+{% if _settings != blank %}
+  {% capture class %}
+    {% if enable_typography %}
+      {% render 'props-class-type-preset', _settings: _settings, type_preset: 'custom' %}
+    {% else %}
+      type-tab
+    {% endif %}
+    {{ class }}
+  {% endcapture %}
+
+  {% if set_gap_tab_x %}
+    {% capture attributes %}
+      {{ attributes }}
+      style="
+        {% render 'props-style-gap', gap: gap_tab_x, gap_custom: gap_custom_tab_x, vars: false, apply: false %}
+        --layout-gutter-x: var(--custom-gutter-x);
+        {{ style }}
+      "
+    {% endcapture %}
+  {% endif %}
+{% endif %}
+
+<div
+  :class="
+    {
+      'edge-mask-r': $overflow.end,
+      'edge-mask-l': $overflow.start,
+    }
+  "
+  {% comment %} pb-r1 ensures the line indicator stays visible when the font-size increases {% endcomment %}
+  class="
+    group/tablist vars-control-sm flex-row-center min-h-control max-w-full pb-r1 edge-mask scroll-area-x
+    entrance-container *:auto-set-stagger-order
+    {{ class }}
+  "
+  x-tabs:tablist
+  x-overflow.autoregister
+  x-effect="setActiveIndex($tabs.selectedIndex)"
+  x-data="
+    {
+      activeIndex: null,
+      async setActiveIndex(index) {
+        const animateLayout = await $m.loadAnimateLayout();
+
+        animateLayout(
+          $el,
+          () => {
+            this.activeIndex = index;
+          },
+          {duration: 0.3, ease: [0.4, 0, 0.2, 1]},
+        )
+      }
+    }
+  "
+
+  {% comment %} Unset active element when pointer leaves the tablist entirely {% endcomment %}
+
+  role="tablist"
+  {{ attributes }}
+>
+  {{ tabs }}
+</div>

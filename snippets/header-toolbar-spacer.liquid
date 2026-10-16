@@ -1,0 +1,30 @@
+{% liquid
+  assign show_line = show_line | default: _settings.show_line | default: false, allow_false: true
+
+  assign spacer_x = spacer_x | default: _settings.spacer_x, allow_false: true
+  assign spacer_start = spacer_start | default: _settings.spacer_start, allow_false: true
+  assign spacer_end = spacer_end | default: _settings.spacer_end, allow_false: true
+%}
+
+{% capture style %}
+  {%- if spacer_x -%}
+    --spacer-ps:{{- spacer_x | divided_by: 2 -}}px;
+    --spacer-pe:{{- spacer_x | divided_by: 2 -}}px;
+  {% else %}
+    --spacer-ps:{%- if spacer_start == false or spacer_start == 0 -%}0{%- else -%}{{- spacer_start -}}px{%- endif -%};
+    --spacer-pe:{%- if spacer_end == false or spacer_end == 0 -%}0{%- else -%}{{- spacer_end -}}px{%- endif -%};
+  {%- endif -%}
+  padding-inline-start: calc(var(--spacer-ps) * var(--r-multiplier));
+  padding-inline-end: calc(var(--spacer-pe) * var(--r-multiplier));
+  {{ style }}
+{% endcapture %}
+
+<div
+  class="flex flex-center h-full {{ class | strip }}"
+  style="{{ style | strip }}"
+  {{ attributes }}
+>
+  {%- if show_line -%}
+    <div class="flex-1 h-1/2 min-h-[1em] w-px bg-line"></div>
+  {%- endif -%}
+</div>

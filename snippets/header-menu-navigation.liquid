@@ -1,0 +1,61 @@
+{% liquid
+  assign link_list = _settings.linklist
+  assign target_device = target_device | default: _settings.target_device
+%}
+
+{% if link_list != blank and linklists[link_list].links.size > 0 %}
+  <ul
+    x-overflow.autoregister
+    {% comment %} Prevent morphing from messing with the state of any open megamenus or dropdowns {% endcomment %}
+    data-morph-skip
+    class="
+      flex-row-center overflow-x-auto scrollbar-hide
+      [--nav-menu-padding-x:calc(var(--header-row-gap-x)/2)]
+      h-full
+
+      {% comment %} Edge mask only works here if popover API is supported since otherwise the mask clips any megamenus or dropdowns {% endcomment %}
+      supports-popover:edge-mask
+
+      {% comment %} Ensure that the edge mask spans the gap between elements and then overlaps some {% endcomment %}
+      supports-popover:[--edge-mask-distance:calc(var(--nav-menu-padding-x)+50px)]
+
+      {% comment %} Start and end padding so the edge-less link padding acts like a gap {% endcomment %}
+
+      {% render 'props-class-target-device', target_device: target_device %}
+      {{ class }}
+    "
+    :class="
+      {
+        'supports-popover:edge-mask-r-[--edge-mask-distance]': $overflow.end,
+        'supports-popover:edge-mask-l-[--edge-mask-distance]': $overflow.start,
+      }
+    "
+    data-header-menu-overflow-scroll
+    x-megamenu
+    x-effect="
+      if ($store.headerMenu.activePopup && $store.headerMenu.activePopupType == 'flyout') {
+        toggleMegaMenu($store.headerMenu.activePopup)
+      } else {
+        toggleMegaMenu(null)
+      }
+    "
+
+    {{ attributes }}
+  >
+    {% comment %} Add a placeholder item so the megamenu can still show in the theme editor even when it hasn't been assigned to a link yet {% endcomment %}
+    {% if request.design_mode %}
+      {% render 'header-menu-navigation-item', megamenu_placeholder: true, _settings: _settings %}
+    {% endif %}
+
+    {% for link in linklists[link_list].links %}
+      {% render 'header-menu-navigation-item',
+        _settings: _settings,
+        link: link,
+        link_attributes: link_attributes,
+        first: forloop.first,
+        last: forloop.last,
+        total: forloop.length
+      %}
+    {% endfor %}
+  </ul>
+{% endif %}

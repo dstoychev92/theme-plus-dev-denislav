@@ -1,0 +1,150 @@
+<!-- blocks/theme-richtext.liquid -->
+
+{%- assign limit_width = block.settings.limit_width -%}
+{%- assign max_width = block.settings.max_width -%}
+
+{% capture style %}
+  {% if limit_width %}
+    {% render 'style-max-width', max_width: max_width %}
+  {% endif %}
+
+  {% if block.settings.set_color and block.settings.color == 'custom' %}
+    --color-custom-text: {{ block.settings.color_custom }};
+  {% endif %}
+{% endcapture %}
+
+{% capture class %}
+  {% if block.settings.set_color %}
+    text-{{ block.settings.color | default: 'content' }}
+  {% else %}
+    text-default
+  {% endif %}
+  {% comment %} Disable entrance animations in visual preview mode to prevent "No preview available" error {% endcomment %}
+  {% unless request.visual_preview_mode %}
+    entrance-item entrance-standard
+  {% endunless %}
+{% endcapture %}
+
+{% render 'core-richtext',
+  _settings: block.settings,
+  attributes: block.shopify_attributes,
+  class: class,
+  style: style
+%}
+
+{% schema %}
+{
+	"name": "Rich Text",
+	"tag": null,
+	"settings": [
+		{
+			"type": "richtext",
+			"id": "text",
+			"label": "Text",
+			"default": "<p><strong>Describe your store</strong> with rich multi-line text.</p><p>Use the <em>Aa dropdown</em> to change typography presets.</p>"
+		},
+		{
+			"type": "select",
+			"id": "richtext_size",
+			"label": "Text size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			]
+		},
+		{
+			"type": "checkbox",
+			"id": "limit_width",
+			"label": "Limit width",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "max_width",
+			"label": "Limit",
+			"unit": "px",
+			"min": 100,
+			"max": 1100,
+			"step": 10,
+			"default": 500,
+			"visible_if": "{{ block.settings.limit_width == true }}"
+		},
+		{
+			"type": "header",
+			"content": "Color"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_color",
+			"label": "Set color",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "color",
+			"label": "Color",
+			"default": "content",
+			"visible_if": "{{ block.settings.set_color == true  }}",
+			"options": [
+				{
+					"value": "content",
+					"label": "Text default"
+				},
+				{
+					"value": "muted",
+					"label": "Text muted"
+				},
+				{
+					"value": "primary",
+					"label": "Primary accent"
+				},
+				{
+					"value": "secondary",
+					"label": "Link accent"
+				},
+				{
+					"value": "sale",
+					"label": "Sale"
+				},
+				{
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "color",
+			"id": "color_custom",
+			"alpha": true,
+			"default": "#000000",
+			"visible_if": "{{ block.settings.color == 'custom' and block.settings.set_color == true  }}",
+			"label": "Custom color"
+		},
+	],
+	"presets": [
+		{
+			"name": "Rich Text",
+			"category": "Basic"
+		}
+	]
+}
+{% endschema %}

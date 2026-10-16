@@ -1,0 +1,2024 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "hero": {
+      "type": "section-banner",
+      "blocks": {
+        "hero_frame": {
+          "type": "theme-group-frame",
+          "name": "Frame",
+          "settings": {
+            "set_width": true,
+            "width_unit": "percent",
+            "width_px": 500,
+            "width_percent": 60,
+            "enable_width_fluid": true,
+            "width_fluid_limit": 100,
+            "set_layout": true,
+            "content_align": "left",
+            "gap": "sm",
+            "gap_custom": 0,
+            "full_height": false,
+            "justification_column": "center",
+            "set_color_scheme": false,
+            "color_scheme": "",
+            "background": "canvas",
+            "background_custom": "#f7f7f730",
+            "background_blur": false,
+            "set_shadow": false,
+            "set_border": false,
+            "border_width": 1,
+            "border_color": "#000000",
+            "set_rounding": false,
+            "rounding_radius": "lg",
+            "rounding_radius_custom": 20,
+            "set_padding": false,
+            "padding": "lg",
+            "padding_custom": 0,
+            "padding_border": "custom",
+            "padding_custom_border": 0
+          },
+          "blocks": {
+            "theme_badge_DWgUVb": {
+              "type": "theme-badge",
+              "name": "Badge",
+              "settings": {
+                "text": "<strong>AFFILIATE ПРОГРАМА</strong>",
+                "type_preset": "btn",
+                "type_resize": "sm",
+                "type_font": "subheading",
+                "type_size": 2,
+                "type_uppercase": true,
+                "size": "md",
+                "size_custom": 10,
+                "set_custom_color": true,
+                "custom_color": "#100e9e",
+                "outline_style": true,
+                "set_rounding": false,
+                "rounding_style": "none"
+              },
+              "blocks": {}
+            },
+            "hero_title": {
+              "type": "theme-text",
+              "name": "Text",
+              "settings": {
+                "text": "ПИЙ КАФЕ. РАЗКАЗВАЙ ЗА НЕГО. ПЕЧЕЛИ.",
+                "type_preset": "h1",
+                "type_resize": "sm",
+                "type_font": "heading",
+                "type_size": 10,
+                "type_uppercase": false,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000",
+                "limit_width": true,
+                "max_width": 400,
+                "set_heading_tag": true,
+                "heading_tag": "h1"
+              },
+              "blocks": {}
+            },
+            "hero_subtitle": {
+              "type": "theme-richtext",
+              "name": "Rich Text",
+              "settings": {
+                "text": "<p>Стани част от партньорската програма на <strong>BOOM!</strong> Препоръчай кафето, което вече обичаш, и вземи <strong>15% от всяка поръчка</strong>. Твоите последователи получават 10% отстъпка.</p>",
+                "richtext_size": "md",
+                "limit_width": true,
+                "max_width": 560,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            },
+            "hero_buttons": {
+              "type": "theme-group-row",
+              "name": "Row",
+              "settings": {
+                "gap": "sm",
+                "gap_custom": 0,
+                "full_width": true,
+                "style": "even",
+                "justify_spread": "between",
+                "justify_packed": "start",
+                "wrap_mobile": "wrap"
+              },
+              "blocks": {
+                "hero_btn_cta": {
+                  "type": "theme-button",
+                  "name": "Button",
+                  "settings": {
+                    "text": "СТАНИ ПАРТНЬОР",
+                    "href": "https://af.uppromote.com/boom-coffee1/register?p=298560",
+                    "open_in_new_window": false,
+                    "appearance": "solid",
+                    "sizing": "lg",
+                    "color": "white",
+                    "type_preset": "btn",
+                    "type_resize": "md",
+                    "type_font": "body",
+                    "type_size": 4,
+                    "type_uppercase": false,
+                    "set_rounding": false,
+                    "rounding_style": "none",
+                    "set_width": false,
+                    "width_unit": "percent",
+                    "width_px": 200,
+                    "width_percent": 100
+                  },
+                  "blocks": {}
+                },
+                "hero_btn_how": {
+                  "type": "theme-button",
+                  "name": "Button",
+                  "settings": {
+                    "text": "КАК РАБОТИ",
+                    "href": "#kak-raboti",
+                    "open_in_new_window": false,
+                    "appearance": "outline",
+                    "sizing": "lg",
+                    "color": "content",
+                    "type_preset": "btn",
+                    "type_resize": "md",
+                    "type_font": "body",
+                    "type_size": 4,
+                    "type_uppercase": false,
+                    "set_rounding": false,
+                    "rounding_style": "none",
+                    "set_width": false,
+                    "width_unit": "percent",
+                    "width_px": 200,
+                    "width_percent": 100
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "hero_btn_cta",
+                "hero_btn_how"
+              ]
+            },
+            "hero_stats": {
+              "type": "theme-group-row",
+              "name": "Row",
+              "settings": {
+                "gap": "lg",
+                "gap_custom": 0,
+                "full_width": true,
+                "style": "packed",
+                "justify_spread": "between",
+                "justify_packed": "start",
+                "wrap_mobile": "wrap"
+              },
+              "blocks": {
+                "hero_stat_1": {
+                  "type": "theme-group-frame",
+                  "name": "Frame",
+                  "settings": {
+                    "set_width": false,
+                    "width_unit": "percent",
+                    "width_px": 500,
+                    "width_percent": 100,
+                    "enable_width_fluid": false,
+                    "width_fluid_limit": 100,
+                    "set_layout": true,
+                    "content_align": "left",
+                    "gap": "custom",
+                    "gap_custom": 2,
+                    "full_height": false,
+                    "justification_column": "start",
+                    "set_color_scheme": false,
+                    "color_scheme": "",
+                    "background": "canvas",
+                    "background_custom": "#ffffff",
+                    "background_blur": false,
+                    "set_shadow": false,
+                    "set_border": false,
+                    "border_width": 1,
+                    "border_color": "#000000",
+                    "set_rounding": false,
+                    "rounding_radius": "lg",
+                    "rounding_radius_custom": 20,
+                    "set_padding": false,
+                    "padding": "lg",
+                    "padding_custom": 0,
+                    "padding_border": "custom",
+                    "padding_custom_border": 0
+                  },
+                  "blocks": {
+                    "hero_stat_1_value": {
+                      "type": "theme-text",
+                      "name": "Text",
+                      "settings": {
+                        "text": "<strong>15%</strong>",
+                        "type_preset": "h3",
+                        "type_resize": "md",
+                        "type_font": "heading",
+                        "type_size": 10,
+                        "type_uppercase": false,
+                        "set_color": true,
+                        "color": "secondary",
+                        "color_custom": "#000000",
+                        "limit_width": false,
+                        "max_width": 500,
+                        "set_heading_tag": true,
+                        "heading_tag": "p"
+                      },
+                      "blocks": {}
+                    },
+                    "hero_stat_1_label": {
+                      "type": "theme-text",
+                      "name": "Text",
+                      "settings": {
+                        "text": "комисион за теб",
+                        "type_preset": "p",
+                        "type_resize": "sm",
+                        "type_font": "body",
+                        "type_size": 3,
+                        "type_uppercase": false,
+                        "set_color": true,
+                        "color": "content",
+                        "color_custom": "#000000",
+                        "limit_width": false,
+                        "max_width": 500,
+                        "set_heading_tag": false,
+                        "heading_tag": "h2"
+                      },
+                      "blocks": {}
+                    }
+                  },
+                  "block_order": [
+                    "hero_stat_1_value",
+                    "hero_stat_1_label"
+                  ]
+                },
+                "hero_stat_2": {
+                  "type": "theme-group-frame",
+                  "name": "Frame",
+                  "settings": {
+                    "set_width": false,
+                    "width_unit": "percent",
+                    "width_px": 500,
+                    "width_percent": 100,
+                    "enable_width_fluid": false,
+                    "width_fluid_limit": 100,
+                    "set_layout": true,
+                    "content_align": "left",
+                    "gap": "custom",
+                    "gap_custom": 2,
+                    "full_height": false,
+                    "justification_column": "start",
+                    "set_color_scheme": false,
+                    "color_scheme": "",
+                    "background": "canvas",
+                    "background_custom": "#ffffff",
+                    "background_blur": false,
+                    "set_shadow": false,
+                    "set_border": false,
+                    "border_width": 1,
+                    "border_color": "#000000",
+                    "set_rounding": false,
+                    "rounding_radius": "lg",
+                    "rounding_radius_custom": 20,
+                    "set_padding": false,
+                    "padding": "lg",
+                    "padding_custom": 0,
+                    "padding_border": "custom",
+                    "padding_custom_border": 0
+                  },
+                  "blocks": {
+                    "hero_stat_2_value": {
+                      "type": "theme-text",
+                      "name": "Text",
+                      "settings": {
+                        "text": "<strong>10%</strong>",
+                        "type_preset": "h3",
+                        "type_resize": "md",
+                        "type_font": "heading",
+                        "type_size": 10,
+                        "type_uppercase": false,
+                        "set_color": true,
+                        "color": "secondary",
+                        "color_custom": "#000000",
+                        "limit_width": false,
+                        "max_width": 500,
+                        "set_heading_tag": true,
+                        "heading_tag": "p"
+                      },
+                      "blocks": {}
+                    },
+                    "hero_stat_2_label": {
+                      "type": "theme-text",
+                      "name": "Text",
+                      "settings": {
+                        "text": "отстъпка за твоите хора",
+                        "type_preset": "p",
+                        "type_resize": "sm",
+                        "type_font": "body",
+                        "type_size": 3,
+                        "type_uppercase": false,
+                        "set_color": true,
+                        "color": "content",
+                        "color_custom": "#000000",
+                        "limit_width": false,
+                        "max_width": 500,
+                        "set_heading_tag": false,
+                        "heading_tag": "h2"
+                      },
+                      "blocks": {}
+                    }
+                  },
+                  "block_order": [
+                    "hero_stat_2_value",
+                    "hero_stat_2_label"
+                  ]
+                },
+                "hero_stat_3": {
+                  "type": "theme-group-frame",
+                  "name": "Frame",
+                  "settings": {
+                    "set_width": false,
+                    "width_unit": "percent",
+                    "width_px": 500,
+                    "width_percent": 100,
+                    "enable_width_fluid": false,
+                    "width_fluid_limit": 100,
+                    "set_layout": true,
+                    "content_align": "left",
+                    "gap": "custom",
+                    "gap_custom": 2,
+                    "full_height": false,
+                    "justification_column": "start",
+                    "set_color_scheme": false,
+                    "color_scheme": "",
+                    "background": "canvas",
+                    "background_custom": "#ffffff",
+                    "background_blur": false,
+                    "set_shadow": false,
+                    "set_border": false,
+                    "border_width": 1,
+                    "border_color": "#000000",
+                    "set_rounding": false,
+                    "rounding_radius": "lg",
+                    "rounding_radius_custom": 20,
+                    "set_padding": false,
+                    "padding": "lg",
+                    "padding_custom": 0,
+                    "padding_border": "custom",
+                    "padding_custom_border": 0
+                  },
+                  "blocks": {
+                    "hero_stat_3_value": {
+                      "type": "theme-text",
+                      "name": "Text",
+                      "settings": {
+                        "text": "<strong>30 дни</strong>",
+                        "type_preset": "h3",
+                        "type_resize": "md",
+                        "type_font": "heading",
+                        "type_size": 10,
+                        "type_uppercase": false,
+                        "set_color": true,
+                        "color": "secondary",
+                        "color_custom": "#000000",
+                        "limit_width": false,
+                        "max_width": 500,
+                        "set_heading_tag": true,
+                        "heading_tag": "p"
+                      },
+                      "blocks": {}
+                    },
+                    "hero_stat_3_label": {
+                      "type": "theme-text",
+                      "name": "Text",
+                      "settings": {
+                        "text": "проследяване на линка",
+                        "type_preset": "p",
+                        "type_resize": "sm",
+                        "type_font": "body",
+                        "type_size": 3,
+                        "type_uppercase": false,
+                        "set_color": true,
+                        "color": "content",
+                        "color_custom": "#000000",
+                        "limit_width": false,
+                        "max_width": 500,
+                        "set_heading_tag": false,
+                        "heading_tag": "h2"
+                      },
+                      "blocks": {}
+                    }
+                  },
+                  "block_order": [
+                    "hero_stat_3_value",
+                    "hero_stat_3_label"
+                  ]
+                }
+              },
+              "block_order": [
+                "hero_stat_1",
+                "hero_stat_2",
+                "hero_stat_3"
+              ]
+            }
+          },
+          "block_order": [
+            "theme_badge_DWgUVb",
+            "hero_title",
+            "hero_subtitle",
+            "hero_buttons",
+            "hero_stats"
+          ]
+        }
+      },
+      "block_order": [
+        "hero_frame"
+      ],
+      "name": "Hero: Affiliate",
+      "settings": {
+        "media_type": "image",
+        "image": "shopify://shop_images/boom-home-hero.webp",
+        "show_image_on_mobile": false,
+        "set_height": true,
+        "height": "image",
+        "custom_height_type": "percentage",
+        "custom_height_percentage": 33,
+        "custom_height_px": 350,
+        "set_height_mobile": false,
+        "height_mobile": "custom",
+        "custom_height_type_mobile": "percentage",
+        "custom_height_percentage_mobile": 100,
+        "custom_height_px_mobile": 350,
+        "contain_section": false,
+        "section_width": "full",
+        "section_padding_top": 40,
+        "section_padding_bottom": 40,
+        "set_rounding": false,
+        "rounding_radius": "lg",
+        "rounding_radius_custom": 20,
+        "set_border": false,
+        "border_width": 1,
+        "border_color": "#000000",
+        "content_width": "page",
+        "vertical_placement": "middle",
+        "set_mobile_placement": false,
+        "vertical_placement_mobile": "top",
+        "horizontal_placement": "left",
+        "content_padding": "md",
+        "content_padding_custom": 0,
+        "color_scheme": "scheme-footer",
+        "background": "canvas",
+        "background_color": "#ffffff",
+        "overlay_opacity": 30,
+        "overlay_color": "#000000",
+        "enable_transparent": false,
+        "transparent_style": "auto",
+        "set_target_device": false,
+        "target_device": "desktop"
+      }
+    },
+    "marquee": {
+      "type": "section-marquee",
+      "blocks": {
+        "marquee_text_1": {
+          "type": "_marquee-text",
+          "settings": {
+            "text": "БЕЗ ТАКСИ ЗА УЧАСТИЕ",
+            "enable_typography": true,
+            "type_font": "heading",
+            "type_size": 5,
+            "type_uppercase": false,
+            "set_color": false,
+            "color": "content",
+            "color_custom": "#000000",
+            "outline_text": false,
+            "highlight_toggle": "auto",
+            "highlight_color": "#77777730",
+            "highlight_appearance": "partial"
+          },
+          "blocks": {}
+        },
+        "marquee_text_2": {
+          "type": "_marquee-text",
+          "settings": {
+            "text": "ИЗПЛАЩАНЕ ВСЕКИ МЕСЕЦ",
+            "enable_typography": true,
+            "type_font": "heading",
+            "type_size": 5,
+            "type_uppercase": false,
+            "set_color": false,
+            "color": "content",
+            "color_custom": "#000000",
+            "outline_text": false,
+            "highlight_toggle": "auto",
+            "highlight_color": "#77777730",
+            "highlight_appearance": "partial"
+          },
+          "blocks": {}
+        },
+        "marquee_text_4": {
+          "type": "_marquee-text",
+          "settings": {
+            "text": "РЕАЛЕН ЧОВЕК ЗА ВРЪЗКА",
+            "enable_typography": true,
+            "type_font": "heading",
+            "type_size": 5,
+            "type_uppercase": false,
+            "set_color": false,
+            "color": "content",
+            "color_custom": "#000000",
+            "outline_text": false,
+            "highlight_toggle": "auto",
+            "highlight_color": "#77777730",
+            "highlight_appearance": "partial"
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "marquee_text_1",
+        "marquee_text_2",
+        "marquee_text_4"
+      ],
+      "name": "Marquee: Предимства",
+      "settings": {
+        "color_scheme": "scheme-opposite",
+        "background": "canvas",
+        "background_color": "#f2f2f2",
+        "speed": 2,
+        "type_preset": "h3",
+        "type_font": "heading",
+        "type_size": 9,
+        "type_uppercase": false,
+        "gap": "md",
+        "gap_custom": 0,
+        "padding": "md",
+        "padding_custom": 0,
+        "block_alignment": "middle",
+        "set_target_device": false,
+        "target_device": "desktop"
+      }
+    },
+    "anchor_kak_raboti": {
+      "type": "section-custom",
+      "blocks": {
+        "anchor_code": {
+          "type": "theme-liquid-code",
+          "name": "Custom Liquid",
+          "settings": {
+            "code": "<div id=\"kak-raboti\" style=\"scroll-margin-top: 90px;\"></div>",
+            "output": "raw",
+            "prevent_dynamic_updates": false
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "anchor_code"
+      ],
+      "name": "Котва: #kak-raboti",
+      "settings": {
+        "contain_section": true,
+        "section_width": "page",
+        "set_rhythm": true,
+        "section_padding_top": 0,
+        "section_padding_bottom": 0,
+        "gap": "custom",
+        "gap_custom": 0,
+        "alignment": "center",
+        "color_scheme": "",
+        "background": "canvas",
+        "background_color": "#f2f2f2",
+        "overlay_opacity": 0,
+        "overlay_color": "#000000",
+        "set_target_device": false,
+        "target_device": "desktop"
+      }
+    },
+    "how_it_works": {
+      "type": "section-timeline",
+      "blocks": {
+        "step_1": {
+          "type": "_timeline-step",
+          "settings": {
+            "badge": "СТЪПКА 1",
+            "title": "ПОПЪЛВАШ ЗАЯВКАТА",
+            "body": "<p>Кратка форма с твоите канали. Отнема под 2 минути. Автоматично одобрение.</p>",
+            "color_scheme": "scheme-header",
+            "background": "tint",
+            "background_color": "#f8f6f4",
+            "padding": "md",
+            "padding_custom": 26,
+            "set_border": false,
+            "border_width": 1,
+            "border_color": "#e0e0e0",
+            "rounding_radius": "lg",
+            "rounding_radius_custom": 20
+          },
+          "blocks": {}
+        },
+        "step_2": {
+          "type": "_timeline-step",
+          "settings": {
+            "badge": "СТЪПКА 2",
+            "title": "ПОЛУЧАВАШ КОД И ЛИНК",
+            "body": "<p>След одобрение получаваш персонален промо код, партньорски линк и готови стартови материали на имейла.</p>",
+            "color_scheme": "scheme-header",
+            "background": "tint",
+            "background_color": "#f8f6f4",
+            "padding": "md",
+            "padding_custom": 26,
+            "set_border": false,
+            "border_width": 1,
+            "border_color": "#e0e0e0",
+            "rounding_radius": "lg",
+            "rounding_radius_custom": 20
+          },
+          "blocks": {}
+        },
+        "step_3": {
+          "type": "_timeline-step",
+          "settings": {
+            "badge": "СТЪПКА 3",
+            "title": "СПОДЕЛЯШ И ПЕЧЕЛИШ",
+            "body": "<p>Пускаш кода в сторита, видеа или блог. Ти взимаш 15% от всяка поръчка, а твоите хора спестяват 10%. Всички печелят.</p>",
+            "color_scheme": "scheme-header",
+            "background": "tint",
+            "background_color": "#f8f6f4",
+            "padding": "md",
+            "padding_custom": 26,
+            "set_border": false,
+            "border_width": 1,
+            "border_color": "#e0e0e0",
+            "rounding_radius": "lg",
+            "rounding_radius_custom": 20
+          },
+          "blocks": {}
+        },
+        "header": {
+          "type": "_section-title",
+          "static": true,
+          "settings": {
+            "text": "КАК РАБОТИ",
+            "type_preset": "section",
+            "type_resize": "md",
+            "type_font": "heading",
+            "type_size": 8,
+            "type_uppercase": false,
+            "set_color": false,
+            "color": "content",
+            "color_custom": "#000000",
+            "set_spacing": false,
+            "buffer_bottom": 0,
+            "gap": "sm",
+            "gap_custom": 0,
+            "set_heading_tag": false,
+            "heading_tag": "h2"
+          },
+          "blocks": {
+            "header_richtext": {
+              "type": "theme-richtext",
+              "name": "Rich Text",
+              "settings": {
+                "text": "<p>Три стъпки те делят от първата ти комисиона. Без такси, без ангажимент.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "header_richtext"
+          ]
+        }
+      },
+      "block_order": [
+        "step_1",
+        "step_2",
+        "step_3"
+      ],
+      "name": "Timeline: Как работи",
+      "settings": {
+        "show_connector": true,
+        "accent": "primary",
+        "columns_lg": 3,
+        "columns_md": 2,
+        "content_width": "page",
+        "content_width_custom": 75,
+        "title_placement": "center",
+        "set_rhythm": false,
+        "section_padding_top": 40,
+        "section_padding_bottom": 40,
+        "color_scheme": "",
+        "background": "canvas",
+        "background_color": "#f2f2f2",
+        "set_shadow": true
+      }
+    },
+    "section_custom_WaK3wB": {
+      "type": "section-custom",
+      "blocks": {
+        "group_grid_CyQnkC": {
+          "type": "_group-grid",
+          "name": "Group: 12 Column Grid",
+          "settings": {
+            "set_gap": true,
+            "gap": "md",
+            "gap_custom": 2,
+            "row_height": "auto"
+          },
+          "blocks": {
+            "grid_item_bykwkb": {
+              "type": "_grid-item",
+              "settings": {
+                "col_start": 1,
+                "col_end": 6,
+                "row_start": 1,
+                "set_row_span": true,
+                "row_span": 4,
+                "set_grid_tablet": false,
+                "col_start_md": 1,
+                "col_end_md": 12,
+                "row_start_md": 1,
+                "set_row_span_md": false,
+                "row_span_md": 2,
+                "set_grid_mobile": true,
+                "col_start_sm": 1,
+                "col_end_sm": 12,
+                "row_start_sm": 1,
+                "set_row_span_sm": false,
+                "row_span_sm": 2,
+                "set_layout": false,
+                "content_align": "center",
+                "gap": "md",
+                "gap_custom": 0,
+                "set_parallax": false,
+                "parallax": 0,
+                "target_device": "both"
+              },
+              "blocks": {
+                "theme_group_frame_AeWWJB": {
+                  "type": "theme-group-frame",
+                  "name": "Frame",
+                  "settings": {
+                    "set_width": false,
+                    "width_unit": "percent",
+                    "width_px": 500,
+                    "width_percent": 100,
+                    "enable_width_fluid": false,
+                    "width_fluid_limit": 100,
+                    "set_layout": true,
+                    "content_align": "left",
+                    "gap": "md",
+                    "gap_custom": 0,
+                    "full_height": true,
+                    "justification_column": "center",
+                    "set_color_scheme": true,
+                    "color_scheme": "scheme-sub-footer",
+                    "background": "canvas",
+                    "background_custom": "#f7f7f730",
+                    "background_blur": false,
+                    "set_shadow": false,
+                    "set_border": false,
+                    "border_width": 1,
+                    "border_color": "#000000",
+                    "set_rounding": true,
+                    "rounding_radius": "md",
+                    "rounding_radius_custom": 20,
+                    "set_padding": false,
+                    "padding": "lg",
+                    "padding_custom": 0,
+                    "padding_border": "custom",
+                    "padding_custom_border": 0
+                  },
+                  "blocks": {
+                    "theme_text_bDfcRc": {
+                      "type": "theme-text",
+                      "name": "Text",
+                      "settings": {
+                        "text": "15% ОТ ВСЯКА ПОРЪЧКА С ТВОЯ КОД",
+                        "type_preset": "h2",
+                        "type_resize": "md",
+                        "type_font": "heading",
+                        "type_size": 10,
+                        "type_uppercase": false,
+                        "set_color": false,
+                        "color": "content",
+                        "color_custom": "#000000",
+                        "limit_width": false,
+                        "max_width": 500,
+                        "set_heading_tag": true,
+                        "heading_tag": "h2"
+                      },
+                      "blocks": {}
+                    },
+                    "theme_richtext_knLCfk": {
+                      "type": "theme-richtext",
+                      "name": "Rich Text",
+                      "settings": {
+                        "text": "<p>Получаваш <strong>15% от стойността на всяка поръчка</strong>, направена през твоя линк или с твоя код. Кафето е ежедневен навик - клиентите се връщат и ти печелиш отново и отново. Няма таван.</p>",
+                        "richtext_size": "md",
+                        "limit_width": true,
+                        "max_width": 560,
+                        "set_color": false,
+                        "color": "content",
+                        "color_custom": "#000000"
+                      },
+                      "blocks": {}
+                    },
+                    "theme_group_row_XhXCJD": {
+                      "type": "theme-group-row",
+                      "name": "Row",
+                      "settings": {
+                        "gap": "sm",
+                        "gap_custom": 0,
+                        "full_width": true,
+                        "style": "packed",
+                        "justify_spread": "between",
+                        "justify_packed": "start",
+                        "wrap_mobile": "wrap"
+                      },
+                      "blocks": {
+                        "theme_group_frame_dkHmQX": {
+                          "type": "theme-group-frame",
+                          "name": "Frame",
+                          "settings": {
+                            "set_width": false,
+                            "width_unit": "percent",
+                            "width_px": 500,
+                            "width_percent": 100,
+                            "enable_width_fluid": false,
+                            "width_fluid_limit": 100,
+                            "set_layout": true,
+                            "content_align": "left",
+                            "gap": "custom",
+                            "gap_custom": 2,
+                            "full_height": false,
+                            "justification_column": "start",
+                            "set_color_scheme": true,
+                            "color_scheme": "scheme-sub-footer",
+                            "background": "tint",
+                            "background_custom": "#ffffff",
+                            "background_blur": true,
+                            "set_shadow": false,
+                            "set_border": false,
+                            "border_width": 1,
+                            "border_color": "#000000",
+                            "set_rounding": true,
+                            "rounding_radius": "sm",
+                            "rounding_radius_custom": 20,
+                            "set_padding": true,
+                            "padding": "sm",
+                            "padding_custom": 0,
+                            "padding_border": "custom",
+                            "padding_custom_border": 0
+                          },
+                          "blocks": {
+                            "theme_text_Qw64VW": {
+                              "type": "theme-text",
+                              "name": "Text",
+                              "settings": {
+                                "text": "<strong>≈ 75 € / месец</strong>",
+                                "type_preset": "h4",
+                                "type_resize": "md",
+                                "type_font": "heading",
+                                "type_size": 10,
+                                "type_uppercase": false,
+                                "set_color": true,
+                                "color": "content",
+                                "color_custom": "#000000",
+                                "limit_width": false,
+                                "max_width": 500,
+                                "set_heading_tag": true,
+                                "heading_tag": "p"
+                              },
+                              "blocks": {}
+                            },
+                            "theme_text_i3yDMN": {
+                              "type": "theme-text",
+                              "name": "Text",
+                              "settings": {
+                                "text": "при 10 поръчки",
+                                "type_preset": "p",
+                                "type_resize": "sm",
+                                "type_font": "body",
+                                "type_size": 3,
+                                "type_uppercase": false,
+                                "set_color": true,
+                                "color": "content",
+                                "color_custom": "#000000",
+                                "limit_width": false,
+                                "max_width": 500,
+                                "set_heading_tag": false,
+                                "heading_tag": "h2"
+                              },
+                              "blocks": {}
+                            }
+                          },
+                          "block_order": [
+                            "theme_text_Qw64VW",
+                            "theme_text_i3yDMN"
+                          ]
+                        },
+                        "theme_group_frame_Ra7jXC": {
+                          "type": "theme-group-frame",
+                          "name": "Frame",
+                          "settings": {
+                            "set_width": false,
+                            "width_unit": "percent",
+                            "width_px": 500,
+                            "width_percent": 100,
+                            "enable_width_fluid": false,
+                            "width_fluid_limit": 100,
+                            "set_layout": true,
+                            "content_align": "left",
+                            "gap": "custom",
+                            "gap_custom": 2,
+                            "full_height": false,
+                            "justification_column": "start",
+                            "set_color_scheme": true,
+                            "color_scheme": "scheme-sub-footer",
+                            "background": "tint",
+                            "background_custom": "#ffffff",
+                            "background_blur": false,
+                            "set_shadow": false,
+                            "set_border": false,
+                            "border_width": 1,
+                            "border_color": "#000000",
+                            "set_rounding": true,
+                            "rounding_radius": "sm",
+                            "rounding_radius_custom": 20,
+                            "set_padding": true,
+                            "padding": "sm",
+                            "padding_custom": 0,
+                            "padding_border": "custom",
+                            "padding_custom_border": 0
+                          },
+                          "blocks": {
+                            "theme_text_wGEdkm": {
+                              "type": "theme-text",
+                              "name": "Text",
+                              "settings": {
+                                "text": "<strong>≈ 190 € / месец</strong>",
+                                "type_preset": "h4",
+                                "type_resize": "md",
+                                "type_font": "heading",
+                                "type_size": 10,
+                                "type_uppercase": false,
+                                "set_color": true,
+                                "color": "content",
+                                "color_custom": "#000000",
+                                "limit_width": false,
+                                "max_width": 500,
+                                "set_heading_tag": true,
+                                "heading_tag": "p"
+                              },
+                              "blocks": {}
+                            },
+                            "theme_text_hjG9rX": {
+                              "type": "theme-text",
+                              "name": "Text",
+                              "settings": {
+                                "text": "при 25 поръчки",
+                                "type_preset": "p",
+                                "type_resize": "sm",
+                                "type_font": "body",
+                                "type_size": 3,
+                                "type_uppercase": false,
+                                "set_color": true,
+                                "color": "content",
+                                "color_custom": "#000000",
+                                "limit_width": false,
+                                "max_width": 500,
+                                "set_heading_tag": false,
+                                "heading_tag": "h2"
+                              },
+                              "blocks": {}
+                            }
+                          },
+                          "block_order": [
+                            "theme_text_wGEdkm",
+                            "theme_text_hjG9rX"
+                          ]
+                        },
+                        "theme_group_frame_crKM87": {
+                          "type": "theme-group-frame",
+                          "name": "Frame",
+                          "settings": {
+                            "set_width": false,
+                            "width_unit": "percent",
+                            "width_px": 500,
+                            "width_percent": 100,
+                            "enable_width_fluid": false,
+                            "width_fluid_limit": 100,
+                            "set_layout": true,
+                            "content_align": "left",
+                            "gap": "custom",
+                            "gap_custom": 2,
+                            "full_height": false,
+                            "justification_column": "start",
+                            "set_color_scheme": true,
+                            "color_scheme": "scheme-sub-footer",
+                            "background": "tint",
+                            "background_custom": "#ffffff",
+                            "background_blur": false,
+                            "set_shadow": false,
+                            "set_border": false,
+                            "border_width": 1,
+                            "border_color": "#000000",
+                            "set_rounding": true,
+                            "rounding_radius": "sm",
+                            "rounding_radius_custom": 20,
+                            "set_padding": true,
+                            "padding": "sm",
+                            "padding_custom": 0,
+                            "padding_border": "custom",
+                            "padding_custom_border": 0
+                          },
+                          "blocks": {
+                            "theme_text_tjdMpA": {
+                              "type": "theme-text",
+                              "name": "Text",
+                              "settings": {
+                                "text": "<strong>≈ 375 € / месец</strong>",
+                                "type_preset": "h4",
+                                "type_resize": "md",
+                                "type_font": "heading",
+                                "type_size": 10,
+                                "type_uppercase": false,
+                                "set_color": true,
+                                "color": "content",
+                                "color_custom": "#000000",
+                                "limit_width": false,
+                                "max_width": 500,
+                                "set_heading_tag": true,
+                                "heading_tag": "p"
+                              },
+                              "blocks": {}
+                            },
+                            "theme_text_higGct": {
+                              "type": "theme-text",
+                              "name": "Text",
+                              "settings": {
+                                "text": "при 50 поръчки",
+                                "type_preset": "p",
+                                "type_resize": "sm",
+                                "type_font": "body",
+                                "type_size": 3,
+                                "type_uppercase": false,
+                                "set_color": true,
+                                "color": "content",
+                                "color_custom": "#000000",
+                                "limit_width": false,
+                                "max_width": 500,
+                                "set_heading_tag": false,
+                                "heading_tag": "h2"
+                              },
+                              "blocks": {}
+                            }
+                          },
+                          "block_order": [
+                            "theme_text_tjdMpA",
+                            "theme_text_higGct"
+                          ]
+                        }
+                      },
+                      "block_order": [
+                        "theme_group_frame_dkHmQX",
+                        "theme_group_frame_Ra7jXC",
+                        "theme_group_frame_crKM87"
+                      ]
+                    },
+                    "theme_text_63Kmhw": {
+                      "type": "theme-text",
+                      "name": "Text",
+                      "settings": {
+                        "text": "Примерни числа при средна поръчка от 50 €.",
+                        "type_preset": "p",
+                        "type_resize": "xs",
+                        "type_font": "body",
+                        "type_size": 3,
+                        "type_uppercase": false,
+                        "set_color": true,
+                        "color": "muted",
+                        "color_custom": "#000000",
+                        "limit_width": false,
+                        "max_width": 500,
+                        "set_heading_tag": false,
+                        "heading_tag": "h2"
+                      },
+                      "blocks": {}
+                    }
+                  },
+                  "block_order": [
+                    "theme_text_bDfcRc",
+                    "theme_richtext_knLCfk",
+                    "theme_group_row_XhXCJD",
+                    "theme_text_63Kmhw"
+                  ]
+                }
+              },
+              "block_order": [
+                "theme_group_frame_AeWWJB"
+              ]
+            },
+            "grid_item_dJTYX7": {
+              "type": "_grid-item",
+              "settings": {
+                "col_start": 7,
+                "col_end": 12,
+                "row_start": 1,
+                "set_row_span": true,
+                "row_span": 2,
+                "set_grid_tablet": false,
+                "col_start_md": 1,
+                "col_end_md": 12,
+                "row_start_md": 1,
+                "set_row_span_md": false,
+                "row_span_md": 2,
+                "set_grid_mobile": true,
+                "col_start_sm": 1,
+                "col_end_sm": 12,
+                "row_start_sm": 2,
+                "set_row_span_sm": false,
+                "row_span_sm": 2,
+                "set_layout": false,
+                "content_align": "center",
+                "gap": "md",
+                "gap_custom": 0,
+                "set_parallax": false,
+                "parallax": 0,
+                "target_device": "both"
+              },
+              "blocks": {
+                "theme_group_frame_3tpYV4": {
+                  "type": "theme-group-frame",
+                  "name": "Frame",
+                  "settings": {
+                    "set_width": false,
+                    "width_unit": "percent",
+                    "width_px": 500,
+                    "width_percent": 100,
+                    "enable_width_fluid": false,
+                    "width_fluid_limit": 100,
+                    "set_layout": true,
+                    "content_align": "center",
+                    "gap": "md",
+                    "gap_custom": 0,
+                    "full_height": true,
+                    "justification_column": "center",
+                    "set_color_scheme": true,
+                    "color_scheme": "scheme-footer",
+                    "background": "canvas",
+                    "background_custom": "#f7f7f730",
+                    "background_blur": false,
+                    "set_shadow": false,
+                    "set_border": false,
+                    "border_width": 1,
+                    "border_color": "#000000",
+                    "set_rounding": true,
+                    "rounding_radius": "md",
+                    "rounding_radius_custom": 20,
+                    "set_padding": false,
+                    "padding": "lg",
+                    "padding_custom": 0,
+                    "padding_border": "custom",
+                    "padding_custom_border": 0
+                  },
+                  "blocks": {
+                    "theme_text_AEXjTp": {
+                      "type": "theme-text",
+                      "name": "Text",
+                      "settings": {
+                        "text": "10% ОТСТЪПКА С ТВОЯ КОД",
+                        "type_preset": "h2",
+                        "type_resize": "md",
+                        "type_font": "heading",
+                        "type_size": 10,
+                        "type_uppercase": false,
+                        "set_color": false,
+                        "color": "content",
+                        "color_custom": "#000000",
+                        "limit_width": false,
+                        "max_width": 500,
+                        "set_heading_tag": true,
+                        "heading_tag": "h2"
+                      },
+                      "blocks": {}
+                    },
+                    "theme_richtext_gfUGH7": {
+                      "type": "theme-richtext",
+                      "name": "Rich Text",
+                      "settings": {
+                        "text": "<p>Не препоръчваш просто продукт, даваш реална причина да пробват</p>",
+                        "richtext_size": "md",
+                        "limit_width": true,
+                        "max_width": 560,
+                        "set_color": false,
+                        "color": "content",
+                        "color_custom": "#000000"
+                      },
+                      "blocks": {}
+                    }
+                  },
+                  "block_order": [
+                    "theme_text_AEXjTp",
+                    "theme_richtext_gfUGH7"
+                  ]
+                }
+              },
+              "block_order": [
+                "theme_group_frame_3tpYV4"
+              ]
+            },
+            "grid_item_bn9Pn7": {
+              "type": "_grid-item",
+              "settings": {
+                "col_start": 7,
+                "col_end": 12,
+                "row_start": 3,
+                "set_row_span": true,
+                "row_span": 2,
+                "set_grid_tablet": false,
+                "col_start_md": 1,
+                "col_end_md": 12,
+                "row_start_md": 1,
+                "set_row_span_md": false,
+                "row_span_md": 2,
+                "set_grid_mobile": true,
+                "col_start_sm": 1,
+                "col_end_sm": 12,
+                "row_start_sm": 3,
+                "set_row_span_sm": false,
+                "row_span_sm": 2,
+                "set_layout": false,
+                "content_align": "center",
+                "gap": "md",
+                "gap_custom": 0,
+                "set_parallax": false,
+                "parallax": 0,
+                "target_device": "both"
+              },
+              "blocks": {
+                "tile_fE9KC8": {
+                  "type": "_tile",
+                  "name": "Image tile",
+                  "settings": {
+                    "media_type": "image",
+                    "image": "shopify://shop_images/boom-box-1.webp",
+                    "show_image_on_mobile": false,
+                    "set_aspect_ratio": true,
+                    "aspect_ratio": 1.8,
+                    "href": "",
+                    "open_in_new_window": false,
+                    "overlay_opacity": 8,
+                    "overlay_color": "#000000",
+                    "vertical_placement": "full",
+                    "horizontal_placement": "center",
+                    "padding": "lg",
+                    "padding_custom": 0,
+                    "color_scheme": "",
+                    "set_border": false,
+                    "border_width": 1,
+                    "border_color": "#000000",
+                    "set_rounding": false,
+                    "rounding_radius": "lg",
+                    "rounding_radius_custom": 20,
+                    "set_parallax": false,
+                    "parallax": 14
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "tile_fE9KC8"
+              ]
+            }
+          },
+          "block_order": [
+            "grid_item_bykwkb",
+            "grid_item_dJTYX7",
+            "grid_item_bn9Pn7"
+          ]
+        }
+      },
+      "block_order": [
+        "group_grid_CyQnkC"
+      ],
+      "name": "Custom",
+      "settings": {
+        "contain_section": true,
+        "section_width": "page",
+        "set_rhythm": false,
+        "section_padding_top": 40,
+        "section_padding_bottom": 40,
+        "gap": "md",
+        "gap_custom": 0,
+        "alignment": "center",
+        "color_scheme": "scheme-header",
+        "background": "canvas",
+        "background_color": "#f2f2f2",
+        "overlay_opacity": 0,
+        "overlay_color": "#000000",
+        "set_target_device": false,
+        "target_device": "desktop"
+      }
+    },
+    "audience": {
+      "type": "section-card-grid",
+      "blocks": {
+        "audience_card_1": {
+          "type": "_card-custom",
+          "name": "Card: Custom",
+          "settings": {
+            "media_type": "image",
+            "show_image_on_mobile": false,
+            "set_aspect_ratio": false,
+            "aspect_ratio": 1,
+            "href": "",
+            "open_in_new_window": false
+          },
+          "blocks": {
+            "overlay": {
+              "type": "_card-custom-overlay",
+              "static": true,
+              "settings": {
+                "vertical_placement": "middle",
+                "horizontal_placement": "center",
+                "color_scheme": ""
+              },
+              "blocks": {}
+            },
+            "details": {
+              "type": "_card-custom-details",
+              "name": "Details",
+              "static": true,
+              "settings": {
+                "content_align": "left"
+              },
+              "blocks": {
+                "audience_card_1_title": {
+                  "type": "theme-text",
+                  "name": "Text",
+                  "settings": {
+                    "text": "<strong>ФИТНЕС И ЗДРАВЕ</strong>",
+                    "type_preset": "h4",
+                    "type_resize": "md",
+                    "type_font": "heading",
+                    "type_size": 10,
+                    "type_uppercase": false,
+                    "set_color": false,
+                    "color": "content",
+                    "color_custom": "#000000",
+                    "limit_width": false,
+                    "max_width": 500,
+                    "set_heading_tag": true,
+                    "heading_tag": "h3"
+                  },
+                  "blocks": {}
+                },
+                "audience_card_1_text": {
+                  "type": "theme-richtext",
+                  "name": "Rich Text",
+                  "settings": {
+                    "text": "<p>Треньори, нутриционисти и фитнес създатели. Протеиновото кафе е естествено продължение на съдържанието ти и лесна препоръка към клиентите.</p>",
+                    "richtext_size": "sm",
+                    "limit_width": false,
+                    "max_width": 500,
+                    "set_color": true,
+                    "color": "content",
+                    "color_custom": "#000000"
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "audience_card_1_title",
+                "audience_card_1_text"
+              ]
+            }
+          },
+          "block_order": []
+        },
+        "audience_card_2": {
+          "type": "_card-custom",
+          "name": "Card: Custom",
+          "settings": {
+            "media_type": "image",
+            "show_image_on_mobile": false,
+            "set_aspect_ratio": false,
+            "aspect_ratio": 1,
+            "href": "",
+            "open_in_new_window": false
+          },
+          "blocks": {
+            "overlay": {
+              "type": "_card-custom-overlay",
+              "static": true,
+              "settings": {
+                "vertical_placement": "middle",
+                "horizontal_placement": "center",
+                "color_scheme": ""
+              },
+              "blocks": {}
+            },
+            "details": {
+              "type": "_card-custom-details",
+              "name": "Details",
+              "static": true,
+              "settings": {
+                "content_align": "left"
+              },
+              "blocks": {
+                "audience_card_2_title": {
+                  "type": "theme-text",
+                  "name": "Text",
+                  "settings": {
+                    "text": "<strong>CREATORS В IG, YT И TIKTOK</strong>",
+                    "type_preset": "h4",
+                    "type_resize": "md",
+                    "type_font": "heading",
+                    "type_size": 10,
+                    "type_uppercase": false,
+                    "set_color": false,
+                    "color": "content",
+                    "color_custom": "#000000",
+                    "limit_width": false,
+                    "max_width": 500,
+                    "set_heading_tag": true,
+                    "heading_tag": "h3"
+                  },
+                  "blocks": {}
+                },
+                "audience_card_2_text": {
+                  "type": "theme-richtext",
+                  "name": "Rich Text",
+                  "settings": {
+                    "text": "<p>Правиш lifestyle, продуктивност или wellness съдържание. Brain кафето пасва на темите фокус и енергия — и изглежда добре на камера.</p>",
+                    "richtext_size": "sm",
+                    "limit_width": false,
+                    "max_width": 500,
+                    "set_color": true,
+                    "color": "content",
+                    "color_custom": "#000000"
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "audience_card_2_title",
+                "audience_card_2_text"
+              ]
+            }
+          },
+          "block_order": []
+        },
+        "audience_card_3": {
+          "type": "_card-custom",
+          "name": "Card: Custom",
+          "settings": {
+            "media_type": "image",
+            "show_image_on_mobile": false,
+            "set_aspect_ratio": false,
+            "aspect_ratio": 1,
+            "href": "",
+            "open_in_new_window": false
+          },
+          "blocks": {
+            "overlay": {
+              "type": "_card-custom-overlay",
+              "static": true,
+              "settings": {
+                "vertical_placement": "middle",
+                "horizontal_placement": "center",
+                "color_scheme": ""
+              },
+              "blocks": {}
+            },
+            "details": {
+              "type": "_card-custom-details",
+              "name": "Details",
+              "static": true,
+              "settings": {
+                "content_align": "left"
+              },
+              "blocks": {
+                "audience_card_3_title": {
+                  "type": "theme-text",
+                  "name": "Text",
+                  "settings": {
+                    "text": "<strong>БЛОГЪРИ И МЕДИИ</strong>",
+                    "type_preset": "h4",
+                    "type_resize": "md",
+                    "type_font": "heading",
+                    "type_size": 10,
+                    "type_uppercase": false,
+                    "set_color": false,
+                    "color": "content",
+                    "color_custom": "#000000",
+                    "limit_width": false,
+                    "max_width": 500,
+                    "set_heading_tag": true,
+                    "heading_tag": "h3"
+                  },
+                  "blocks": {}
+                },
+                "audience_card_3_text": {
+                  "type": "theme-richtext",
+                  "name": "Rich Text",
+                  "settings": {
+                    "text": "<p>Пишеш за навици, храна, спорт или продуктивност. Разкажи историята на BOOM! и печели от всяка поръчка през твоя линк.</p>",
+                    "richtext_size": "sm",
+                    "limit_width": false,
+                    "max_width": 500,
+                    "set_color": true,
+                    "color": "content",
+                    "color_custom": "#000000"
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "audience_card_3_title",
+                "audience_card_3_text"
+              ]
+            }
+          },
+          "block_order": []
+        },
+        "header": {
+          "type": "_section-title",
+          "static": true,
+          "settings": {
+            "text": "ЗА КОГО Е ПРОГРАМАТА",
+            "type_preset": "section",
+            "type_resize": "md",
+            "type_font": "heading",
+            "type_size": 8,
+            "type_uppercase": false,
+            "set_color": false,
+            "color": "content",
+            "color_custom": "#000000",
+            "set_spacing": false,
+            "buffer_bottom": 0,
+            "gap": "sm",
+            "gap_custom": 0,
+            "set_heading_tag": false,
+            "heading_tag": "h2"
+          },
+          "blocks": {
+            "audience_header_richtext": {
+              "type": "theme-richtext",
+              "name": "Rich Text",
+              "settings": {
+                "text": "<p>Не е нужна огромна аудитория. Нужно е доверие — независимо дали те гледат 500 или 50 000 души.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "audience_header_richtext"
+          ]
+        }
+      },
+      "block_order": [
+        "audience_card_1",
+        "audience_card_2",
+        "audience_card_3"
+      ],
+      "name": "Cards: За кого е",
+      "settings": {
+        "columns_lg": 3,
+        "columns_md": 3,
+        "layout_mobile": "slider",
+        "columns_sm_grid": "2",
+        "progress_bar_visibility": "mobile",
+        "content_width": "page",
+        "content_width_custom": 65,
+        "content_width_custom_mobile": 100,
+        "set_rhythm": false,
+        "section_padding_top": 40,
+        "section_padding_bottom": 40,
+        "title_placement": "center",
+        "set_gap_tab_y": false,
+        "gap_tab_y": "sm",
+        "gap_custom_tab_y": 0,
+        "color_scheme": "",
+        "background": "canvas",
+        "background_color": "#f2f2f2",
+        "set_target_device": false,
+        "target_device": "desktop"
+      }
+    },
+    "faq": {
+      "type": "section-accordion",
+      "blocks": {
+        "faq_1": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Колко струва да се включа?",
+            "expand": true,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "faq_1_text": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Нищо. Присъединяването е напълно безплатно и без ангажимент.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "faq_1_text"
+          ]
+        },
+        "faq_2": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Как и кога получавам парите?",
+            "expand": false,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "faq_2_text": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Печалбата се натрупва в таблото ти и се изплаща месечно. Точните детайли получаваш при одобрение.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "faq_2_text"
+          ]
+        },
+        "faq_3": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Трябва ли да имам голяма аудитория?",
+            "expand": false,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "faq_3_text": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Не. Значение има доверието, не броят. Много от най-успешните партньори имат малка, но ангажирана аудитория.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "faq_3_text"
+          ]
+        },
+        "faq_4": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Как проследявате моите продажби?",
+            "expand": false,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "faq_4_text": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Чрез промо кодът. Всяка поръчка с тях се отчита автоматично в таблото ти.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "faq_4_text"
+          ]
+        },
+        "faq_5": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Мога ли да давам отстъпка на аудиторията си?",
+            "expand": false,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "faq_5_text": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Да. Твоят код дава 10% отстъпка на клиента и ти носи 15% комисион.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "faq_5_text"
+          ]
+        },
+        "faq_6": {
+          "type": "_accordion",
+          "settings": {
+            "title": "Кога получавам достъп след регистрация?",
+            "expand": false,
+            "type_preset": "custom",
+            "type_font": "body",
+            "type_size": 4,
+            "type_uppercase": false
+          },
+          "blocks": {
+            "faq_6_text": {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Преглеждаме заявката до 48 часа. След одобрение получаваш код, линк и материали на имейла.</p>",
+                "richtext_size": "md",
+                "limit_width": false,
+                "max_width": 500,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "faq_6_text"
+          ]
+        },
+        "section-title": {
+          "type": "_section-title",
+          "static": true,
+          "settings": {
+            "text": "ЧЕСТО ЗАДАВАНИ ВЪПРОСИ",
+            "type_preset": "section",
+            "type_resize": "md",
+            "type_font": "heading",
+            "type_size": 8,
+            "type_uppercase": false,
+            "set_color": false,
+            "color": "content",
+            "color_custom": "#000000",
+            "set_spacing": false,
+            "buffer_bottom": 0,
+            "gap": "sm",
+            "gap_custom": 0,
+            "set_heading_tag": false,
+            "heading_tag": "h2"
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "faq_1",
+        "faq_2",
+        "faq_3",
+        "faq_4",
+        "faq_5",
+        "faq_6"
+      ],
+      "name": "FAQ: Affiliate",
+      "settings": {
+        "content_align": "center",
+        "multiple": true,
+        "show_top_border": true,
+        "show_number": false,
+        "show_open_close_icon": true,
+        "enable_muted_title": true,
+        "enable_faq_schema": true,
+        "content_width": "custom",
+        "content_width_custom": 65,
+        "content_width_custom_mobile": 100,
+        "set_rhythm": false,
+        "section_padding_top": 40,
+        "section_padding_bottom": 40,
+        "set_target_device": false,
+        "target_device": "desktop",
+        "color_scheme": "scheme-header",
+        "background": "canvas",
+        "background_color": "#f2f2f2"
+      }
+    },
+    "final_cta": {
+      "type": "section-banner",
+      "blocks": {
+        "cta_frame": {
+          "type": "theme-group-frame",
+          "name": "Frame",
+          "settings": {
+            "set_width": true,
+            "width_unit": "percent",
+            "width_px": 500,
+            "width_percent": 70,
+            "enable_width_fluid": true,
+            "width_fluid_limit": 100,
+            "set_layout": true,
+            "content_align": "center",
+            "gap": "sm",
+            "gap_custom": 0,
+            "full_height": false,
+            "justification_column": "center",
+            "set_color_scheme": false,
+            "color_scheme": "",
+            "background": "canvas",
+            "background_custom": "#f7f7f730",
+            "background_blur": false,
+            "set_shadow": false,
+            "set_border": false,
+            "border_width": 1,
+            "border_color": "#000000",
+            "set_rounding": false,
+            "rounding_radius": "lg",
+            "rounding_radius_custom": 20,
+            "set_padding": false,
+            "padding": "lg",
+            "padding_custom": 0,
+            "padding_border": "custom",
+            "padding_custom_border": 0
+          },
+          "blocks": {
+            "cta_title": {
+              "type": "theme-text",
+              "name": "Text",
+              "settings": {
+                "text": "КАФЕТО ВЕЧЕ Е ЧАСТ ОТ ДЕНЯ ТИ. НЕКА СТАНЕ И ЧАСТ ОТ ПРИХОДИТЕ ТИ.",
+                "type_preset": "h2",
+                "type_resize": "md",
+                "type_font": "heading",
+                "type_size": 10,
+                "type_uppercase": false,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000",
+                "limit_width": false,
+                "max_width": 500,
+                "set_heading_tag": true,
+                "heading_tag": "h2"
+              },
+              "blocks": {}
+            },
+            "cta_richtext": {
+              "type": "theme-richtext",
+              "name": "Rich Text",
+              "settings": {
+                "text": "<p>Безплатно включване. Одобрение до 48 часа. 15% от всяка поръчка.</p>",
+                "richtext_size": "md",
+                "limit_width": true,
+                "max_width": 560,
+                "set_color": false,
+                "color": "content",
+                "color_custom": "#000000"
+              },
+              "blocks": {}
+            },
+            "cta_button": {
+              "type": "theme-button",
+              "name": "Button",
+              "settings": {
+                "text": "СТАНИ ПАРТНЬОР",
+                "href": "https://af.uppromote.com/boom-coffee1/register?p=298560",
+                "open_in_new_window": false,
+                "appearance": "solid",
+                "sizing": "lg",
+                "color": "white",
+                "type_preset": "btn",
+                "type_resize": "md",
+                "type_font": "body",
+                "type_size": 4,
+                "type_uppercase": false,
+                "set_rounding": false,
+                "rounding_style": "none",
+                "set_width": false,
+                "width_unit": "percent",
+                "width_px": 200,
+                "width_percent": 100
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "cta_title",
+            "cta_richtext",
+            "cta_button"
+          ]
+        }
+      },
+      "block_order": [
+        "cta_frame"
+      ],
+      "name": "CTA: Финал",
+      "settings": {
+        "media_type": "image",
+        "image": "shopify://shop_images/boom-lifestyle-1.webp",
+        "show_image_on_mobile": false,
+        "set_height": true,
+        "height": "screen-one-quarter",
+        "custom_height_type": "percentage",
+        "custom_height_percentage": 33,
+        "custom_height_px": 350,
+        "set_height_mobile": false,
+        "height_mobile": "custom",
+        "custom_height_type_mobile": "percentage",
+        "custom_height_percentage_mobile": 100,
+        "custom_height_px_mobile": 350,
+        "contain_section": false,
+        "section_width": "full",
+        "section_padding_top": 40,
+        "section_padding_bottom": 40,
+        "set_rounding": false,
+        "rounding_radius": "lg",
+        "rounding_radius_custom": 20,
+        "set_border": false,
+        "border_width": 1,
+        "border_color": "#000000",
+        "content_width": "page",
+        "vertical_placement": "middle",
+        "set_mobile_placement": false,
+        "vertical_placement_mobile": "top",
+        "horizontal_placement": "center",
+        "content_padding": "lg",
+        "content_padding_custom": 0,
+        "color_scheme": "scheme-footer",
+        "background": "canvas",
+        "background_color": "#ffffff",
+        "overlay_opacity": 50,
+        "overlay_color": "#000000",
+        "enable_transparent": false,
+        "transparent_style": "auto",
+        "set_target_device": false,
+        "target_device": "desktop"
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "marquee",
+    "anchor_kak_raboti",
+    "how_it_works",
+    "section_custom_WaK3wB",
+    "audience",
+    "faq",
+    "final_cta"
+  ]
+}

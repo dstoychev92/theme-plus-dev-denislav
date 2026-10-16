@@ -1,0 +1,34 @@
+{% liquid
+  assign base_id = base_id | default: 'filter'
+  assign id = id | default: 'price' | handleize
+  assign id = base_id | append: '-' | append: id
+  assign filter_max_range = filter.range_max | divided_by: 100
+  if filter.min_value.value != blank
+    assign filter_min_value = filter.min_value.value | divided_by: 100
+  endif
+  if filter.max_value.value != blank
+    assign filter_max_value = filter.max_value.value | divided_by: 100
+  endif
+  assign filter_min_placeholder = filter.range_min | divided_by: 100
+  assign filter_max_placeholder = filter.range_max | divided_by: 100
+%}
+
+{% capture attributes %}
+  key="{{ filter.param_name }}-{{ filter.min_value.value }}-{{ filter.max_value.value }}"
+{% endcapture %}
+
+{% render 'field-range',
+  id: id,
+  min_name: filter.min_value.param_name,
+  max_name: filter.max_value.param_name,
+  min_limit: 0,
+  max_limit: filter_max_range,
+  min_value: filter_min_value,
+  max_value: filter_max_value,
+  min_placeholder: filter_min_placeholder,
+  max_placeholder: filter_max_placeholder,
+  prefix: cart.currency.symbol,
+  label: filter.label,
+  form: form,
+  attributes: attributes
+%}

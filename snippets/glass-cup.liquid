@@ -1,0 +1,212 @@
+{% doc %}
+  Renders the BOOM glass cup whose interior fills with coffee based on the
+  `--fill` CSS variable (0 → 1) set by an ancestor controller (a section or
+  the `_glass-cup` block). The cup is pure presentation — no scroll logic.
+
+  @param {object} s - Settings object (section.settings or block.settings) providing glass_overlay, glass_mask, coffee/crema colors, wave_speed and show_pct.
+  @param {string} id - Unique id (section.id or block.id) used to scope the SVG fallback clip path.
+
+  @example
+  {% render 'glass-cup', s: section.settings, id: section.id %}
+{% enddoc %}
+
+{%- liquid
+  assign cup_aspect = 0.72
+  if s.glass_overlay != blank and s.glass_overlay.aspect_ratio != blank
+    assign cup_aspect = s.glass_overlay.aspect_ratio
+  endif
+  assign wave_speed = s.wave_speed | default: 5
+  assign wave_a = 11 | minus: wave_speed
+  assign wave_b = wave_a | times: 1.6
+  assign cup_alt = s.glass_overlay.alt | default: 'BOOM'
+  assign coffee_top = s.coffee_top | default: '#6e3d1c'
+  assign coffee_bottom = s.coffee_bottom | default: '#2a1407'
+  assign crema = s.crema | default: '#cf9355'
+  assign crema_light = s.crema_light | default: '#ecc794'
+-%}
+
+<div
+  class="glass-cup"
+  style="
+    --cup-aspect:{{ cup_aspect }};
+    --meniscus-curve:14px;
+    --coffee-top:{{ coffee_top }};
+    --coffee-bottom:{{ coffee_bottom }};
+    --crema:{{ crema }};
+    --crema-light:{{ crema_light }};
+    --wave-a:{{ wave_a }}s;
+    --wave-b:{{ wave_b }}s;
+    {% if s.glass_mask != blank %}--mask:url('{{ s.glass_mask | image_url: width: 800 }}');{% endif %}
+  "
+>
+  {%- if s.glass_mask == blank -%}
+    {%- comment -%} No mask supplied → clip the liquid to a built-in stemless-glass silhouette {%- endcomment -%}
+    <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
+      <clipPath id="GlassCupClip-{{ id }}" clipPathUnits="objectBoundingBox">
+        <path d="M 0.16 0.05 C 0.085 0.12, 0.055 0.28, 0.06 0.47 C 0.065 0.66, 0.13 0.85, 0.24 0.93 C 0.30 0.972, 0.34 0.975, 0.40 0.975 L 0.60 0.975 C 0.66 0.975, 0.70 0.972, 0.76 0.93 C 0.87 0.85, 0.935 0.66, 0.94 0.47 C 0.945 0.28, 0.915 0.12, 0.84 0.05 C 0.68 0.012, 0.32 0.012, 0.16 0.05 Z"></path>
+      </clipPath>
+    </svg>
+  {%- endif -%}
+
+  <div
+    class="glass-cup__liquidclip"
+    aria-hidden="true"
+    {%- if s.glass_mask == blank %} style="clip-path:url(#GlassCupClip-{{ id }})"{% endif -%}
+  >
+    <div class="glass-cup__liquid">
+      <div class="glass-cup__surface">
+        <div class="glass-cup__crema"></div>
+        <svg class="glass-cup__wave glass-cup__wave--a" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0,16 C150,32 350,2 600,16 C850,30 1050,0 1200,16 L1200,40 L0,40 Z"></path>
+        </svg>
+        <svg class="glass-cup__wave glass-cup__wave--b" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0,18 C200,2 380,34 600,18 C820,2 1000,34 1200,18 L1200,40 L0,40 Z"></path>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  {%- if s.glass_overlay != blank -%}
+    {{
+      s.glass_overlay
+      | image_url: width: 900
+      | image_tag:
+        class: 'glass-cup__overlay',
+        widths: '320, 480, 640, 900',
+        sizes: '(max-width: 760px) 60vw, 30vw',
+        loading: 'lazy',
+        alt: cup_alt
+    }}
+  {%- else -%}
+    <div class="glass-cup__overlay glass-cup__overlay--placeholder" aria-hidden="true"></div>
+  {%- endif -%}
+
+  {%- if s.show_pct -%}
+    <div class="glass-cup__pct" data-pct aria-hidden="true">0%</div>
+  {%- endif -%}
+</div>
+
+{% stylesheet %}
+  .glass-cup {
+    position: relative;
+    width: clamp(180px, 26vw, 360px);
+    aspect-ratio: var(--cup-aspect, 0.72);
+  }
+
+  @media (max-width: 760px) {
+    .glass-cup {
+      width: clamp(150px, 46vw, 280px);
+    }
+  }
+
+  .glass-cup__liquidclip {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    -webkit-mask-image: var(--mask, none);
+    mask-image: var(--mask, none);
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-mode: alpha;
+    mask-mode: alpha;
+  }
+
+  .glass-cup__liquid {
+    position: absolute;
+    left: -6%;
+    right: -6%;
+    bottom: 0;
+    height: calc(var(--fill, 0) * 100%);
+    background: linear-gradient(180deg, var(--coffee-top, #6e3d1c), var(--coffee-bottom, #2a1407));
+    box-shadow: inset 0 12px 28px rgba(0, 0, 0, 0.35), inset 0 -10px 24px rgba(0, 0, 0, 0.25);
+  }
+
+  .glass-cup__surface {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 26px;
+    transform: translateY(-50%);
+    border-radius: 50% / var(--meniscus-curve, 14px);
+    overflow: hidden;
+  }
+
+  .glass-cup__crema {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, var(--crema-light, #ecc794), var(--crema, #cf9355));
+  }
+
+  .glass-cup__wave {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 200%;
+    height: 100%;
+    will-change: transform;
+  }
+
+  .glass-cup__wave path {
+    fill: var(--crema, #cf9355);
+  }
+
+  .glass-cup__wave--a {
+    opacity: 0.85;
+    animation: glassCupWave var(--wave-a, 6s) linear infinite;
+  }
+
+  .glass-cup__wave--b {
+    opacity: 0.55;
+    animation: glassCupWave var(--wave-b, 9s) linear infinite reverse;
+  }
+  .glass-cup__wave--b path {
+    fill: var(--crema-light, #ecc794);
+  }
+
+  @keyframes glassCupWave {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  .glass-cup__overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .glass-cup__overlay--placeholder {
+    border: 3px solid color-mix(in srgb, currentColor 35%, transparent);
+    border-radius: 12px 12px 46% 46% / 12px 12px 22% 22%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02));
+  }
+
+  .glass-cup__pct {
+    position: absolute;
+    left: 50%;
+    bottom: -2.4em;
+    transform: translateX(-50%);
+    z-index: 3;
+    font-size: clamp(13px, 1.4vw, 16px);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: color-mix(in srgb, currentColor 70%, transparent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .glass-cup__wave--a,
+    .glass-cup__wave--b {
+      animation: none;
+    }
+  }
+{% endstylesheet %}

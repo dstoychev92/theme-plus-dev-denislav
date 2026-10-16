@@ -1,0 +1,33 @@
+{% if blog.all_tags.size > 0 %}
+  <div
+    class="flex flex-row flex-wrap gap-r5 {{ class }}"
+    x-roving-tab
+    x-roving-tab:list
+  >
+    {% for tag in blog.all_tags %}
+      {% liquid
+        assign current = false
+        if current_tags contains tag
+          assign current = true
+        endif
+      %}
+
+      {% capture tag_attributes %}
+        x-section-api:link
+        :aria-current="
+          if ($asyncLink.state == 'pending') {
+            return $el.ariaCurrent == 'page' ? null : 'page'
+          } else {
+            return $el.ariaCurrent
+          }
+        "
+      {% endcapture %}
+
+      {% capture tag_class %}
+        transition-opacity duration-300
+      {% endcapture %}
+
+      {% render 'blog-tag', tag: tag, current: current, attributes: tag_attributes, href: tag_href, class: tag_class %}
+    {% endfor %}
+  </div>
+{% endif %}

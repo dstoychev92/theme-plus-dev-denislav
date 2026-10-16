@@ -1,0 +1,51 @@
+{% comment %}
+  Renders product price on a card with 'from' text if price varies.
+  Uses variant for exact prices, product for price_varies.
+
+  {% render 'card-price', product: product %}
+  {% render 'card-price', product: product, variant: variant %}
+{% endcomment %}
+{%- liquid
+  assign variant = variant | default: product.selected_or_first_available_variant
+  assign price = variant.price
+  assign compare_at_price = variant.compare_at_price
+  assign price_varies = product.price_varies
+  assign compare_at_class = compare_at_class | default: 'line-through text-muted'
+
+  # Store-wide discount (visual only): reduce the selling price and strike the
+  # pre-promo price. See specs/2026-07-09-storewide-discount.
+  assign sw_pct = settings.storewide_discount_pct | default: 0
+  if settings.storewide_discount_enabled and sw_pct > 0 and price != blank and price > 0
+    assign sw_original = price
+    assign sw_off = price | times: sw_pct | divided_by: 100
+    assign price = price | minus: sw_off
+    if compare_at_price == blank or compare_at_price <= sw_original
+      assign compare_at_price = sw_original
+    endif
+  endif
+
+  capture money_price
+    render 'money', price: price
+  endcapture
+
+  if price_varies
+    assign money_price = 'product.from' | t | append: ' ' | append: money_price
+  endif
+-%}
+<span
+  class="whitespace-nowrap {{ class }} font-bold"
+  style="{{ style }}"
+  {{ attributes }}
+>
+  {{ money_price }}
+</span>
+
+{% if compare_at_price > price and price_varies == false %}
+  <span
+    class="whitespace-nowrap {{ compare_at_class }} font-bold"
+    style="{{ compare_at_style }}"
+  >
+    <span class="sr-only">{{ 'product.accessibility.item_on_sale_compare_at' | t }}</span>
+    {% render 'money', price: compare_at_price, show_currency: false %}
+  </span>
+{% endif %}

@@ -1,0 +1,99 @@
+<!-- blocks/_product-pickup.liquid -->
+
+{% liquid
+  assign product = closest.product
+
+  if product == blank and request.visual_preview_mode
+    assign product = collections.all.products.first
+  endif
+
+  assign current_variant = product.selected_or_first_available_variant
+  assign pickup_availabilities = current_variant.store_availabilities | where: 'pick_up_enabled', true
+  assign available_pickup_availabilities = pickup_availabilities | where: 'available', true
+%}
+
+{%- if pickup_availabilities.size > 0 and available_pickup_availabilities.size > 0 -%}
+  {% assign closest_availability = pickup_availabilities.first %}
+
+  {%- capture variant_url -%}
+    {%- render 'product-url', product: product, variant: current_variant, selling_plan: product.selected_selling_plan -%}
+  {%- endcapture -%}
+
+  {% capture button_attributes %}
+    {% comment %} Preload the pickup drawer when the user hovers/focuses on the button so it is ready when they click {% endcomment %}
+    @mouseover.once="$dispatch('theme:pickup:preload', { url: `{{ variant_url }}` });"
+    @focus.once="$dispatch('theme:pickup:preload', { url: `{{ variant_url }}` });"
+
+    @click.stop.prevent="$dispatch('theme:pickup:open', { url: `{{ variant_url }}` });"
+
+    aria-haspopup="dialog"
+  {% endcapture %}
+
+  {% capture location_name_button %}
+    <button class="font-bold underline" type="button" {{ button_attributes }}>
+      {{ closest_availability.location.name }}
+    </button>
+  {% endcapture %}
+
+  {% liquid
+    if closest_availability.available
+      assign heading = 'product.pickup_availability.pickup_available_at_html' | t: location_name: location_name_button
+      assign description = closest_availability.pick_up_time
+    else
+      assign heading = 'product.pickup_availability.pickup_unavailable_at_html' | t: location_name: location_name_button
+      assign description = 'product.pickup_availability.pickup_unavailable_time' | t
+    endif
+  %}
+
+  {% capture content %}
+    <div
+      class="flex items-center gap-r6 rounded-sm text-content"
+      style="
+        flex-direction: var(--pickup-direction);
+        text-align: var(--pickup-align);
+      "
+    >
+      <div class="flex shrink-0 flex-center rounded-full p-r6 bg-content-mix-5 text-muted">
+        {%- render 'core-icon', icon: 'fill-location' -%}
+      </div>
+
+      <div class="grow-1 text-r2">
+        <p class="text-r4">{{- heading -}}</p>
+
+        <p>{{ description }}</p>
+
+        <button
+          type="button"
+          class="underline"
+          {{ button_attributes }}
+        >
+          {% if pickup_availabilities.size > 1 %}
+            {{ 'product.pickup_availability.check_other_stores' | t }}
+          {% else %}
+            {{ 'product.pickup_availability.view_store_info' | t }}
+          {% endif %}
+        </button>
+      </div>
+    </div>
+  {% endcapture %}
+{%- endif -%}
+
+{% render 'product-block', _settings: block.settings, content: content, attributes: block.shopify_attributes %}
+
+{% schema %}
+{
+	"name": "Local pickup",
+	"tag": null,
+	"settings": [
+		{
+			"type": "paragraph",
+			"content": "Show customers where they can pick up the product. [Learn more](https://help.shopify.com/en/manual/shipping/setting-up-and-managing-your-shipping/local-methods/local-pickup#show-pickup-availability-to-your-customers)"
+		}
+	],
+	"presets": [
+		{
+			"name": "Local pickup"
+		}
+	]
+}
+{% endschema %}

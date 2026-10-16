@@ -1,0 +1,14 @@
+{% if _settings.set_offset %}
+  position: relative;
+  {% if _settings.offset_unit == 'percent' %}
+    --offset-percent-x: {{ _settings.offset_percent_x | default: 0 }}%;
+    --offset-percent-y: {{ _settings.offset_percent_y | default: 0 }}%;
+    bottom: var(--offset-percent-y);
+    left: var(--offset-percent-x);
+  {% elsif _settings.offset_unit == 'pixel' %}
+    --offset-pixels-x: {{ _settings.offset_pixels_x | default: 0 }}px;
+    --offset-pixels-y: {{ _settings.offset_pixels_y | default: 0 }}px;
+    bottom: var(--offset-pixels-y);
+    left: var(--offset-pixels-x);
+  {% endif %}
+{% endif %}

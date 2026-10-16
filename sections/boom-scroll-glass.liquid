@@ -1,0 +1,478 @@
+<!-- sections/boom-scroll-glass.liquid -->
+
+{%- liquid
+  assign s = section.settings
+  assign root_id = 'BoomScrollGlass-' | append: section.id
+-%}
+
+<div
+  id="{{ root_id }}"
+  class="boom-glass{% if s.show_pct %} boom-glass--has-pct{% endif %}"
+  style="
+    --fill:0;
+    --scroll-height:{{ s.scroll_height }}vh;
+    --accent:{{ s.accent }};
+    --ink:{{ s.ink }};
+    --bg-top:{{ s.bg_top }};
+    --bg-bottom:{{ s.bg_bottom }};
+  "
+  data-snap="{% if s.snap_levels %}1{% else %}0{% endif %}"
+>
+  <div class="boom-glass__scrolly" data-scrolly>
+    {%- comment -%} Left: sticky cup {%- endcomment -%}
+    <div class="boom-glass__cupcol">
+      <div class="boom-glass__sticky">
+        <div class="boom-glass__glow" aria-hidden="true"></div>
+        {% render 'glass-cup', s: s, id: section.id %}
+      </div>
+    </div>
+
+    {%- comment -%} Right: scrolling USP track {%- endcomment -%}
+    <div class="boom-glass__track">
+      {%- if s.show_intro -%}
+        <div class="boom-glass__intro">
+          {%- if s.intro_heading != blank -%}<h2 class="boom-glass__intro-title">{{ s.intro_heading }}</h2>{%- endif -%}
+          {%- if s.intro_sub != blank -%}<p class="boom-glass__intro-sub">{{ s.intro_sub }}</p>{%- endif -%}
+        </div>
+      {%- endif -%}
+
+      <div class="boom-glass__steps">
+        {%- assign step_n = 0 -%}
+        {%- for block in section.blocks -%}
+          {%- case block.type -%}
+            {%- when 'step' -%}
+              {%- assign step_n = step_n | plus: 1 -%}
+              <article class="boom-glass__step" data-step {{ block.shopify_attributes }}>
+                <div class="boom-glass__step-meta">
+                  <span class="boom-glass__step-num">{{ step_n | prepend: '0' | slice: -2, 2 }}</span>
+                  {%- if block.settings.eyebrow != blank -%}
+                    <span class="boom-glass__eyebrow">{{ block.settings.eyebrow }}</span>
+                  {%- endif -%}
+                </div>
+                {%- if block.settings.heading != blank -%}
+                  <h3 class="boom-glass__step-title">{{ block.settings.heading }}</h3>
+                {%- endif -%}
+                {%- if block.settings.body != blank -%}
+                  <p class="boom-glass__step-body">{{ block.settings.body }}</p>
+                {%- endif -%}
+              </article>
+            {%- when 'cta' -%}
+              <div class="boom-glass__cta" data-cta {{ block.shopify_attributes }}>
+                {%- if block.settings.heading != blank -%}
+                  <h3 class="boom-glass__cta-title">{{ block.settings.heading }}</h3>
+                {%- endif -%}
+                {%- if block.settings.button_label != blank -%}
+                  <a
+                    class="boom-glass__cta-btn"
+                    {% if block.settings.button_url != blank %}href="{{ block.settings.button_url }}"{% else %}href="#" aria-disabled="true"{% endif %}
+                  >{{ block.settings.button_label }}</a>
+                {%- endif -%}
+              </div>
+          {%- endcase -%}
+        {%- endfor -%}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% stylesheet %}
+  .boom-glass {
+    --cta-threshold: 0.97;
+    position: relative;
+    color: var(--ink, #2a1a10);
+    background: linear-gradient(180deg, var(--bg-top, #f3ece2), var(--bg-bottom, #dcc8b0));
+  }
+
+  .boom-glass__scrolly {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    min-height: var(--scroll-height, 320vh);
+  }
+
+  @media (min-width: 761px) {
+    .boom-glass__scrolly {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  /* ---- Cup column ---- */
+  .boom-glass__cupcol {
+    position: relative;
+  }
+
+  .boom-glass__sticky {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    padding: 4vh 6vw;
+  }
+
+  @media (max-width: 760px) {
+    .boom-glass__sticky {
+      height: 54vh;
+      padding: 3vh 10vw;
+    }
+  }
+
+  .boom-glass__glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      40% 40% at 50% 45%,
+      color-mix(in srgb, var(--accent, #b5651d) 35%, transparent),
+      transparent 70%
+    );
+    filter: blur(8px);
+    pointer-events: none;
+  }
+
+  /* ---- Track / USP steps ---- */
+  .boom-glass__track {
+    display: flex;
+    flex-direction: column;
+    padding: 0 8vw;
+  }
+
+  @media (max-width: 760px) {
+    .boom-glass__track {
+      padding: 0 8vw 12vh;
+    }
+  }
+
+  .boom-glass__intro {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  @media (max-width: 760px) {
+    .boom-glass__intro {
+      min-height: 70vh;
+    }
+  }
+
+  .boom-glass__intro-title {
+    font-size: clamp(40px, 9vw, 96px);
+    line-height: 0.95;
+    margin: 0 0 0.3em;
+    letter-spacing: -0.02em;
+  }
+
+  .boom-glass__intro-sub {
+    font-size: clamp(16px, 2.2vw, 22px);
+    max-width: 28ch;
+    margin: 0;
+    opacity: 0.75;
+  }
+
+  .boom-glass__steps {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    gap: 6vh;
+    padding: 8vh 0;
+  }
+
+  .boom-glass__step {
+    opacity: 0.32;
+    transform: translateY(8px);
+    transition: opacity 0.45s ease, transform 0.45s ease;
+    max-width: 34ch;
+  }
+
+  .boom-glass__step.is-active {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .boom-glass__step-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 0.8em;
+    margin-bottom: 0.5em;
+  }
+
+  .boom-glass__step-num {
+    font-size: clamp(13px, 1.4vw, 15px);
+    font-weight: 700;
+    color: var(--accent, #b5651d);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .boom-glass__eyebrow {
+    font-size: clamp(12px, 1.3vw, 14px);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    opacity: 0.7;
+  }
+
+  .boom-glass__step-title {
+    font-size: clamp(24px, 3.6vw, 40px);
+    line-height: 1.08;
+    margin: 0 0 0.35em;
+    letter-spacing: -0.01em;
+  }
+
+  .boom-glass__step-body {
+    font-size: clamp(15px, 1.9vw, 19px);
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  /* ---- CTA ---- */
+  .boom-glass__cta {
+    min-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 1.2em;
+    opacity: 0.32;
+    transform: translateY(12px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+
+  .boom-glass__cta.is-active {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .boom-glass__cta-title {
+    font-size: clamp(26px, 4vw, 48px);
+    line-height: 1.05;
+    margin: 0;
+    max-width: 20ch;
+  }
+
+  .boom-glass__cta-btn {
+    display: inline-block;
+    padding: 0.85em 1.6em;
+    border-radius: 999px;
+    background: var(--accent, #b5651d);
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+    transition: transform 0.2s ease, filter 0.2s ease;
+  }
+
+  .boom-glass__cta-btn:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+  }
+
+  .boom-glass__cta-btn:focus-visible {
+    outline: 3px solid var(--ink, #2a1a10);
+    outline-offset: 3px;
+  }
+
+  /* ---- Reduced motion ---- */
+  @media (prefers-reduced-motion: reduce) {
+    .boom-glass__step,
+    .boom-glass__cta {
+      transition: none;
+    }
+  }
+{% endstylesheet %}
+
+<script>
+  (function () {
+    var sectionId = {{ section.id | json }};
+    var rootId = 'BoomScrollGlass-' + sectionId;
+
+    window.boomGlass = window.boomGlass || {};
+
+    // Editor re-runs this script on section:load — tear down the previous instance first.
+    if (typeof window.boomGlass[sectionId] === 'function') {
+      window.boomGlass[sectionId]();
+      delete window.boomGlass[sectionId];
+    }
+
+    function init() {
+      var root = document.getElementById(rootId);
+      if (!root) return;
+
+      var scrolly = root.querySelector('[data-scrolly]');
+      if (!scrolly) return;
+
+      var steps = Array.prototype.slice.call(root.querySelectorAll('[data-step]'));
+      var cta = root.querySelector('[data-cta]');
+      var pctEl = root.querySelector('[data-pct]');
+      var snap = root.getAttribute('data-snap') === '1' && steps.length > 0;
+      var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var ctaThreshold = 0.97;
+
+      var current = 0;
+      var target = 0;
+      var animating = false;
+      var ticking = false;
+      var destroyed = false;
+
+      function applyFill(v) {
+        root.style.setProperty('--fill', v.toFixed(4));
+        if (pctEl) pctEl.textContent = Math.round(v * 100) + '%';
+        if (cta) cta.classList.toggle('is-active', v >= ctaThreshold);
+      }
+
+      function activeStep() {
+        if (!steps.length) return -1;
+        var mid = window.innerHeight / 2;
+        var best = 0;
+        var bestDist = Infinity;
+        for (var i = 0; i < steps.length; i++) {
+          var r = steps[i].getBoundingClientRect();
+          var dist = Math.abs(r.top + r.height / 2 - mid);
+          if (dist < bestDist) {
+            bestDist = dist;
+            best = i;
+          }
+        }
+        return best;
+      }
+
+      function lerpLoop() {
+        if (destroyed) return;
+        current += (target - current) * 0.12;
+        if (Math.abs(target - current) < 0.0008) {
+          current = target;
+          animating = false;
+        }
+        applyFill(current);
+        if (animating) requestAnimationFrame(lerpLoop);
+      }
+
+      function update() {
+        var r = scrolly.getBoundingClientRect();
+        var total = r.height - window.innerHeight;
+        var p = total > 0 ? Math.min(Math.max(-r.top, 0), total) / total : 0;
+
+        var idx = activeStep();
+        for (var i = 0; i < steps.length; i++) {
+          steps[i].classList.toggle('is-active', i === idx);
+        }
+
+        if (snap && !reduced) {
+          target = idx >= 0 ? (idx + 1) / steps.length : p;
+          if (!animating) {
+            animating = true;
+            requestAnimationFrame(lerpLoop);
+          }
+        } else {
+          current = p;
+          applyFill(p);
+        }
+      }
+
+      function onScroll() {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(function () {
+          update();
+          ticking = false;
+        });
+      }
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll, { passive: true });
+      update();
+
+      window.boomGlass[sectionId] = function () {
+        destroyed = true;
+        window.removeEventListener('scroll', onScroll);
+        window.removeEventListener('resize', onScroll);
+      };
+    }
+
+    // Clean up when a section is removed in the theme editor.
+    if (!window.__boomGlassUnloadBound) {
+      window.__boomGlassUnloadBound = true;
+      document.addEventListener('shopify:section:unload', function (e) {
+        var fn = window.boomGlass[e.detail.sectionId];
+        if (typeof fn === 'function') {
+          fn();
+          delete window.boomGlass[e.detail.sectionId];
+        }
+      });
+    }
+
+    if (document.readyState !== 'loading') {
+      init();
+    } else {
+      document.addEventListener('DOMContentLoaded', init);
+    }
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "BOOM Scroll Glass",
+  "tag": "section",
+  "settings": [
+    { "type": "header", "content": "Assets" },
+    { "type": "image_picker", "id": "glass_overlay", "label": "Glass (PNG, transparent interior)" },
+    { "type": "image_picker", "id": "glass_mask", "label": "Interior mask (white inside)" },
+
+    { "type": "header", "content": "Behavior" },
+    { "type": "range", "id": "scroll_height", "label": "Scroll length", "min": 150, "max": 500, "step": 10, "default": 320, "unit": "vh" },
+    { "type": "checkbox", "id": "show_pct", "label": "Show percentage", "default": true },
+    { "type": "checkbox", "id": "snap_levels", "label": "Stepped fill (25/50/75/100%)", "default": false },
+    { "type": "range", "id": "wave_speed", "label": "Wave speed", "min": 1, "max": 10, "step": 1, "default": 5 },
+
+    { "type": "header", "content": "Colors" },
+    { "type": "color", "id": "coffee_top", "label": "Coffee top", "default": "#6e3d1c" },
+    { "type": "color", "id": "coffee_bottom", "label": "Coffee bottom", "default": "#2a1407" },
+    { "type": "color", "id": "crema", "label": "Crema", "default": "#cf9355" },
+    { "type": "color", "id": "crema_light", "label": "Crema light", "default": "#ecc794" },
+    { "type": "color", "id": "accent", "label": "Accent", "default": "#b5651d" },
+    { "type": "color", "id": "ink", "label": "Text", "default": "#2a1a10" },
+    { "type": "color", "id": "bg_top", "label": "Background top", "default": "#f3ece2" },
+    { "type": "color", "id": "bg_bottom", "label": "Background bottom", "default": "#dcc8b0" },
+
+    { "type": "header", "content": "Intro" },
+    { "type": "checkbox", "id": "show_intro", "label": "Show intro screen", "default": true },
+    { "type": "text", "id": "intro_heading", "label": "Intro heading", "default": "BOOM" },
+    { "type": "text", "id": "intro_sub", "label": "Intro subheading", "default": "Mushroom coffee, loaded with focus" }
+  ],
+  "blocks": [
+    {
+      "type": "step",
+      "name": "USP step",
+      "settings": [
+        { "type": "text", "id": "eyebrow", "label": "Eyebrow (small label)" },
+        { "type": "text", "id": "heading", "label": "Heading" },
+        { "type": "textarea", "id": "body", "label": "Text" }
+      ]
+    },
+    {
+      "type": "cta",
+      "name": "CTA (final)",
+      "limit": 1,
+      "settings": [
+        { "type": "text", "id": "heading", "label": "Heading", "default": "The cup is full. Now it's your turn." },
+        { "type": "text", "id": "button_label", "label": "Button", "default": "Load your cup" },
+        { "type": "url", "id": "button_url", "label": "Link" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "BOOM Scroll Glass",
+      "blocks": [
+        { "type": "step", "settings": { "eyebrow": "The ritual", "heading": "The coffee you already love", "body": "Same taste, same routine — just one level up." } },
+        { "type": "step", "settings": { "eyebrow": "Lion's Mane", "heading": "The mushroom of ancient rituals", "body": "A functional mushroom with a long history of use." } },
+        { "type": "step", "settings": { "eyebrow": "Focus", "heading": "Concentration when you need it", "body": "Caffeine helps with concentration and alertness." } },
+        { "type": "step", "settings": { "eyebrow": "Clean fuel", "heading": "Energy for the whole day", "body": "A loaded cup, a loaded morning." } },
+        { "type": "cta", "settings": {} }
+      ]
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "footer", "custom.overlays", "custom.drawers"]
+  }
+}
+{% endschema %}

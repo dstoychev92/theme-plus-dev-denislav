@@ -1,0 +1,145 @@
+{% liquid
+  if parent_link != blank
+    assign links = parent_link.links
+    assign levels = parent_link.levels
+  else
+    assign links = linklist.links
+    assign levels = linklist.levels
+  endif
+
+  assign color_level_1 = _settings.color_megamenu_level_1 | default: 'muted'
+  assign color_level_2 = _settings.color_megamenu_level_2 | default: 'content'
+  assign color_level_3 = _settings.color_megamenu_level_3 | default: 'content'
+%}
+
+{% capture link_class %}
+  keyboard-focus:outline-offset-[-2px]
+  {% comment %} Dim link when other link is being hovered {% endcomment %}
+  transition-[color] duration-500
+  group-[:has(:hover)]/link-list:text-muted
+  hover:!text-content
+  relative hit-area-y-[0.5em]
+{% endcapture %}
+
+{%- if links.size > 0 -%}
+  {% if levels == 1 %}
+    <ul
+      class="
+        flex flex-col group/link-list w-full gap-y-[1em]
+        entrance-item entrance-fade text-{{ color_level_1 }}
+        {% render 'props-class-type-preset', _settings: _settings, settings_suffix: 'megamenu_level_1', default_type_preset: 'btn' %}
+        {{ class }}
+      "
+      style="{{ style }}"
+      {{ attributes }}
+    >
+      {% for link in links %}
+        <li class="flex flex-col">
+          <a
+            class="{{ link_class }}"
+            href="{{ link.url }}"
+            {% if link.current %}
+              aria-current="page"
+            {% endif %}
+          >
+            {{ link.title | strip_html | escape }}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    {%- for link in links -%}
+      {% assign is_final_level = false %}
+      {% if link.levels == 1 %}
+        {% assign is_final_level = true %}
+      {% endif %}
+
+      <div
+        class="mb-r7 entrance-item entrance-fade flex flex-col items-start gap-y-[1em] {{ class }}"
+        style="{{ style }}"
+        {{ attributes }}
+      >
+        {% # Levels 1 and 2 have default_type_preset because sections/header-menu has no settings for megamenu typography. Default megamenus have no level 3, because the main menu uses a level. %}
+        <a
+          class="
+            keyboard-focus:outline-offset-[-2px]
+            flex flex-col gap-y-r6 text-{{ color_level_1 }}
+            {% render 'props-class-type-preset', _settings: _settings, settings_suffix: 'megamenu_level_1', default_type_preset: 'btn' %}
+          "
+          href="{{ link.url }}"
+          {% if link.current %}
+            aria-current="page"
+          {% endif %}
+        >
+          {% if _settings.show_collection_images and link.type == 'collection_link' and link.object.image != blank %}
+            {%- render 'core-image',
+              cover: true,
+              image: link.object.image,
+              aspect_ratio: _settings.collection_images_aspect_ratio,
+              width: '400px',
+              sizes: '400px,800px,100vw',
+              loading: 'lazy'
+            -%}
+          {% endif %}
+
+          {{ link.title | strip_html | escape }}
+        </a>
+
+        {% if link.links.size > 0 %}
+          <ul
+            class="
+              {% comment %} The group class is only used for links hover effect. We want to dim just the final level links {% endcomment %}
+              {% if is_final_level %}
+                group/link-list
+              {% endif %}
+              flex flex-col w-full text-{{ color_level_2 }}
+              {% render 'props-class-type-preset', _settings: _settings, settings_suffix: 'megamenu_level_2', default_type_preset: 'p' %}
+              gap-y-[1em]
+            "
+          >
+            {% for link in link.links %}
+              <li class="flex flex-col gap-y-[1em]">
+                <a
+                  {% if is_final_level %}
+                    class="{{ link_class }}"
+                  {% endif %}
+                  href="{{ link.url }}"
+                  {% if link.current %}
+                    aria-current="page"
+                  {% endif %}
+                >
+                  {{ link.title | strip_html | escape }}
+                </a>
+
+                {% if link.links.size > 0 %}
+                  <ul
+                    class="
+                      group/link-list
+                      flex flex-col border-s border-line ps-[1em] w-full text-{{ color_level_3 }}
+                      {% render 'props-class-type-preset', _settings: _settings, settings_suffix: 'megamenu_level_3' %}
+                      gap-y-[1em]
+                    "
+                  >
+                    {% for link in link.links %}
+                      <li class="flex flex-col">
+                        <a
+                          class="{{ link_class }}"
+                          href="{{ link.url }}"
+                          {% if link.current %}
+                            aria-current="page"
+                          {% endif %}
+                        >
+                          {{ link.title | strip_html | escape }}
+                        </a>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </div>
+    {%- endfor -%}
+  {% endif %}
+{%- endif -%}
