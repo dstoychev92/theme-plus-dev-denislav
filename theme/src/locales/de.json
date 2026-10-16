@@ -107,6 +107,21 @@
     "unit_price": "Grundpreis",
     "unit_price_separator": "/",
     "quantity": "Menge",
+    "bundle": {
+      "tiers_label": "Bundle-Rabatte",
+      "units": {
+        "one": "{{ count }} Stück",
+        "other": "{{ count }} Stück"
+      },
+      "units_plus": "{{ count }}+ Stück",
+      "units_short": "Stück",
+      "standard_price": "Normalpreis",
+      "gift": "Gratis-Geschenk",
+      "doses": "Portionen",
+      "per_dose": "pro Portion",
+      "empty": "Wähle mindestens ein Produkt",
+      "empty_error": "Wähle mindestens ein Produkt, bevor du das Bundle in den Warenkorb legst"
+    },
     "subscription": "Abonnement",
     "one_time": "Einmalig",
     "quick_add": "Schnell hinzufügen",

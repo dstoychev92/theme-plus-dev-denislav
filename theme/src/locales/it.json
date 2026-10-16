@@ -107,6 +107,21 @@
     "unit_price": "Prezzo unitario",
     "unit_price_separator": "/",
     "quantity": "Quantità",
+    "bundle": {
+      "tiers_label": "Sconti sul bundle",
+      "units": {
+        "one": "{{ count }} unità",
+        "other": "{{ count }} unità"
+      },
+      "units_plus": "{{ count }}+ unità",
+      "units_short": "unità",
+      "standard_price": "Prezzo standard",
+      "gift": "Regalo gratuito",
+      "doses": "porzioni",
+      "per_dose": "a porzione",
+      "empty": "Scegli almeno un prodotto",
+      "empty_error": "Scegli almeno un prodotto prima di aggiungere il bundle al carrello"
+    },
     "subscription": "Abbonamento",
     "one_time": "Acquisto unico",
     "quick_add": "Aggiungi rapido",

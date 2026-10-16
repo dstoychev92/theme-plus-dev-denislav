@@ -107,6 +107,21 @@
     "unit_price": "Preço unitário",
     "unit_price_separator": "/",
     "quantity": "Quantidade",
+    "bundle": {
+      "tiers_label": "Descontos do pacote",
+      "units": {
+        "one": "{{ count }} unidade",
+        "other": "{{ count }} unidades"
+      },
+      "units_plus": "{{ count }}+ unidades",
+      "units_short": "unidades",
+      "standard_price": "Preço normal",
+      "gift": "Brinde grátis",
+      "doses": "doses",
+      "per_dose": "por dose",
+      "empty": "Escolha pelo menos um produto",
+      "empty_error": "Escolha pelo menos um produto antes de adicionar o pacote ao carrinho"
+    },
     "subscription": "Assinatura",
     "one_time": "Compra única",
     "quick_add": "Adicionar rápido",

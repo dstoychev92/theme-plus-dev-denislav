@@ -1,0 +1,365 @@
+{% doc %}
+  - Renders a bundle builder: the shopper picks a quantity of each product in a collection, and the form adds one cart line per product
+
+  Reads closest.product as the bundle's host product, which is never added on its own. The block renders form fields
+  `items[n][id]`, `items[n][quantity]`, and `items[n][selling_plan]` that join the form buttons block through
+  product_form_id, so `/cart/add.js` receives the picked products. A guard input keeps the form invalid until the shopper
+  picks at least one product. Tier discounts here are only displayed. The store's automatic discounts apply them.
+{% enddoc %}
+
+{% liquid
+  assign product = closest.product
+
+  if product == blank and request.visual_preview_mode
+    assign product = collections.all.products.first
+  endif
+
+  assign bundle_products = block.settings.collection.products
+  assign doses_per_unit = product.metafields.custom.doses_per_bag.value | default: block.settings.doses_per_unit
+  assign selected_selling_plan = product.selected_selling_plan
+
+  assign plan_pct = 0
+  if selected_selling_plan
+    assign plan_adjustment = selected_selling_plan.price_adjustments[0]
+    if plan_adjustment.value_type == 'percentage'
+      assign plan_pct = plan_adjustment.value
+    endif
+  endif
+%}
+
+[% render 'props/assign-product-form-id' %]
+
+{% capture content %}
+  <div
+    class="flex flex-col gap-y-r4"
+    data-plan-pct="{{ plan_pct }}"
+    data-doses-per-unit="{{ doses_per_unit }}"
+    data-tier-2="{{ block.settings.discount_pct_2 }}"
+    data-tier-3="{{ block.settings.discount_pct_3 }}"
+    data-tier-4="{{ block.settings.discount_pct_4 }}"
+    x-data="{
+      sel: {},
+      prices: {},
+      compares: {},
+      get totalUnits() {
+        return Object.values(this.sel).reduce((sum, qty) => sum + (Number(qty) || 0), 0);
+      },
+      get tierPct() {
+        const tier = Math.min(this.totalUnits, 4);
+        return tier > 1 ? Number(this.$root.dataset['tier-' + tier]) || 0 : 0;
+      },
+      get fullTotal() {
+        return Object.keys(this.sel).reduce((sum, id) => sum + Math.max(this.prices[id], this.compares[id]) * (Number(this.sel[id]) || 0), 0);
+      },
+      get total() {
+        const planPct = Number(this.$root.dataset.planPct) || 0;
+        return Object.keys(this.sel).reduce((sum, id) => {
+          let unit = this.prices[id];
+          unit = unit - Math.round(unit * planPct / 100);
+          unit = unit - Math.round(unit * this.tierPct / 100);
+          return sum + unit * (Number(this.sel[id]) || 0);
+        }, 0);
+      },
+      get totalDoses() {
+        return this.totalUnits * (Number(this.$root.dataset.dosesPerUnit) || 0);
+      }
+    }"
+  >
+    {% if block.settings.heading != blank %}
+      <p class="type-h6">{{ block.settings.heading }}</p>
+    {% endif %}
+
+    {% comment %} Tier meter: one segment per tier, filled up to the shopper's count {% endcomment %}
+    <ol class="grid grid-cols-2 md:flex gap-x-r2 gap-y-r3" aria-label="{{ 'product.bundle.tiers_label' | t | escape }}">
+      {% for tier in (1..4) %}
+        {% liquid
+          assign tier_pct_key = 'discount_pct_' | append: tier
+          assign tier_pct = block.settings[tier_pct_key]
+          assign tier_gift_key = 'gift_at_' | append: tier
+          assign tier_gift = block.settings[tier_gift_key]
+        %}
+        <li class="flex flex-col gap-y-r1 flex-1 min-w-0" :class="totalUnits >= {{ tier }} ? 'text-default' : 'text-muted'">
+          <span
+            class="h-1 rounded-full w-full"
+            :class="totalUnits >= {{ tier }} ? 'bg-primary' : 'bg-content-mix-20'"
+            aria-hidden="true"
+          ></span>
+          <span class="type-micro">
+            {%- if tier == 4 -%}
+              {{ 'product.bundle.units_plus' | t: count: tier }}
+            {%- else -%}
+              {{ 'product.bundle.units' | t: count: tier }}
+            {%- endif -%}
+          </span>
+          <span class="flex items-center gap-x-r1 type-p font-bold">
+            {%- if tier_pct > 0 -%}
+              −{{ tier_pct }}%
+            {%- else -%}
+              {{ 'product.bundle.standard_price' | t }}
+            {%- endif -%}
+            {%- if tier_gift -%}
+              {% render 'core-icon',
+                paths: '<path d="M4 11h16v9H4zM3 7h18v4H3zM12 7v13M12 7c-1.5-3-5-3.5-5-1.25C7 7 12 7 12 7zm0 0c1.5-3 5-3.5 5-1.25C17 7 12 7 12 7z"/>',
+                size: 'sm',
+                class: 'text-sale'
+              %}
+              <span class="sr-only">{{ 'product.bundle.gift' | t }}</span>
+            {%- endif -%}
+          </span>
+          {% if tier == 4 and block.settings.best_deal_text != blank %}
+            <span class="type-micro text-sale">{{ block.settings.best_deal_text }}</span>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ol>
+
+    {% comment %} One card per product in the collection {% endcomment %}
+    <ul class="flex flex-col gap-y-r3">
+      {% for bundle_product in bundle_products %}
+        {% liquid
+          assign variant = bundle_product.selected_or_first_available_variant
+          assign item_index = forloop.index0
+          assign stepper_id = block.id | append: '-' | append: variant.id
+          assign card_color = bundle_product.metafields.custom.card_bg_color.value
+          assign compare_price = variant.compare_at_price | default: 0
+          assign bundle_image = variant.featured_image | default: bundle_product.featured_image
+
+          assign item_plan = null
+          if selected_selling_plan
+            for group in bundle_product.selling_plan_groups
+              for plan in group.selling_plans
+                if plan.id == selected_selling_plan.id
+                  assign item_plan = plan
+                endif
+              endfor
+            endfor
+          endif
+        %}
+        <li
+          class="flex items-center gap-x-r3 p-r3 border rounded-md transition-colors"
+          :class="sel[{{ variant.id }}] > 0 ? 'border-content' : 'border-line'"
+          x-init="prices[{{ variant.id }}] = {{ variant.price }}; compares[{{ variant.id }}] = {{ compare_price }}"
+        >
+          <div
+            class="w-r12 shrink-0 aspect-square rounded-sm overflow-hidden bg-content-mix-5"
+            {% if card_color != blank %}
+              style="background-color: {{ card_color }};"
+            {% endif %}
+          >
+            {% render 'core-image',
+              image: bundle_image,
+              alt_default: bundle_product.title,
+              class: 'size-full',
+              cover: false,
+              width: 160,
+              sizes: '80px',
+              widths: '80, 160'
+            %}
+          </div>
+
+          <div class="flex flex-col gap-y-r1 flex-1 min-w-0">
+            <p class="type-h6">{{ bundle_product.title }}</p>
+            {% if bundle_product.metafields.custom.card_badge != blank %}
+              <p class="type-micro text-sale">{{ bundle_product.metafields.custom.card_badge }}</p>
+            {% endif %}
+            <p class="flex gap-x-r2 type-p">
+              {% if compare_price > variant.price %}
+                {% render 'money', price: compare_price, class: 'line-through text-muted' %}
+              {% endif %}
+              {% render 'money', price: variant.price %}
+            </p>
+          </div>
+
+          <div class="shrink-0">
+            {% if variant.available %}
+              {% capture stepper_input_attributes %}
+                x-model.fill.number="sel[{{ variant.id }}]"
+              {% endcapture %}
+              {% render 'field-stepper',
+                id: stepper_id,
+                label: bundle_product.title,
+                name: stepper_id,
+                hide_label: true,
+                size: 'sm',
+                value: 0,
+                min: 0,
+                stepper_input_attributes: stepper_input_attributes
+              %}
+            {% else %}
+              <p class="type-micro text-muted">{{ 'product.sold_out' | t }}</p>
+            {% endif %}
+          </div>
+
+          {% if variant.available %}
+            {% comment %} Cart lines, sent with the product form. Disabled until the shopper picks this product. {% endcomment %}
+            <input
+              type="hidden"
+              form="{{ product_form_id }}"
+              name="items[{{ item_index }}][id]"
+              value="{{ variant.id }}"
+              disabled
+              :disabled="!(sel[{{ variant.id }}] > 0)"
+            >
+            <input
+              type="hidden"
+              form="{{ product_form_id }}"
+              name="items[{{ item_index }}][quantity]"
+              value="0"
+              disabled
+              :value="sel[{{ variant.id }}] || 0"
+              :disabled="!(sel[{{ variant.id }}] > 0)"
+            >
+            {% if item_plan %}
+              <input
+                type="hidden"
+                form="{{ product_form_id }}"
+                name="items[{{ item_index }}][selling_plan]"
+                value="{{ item_plan.id }}"
+                disabled
+                :disabled="!(sel[{{ variant.id }}] > 0)"
+              >
+            {% endif %}
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+
+    {% comment %} Keeps the form invalid until the shopper picks a product, so the host product is never added alone {% endcomment %}
+    <input
+      type="number"
+      class="sr-only"
+      form="{{ product_form_id }}"
+      tabindex="-1"
+      aria-hidden="true"
+      min="1"
+      required
+      value="0"
+      :value="totalUnits"
+      data-validity-message="{{ 'product.bundle.empty_error' | t | escape_once }}"
+      x-effect="$el.setCustomValidity(totalUnits > 0 ? '' : $el.dataset.validityMessage)"
+    >
+
+    <div class="flex items-center justify-between gap-x-r3 p-r3 rounded-md bg-content-mix-5" aria-live="polite">
+      <p class="type-p" x-show="totalUnits === 0">{{ 'product.bundle.empty' | t }}</p>
+      <p class="type-p" x-cloak x-show="totalUnits > 0">
+        <span x-text="totalUnits"></span> {{ 'product.bundle.units_short' | t }}
+        {% if doses_per_unit > 0 %}
+          · <span x-text="totalDoses"></span> {{ 'product.bundle.doses' | t }}
+        {% endif %}
+      </p>
+      <p class="flex flex-col items-end" x-cloak x-show="totalUnits > 0">
+        <span class="type-micro line-through text-muted" x-show="fullTotal > total" x-text="$formatCurrency(fullTotal)"></span>
+        <span class="type-h6" x-text="$formatCurrency(total)"></span>
+        {% if doses_per_unit > 0 %}
+          <span class="type-micro text-muted">
+            <span x-text="$formatCurrency(Math.round(total / totalDoses))"></span> {{ 'product.bundle.per_dose' | t }}
+          </span>
+        {% endif %}
+      </p>
+    </div>
+  </div>
+{% endcapture %}
+
+{% render 'product-block',
+  s: block.settings,
+  content: content,
+  attributes: block.shopify_attributes,
+  class: 'flex flex-col w-full'
+%}
+
+{% schema %}
+{
+  "name": "Bundle builder",
+  "tag": null,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Put this block on the bundle's host product. The form adds the picked products, never the host product. Tier discounts here are only shown: create matching automatic discounts in Shopify."
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Products to pick from"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading"
+    },
+    {
+      "type": "range",
+      "id": "doses_per_unit",
+      "label": "Servings per unit",
+      "info": "The host product's custom.doses_per_bag metafield wins. 0 hides servings.",
+      "min": 0,
+      "max": 60,
+      "step": 1,
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Tiers"
+    },
+    {
+      "type": "range",
+      "id": "discount_pct_2",
+      "label": "Discount at 2 units",
+      "unit": "%",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "discount_pct_3",
+      "label": "Discount at 3 units",
+      "unit": "%",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "discount_pct_4",
+      "label": "Discount at 4 or more units",
+      "unit": "%",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "default": 0
+    },
+    {
+      "type": "checkbox",
+      "id": "gift_at_2",
+      "label": "Show a gift at 2 units",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "gift_at_3",
+      "label": "Show a gift at 3 units",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "gift_at_4",
+      "label": "Show a gift at 4 or more units",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "best_deal_text",
+      "label": "Best deal label",
+      "info": "Shown under the last tier"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Bundle builder",
+      "category": "Add to cart"
+    }
+  ]
+}
+{% endschema %}
