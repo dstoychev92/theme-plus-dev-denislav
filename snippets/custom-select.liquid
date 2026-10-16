@@ -1,35 +1,33 @@
 {% doc %}
-  Renders a custom select dropdown component.
-  lazy {boolean|string} - wait to start the select up until someone reaches for it. Pass
-  true for the usual "on interaction", or a `data-lazy-alpine-on` value of your own.
+  - Renders custom select dropdown
 
   @param {string} [attributes]
-  @param {string} [button]
-  @param {string} [button_class]
-  @param {string} [button_content]
-  @param {string} [button_content_class]
-  @param {string} [button_style]
-  @param {string} [class]
+  @param {string} [button] - rendered button in place of the default, carrying x-select:button itself
+  @param {string} [button_class] - classes for the button
+  @param {string} [button_content] - button inner markup, defaults to start_icon, display span, and end_icon
+  @param {string} [button_content_class] - classes for the display wrapper
+  @param {string} [button_style] - inline styles for the button
+  @param {string} [class] - The classes
   @param {boolean} [disabled]
-  @param {string} [edge_padding]
-  @param {string} [end_icon]
-  @param {string} [error_message]
-  @param {boolean} [flip]
-  @param {string} [form]
-  @param {string} [id]
-  @param {boolean} [initial_display]
-  @param {string} [label]
-  @param {boolean} [lazy]
-  @param {boolean} [match]
+  @param {string} [edge_padding] - float pad with unit, defaults to '10px'
+  @param {string} [end_icon] - rendered icon after the display, defaults to the fill-select icon
+  @param {string} [error_message] - with id set, points the button's aria-describedby at id-error
+  @param {boolean} [flip] - false stops the popup flipping, defaults to true
+  @param {string} [form] - form attribute for the hidden input
+  @param {string} [id] - button id
+  @param [initial_display] - display text before a selection, false for none, defaults to label
+  @param {string} [label] - sr-only label, also the hidden placeholder option when value is blank
+  @param {boolean} [lazy] - starts the select on first interaction. Pass a data-lazy-alpine-on value instead of true for another trigger
+  @param {boolean} [match] - matches popup width to the button, defaults to true
   @param {string} name
-  @param {string} [offset]
-  @param {string} options
-  @param {string} [placement]
-  @param {string} [popup_class]
-  @param {string} [popup_list_class]
-  @param {string} [size]
-  @param {string} [start_icon]
-  @param {number} [value]
+  @param {string} [offset] - float offset with unit, defaults to '5px'
+  @param {string} options - rendered custom-select-option items
+  @param {string} [placement] - float placement, defaults to 'bottom'
+  @param {string} [popup_class] - classes for the popup
+  @param {string} [popup_list_class] - classes for the options list
+  @param {string} [size] - 'xs', 'sm', 'md', 'lg' or 'xl', defaults to 'md'
+  @param {string} [start_icon] - rendered icon before the display
+  @param [value] - selected value for the hidden input
 {% enddoc %}
 {% liquid
   assign placement = placement | default: 'bottom'

@@ -1,19 +1,20 @@
 {% doc %}
-  - Renders a product card whose media plays as a slideshow on hover
+  - Renders product card media as a slideshow that plays on hover
 
   Filtered collections swap featured_media to the matching variant, whose position is nil, so
-  the media is ordered with the initial one first rather than by position.
+  the initial media moves to the front of the list. Reads $productCard, so render it inside
+  x-product-card.
 
   @param {string} [class] - The classes
+  @param {boolean} [has_option_media_list] - product_media is an option media list, kept in its own order
   @param {string} [image_sizes] - sizes hint for the image
   @param {string} [image_widths] - widths for the image srcset
   @param {string} [initial_image_fetchpriority] - fetch priority for the first image
   @param {string} [initial_image_loading] - loading attribute for the first image
-  @param {object} [initial_media] - media shown before any hover, defaults to product.featured_media
-  @param {boolean} [has_option_media_list] - product_media is a color-specific image list
+  @param {media} [initial_media] - media shown before any hover, defaults to product.featured_media
   @param {number} media_size - how many media to show
-  @param {object} [product_media] - media to show, defaults to product.media
   @param {product} product
+  @param {object} [product_media] - media to show, defaults to product.media
 {% enddoc %}
 
 {% liquid

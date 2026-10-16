@@ -1,5 +1,11 @@
 <!-- blocks/_section-background.liquid -->
 
+{% doc %}
+  - Renders section background layer holding background blocks
+
+  Private, only offered by section-pro-banner. Reads the height settings from section.settings.
+{% enddoc %}
+
 {% assign target_device = block.settings.target_device %}
 
 {% capture blocks %}

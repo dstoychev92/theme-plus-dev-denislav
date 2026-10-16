@@ -1,12 +1,14 @@
 {% doc %}
-  Automatically highlight any text wrapped in <em><strong> tags using the `text-highlight` snippet. Handles nested tags and everything.
+  - Renders text with em strong spans highlighted through text-highlight
+
+  Only em wrapping strong, in that order, starts a highlight. Leading and trailing spaces and trailing punctuation stay outside the highlight.
 
   @param {boolean} [animate]
   @param {string} [appearance]
-  @param {string} [class]
+  @param {string} [class] - The classes
   @param {string} [color]
   @param {object} [s] - settings object
-  @param {string} [style]
+  @param {string} [style] - inline styles
   @param {string} text
 {% enddoc %}
 {% liquid

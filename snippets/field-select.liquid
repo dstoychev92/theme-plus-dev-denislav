@@ -1,21 +1,21 @@
 {% doc %}
-  - Renders a labelled native select
+  - Renders labeled native select
 
-  @param {string} [attributes]
+  @param {string} [attributes] - attributes for the select
   @param {string} [class] - The classes
   @param {boolean} [disabled]
-  @param {string} [error_message] - error text, which marks the field invalid
+  @param {string} [error_message] - error text, which marks the select invalid
   @param {string} [error_message_attributes] - attributes for the error message
-  @param {string} [hide_label] - keeps the label for screen readers only
-  @param {string} [icon] - icon before the select
+  @param {boolean} [hide_label] - keeps the label for screen readers only
+  @param {string} [icon] - rendered icon after the select, defaults to the fill-select icon
   @param {string} [id] - element id, defaults to the name handleized
   @param {string} label
   @param {string} [label_class] - classes for the label
-  @param {string} [name]
-  @param {string} options - the rendered option tags
-  @param {string} [size] - 'sm', 'md' or 'lg'
+  @param {string} name
+  @param {string} options - rendered option tags
+  @param {string} [size] - 'xs', 'sm', 'md', 'lg' or 'xl', defaults to 'md'
   @param {string} [success_message] - message shown after a successful post
-  @param {string} [value]
+  @param {string} [value] - value attribute for the select
   @param {string} [wrapper_attributes] - attributes for the field wrapper
 {% enddoc %}
 

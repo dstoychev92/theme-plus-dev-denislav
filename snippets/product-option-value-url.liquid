@@ -1,11 +1,12 @@
 {% doc %}
-  - Builds the destination URL for one product option value
+  - Builds destination URL for one product option value
 
-  Keeps combined-listing values and unresolved variants on an option_values URL.
+  A value with no variant but a product_url links to that combined-listing child with the
+  option_values query.
 
   @param {product_option} option
   @param {product} product
-  @param {boolean} [selling_plan] - selected plan, or false to omit plans
+  @param [selling_plan] - selling plan for the query, or false to omit it, defaults to product.selected_selling_plan
   @param {product_option_value} value
 {% enddoc %}
 

@@ -1,5 +1,11 @@
 <!-- blocks/_product-stock-status.liquid -->
 
+{% doc %}
+  - Renders in stock, low stock, or out of stock message
+
+  Reads closest.product. The low stock message needs Shopify inventory tracking with continue selling turned off.
+{% enddoc %}
+
 {% liquid
   assign product = closest.product
 

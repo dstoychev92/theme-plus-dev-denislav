@@ -1,16 +1,18 @@
 {% doc %}
-  - Renders the product page layout: media beside details
+  - Renders product section grid with media beside details
+
+  With s.enable_transparent on, the desktop top padding is 0. Loads theme.product.css.
 
   @param {string} [attributes]
   @param {string} [class] - The classes
   @param {string} content_details - rendered product details
   @param {string} content_media - rendered product media
   @param {boolean} [lazy_alpine] - starts Alpine only when the section reaches the viewport
-  @param {product} [product]
+  @param {product} [product] - key source for the wrapper
   @param {object} [s] - settings object
   @param {section} [section]
   @param {string} [style] - inline styles
-  @param {string} [tag] - wrapper tag
+  @param {string} [tag] - wrapper tag, defaults to 'div'
 {% enddoc %}
 
 {% liquid

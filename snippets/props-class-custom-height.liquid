@@ -1,16 +1,17 @@
 {% doc %}
   - Prints height classes reading the custom height variables
 
-  props-style-custom-height sets the variables these classes read.
+  props-style-custom-height sets the variables these classes read. The height classes print
+  even when set_height is false.
 
   @param {string} [custom_height_type] - 'percentage' or 'px'
   @param {string} [custom_height_type_mobile] - 'percentage' or 'px'
-  @param {string} [height] - 'custom', 'image' or 'content'
-  @param {string} [height_mobile] - 'custom', 'image' or 'content'
+  @param {string} [height] - 'custom' with a 'percentage' type adds the svh support class
+  @param {string} [height_mobile] - 'custom' with a 'percentage' type adds the mobile svh support class
   @param {string} [mode] - 'min' for min-height, or 'height', defaults to 'min'
   @param {object} [s] - settings object
-  @param {number} [set_height] - false prints nothing, defaults to true
-  @param {string} [set_height_mobile] - false ignores the mobile height
+  @param {boolean} [set_height] - has no effect
+  @param {boolean} [set_height_mobile] - has no effect
 {% enddoc %}
 
 {%- liquid

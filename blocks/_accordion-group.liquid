@@ -1,6 +1,11 @@
 <!-- blocks/_accordion-group.liquid -->
 
-{% capture content %}
+{% doc %}
+  - Renders accordion group holding _accordion blocks
+
+  Reads section.settings.enable_ensemble to link the accordions with the section's other
+  interactive content.
+{% enddoc %}{% capture content %}
   {% content_for 'blocks' %}
 {% endcapture %}
 

@@ -8,29 +8,29 @@
   @param {number} [aspect_ratio] - defaults to settings.card_aspect_ratio
   @param {string} [attributes]
   @param {string} [class] - The classes
-  @param {boolean} [content] - content replacing title and details
-  @param {boolean} [details] - content below title
-  @param {boolean} [icon] - icon shown without image or media
+  @param {string} [content] - content replacing title and details
+  @param {string} [details] - content below title
+  @param {string} [icon] - icon shown without image or media
   @param {string} [id]
   @param {image} [image]
   @param {string} [image_class] - classes for loading placeholder
   @param {string} [image_fetchpriority]
-  @param {string} [image_loading]
+  @param {string} [image_loading] - 'lazy' adds the loading placeholder
   @param {string} [image_overlay] - content over image
-  @param {string} [image_sizes]
-  @param {string} [image_widths]
+  @param {string} [image_sizes] - defaults to image-grid-sizes
+  @param {string} [image_widths] - defaults to image-grid-widths
   @param {string} [link_attributes] - attributes for card links
   @param {boolean} [loader] - renders loading state
-  @param {media} [media] - media used instead of image
+  @param [media] - media markup used instead of image
   @param {string} [media_attributes]
   @param {string} [media_class] - classes for media link
   @param {string} [media_overlay] - content over media
   @param {string} [media_tag] - 'div' by default, or 'a' when url is set
   @param {string} [media_wrapper_attributes]
   @param {string} [style] - inline styles
-  @param {boolean} [title] - plain-text title
+  @param {string} [title] - plain-text title
   @param {string} [title_tag] - 'div' by default, or 'a' when url is set
-  @param {boolean} [url] - card URL, turns title and media into links
+  @param [url] - card URL, turns title and media into links
 {% enddoc %}
 
 {% liquid
@@ -194,7 +194,7 @@
         {%- endif -%}
       {% elsif icon %}
         <div class="flex size-full flex-none flex-center bg-content-mix-5">
-          {% render 'core-icon', icon: icon %}
+          {% render 'core-icon', icon: icon, size: 'md' %}
         </div>
       {% else %}
         {% comment %} Always show filler on 'lg' cards to avoid disrupting the layout consisitency {% endcomment %}

@@ -1,20 +1,20 @@
 {% doc %}
-  - Renders a card list section: header, cards and footer
+  - Renders card list section with header, cards, and footer
 
   @param {string} [attributes]
   @param {string} [class] - The classes
-  @param {string} [columns_lg] - column count
-  @param {string} [columns_md] - column count
-  @param {string} [columns_sm] - column count
-  @param {string} [content_align] - horizontal alignment
+  @param {number} [columns_lg] - column count, defaults to s.columns_lg
+  @param {number} [columns_md] - column count, defaults to s.columns_md
+  @param {number} [columns_sm] - column count, defaults to s.columns_sm_grid for a mobile grid, else s.columns_sm, then settings.slider_columns_mobile
+  @param {string} [content_align] - horizontal alignment for core-section-wrapper
   @param {string} [footer] - content below the cards
   @param {string} header - content above the cards
-  @param {string} [layout_desktop] - layout at that breakpoint
-  @param {string} [layout_mobile] - layout at that breakpoint
-  @param {string} [layout_tablet] - layout at that breakpoint
+  @param {string} [layout_desktop] - 'grid' or 'slider', defaults to s.layout_desktop, then 'grid'
+  @param {string} [layout_mobile] - 'grid' or 'slider', defaults to s.layout_mobile, then 'slider'
+  @param {string} [layout_tablet] - 'grid' or 'slider', defaults to s.layout_tablet, then layout_desktop
   @param {string} [list_attributes] - attributes for the list
   @param {string} list_items - rendered card markup
-  @param {string} [progress_bar_visibility] - when the slider progress bar shows
+  @param {string} [progress_bar_visibility] - unused
   @param {object} [s] - settings object
   @param {string} [style] - inline styles
 {% enddoc %}

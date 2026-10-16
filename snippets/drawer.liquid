@@ -1,5 +1,7 @@
 {% doc %}
-  - Renders a drawer that slides in from one side
+  - Renders drawer dialog sliding in from left or right
+
+  Place it inside an element with x-dialog.
 
   @param {string} [aria_label] - accessible name for the drawer
   @param {string} [attributes]
@@ -11,12 +13,12 @@
   @param {string} [content_class] - classes for the content
   @param {string} [footer] - content pinned to the bottom
   @param {string} [footer_attributes] - attributes for the footer
-  @param {string} [header] - content pinned to the top
+  @param {string} [header] - header content in place of the title and close button
   @param {string} [header_attributes] - attributes for the header
   @param {string} [id]
   @param {boolean} [open] - opens it on load
-  @param {boolean} [scrollable] - lets the content scroll
-  @param {string} [side] - 'left', 'right', 'top' or 'bottom'
+  @param {boolean} [scrollable] - lets the content scroll, defaults to true
+  @param {string} [side] - 'left' or 'right', defaults to 'left'
   @param {string} [title] - heading text
   @param {string} [under_header] - content directly under the header
 {% enddoc %}

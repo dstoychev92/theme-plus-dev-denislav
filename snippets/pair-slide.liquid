@@ -3,16 +3,19 @@
 
 
 {% doc %}
-  - Renders one slide of a pair slideshow
+  - Renders one pair slideshow slide
+
+  Render it inside an x-slideshow root. A slide nested in a pair block passes total_slides: false,
+  and the pagination fills in on startup.
 
   @param {string} [attributes]
   @param {block} [block]
-  @param {number} [block_position] - position of this slide
+  @param {number} [block_position] - position of this slide, passed as the initial slide
   @param {string} [class] - The classes
-  @param {string} [content]
+  @param {string} content
   @param {object} [s] - settings object
   @param {section} [section]
-  @param {number} [total_slides] - number of slides
+  @param [total_slides] - slide count for the pagination, false defers it to Alpine, defaults to section.blocks.size
 {% enddoc %}
 {% assign total_slides = total_slides | default: section.blocks.size, allow_false: true %}
 

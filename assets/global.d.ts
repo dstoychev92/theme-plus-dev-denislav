@@ -1,8 +1,8 @@
 import Alpine from 'alpinejs';
 // The plugins augment Alpine's Magics with $cache, $section and friends. The
 // deleted cypress support file used to pull them in; name them here instead.
-import '@groupthought/assembly-ui/alpine';
-import {ThemeEvent as BaseThemeEvent, ThemeEventPayload} from '@groupthought/assembly-ui/types';
+import '@groupthought/tradecraft-ui/alpine';
+import {ThemeEvent as BaseThemeEvent, ThemeEventPayload} from '@groupthought/tradecraft-ui/types';
 import type {actions as StandardActions} from '@shopify/events/actions';
 import {HeaderMenu} from 'src/js/plugins/header-menu';
 import ThemeEventHandler from 'src/js/theme.events';
@@ -21,7 +21,7 @@ declare module 'alpinejs' {
   interface Magics<T> {}
 }
 
-declare module '@groupthought/assembly-ui/types' {
+declare module '@groupthought/tradecraft-ui/types' {
   export enum ThemeEvent {
     'theme:pickup:open',
     'theme:pickup:close',

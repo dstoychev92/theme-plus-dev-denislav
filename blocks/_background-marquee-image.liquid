@@ -1,5 +1,11 @@
 <!-- blocks/_background-marquee-image.liquid -->
 
+{% doc %}
+  - Renders one image in a background marquee
+
+  Sits inside _background-marquee.
+{% enddoc %}
+
 {% render 'marquee-image', s: block.settings, attributes: block.shopify_attributes %}
 
 {% schema %}

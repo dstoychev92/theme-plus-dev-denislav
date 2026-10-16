@@ -1,5 +1,9 @@
 <!-- blocks/_cards-articles.liquid -->
 
+{% doc %}
+  - Renders article cards from blog or one article
+{% enddoc %}
+
 {% liquid
   assign limit = block.settings.card_limit
   case block.settings.source

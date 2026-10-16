@@ -1,5 +1,11 @@
 <!-- blocks/_product-disclosures.liquid -->
 
+{% doc %}
+  - Renders product disclosures as accordion items
+
+  Reads closest.product.metafields.shopify.disclosure and shows only the disclosures scoped to the product page.
+{% enddoc %}
+
 {% liquid
   assign product = closest.product
   assign disclosures = product.metafields.shopify.disclosure.value

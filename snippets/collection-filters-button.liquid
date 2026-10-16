@@ -1,11 +1,14 @@
 {% doc %}
-  - Renders the button that opens the filters
+  - Renders filter sidebar toggle and filter drawer button
 
-  @param {collection} [collection]
-  @param {string} [drawer_button_icon_class] - classes for the icon
-  @param {string} [filter_mode] - filter layout, defaults to the section setting
+  Needs showFilterSidebar and showFilterDrawer in an ancestor x-data, which collection-layout
+  provides.
+
+  @param collection - collection or search object
+  @param {string} [drawer_button_icon_class] - classes for the drawer button icon
+  @param {string} [filter_mode] - 'sidebar' or 'drawer', defaults to section.settings.filter_mode
   @param {section} [section]
-  @param {boolean} [sidebar_open] - the sidebar starts open, defaults to the section setting
+  @param {boolean} [sidebar_open] - sidebar starts open, defaults to section.settings.filter_sidebar_open_by_default
 {% enddoc %}
 
 {% liquid

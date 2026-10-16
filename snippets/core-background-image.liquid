@@ -1,30 +1,32 @@
 {% doc %}
-  - Renders a background image, with an optional mobile source
+  - Renders background image with optional mobile source and loading placeholder
 
-  @param {number} [aspect_ratio] - aspect ratio
-  @param {string} [aspect_ratio_mobile] - aspect ratio on mobile
+  The loading placeholder renders only when loading is 'lazy' and preload is false.
+
+  @param {number} [aspect_ratio] - defaults to s.aspect_ratio when s.set_aspect_ratio is on, then image.aspect_ratio, then 1.7
+  @param {number} [aspect_ratio_mobile] - defaults to s.aspect_ratio_mobile when s.set_aspect_ratio_mobile is on, then image_mobile.aspect_ratio, then 1.7
   @param {string} [attributes]
   @param {block} [block]
   @param {string} [class] - The classes
-  @param {string} [fetchpriority]
-  @param {string} [height] - CSS height
-  @param {string} [height_mobile] - CSS height on mobile
-  @param {string} [id]
-  @param {string} [id_prefix] - prefix for the element ids
-  @param {boolean} [image]
-  @param {object} [image_mobile] - image below the md breakpoint
-  @param {string} [image_style] - inline styles for the image
-  @param {string} [loading]
-  @param {string} [placeholder] - Shopify placeholder name
-  @param {boolean} [preload]
+  @param {string} [fetchpriority] - defaults to 'auto', 'high' when preload is true
+  @param {string} [height] - 'image' sizes the element from the aspect ratio, any other value fills the parent, defaults to s.height
+  @param {string} [height_mobile] - 'image' sizes the element from the mobile aspect ratio below md, defaults to s.height_mobile
+  @param {string} [id] - defaults to id_prefix with '-image'
+  @param {string} [id_prefix] - prefix for the image ID, defaults to block.id, then section.id
+  @param [image] - defaults to s.image. false renders image_mobile for both sources
+  @param {image} [image_mobile] - image below the md breakpoint, defaults to s.image_mobile
+  @param {string} [image_style] - inline styles for the loading placeholder image
+  @param {string} [loading] - defaults to 'lazy', 'eager' when preload is true
+  @param [placeholder] - placeholder_svg_tag name, or false for none, defaults to 'lifestyle-1'
+  @param {boolean} [preload] - defaults to true in the first section
   @param {object} [s] - settings object
   @param {section} [section]
-  @param {number} [set_height] - applies the height
-  @param {string} [set_height_mobile] - applies the mobile height
-  @param {string} [sizes]
+  @param {boolean} [set_height] - applies height, defaults to s.set_height, then true
+  @param {boolean} [set_height_mobile] - applies height_mobile, defaults to s.set_height_mobile, then true
+  @param {string} [sizes] - defaults to one-column image-grid-sizes
   @param {string} [style] - inline styles
-  @param {string} [width] - CSS width
-  @param {string} [widths] - widths for the srcset
+  @param [width] - pixel width for core-image
+  @param {string} [widths] - defaults to one-column image-grid-widths
 {% enddoc %}
 
 {% liquid

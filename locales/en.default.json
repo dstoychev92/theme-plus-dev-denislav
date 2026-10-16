@@ -448,8 +448,6 @@
       "play": "Play video",
       "view_model": "View product model",
       "star_reviews_info": "{{ rating_value }} out of {{ rating_max }} stars",
-      "scale_position": "{{ position }} of {{ total }}",
-      "scale_position_range": "{{ from }} to {{ to }} of {{ total }}",
       "total_reviews": "total reviews",
       "hotspots": "Hotspots",
       "hotspot": "Hotspot",

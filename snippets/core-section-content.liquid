@@ -3,16 +3,16 @@
 
 
 {% doc %}
-  - Renders the inner content column of a section
+  - Renders section content column
 
   @param {string} [attributes]
   @param {string} [class] - The classes
   @param {string} content
   @param {string} [content_align] - horizontal alignment, defaults to s.content_align
-  @param {string} [inner_col_class] - classes for the inner column
+  @param {string} [inner_col_class] - replaces col-section-content
   @param {object} [s] - settings object
   @param {string} [style] - inline styles
-  @param {string} [tag] - defaults to 'div'
+  @param {string} [tag] - unused
 {% enddoc %}
 {% liquid
   assign tag = tag | default: 'div'

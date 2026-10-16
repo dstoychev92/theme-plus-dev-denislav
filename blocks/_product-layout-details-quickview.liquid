@@ -1,5 +1,11 @@
 <!-- blocks/_product-layout-details-quickview.liquid -->
 
+{% doc %}
+  - Renders quick view product details column
+
+  Private, only offered by product-quickview-drawer. Each child theme block is a render region, so a variant change updates its whole subtree. App blocks stay outside the regions.
+{% enddoc %}
+
 <div
   style="
     {% render 'props-style-gap', s: block.settings %}
@@ -177,9 +183,6 @@
 		},
 		{
 			"type": "theme-richtext"
-		},
-		{
-			"type": "theme-scale-bar"
 		},
 		{
 			"type": "theme-video-button"

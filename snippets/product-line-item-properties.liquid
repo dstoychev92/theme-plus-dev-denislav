@@ -1,7 +1,8 @@
 {% doc %}
-  - Renders a line item property from a product metafield
+  - Renders hidden line item property input from a product metafield
 
-  Reads settings.metafield_line_item_property, so it prints nothing until that is set.
+  Reads settings.metafield_line_item_property. Prints nothing when that setting or the
+  metafield value is blank.
 
   @param {product} product
 {% enddoc %}

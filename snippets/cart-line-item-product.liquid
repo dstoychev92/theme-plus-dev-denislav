@@ -1,16 +1,17 @@
 {% doc %}
-  - Renders a product row for the cart
+  - Renders cart product row from a line item or a product
 
-  Pass either line_item or product, never both.
+  Pass either line_item or product, never both. The quantity stepper and remove button render for
+  a line item only.
 
-  @param {string} [attributes]
-  @param {string} [form_id] - id of the cart form, defaults to cart-<section id>
-  @param {string} [index] - position in the list, used for image loading priority
+  @param {string} [attributes] - attributes for the image wrapper
+  @param {string} [form_id] - cart form id prefixing the quantity input id, defaults to 'cart'
+  @param {number} [index] - position in the list, scopes the quantity input id
   @param {line_item} [line_item]
   @param {boolean} [preload_image]
   @param {product} [product]
   @param {string} [quantity_size] - stepper size, defaults to 'md'
-  @param {boolean} [show_quantity_selector] - renders the quantity stepper
+  @param {boolean} [show_quantity_selector] - renders the quantity stepper in place of quantity text, defaults to false
 {% enddoc %}
 
 {% liquid

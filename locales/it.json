@@ -448,8 +448,6 @@
       "play": "Riproduci video",
       "view_model": "Vedi il modello del prodotto",
       "star_reviews_info": "{{ rating_value }} stelle su {{ rating_max }}",
-      "scale_position": "{{ position }} di {{ total }}",
-      "scale_position_range": "{{ from }} a {{ to }} di {{ total }}",
       "total_reviews": "recensioni totali",
       "hotspots": "Hotspot",
       "hotspot": "Hotspot",

@@ -1,5 +1,12 @@
 <!-- blocks/_card-showcase.liquid -->
 
+{% doc %}
+  - Renders carousel showing one card at a time with controls
+
+  Holds _card-product and the card list blocks. Pagination style defaults to
+  settings.carousel_pagination_style.
+{% enddoc %}
+
 {% liquid
   # width settings
   assign set_width = block.settings.set_width

@@ -1,16 +1,16 @@
 {% doc %}
-  A layout container for text content that is meant to be displayed over top of background media
+  - Renders placement grid wrapper for content over background media
 
   @param {string} [attributes]
-  @param {string} [class]
+  @param {string} [class] - The classes
   @param {string} [content]
-  @param {string} [controls_alignment]
-  @param {string} [horizontal_placement]
-  @param {boolean} [padding]
-  @param {string} [padding_custom]
+  @param {string} [controls_alignment] - vars-placement-controls-horizontal-* suffix
+  @param {string} [horizontal_placement] - defaults to s.horizontal_placement
+  @param [padding] - padding step, or false for none, defaults to s.padding
+  @param {number} [padding_custom] - padding in pixels when padding is 'custom', defaults to s.padding_custom
   @param {object} [s] - settings object
-  @param {string} [style]
-  @param {string} [vertical_placement]
+  @param {string} [style] - inline styles
+  @param {string} [vertical_placement] - 'top', 'middle', 'bottom', or 'full', defaults to s.vertical_placement
 {% enddoc %}
 {%- liquid
   assign vertical_placement = vertical_placement | default: s.vertical_placement, allow_false: true

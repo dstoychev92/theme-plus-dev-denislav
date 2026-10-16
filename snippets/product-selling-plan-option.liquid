@@ -1,12 +1,12 @@
 {% doc %}
-  Render a selling plan radio button option for the product form
+  - Renders one selling plan radio option for the product form
 
-  @param {string} history_mode - navigate or replace, passed to $sectionApi.navigate
-  @param {selling_plan} [plan] - The selling plan to display
-  @param {product} [product] - The product to display the selling plan option for
-  @param {string} product_form_id - form the radio belongs to
+  @param {string} history_mode - 'replace' or 'none', passed to $sectionApi.navigate
+  @param {selling_plan} plan
+  @param {product} product
+  @param {string} product_form_id - id of the form the radio belongs to
   @param {object} [s] - settings object
-  @param {boolean} [show_discount_badge]
+  @param {boolean} [show_discount_badge] - defaults to s.show_discount_badge
 {% enddoc %}
 {% liquid
   assign plan_id = product_form_id | append: '-' | append: plan.id

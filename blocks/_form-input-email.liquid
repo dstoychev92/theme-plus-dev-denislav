@@ -1,5 +1,13 @@
 <!-- blocks/_form-input-email.liquid -->
 
+{% doc %}
+  - Renders contact form email input
+
+  Sits inside _form-contact and posts as contact[email]. Server-side errors show only in the
+  form summary because theme blocks cannot read the form object. The pattern attribute rejects
+  test@test, which type email alone accepts.
+{% enddoc %}
+
 {%- liquid
   # Theme blocks never see the form tag's `form` object (content_for passes
   # only globals), so server-side errors can only render in the form's

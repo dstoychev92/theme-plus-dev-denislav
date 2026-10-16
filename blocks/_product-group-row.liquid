@@ -1,6 +1,10 @@
 <!-- blocks/_product-group-row.liquid -->
 
+{% doc %}
+  - Renders horizontal row holding product blocks
 
+  Children scroll sideways when they overflow.
+{% enddoc %}
 
 {% capture blocks %}
   {% content_for "blocks" %}
@@ -343,9 +347,6 @@
 		},
 		{
 			"type": "theme-richtext"
-		},
-		{
-			"type": "theme-scale-bar"
 		},
 		{
 			"type": "theme-video-button"

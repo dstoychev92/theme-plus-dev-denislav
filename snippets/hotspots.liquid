@@ -3,12 +3,15 @@
 
 
 {% doc %}
-  - Renders the hotspot layer over a background image
+  - Renders hotspot layer over background image
+
+  Reads section.settings.enable_ensemble to join the section ensemble instead of keeping its own
+  list state.
 
   @param {string} [attributes]
   @param {string} [class] - The classes
   @param [height] - background height mode, defaults to 'image'. false fills the column and the image covers
-  @param {string} [hotspot_color] - CSS color for the dots
+  @param {string} [hotspot_color] - CSS color for the dots, defaults to s.hotspot_color
   @param {string} hotspots - rendered hotspot markup
   @param {object} [s] - settings object
   @param {section} [section]

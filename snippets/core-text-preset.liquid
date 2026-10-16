@@ -1,19 +1,22 @@
 {% doc %}
-  Thin wrapper for props-class-type-preset, defaults to p tag. Can use s or individual properties.
+  - Renders text element with type preset classes
+
+  Wraps props-class-type-preset. Renders nothing when text is blank. A type parameter wins over
+  the matching s key.
 
   @param {string} [attributes]
-  @param {string} [class]
-  @param {string} [default_type_preset]
-  @param {string} [s] - settings object
-  @param {boolean} [settings_suffix]
-  @param {string} [style]
-  @param {string} [tag]
-  @param {string} [text]
+  @param {string} [class] - The classes
+  @param {string} [default_type_preset] - preset when neither type_preset nor s sets one
+  @param {object} [s] - settings object
+  @param {string} [settings_suffix] - suffix on the s keys, such as 'title' for s.text_title
+  @param {string} [style] - inline styles
+  @param {string} [tag] - defaults to 'p'
+  @param {string} [text] - defaults to s.text, with settings_suffix appended to the key
   @param {string} [type_font]
-  @param {string} [type_preset]
+  @param {string} [type_preset] - defaults to s.type_preset, then default_type_preset, then 'p'
   @param {string} [type_resize]
-  @param {string} [type_size]
-  @param {string} [type_uppercase]
+  @param {number} [type_size]
+  @param {boolean} [type_uppercase]
 {% enddoc %}
 {% liquid
   if settings_suffix

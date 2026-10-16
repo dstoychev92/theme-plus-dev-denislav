@@ -1,11 +1,13 @@
 {%- doc -%}
   - Renders text split into per-word spans for animation
 
-  @param {string} [attributes]
+  Each word span carries data-index. Tags inside text pass through unsplit.
+
+  @param {string} [attributes] - attributes on each span, defaults to 'data-split-text'
   @param {string} [class] - The classes
   @param {string} [style] - inline styles
-  @param {string} [tag] - wrapper tag
-  @param {string} text - the text to split
+  @param {string} [tag] - tag for each word, defaults to 'span'
+  @param {string} text
 {%- enddoc -%}
 
 {% liquid

@@ -1,11 +1,12 @@
 {% doc %}
-  - Builds a sibling product URL
+  - Builds sibling product URL
 
-  Optionally carries the current product's selected option names to matching
-  option positions on the sibling. Unmatched positions are skipped.
+  With preserve_selected_options, the URL gains an option_values query holding the sibling
+  values whose option name and value name match the current selection. Unmatched options are
+  skipped.
 
-  @param {product} product
   @param {boolean} [preserve_selected_options]
+  @param {product} product
   @param {product} sibling
 {% enddoc %}
 

@@ -1,12 +1,14 @@
 {% doc %}
-  - Renders a slider arrow button
+  - Renders slider arrow button
+
+  Reads $overflow from an enclosing x-overflow scope.
 
   @param {string} [attributes]
-  @param {string} [background_style] - control style, defaults to the theme setting
+  @param {string} [background_style] - 'bare', 'fill', 'stroke' or 'soft', defaults to settings.slider_control_style when set, then 'bare'
   @param {string} [class] - The classes
-  @param {string} [size] - defaults to 'md'
+  @param {string} [size] - suffix for vars-btn-*, defaults to 'md'
   @param {string} [style] - inline styles
-  @param {string} [type]
+  @param {string} [type] - 'prev' or 'next', prints an error message otherwise
 {% enddoc %}
 
 {% liquid

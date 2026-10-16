@@ -2,14 +2,15 @@
   - Renders one filter group, picking the control for its type
 
   A group with no applicable values hides itself. The price range always applies, so it always
-  shows.
+  shows. Availability becomes filter-segmented when section.settings.out_of_stock_style is
+  'toggle' and the translated labels are short.
 
   @param {string} [base_id] - prefix for element ids, defaults to 'filter'
-  @param {string} [content]
-  @param {boolean} [expanded] - opens the group on load
+  @param {string} [content] - rendered control in place of the one picked by filter.type
+  @param {boolean} [expanded] - opens the group on load, forced on when the filter has active values
   @param {filter} [filter]
   @param {string} [form] - id of the form the inputs belong to
-  @param {boolean} [label] - group heading, defaults to filter.label
+  @param {string} [label] - group heading, defaults to filter.label
   @param {section} [section]
   @param {boolean} [visible] - forces the group to show
   @param {number} [visible_limit] - items shown before the Show all button, defaults to 6

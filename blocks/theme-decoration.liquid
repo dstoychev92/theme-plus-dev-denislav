@@ -1,5 +1,11 @@
 <!-- blocks/theme-decoration.liquid -->
 
+{% doc %}
+  - Renders decorative shape, line, or image
+
+  Uses the theme decoration settings unless decoration_custom is 'custom'.
+{% enddoc %}
+
 {% liquid
   if block.settings.decoration_custom == 'custom'
     assign s = block.settings

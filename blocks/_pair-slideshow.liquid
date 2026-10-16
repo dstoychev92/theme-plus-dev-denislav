@@ -1,5 +1,11 @@
 <!-- blocks/_pair-slideshow.liquid -->
 
+{% doc %}
+  - Renders pair column with slideshow of _pair-slide blocks
+
+  Private, only offered by section-pair. When section.settings.enable_ensemble is on, the section autoplay and duration apply. The viewport carries data-hide-controls when pagination is off or there is one slide, and _pair-slide hides its controls from that marker.
+{% enddoc %}
+
 {% liquid
   if section.settings.enable_ensemble
     assign autoplay = section.settings.autoplay

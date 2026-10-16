@@ -1,11 +1,12 @@
 {% doc %}
-  - Renders the column count switcher
+  - Renders column count selects for mobile, tablet, and desktop
 
-  Mobile offers 1 and 2 columns, tablet and desktop 2, 3 and 4.
+  Mobile offers 1 and 2 columns, tablet and desktop 2, 3 and 4. Needs a columns object with
+  mobile, tablet, and desktop keys in an ancestor x-data, which collection-layout provides.
 
-  @param {object} columns_lg - desktop column counts
-  @param {object} columns_md - tablet column counts
-  @param {object} columns_sm - mobile column counts
+  @param {number} [columns_lg] - unused, the initial count comes from section.settings.columns_lg
+  @param {number} [columns_md] - unused, the initial count comes from section.settings.columns_md
+  @param {number} [columns_sm] - unused, the initial count comes from section.settings.columns_sm
   @param {section} [section]
 {% enddoc %}
 

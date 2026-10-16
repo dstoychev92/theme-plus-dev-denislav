@@ -5,11 +5,11 @@
   @param {string} [class] - The classes
   @param {string} [default_type_preset] - preset used when none is set
   @param {object} [s] - settings object
-  @param {boolean} [settings_suffix] - suffix picking a settings group
+  @param {string} [settings_suffix] - suffix on the type_preset setting ID
   @param {string} [style] - inline styles
   @param {string} [tag] - defaults to 'p'
-  @param {string} [text]
-  @param {string} [type_preset]
+  @param {string} [text] - defaults to s.text
+  @param {string} [type_preset] - defaults to s.type_preset with settings_suffix, then default_type_preset, then 'p'
 {% enddoc %}
 
 {% liquid

@@ -5,22 +5,22 @@
 {% doc %}
   - Renders styled link as anchor, button, or span
 
-  @param {string} [appearance] - 'clean', 'line', 'icon', 'both' or 'bare'
+  @param {string} [appearance] - 'clean', 'line', 'icon', 'both' or 'bare', defaults to s.appearance, then 'clean'
   @param {string} [attributes]
   @param {string} [class] - The classes
-  @param {string} [color] - stain color token
+  @param {string} [color] - stain color token such as 'content' or 'sale', defaults to s.color, then 'content'
   @param {string} [content] - content replacing text and icons
-  @param {string} [end_icon] - icon after text
-  @param {string} [href] - URL
-  @param {string} [icon] - default icon for 'icon' and 'both'
+  @param {string} [end_icon] - icon after text, only for 'icon' and 'both'
+  @param {string} [href] - defaults to s.href
+  @param {string} [icon] - fallback for start_icon and end_icon, defaults to 'stroke-chevron-right'
   @param {string} [icon_class] - classes for both icons
-  @param {boolean} [new_window] - opens new tab with noopener and screen-reader warning
+  @param {boolean} [new_window] - opens new tab with noopener and screen-reader warning, defaults to s.open_in_new_window
   @param {object} [s] - settings object
-  @param {string} [settings_suffix]
-  @param {string} [start_icon] - icon before text
+  @param {string} [settings_suffix] - suffix picking a settings group for props-class-type-preset
+  @param {string} [start_icon] - icon before text, only for 'icon' and 'both'
   @param {string} [style] - inline styles
   @param {string} [tag] - 'a' by default, or 'button' or 'span'
-  @param {string} [text]
+  @param {string} [text] - defaults to s.text
   @param {string} [text_slot] - content replacing text while keeping underline
   @param {string} [type_preset]
   @param {string} [type_resize]

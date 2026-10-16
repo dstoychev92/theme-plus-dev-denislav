@@ -1,10 +1,9 @@
 {% doc %}
-  - Renders the pickup availability drawer
+  - Renders pickup availability drawer
 
-  Opens on the theme:pickup:open event with a product URL, and loads its content through the
-  section rendering API, so the content only renders when the API calls it. A
-  theme:pickup:preload event warms the cache first. Until the load finishes it renders a
-  loading state, keeping the drawer structure so screen readers still have something to hold.
+  Opens when $store.drawer.type is 'pickup' and loads $store.drawer.data.url through the
+  Section API. A theme:pickup:preload event with a url in its detail warms the cache. Shows a
+  spinner until the load finishes.
 {% enddoc %}
 
 {% capture pickup_overlay_content %}

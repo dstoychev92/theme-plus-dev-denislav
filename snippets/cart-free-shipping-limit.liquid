@@ -1,11 +1,12 @@
 {% doc %}
-  - Prints the free shipping limit and its conversion state
+  - Prints free shipping limit and its conversion state
 
   Prints "<limit>,convert" or "<limit>,exact". Capture the output, then split on the comma.
   A market metafield replaces s.free_shipping_limit and converts only when
   s.enable_shipping_limit_conversion is on for the market context. The s.free_shipping_limit
-  fallback always converts. Liquid has no exchange rate, so a limit marked convert is right
-  only after x-shipping-progress multiplies it in the browser.
+  fallback always converts. A cart already in the store currency is always exact. Liquid has no
+  exchange rate, so a limit marked convert is right only after x-shipping-progress multiplies it
+  in the browser.
 
   @param {object} [s] - settings object
 

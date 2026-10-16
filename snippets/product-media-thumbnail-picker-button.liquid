@@ -1,11 +1,13 @@
 {% doc %}
-  - Renders a scroll button for the thumbnail picker
+  - Renders prev or next scroll button for the thumbnail picker
+
+  Reads $overflow and $refs.scrollTrack from the enclosing picker.
 
   @param {string} [attributes]
   @param {string} [class] - The classes
-  @param {boolean} [direction] - 'prev' or 'next'
-  @param {string} [id]
-  @param {string} [orientation] - 'horizontal' or 'vertical'
+  @param {string} [direction] - 'prev' or 'next', prints nothing when empty
+  @param {string} [id] - gallery id, resolved through $id for aria-controls
+  @param {string} [orientation] - 'horizontal' or 'vertical', defaults to 'horizontal'
 {% enddoc %}
 
 {% liquid

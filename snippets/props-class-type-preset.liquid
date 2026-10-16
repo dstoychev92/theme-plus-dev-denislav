@@ -1,15 +1,15 @@
 {% doc %}
   - Prints typography classes for a type preset
 
-  @param {string} [default_type_preset] - preset used when none is set
+  @param {string} [default_type_preset] - fallback preset, then 'p'
   @param {string} [id_suffix] - suffix on the setting ids the preset reads
-  @param {string} [s] - settings object
-  @param {boolean} [settings_suffix] - suffix picking a settings group
-  @param {string} [tag] - element the preset defaults from
+  @param {object} [s] - settings object
+  @param {string} [settings_suffix] - setting id suffix with '_' prepended, replaces id_suffix
+  @param {string} [tag] - has no effect
   @param {string} [type_font]
   @param {string} [type_preset]
   @param {string} [type_resize]
-  @param {string} [type_size]
+  @param {number} [type_size]
   @param {boolean} [type_uppercase]
 {% enddoc %}
 

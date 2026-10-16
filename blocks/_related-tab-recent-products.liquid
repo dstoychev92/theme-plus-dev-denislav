@@ -1,5 +1,11 @@
 <!-- blocks/_related-tab-recent-products.liquid -->
 
+{% doc %}
+  - Renders recently viewed products tab
+
+  Private, only offered by the related section. Loads the recently viewed products through a search request. The tab hides below the display threshold.
+{% enddoc %}
+
 {% liquid
   assign limit = block.settings.card_limit
   assign threshold = block.settings.threshold

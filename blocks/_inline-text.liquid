@@ -1,5 +1,12 @@
 <!-- blocks/_inline-text.liquid -->
 
+{% doc %}
+  - Renders inline text with highlight, outline, and color options
+
+  Sits in an inline text flow such as theme-group-text. Bold italic words get the background
+  highlight when highlight_toggle is 'auto'.
+{% enddoc %}
+
 {% capture attributes %}
   {{ block.shopify_attributes }}
 {% endcapture %}

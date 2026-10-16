@@ -1,10 +1,13 @@
 {% doc %}
-  - Renders a list of upsell products
+  - Renders upsell product cards, a loading placeholder, or editor placeholder cards
+
+  Drops unavailable products. Prints nothing when there is no list, single_product, loader, or
+  placeholder mode.
 
   @param {string} [attributes]
   @param {block} [block] - scopes each card's product form id, pass it when the caller holds a section-local block
-  @param {number} [limit] - most products to show, defaults to s.limit
-  @param {boolean} [loader] - renders placeholder cards
+  @param {number} [limit] - maximum products to show, defaults to s.limit
+  @param {boolean} [loader] - renders a loading placeholder in place of cards
   @param {object} [products] - products to show, defaults to s.upsell_product_list
   @param {object} [s] - settings object
   @param {product} [single_product] - one product to show instead of the list

@@ -1,11 +1,11 @@
 {% doc %}
-  - Renders one image in a marquee
+  - Renders marquee image, linked when href is set
 
   @param {string} [attributes]
-  @param {string} [href] - makes the image a link
-  @param {image} [image]
-  @param {boolean} [open_in_new_window] - opens the link in a new tab
-  @param {boolean} [preload_image] - loads the image eagerly
+  @param {string} [href] - makes the image a link, defaults to s.href
+  @param {image} [image] - defaults to s.image
+  @param {boolean} [open_in_new_window] - opens the link in a new tab, defaults to s.open_in_new_window
+  @param {boolean} [preload_image] - loads the image eagerly, defaults to true in the first section
   @param {object} [s] - settings object
   @param {section} [section]
 {% enddoc %}

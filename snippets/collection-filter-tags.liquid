@@ -1,17 +1,17 @@
 {% doc %}
-  - Renders the active filters as removable tags
+  - Renders active filters as removable tags with clear-all link
 
   @param {string} [class] - The classes
-  @param {string} [default_sort_by] - collection's default sort key
-  @param {number} [filter_count] - number of active filters
+  @param {string} [default_sort_by] - fallback sort key for the clear-all link
+  @param {number} [filter_count] - unused
   @param {object} filters
-  @param {string} [sort_by] - current sort key
-  @param {string} [tag_button_appearance] - button appearance, defaults to 'outline'
-  @param {string} [tag_button_size] - button size
-  @param {string} [tag_button_type_preset] - type preset for the label
-  @param {string} [tag_button_type_resize] - type resize step for the label
-  @param {string} url - URL the tags link back to
-  @param {boolean} [wrap] - false keeps the tags on one line
+  @param {string} [sort_by] - sort key for the clear-all link, defaults to default_sort_by
+  @param {string} [tag_button_appearance] - core-button appearance, defaults to 'outline'
+  @param {string} [tag_button_size] - core-button sizing, defaults to 'sm'
+  @param {string} [tag_button_type_preset] - type preset for the label, defaults to 'p'
+  @param {string} [tag_button_type_resize] - type resize step for the label, defaults to 'xs'
+  @param {string} url - base URL for the clear-all link
+  @param {boolean} [wrap] - false keeps the tags on one scrolling line, defaults to true
 {% enddoc %}
 
 {% liquid

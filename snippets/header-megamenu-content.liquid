@@ -1,10 +1,13 @@
 {% doc %}
-  - Renders the megamenu panel for one header link
+  - Renders megamenu panel for one header link
+
+  When section.settings.megamenu_width is 'page', the panel uses section.settings.megamenu_padding
+  and ignores content_width.
 
   @param {string} [attributes]
   @param {string} content
-  @param {number} [content_width] - content width, defaults to the section setting
-  @param {string} [menu_id] - id linking the panel to its trigger
+  @param {string} [content_width] - 'full' or 'page', defaults to section.settings.content_width
+  @param {string} menu_id - id linking the panel to its trigger
   @param {string} [menu_label] - accessible name for the panel
   @param {section} [section]
 {% enddoc %}

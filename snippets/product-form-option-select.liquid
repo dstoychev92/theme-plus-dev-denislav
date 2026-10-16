@@ -1,11 +1,11 @@
 {% doc %}
-  - Renders one product option as a select
+  - Renders one product option as select
 
   @param {block} [block]
   @param {string} [class] - The classes
-  @param {boolean} [history] - updates the URL as the option changes
-  @param {string} [id] - id for the select, built from the block and option name when absent
-  @param {object} [option] - the product option
+  @param {boolean} [history] - replaces the browser URL on selection
+  @param {string} [id] - prefix for the select id, defaults to 'variant-select-' plus block.id. The option name is appended and the result handleized
+  @param {product_option} option
   @param {product} product
   @param {string} [select_size] - defaults to 'md'
 {% enddoc %}

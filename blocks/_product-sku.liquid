@@ -1,5 +1,11 @@
 <!-- blocks/_product-sku.liquid -->
 
+{% doc %}
+  - Renders selected variant SKU
+
+  Reads closest.product. Renders nothing when the variant has no SKU.
+{% enddoc %}
+
 {% liquid
   assign product = closest.product
 

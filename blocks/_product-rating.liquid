@@ -1,5 +1,11 @@
 <!-- blocks/_product-rating.liquid -->
 
+{% doc %}
+  - Renders product star rating
+
+  Reads closest.product. Renders nothing without the reviews metafields from a review app.
+{% enddoc %}
+
 {% assign product = closest.product %}
 
 {% capture content %}

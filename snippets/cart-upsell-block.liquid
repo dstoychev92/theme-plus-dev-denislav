@@ -2,7 +2,8 @@
   - Renders cart upsells from block settings and product metafields
 
   Supports single-product and product-list metafields. Removes unavailable, duplicate, and
-  in-cart products.
+  in-cart products. With block.settings.prioritize_shipping_upsell and an exact free shipping
+  limit from section.settings, the cheapest product that reaches the limit moves to the front.
 
   @param {string} [attributes]
   @param {block} [block]

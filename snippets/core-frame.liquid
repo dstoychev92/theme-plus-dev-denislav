@@ -3,46 +3,50 @@
 
 
 {% doc %}
-  - Renders a framed container: width, padding, border, radius and colour
+  - Renders framed container with width, padding, border, radius, and color scheme
+
+  Rounding applies only with a border or a background. A transparent background keeps an
+  explicit set_rounding for an inner surface. Padding applies with a color scheme, a border, or
+  enable_padding.
 
   @param {string} [attributes]
   @param {block} [block]
-  @param {string} [border_color] - CSS color
-  @param {string} [border_sides] - which sides carry the border
-  @param {number} [border_width] - border width in pixels
+  @param {string} [border_color] - CSS color, defaults to s.border_color, then 'transparent'
+  @param {string} [border_sides] - props-style-border sides, defaults to s.border_sides, then 'all'
+  @param {number} [border_width] - border width in pixels, defaults to s.border_width, then 0
   @param {string} content
-  @param {string} [content_align] - horizontal alignment
-  @param {string} [default_radius_var] - variable the radius falls back to
-  @param {boolean} [enable_padding] - applies the padding settings
-  @param {boolean} [enable_width_fluid] - lets the frame grow to the fluid limit
-  @param {boolean} [full_height] - fills the height of its parent
-  @param {string} [gap] - gap step
-  @param {string} [gap_custom] - gap in pixels when gap is 'custom'
-  @param {string} [href] - makes the frame a link
-  @param {string} [id]
-  @param {string} [id_prefix] - prefix for the element ids
-  @param {string} [justification_column] - vertical alignment of the column
-  @param {number} [limit_width] - largest width the frame takes
-  @param {number} [max_width] - max width in pixels
-  @param {number} [min_width] - min width in pixels
-  @param {boolean} [new_window] - opens the link in a new tab
-  @param {boolean} [padding] - padding step
-  @param {string} [padding_custom] - padding in pixels when padding is 'custom'
-  @param {string} [rounding_radius] - radius step
-  @param {number} [rounding_radius_custom] - radius in pixels
+  @param {string} [content_align] - 'left', 'center', or 'right' when set_layout is on, defaults to s.content_align
+  @param {string} [default_radius_var] - CSS variable name for the radius when set_rounding is off and the frame has a border or background
+  @param {boolean} [enable_padding] - defaults to s.set_padding, then false
+  @param {boolean} [enable_width_fluid] - applies width_fluid_limit below the desktop breakpoint, defaults to s.enable_width_fluid
+  @param {boolean} [full_height] - fills the height of its parent, defaults to s.full_height, then false
+  @param {string} [gap] - unused, props-style-gap reads s
+  @param {number} [gap_custom] - unused
+  @param {string} [href] - link URL when set_link is on, defaults to s.href
+  @param {string} [id] - '-frame' is appended, defaults to id_prefix, then block.id, then section.id
+  @param {string} [id_prefix]
+  @param {string} [justification_column] - justify-content value when full_height is on, defaults to s.justification_column
+  @param {number} [limit_width] - unused
+  @param {number} [max_width] - unused
+  @param {number} [min_width] - unused
+  @param {boolean} [new_window] - opens href in a new tab, defaults to s.open_in_new_window
+  @param {string} [padding] - truthy value applies props-style-padding from s, defaults to s.padding
+  @param {number} [padding_custom] - unused
+  @param {string} [rounding_radius] - radius step, defaults to s.rounding_radius, then 'none'
+  @param {number} [rounding_radius_custom] - radius in pixels when rounding_radius is 'custom', defaults to s.rounding_radius_custom, then 0
   @param {object} [s] - settings object
   @param {section} [section]
-  @param {boolean} [set_border] - draws the border
-  @param {boolean} [set_color_scheme] - applies the colour scheme
-  @param {boolean} [set_gap] - applies the gap
-  @param {boolean} [set_layout] - applies the layout settings
-  @param {boolean} [set_link] - wraps the frame in a link
-  @param {boolean} [set_rounding] - rounds the corners
-  @param {boolean} [set_width] - applies the width settings
-  @param {number} [width_fluid_limit] - largest width when fluid
-  @param {number} [width_percent] - width as a percentage
-  @param {number} [width_px] - width in pixels
-  @param {string} [width_unit] - 'percent' or 'px'
+  @param {boolean} [set_border] - draws the border, defaults to s.set_border, then false
+  @param {boolean} [set_color_scheme] - applies the color scheme, defaults to s.set_color_scheme, then true
+  @param {boolean} [set_gap] - applies props-style-gap from s, defaults to s.set_gap, then false
+  @param {boolean} [set_layout] - applies content_align, defaults to s.set_layout, then false
+  @param {boolean} [set_link] - wraps the frame in a link, defaults to s.set_link, then false
+  @param {boolean} [set_rounding] - rounds the corners, defaults to s.set_rounding, then false
+  @param {boolean} [set_width] - applies the width settings, defaults to s.set_width, then false
+  @param {number} [width_fluid_limit] - fluid width limit in percent, defaults to s.width_fluid_limit
+  @param {number} [width_percent] - width as a percentage when width_unit is 'percent', defaults to s.width_percent
+  @param {number} [width_px] - width in pixels when width_unit is 'pixel', defaults to s.width_px
+  @param {string} [width_unit] - 'pixel' or 'percent', defaults to s.width_unit
 {% enddoc %}
 {% liquid
   # Rounding

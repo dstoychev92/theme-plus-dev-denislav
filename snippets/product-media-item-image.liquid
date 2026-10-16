@@ -1,11 +1,13 @@
 {% doc %}
-  - Renders a product image with its zoom link
+  - Renders product image with loading placeholder and zoom link
+
+  Blank image_sizes or image_widths fall back to the two column grid values.
 
   @param {number} [aspect_ratio] - media aspect ratio
   @param {string} [class] - The classes
   @param {boolean} [cover] - crops to fill
   @param {string} [fetchpriority]
-  @param {string} [image_sizes] - sizes hint
+  @param {string} [image_sizes] - sizes attribute
   @param {string} [image_widths] - widths for the srcset
   @param {string} [loading]
   @param {media} media

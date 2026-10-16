@@ -1,5 +1,11 @@
 <!-- blocks/theme-page-content.liquid -->
 
+{% doc %}
+  - Renders content of a selected page
+
+  Renders an empty wrapper when no page is selected. The wrapper keeps the block selectable in the editor.
+{% enddoc %}
+
 {% liquid
   assign page = block.settings.page
   assign limit_width = block.settings.limit_width

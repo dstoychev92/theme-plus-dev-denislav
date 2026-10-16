@@ -1,13 +1,14 @@
 {% doc %}
-  - Renders the sliding submenu panel in the drawer
+  - Renders sliding submenu overlay for one drawer link
 
   index has to match the one header-drawer-menu-item used, since the trigger finds this panel
-  through the same composed id.
+  through the same composed id. Render it inside the header-drawer x-data, which holds
+  activeSubmenuOverlay and visibleSubmenuOverlay.
 
   @param {string} [attributes]
   @param {string} content
-  @param {boolean} [index] - position among the links, appended to the submenu id
-  @param {link} [link]
+  @param {number} [index] - position among the links, appended to the submenu id
+  @param {link} link
 {% enddoc %}
 
 {% assign back_aria_label = 'header.accessibility.menu_back' | t %}

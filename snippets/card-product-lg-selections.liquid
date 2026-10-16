@@ -1,10 +1,13 @@
 {% doc %}
-  - Renders the shared selection toolbar for a large product card
+  - Renders swatch selection toolbar for a large product card
 
-  @param {string} destination_url
-  @param {string} selection_links
+  Renders nothing when selection_links is blank. Reads $sectionApi, so render it inside
+  x-section-api.
+
+  @param {string} destination_url - href of the more swatches link
   @param {number} [selected_selection_id]
-  @param {number} swatch_limit
+  @param {string} [selection_links] - swatch link markup
+  @param {number} swatch_limit - visible swatch count, the rest become the more swatches link
   @param {number} total_selections
 {% enddoc %}
 

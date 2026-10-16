@@ -1,9 +1,11 @@
 {% doc %}
-  - Renders the sort select
+  - Renders sort select
+
+  Submits $refs.collectionFiltersForm on change. collection-filters sets that ref.
 
   @param {string} [class] - The classes
-  @param {collection} collection - collection whose sort options are listed
-  @param {string} form - id of the form the select belongs to
+  @param collection - collection or search object whose sort options are listed
+  @param {string} form - ID of the form the select belongs to
 {% enddoc %}
 
 {% liquid

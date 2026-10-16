@@ -1,5 +1,13 @@
 <!-- blocks/_form-radio.liquid -->
 
+{% doc %}
+  - Renders one radio in contact form radio group
+
+  Private, only offered by _form-radio-group. Reads the group id off the front of its own id,
+  since a nested block id is '<parent id>__<own id>' and content_for 'blocks' passes nothing.
+  The group rebinds the name with Alpine after hydration.
+{% enddoc %}
+
 {% liquid
   assign label = block.settings.label
   assign label_handle = label | handleize

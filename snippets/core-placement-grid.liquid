@@ -1,22 +1,22 @@
 {% doc %}
-  A layout container for text content that is meant to be displayed over top of background media
+  - Renders placement grid for content over background media
 
   @param {string} [attributes]
   @param {block} [block]
-  @param {string} [class]
+  @param {string} [class] - The classes
   @param {string} [content]
-  @param {string} [content_attributes]
-  @param {string} [controls]
-  @param {string} [controls_alignment]
-  @param {string} [horizontal_placement]
-  @param {string} [id]
-  @param {string} [id_prefix]
-  @param {boolean} [padding]
-  @param {string} [padding_custom]
+  @param {string} [content_attributes] - attributes for placement-content
+  @param {string} [controls] - rendered slideshow controls
+  @param {string} [controls_alignment] - vars-placement-controls-horizontal-* suffix, ignored when vertical_placement is 'bottom' or 'full', defaults to s.controls_alignment
+  @param {string} [horizontal_placement] - defaults to s.horizontal_placement
+  @param {string} [id] - defaults to id_prefix with '-content'
+  @param {string} [id_prefix] - defaults to block.id, then section.id
+  @param [padding] - padding step, or false for none, defaults to s.padding
+  @param {number} [padding_custom] - padding in pixels when padding is 'custom', defaults to s.padding_custom
   @param {object} [s] - settings object
   @param {section} [section]
-  @param {string} [style]
-  @param {string} [vertical_placement]
+  @param {string} [style] - inline styles
+  @param {string} [vertical_placement] - 'top', 'middle', 'bottom', or 'full', defaults to s.vertical_placement
 {% enddoc %}
 {%- liquid
   assign vertical_placement = vertical_placement | default: s.vertical_placement, allow_false: true

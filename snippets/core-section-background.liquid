@@ -3,19 +3,21 @@
 
 
 {% doc %}
-  - Renders the section background layer, with its border and radius
+  - Renders section background layer with border and radius
+
+  s defaults to section.settings. Border and rounding apply only when s.contain_section is on.
 
   @param {string} [attributes]
-  @param {string} [border_color] - CSS color
-  @param {number} [border_width] - border width in pixels
+  @param {string} [border_color] - CSS color, defaults to s.border_color, then '#ffffff00'
+  @param {number} [border_width] - border width in pixels, defaults to s.border_width, then 0
   @param {string} [class] - The classes
   @param {string} content
-  @param {string} [rounding_radius] - radius step
-  @param {string} [rounding_radius_custom] - radius in pixels
+  @param {string} [rounding_radius] - radius step, defaults to s.rounding_radius, then 'none'
+  @param {number} [rounding_radius_custom] - radius in pixels when rounding_radius is 'custom', defaults to s.rounding_radius_custom, then 0
   @param {object} [s] - settings object
   @param {section} [section]
-  @param {boolean} [set_border] - draws the border
-  @param {boolean} [set_rounding] - rounds the corners
+  @param {boolean} [set_border] - draws the border, defaults to s.set_border, then false
+  @param {boolean} [set_rounding] - rounds the corners, defaults to s.set_rounding, then false
   @param {string} [style] - inline styles
 {% enddoc %}
 {% liquid

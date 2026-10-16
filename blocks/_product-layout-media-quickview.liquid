@@ -1,5 +1,11 @@
 <!-- blocks/_product-layout-media-quickview.liquid -->
 
+{% doc %}
+  - Renders quick view product media gallery
+
+  Private, only offered by product-quickview-drawer. Reads closest.product.
+{% enddoc %}
+
 {% liquid
   assign product = closest.product
   assign current_variant = product.selected_or_first_available_variant

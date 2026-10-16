@@ -6,13 +6,14 @@
 
   @param {string} [attributes]
   @param {string} [class] - The classes
-  @param {string} [icon] - icon shown without image
-  @param {boolean} [loader] - renders loading state
-  @param {boolean} [media]
+  @param {string} [icon] - icon shown without image, defaults to 'fill-page' at size 'xs'
+  @param {boolean} [loader] - true disables placeholder
+  @param {boolean} [media] - false hides the media box
+  @param {boolean} [placeholder] - placeholder card, design mode or settings.placeholder_mode only
   @param {object} [resource]
   @param {string} [size] - 'xs', 'sm', 'md' or 'lg', selecting the card-layout snippet
-  @param {string} [title]
-  @param {boolean} [url] - card URL, defaults to the resource URL
+  @param {string} [title] - defaults to resource.title
+  @param [url] - card URL, defaults to resource.url, false removes the link
 {% enddoc %}
 
 {%- liquid

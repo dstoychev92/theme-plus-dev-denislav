@@ -1,12 +1,12 @@
 {% doc %}
-  - Renders the product review rating as stars
+  - Renders product review rating as star icon, value, and review count
 
-  Reads the reviews metafields, so it prints nothing without a review app.
+  Reads product.metafields.reviews. Prints nothing when the rating is empty or 0.
 
   @param {string} [class] - The classes
-  @param {boolean} [placeholder] - renders an example rating in the theme editor
+  @param {boolean} [placeholder] - renders a sample 4.5 of 5 rating with 21 reviews
   @param {product} [product]
-  @param {boolean} [rating_show_count] - adds the number of reviews
+  @param {boolean} [rating_show_count] - adds the number of reviews, defaults to false
 {% enddoc %}
 
 {%- liquid

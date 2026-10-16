@@ -2,9 +2,9 @@
   - Renders PhotoSwipe slide data for one video
 
   Render it inside an x-photoswipe root, which collects slides from the DOM when it opens, so
-  re-rendering never duplicates one.
+  re-rendering never duplicates one. Renders nothing without both video and video_source.
 
-  @param {string} [id] - id for PhotoSwipe item
+  @param {number} [id] - id for PhotoSwipe item
   @param {string} [thumb_el] - CSS selector, inside the x-photoswipe root, for the element the lightbox zooms out of
   @param {video} [video]
   @param {string} [video_source] - video source URL

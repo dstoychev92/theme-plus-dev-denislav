@@ -1,5 +1,11 @@
 <!-- blocks/_pair-banner.liquid -->
 
+{% doc %}
+  - Renders pair column with image or video banner and overlaid blocks
+
+  Private, only offered by section-pair. Reads section.settings.height_mode to pick the block height or the section height. The 'image' height turns parallax off.
+{% enddoc %}
+
 {% liquid
   # Can't do parallax if height is set to image
   if section.settings.height_mode == 'column' and block.settings.height == 'image'

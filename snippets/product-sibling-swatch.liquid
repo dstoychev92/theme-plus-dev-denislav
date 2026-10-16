@@ -1,22 +1,23 @@
 {% doc %}
-  - Renders a swatch linking to a sibling product
+  - Renders sibling product swatch as link or radio input
 
-  Falls back to the featured image and the product title when the sibling carries no swatch
-  metafield.
+  Falls back to the featured image and the product title when the sibling carries no
+  color-pattern metafield. With settings.enable_sibling_custom_swatch on,
+  settings.metafield_sibling_image and settings.metafield_sibling_label override them.
 
   @param {string} [attributes]
   @param {string} [class] - The classes
   @param {number} [custom_size] - swatch size in pixels
   @param {string} [focus_key]
-  @param {string} [input_attributes] - attributes for the input
-  @param {string} [label_attributes] - attributes for the label
+  @param {string} [input_attributes] - attributes for the radio input, tag 'input' only
+  @param {string} [label_attributes] - attributes for the label, tag 'input' only
   @param {boolean} [selected] - marks the swatch as chosen
-  @param {string} [selection_id]
-  @param {product} sibling - the sibling product
+  @param {number} [selection_id]
+  @param {product} sibling
   @param {string} [size] - 'xs' to 'xl'
   @param {string} [swatch_attributes] - attributes for the swatch
-  @param {string} [tag] - wrapper tag
-  @param {string} [url] - link target, defaults to the sibling URL
+  @param {string} [tag] - 'input' for a radio inside a label, or 'link'
+  @param {string} [url] - link target, defaults to sibling.url
 {% enddoc %}
 
 {% liquid

@@ -4,9 +4,9 @@
   Prints CSS declarations, so render it inside a style attribute.
 
   @param {boolean} [apply] - false prints the variables without the gap rules
-  @param {boolean} [card_vars] - also sets the --layout-gutter-card-* variables
-  @param {boolean} [gap] - '0', 'xs', 'sm', 'md', 'lg', 'xl' or 'custom'
-  @param {string} [gap_custom] - gap in pixels when gap is 'custom'
+  @param {boolean} [card_vars] - true also prints the --layout-gutter-card-* variables
+  @param {string} [gap] - 'sm', 'md', 'lg' or 'custom', defaults to s.gap, then 'custom'
+  @param {number} [gap_custom] - gap in pixels when gap is 'custom', defaults to s.gap_custom, then 0
   @param {object} [s] - settings object
   @param {boolean} [vars] - false skips the --layout-gutter-* variables
 {% enddoc %}

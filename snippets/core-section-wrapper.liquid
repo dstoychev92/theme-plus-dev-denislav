@@ -1,36 +1,37 @@
 {% doc %}
-  - Renders the outer section element, its width and its background
+  - Renders outer section element with width, padding, and background
 
-  contain_controls_rhythm hands the contain setting control of spacing: uncontained drops the
-  padding, contained turns the rhythm on.
+  With contain_controls_rhythm, an uncontained section drops its padding and a contained one
+  sets set_rhythm. Header sections, the first template section, and the theme editor stay
+  eager. Other sections get data-lazy-alpine.
 
   @param {string} [attributes]
-  @param {string} [background] - rendered background markup
-  @param {string} [background_color] - CSS background color
+  @param {string} [background] - 'transparent', 'canvas', 'tint', or 'custom', defaults to s.background
+  @param {string} [background_color] - CSS color when background is 'custom', defaults to s.background_color
   @param {string} [class] - The classes
-  @param {color_scheme} [color_scheme]
+  @param {color_scheme} [color_scheme] - defaults to s.color_scheme
   @param {boolean} [contain_controls_background] - uncontaining the section drops the background
   @param {boolean} [contain_controls_rhythm] - the contain setting drives padding and rhythm
   @param {boolean} [contain_disables_transparent_header] - containing the section turns off header transparency
-  @param {boolean} [contain_section] - keeps the section inside the page width
+  @param {boolean} [contain_section] - keeps the section inside the page width, defaults to s.contain_section
   @param {string} content
-  @param {string} [content_align] - horizontal alignment
-  @param {string} [content_padding] - content padding step
-  @param {number} [content_padding_custom] - content padding in pixels
-  @param {string} [content_width] - content width
-  @param {number} [content_width_custom] - custom content width as a percentage
-  @param {number} [content_width_custom_mobile] - custom content width on mobile
-  @param {boolean} [lazy_alpine] - starts Alpine only when the section reaches the viewport
+  @param {string} [content_align] - horizontal alignment, defaults to s.content_align, then s.horizontal_placement
+  @param {string} [content_padding] - 'sm', 'md', 'lg', or 'custom', defaults to s.content_padding
+  @param {number} [content_padding_custom] - content padding in pixels when content_padding is 'custom', defaults to s.content_padding_custom
+  @param {string} [content_width] - 'page', 'full', or 'custom', defaults to s.content_width
+  @param {number} [content_width_custom] - percent of the site width when content_width is 'custom', defaults to s.content_width_custom, then 100
+  @param {number} [content_width_custom_mobile] - percent on mobile when content_width is 'custom', defaults to s.content_width_custom_mobile, then 100
+  @param {boolean} [lazy_alpine] - false removes data-lazy-alpine
   @param {boolean} [padding] - false removes the section padding
   @param {boolean} [photoswipe] - false leaves the section out of the lightbox
   @param {object} [s] - settings object
   @param {section} [section]
-  @param {number} [section_width] - section width in pixels
-  @param {boolean} [set_rhythm] - adds the section rhythm spacing
+  @param {string} [section_width] - 'page' or 'full', defaults to s.section_width. 'bleed' when contain_section is false
+  @param {boolean} [set_rhythm] - true applies s.section_padding_top and s.section_padding_bottom in place of the rhythm, defaults to s.set_rhythm, then false
   @param {string} [style] - inline styles
-  @param {string} [tag] - defaults to 'div'
-  @param {string} [target_device] - limits the section to one device
-  @param {string} [text_class] - classes for the text colour
+  @param {string} [tag] - defaults to 'section-wrapper'
+  @param {string} [target_device] - 'mobile' or 'desktop' hides the section on the other device, defaults to s.target_device. Ignored when section.settings.set_target_device exists
+  @param {string} [text_class] - classes for the text color, defaults to 'text-content'
 {% enddoc %}
 
 {% liquid

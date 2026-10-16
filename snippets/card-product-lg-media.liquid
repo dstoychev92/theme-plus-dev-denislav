@@ -1,20 +1,21 @@
 {% doc %}
   - Renders large product card media
 
-  Media limit selects one image, second-image reveal, or slideshow.
+  The media count, capped at media_limit, selects one image, second-image reveal, slideshow, or
+  filler.
 
   @param {string} [attributes]
-  @param {number} [hover_delay] - delay before hover behavior starts, in milliseconds
+  @param {boolean} [has_option_media_list] - product_media is an option media list
+  @param {number} [hover_delay] - delay before hover behavior starts, in milliseconds, defaults to 150
   @param {string} [image_sizes] - sizes hint for the image
   @param {string} [image_widths] - widths for the image srcset
   @param {string} [initial_image_fetchpriority] - fetch priority for the first image
   @param {string} [initial_image_loading] - loading attribute for the first image
-  @param {object} [initial_media] - media shown first, defaults to product.featured_media
-  @param {boolean} [has_option_media_list] - product_media is a color-specific image list
-  @param {number} [media_limit] - maximum media count, defaults to settings.product_card_media_limit then 2
+  @param {media} [initial_media] - media shown first, defaults to product.featured_media
+  @param {number} [media_limit] - maximum media count, defaults to settings.product_card_media_limit, then 2
   @param {product} product
   @param {object} [product_media] - media to show, defaults to product.media
-  @param {number} [unhover_delay] - delay before reset, in milliseconds
+  @param {number} [unhover_delay] - delay before reset, in milliseconds, defaults to 200
 {% enddoc %}
 
 {%- liquid

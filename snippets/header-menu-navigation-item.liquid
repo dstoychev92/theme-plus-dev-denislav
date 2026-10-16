@@ -1,13 +1,13 @@
 {% doc %}
   - Renders one header menu link and registers its popup
 
-  element_id_suffix keeps two links with the same title from sharing a popup id, so the same
-  megamenu can be registered to more than one link.
+  element_id_suffix keeps the element ids of two same-titled links apart. They still share one
+  menu id, so one popup serves both.
 
-  @param {string} [element_id_suffix] - suffix on the popup id
+  @param {string} [element_id_suffix] - suffix on the element ids
   @param {boolean} [first] - marks the first link in the row
   @param {boolean} [last] - marks the last link in the row
-  @param {link} [link]
+  @param {link} link
   @param {string} [link_attributes] - attributes for the link
   @param {string} [link_class] - classes for the link
   @param {object} [s] - settings object

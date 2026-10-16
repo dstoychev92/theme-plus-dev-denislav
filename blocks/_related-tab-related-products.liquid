@@ -1,5 +1,11 @@
 <!-- blocks/_related-tab-related-products.liquid -->
 
+{% doc %}
+  - Renders related products tab
+
+  Private, only offered by the related section. Fetches recommendations for the global product and falls back to the fallback collection. The tab hides while it has no cards.
+{% enddoc %}
+
 {% liquid
   assign limit = block.settings.card_limit
   assign fallback_products = block.settings.fallback_collection.products

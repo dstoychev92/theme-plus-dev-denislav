@@ -1,24 +1,25 @@
 {% doc %}
-  - Renders the label, icons and messages around a form control
+  - Renders floating label, icons, outline, and messages around a form control
 
-  The control itself comes in through input. The field-* snippets wrap it for you.
+  The control itself comes in through input. The field-* snippets wrap it for you. A blank
+  label sets hide_label.
 
-  @param {string} [button] - content after the input
+  @param {string} [button] - button after the input, replaces end_accessory
   @param {string} [class] - The classes
   @param {string} [end_accessory] - content after the input
-  @param {boolean} [end_icon] - icon after the input
-  @param {string} [error_message] - error text, which marks the field invalid
+  @param {string} [end_icon] - icon name after the input
+  @param {string} [error_message] - error text shown below, with id plus '-error' as its id
   @param {string} [error_message_attributes] - attributes for the error message
   @param {boolean} [hide_label] - keeps the label for screen readers only
-  @param {string} [icon] - icon before the input, unless start_icon is set
-  @param {string} [id] - element id
-  @param {string} input - the rendered form control
+  @param {string} [icon] - icon name before the input, unless start_icon is set
+  @param {string} [id] - element id the label points at
+  @param {string} input - rendered form control
   @param {string} [label]
   @param {string} [label_class] - classes for the label
   @param {string} [placeholder_class] - classes for the floating label
-  @param {string} [size] - 'sm', 'md' or 'lg'
+  @param {string} [size] - 'xs', 'sm', 'md', 'lg' or 'xl', defaults to 'md'
   @param {string} [start_accessory] - content before the input
-  @param {boolean} [start_icon] - icon before the input
+  @param {string} [start_icon] - icon name before the input
   @param {string} [style] - inline styles
   @param {string} [success_message] - message shown after a successful post
   @param {string} [wrapper_attributes] - attributes for the field wrapper

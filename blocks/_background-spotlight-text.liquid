@@ -1,6 +1,11 @@
 <!-- blocks/_background-spotlight-text.liquid -->
 
-{% comment %} Spotlight text — highlight-text variant used inside background marquee. {% endcomment %}
+{% doc %}
+  - Renders one highlighted text item in a background marquee
+
+  Sits inside _background-marquee. Links in the text render as plain text.
+{% enddoc %}
+
 {% render 'marquee-text', s: block.settings, attributes: block.shopify_attributes, hide_links: true %}
 
 {% schema %}

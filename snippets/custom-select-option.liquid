@@ -1,15 +1,15 @@
 {% doc %}
-  Renders an option for the custom-select component.
+  - Renders one option of custom-select
 
   @param {string} [attributes]
-  @param {string} [class]
-  @param {boolean} [disabled] - Whether this option is disabled
-  @param {string} [display_value] - Content to display in the select button when this option is selected (if different from label)
-  @param {string} [end_accessory] - Icon or content to display at the end of the option (hidden when displayed in button)
-  @param {string} label - The text label displayed for this option
-  @param {boolean} [selected] - Whether this option is currently selected
-  @param {string} [start_accessory] - Icon or content to display at the start of the option
-  @param {string} value - The value for this option
+  @param {string} [class] - The classes
+  @param {boolean} [disabled]
+  @param {string} [display_value] - button content when selected, in place of label and accessories
+  @param {string} [end_accessory] - content after the label, hidden in the button
+  @param {string} label
+  @param {boolean} [selected]
+  @param {string} [start_accessory] - content before the label
+  @param [value]
 {% enddoc %}
 <li
   class="

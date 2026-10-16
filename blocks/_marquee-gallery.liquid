@@ -1,5 +1,11 @@
 <!-- blocks/_marquee-gallery.liquid -->
 
+{% doc %}
+  - Renders row of image cells inside a marquee
+
+  Sits inside _marquee. Splices the g4lleryx text markers that each _marquee-gallery-image child prints into a sized cell. Vertical alignment comes from the marquee's block_alignment setting.
+{% enddoc %}
+
 {%- liquid
   assign sizing_mode = block.settings.sizing_mode | default: 'height'
   assign set_aspect_ratio = block.settings.set_aspect_ratio

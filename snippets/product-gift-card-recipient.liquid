@@ -1,5 +1,8 @@
 {% doc %}
-  - Renders the gift card recipient form
+  - Renders gift card recipient fields
+
+  Prints nothing unless product.gift_card? is true. Reads section.id for the field ids and
+  $productForm from an x-product-form ancestor for the inline errors.
 
   @param {string} [class] - The classes
   @param {product} [product]

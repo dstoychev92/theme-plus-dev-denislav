@@ -1,5 +1,11 @@
 <!-- blocks/_inline-image.liquid -->
 
+{% doc %}
+  - Renders inline image sized relative to surrounding text
+
+  Sits in an inline text flow such as theme-group-text or section-text-spotlight.
+{% enddoc %}
+
 {% liquid
   assign image_scaling = block.settings.image_scaling | divided_by: 100.0
   assign aspect_ratio = block.settings.image.aspect_ratio | default: 1

@@ -1,19 +1,21 @@
 {% doc %}
-  - Renders product card action
+  - Renders product form with Instant Add, Quick Add, or Quick View control
 
   Chooses Instant Add, Quick Add, or Quick View from product options and theme settings.
   Selling plans require Quick View. A sold-out product renders only the product form shell.
+  Reads $productCard and $sectionApi, so render it inside x-product-card. The form id reads
+  section.id and block.id ambiently.
 
-  @param {string} [alert_attributes]
-  @param {string} [attributes]
+  @param {string} [alert_attributes] - attributes for the error alert
+  @param {string} [attributes] - attributes for the action container
   @param {block} [block]
   @param {string} [class] - The classes
   @param {product} product
   @param {product_option} [promoted_option] - option handled by card swatches
   @param {section} [section]
-  @param {boolean} selection_is_explicit - true for selected variant or Section API response
-  @param {string} [selection_url] - product or selected option URL
-  @param {variant} [variant]
+  @param {boolean} [selection_is_explicit] - true for selected variant or Section API response
+  @param {string} [selection_url] - Quick View URL, defaults to variant.url, then product.url
+  @param {variant} [variant] - defaults to selected or first available variant
 {% enddoc %}
 {%- liquid
   assign requested_variant = variant

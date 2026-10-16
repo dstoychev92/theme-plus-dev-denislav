@@ -1,14 +1,14 @@
 {% doc %}
-  - Renders a scrolling marquee row
+  - Renders scrolling marquee row
 
   @param {string} [attributes]
-  @param {string} [block_alignment] - vertical alignment of the items
+  @param {string} [block_alignment] - 'top', 'middle', or 'bottom', defaults to s.block_alignment then 'left'
   @param {string} [class] - The classes
   @param {string} content
-  @param {boolean} [gap] - gap step
-  @param {number} [gap_custom] - gap in pixels when gap is 'custom'
+  @param {string} [gap] - gap step, defaults to s.gap then 'lg'
+  @param {number} [gap_custom] - gap in pixels when gap is 'custom', defaults to s.gap_custom then 0
   @param {object} [s] - settings object
-  @param {number} [speed] - scroll speed
+  @param {number} [speed] - -10 to 10 on a curve, negative reverses direction, defaults to s.speed then 2
   @param {string} [style] - inline styles
 {% enddoc %}
 

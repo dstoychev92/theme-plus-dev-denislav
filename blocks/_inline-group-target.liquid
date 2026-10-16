@@ -1,5 +1,11 @@
 <!-- blocks/_inline-group-target.liquid -->
 
+{% doc %}
+  - Renders inline blocks for one screen size
+
+  Private, only offered by theme-group-text. Renders hidden when it holds no blocks.
+{% enddoc %}
+
 
 
 {% assign target_device = block.settings.target_device | default: 'both' %}

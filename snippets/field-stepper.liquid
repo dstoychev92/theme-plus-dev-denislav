@@ -1,24 +1,24 @@
 {% doc %}
-  - Renders a labelled number stepper
+  - Renders labeled number stepper
 
   @param {string} [class] - The classes
   @param {boolean} [disabled]
-  @param {string} [error_message] - error text, which marks the field invalid
+  @param {string} [error_message] - error text shown below
   @param {string} [form] - id of the form it belongs to
   @param {boolean} [hide_label] - keeps the label for screen readers only
   @param {string} [id] - element id, defaults to the name handleized
-  @param {string} label
+  @param {string} label - also the input's aria-label
   @param {string} [label_class] - classes for the label
   @param {number} [max] - highest value
-  @param {number} [min] - lowest value
-  @param {string} [name]
-  @param {string} [size] - 'sm', 'md' or 'lg'
+  @param {number} [min] - lowest value, defaults to 0
+  @param {string} name
+  @param {string} [size] - 'sm', 'md' or 'lg', defaults to 'md'
   @param {string} [stepper_attributes] - attributes for the stepper
   @param {string} [stepper_button_attributes] - attributes for both buttons
   @param {string} [stepper_input_attributes] - attributes for the input
-  @param {string} [style] - inline styles
+  @param {string} [style] - inline styles for the field wrapper
   @param {string} [success_message] - message shown after a successful post
-  @param {number} [value]
+  @param {number} [value] - defaults to min
 {% enddoc %}
 
 {% liquid

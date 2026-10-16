@@ -1,5 +1,5 @@
 {% doc %}
-  - Renders blurred 2px image while full image loads
+  - Renders blurred tiny image while full image loads
 
   Keep it below the full image so the full image stays visible if JavaScript loads slowly or
   fails.
@@ -7,14 +7,14 @@
   @param {number} [aspect_ratio]
   @param {string} [attributes]
   @param {boolean} [auto_show] - false disables automatic show and hide behavior
-  @param {string} [class] - passed to core-image as placeholder_image_class
-  @param {string} [cover]
+  @param {string} [class] - classes for the placeholder image
+  @param {boolean} [cover]
   @param {image} [image]
-  @param {string} [image_mobile]
+  @param {image} [image_mobile]
   @param {string} [image_style] - inline styles for placeholder image
   @param {number} [placeholder_width] - tiny image width in pixels, defaults to 2
   @param {boolean} [preload]
-  @param {boolean} [target_image] - Alpine expression when image is not next sibling
+  @param {string} [target_image] - Alpine expression for the full image when it is not the next sibling
   @param {string} [wrapper_class] - classes for the wrapper
 
   @example

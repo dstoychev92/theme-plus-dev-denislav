@@ -1,23 +1,23 @@
 {% doc %}
-  Render a checkbox with a label
+  - Renders checkbox with label
 
   @param {string} [attributes]
   @param {boolean} [checked]
-  @param {string} [class]
+  @param {string} [class] - The classes
   @param {boolean} [disabled]
-  @param {string} [error_message]
-  @param {string} [form]
-  @param {string} [id] - The id of the checkbox
-  @param {string} [input_attributes]
-  @param {string} [input_class]
-  @param {string} label - The label of the checkbox
-  @param {string} [label_attributes]
-  @param {string} [label_class]
-  @param {string} [name] - The name of the checkbox
-  @param {boolean} [reversed]
-  @param {boolean} [size]
-  @param {string} [success_message]
-  @param {string} [value] - The value of the checkbox
+  @param {string} [error_message] - error text shown below, with id plus '-error' as its id
+  @param {string} [form] - id of the form it belongs to
+  @param {string} [id] - defaults to name handleized
+  @param {string} [input_attributes] - attributes for the input
+  @param {string} [input_class] - classes for the input
+  @param {string} label
+  @param {string} [label_attributes] - attributes for the label
+  @param {string} [label_class] - classes for the label
+  @param {string} [name]
+  @param {boolean} [reversed] - puts the label before the box
+  @param {string} [size] - 'sm', 'md' or 'lg', omitted leaves sizing to a wrapper
+  @param {string} [success_message] - message shown after a successful post
+  @param {string} [value]
 {% enddoc %}
 {% liquid
   assign id = id | default: name | strip_html | handleize

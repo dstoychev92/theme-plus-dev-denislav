@@ -1,22 +1,24 @@
 {% doc %}
-  Renders a range slider with two input fields for the min and max values and 2 overlapping sliders for the range.
+  - Renders range slider with min and max inputs
+
+  Two overlapping sliders cover the range.
 
   @param {string} [attributes]
-  @param {string} [class]
-  @param {string} [form]
-  @param {string} [id] - The id of the range slider
-  @param {string} label
-  @param {number} [max_limit] - The maximum value that can be selected for max input and max range slider
-  @param {string} [max_name] - The name of the max input field
-  @param {string} [max_placeholder]
-  @param {number} [max_value] - Optional current value for max input and max range slider
-  @param {number} [min_limit] - The minimum value that can be selected for min input and min range slider
-  @param {string} [min_name] - The name of the min input field
-  @param {string} [min_placeholder]
-  @param {number} [min_value] - Optional current value for min input and min range slider
-  @param {string} [prefix]
-  @param {number} [step] - The step of the range slider
-  @param {string} [suffix]
+  @param {string} [class] - The classes
+  @param {string} [form] - id of the form it belongs to
+  @param {string} [id] - defaults to 'field-range'
+  @param {string} label - accessible name for the group
+  @param {number} [max_limit] - defaults to 99999
+  @param {string} [max_name] - name of the max input, defaults to id plus '-to'
+  @param {number} [max_placeholder]
+  @param {number} [max_value] - current max
+  @param {number} [min_limit] - defaults to 0
+  @param {string} [min_name] - name of the min input, defaults to id plus '-from'
+  @param {number} [min_placeholder]
+  @param {number} [min_value] - current min
+  @param {string} [prefix] - text before each number input
+  @param {number} [step] - defaults to 1
+  @param {string} [suffix] - text after each number input
 {% enddoc %}
 {% liquid
   assign min_limit = min_limit | default: 0

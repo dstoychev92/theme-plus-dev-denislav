@@ -1,5 +1,11 @@
 <!-- blocks/_pair-hotspots.liquid -->
 
+{% doc %}
+  - Renders pair column with image and hotspot blocks
+
+  Private, only offered by section-pair. Reads section.settings.height_mode and height to decide whether the image sizes the column or covers it.
+{% enddoc %}
+
 {% liquid
   # Section height mode: the image covers the column instead of putting a floor
   # under it. Content-driven heights keep the in-flow image, since the image is

@@ -1,18 +1,20 @@
 {% doc %}
   - Renders product card Quick View link
 
-  Opens Quick View with JavaScript. Without JavaScript, the link opens the product.
+  Opens Quick View with JavaScript. Without JavaScript, the link opens the product. A sold-out
+  product renders a Sold out link to the product page. The button hides when the page has no
+  product-quickview-drawer element.
 
-  @param {string} [appearance]
-  @param {string} [aria_label]
+  @param {string} [appearance] - defaults to 'blur'
+  @param {string} [aria_label] - defaults to the button text
   @param {string} [class] - The classes
-  @param {string} [color]
-  @param {boolean} [icon_swap]
+  @param {string} [color] - defaults to 'content'
+  @param {boolean} [icon_swap] - shows the cart icon in place of the label on touch devices
   @param {string} [label_class]
   @param {product} product
-  @param {string} [size]
+  @param {string} [size] - defaults to 'lg'
   @param {string} [type_resize]
-  @param {string} [url] - selection URL, then variant URL, then product URL
+  @param {string} [url] - defaults to variant.url, then product.url
   @param {variant} variant
 {% enddoc %}
 {% liquid

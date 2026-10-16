@@ -1,5 +1,11 @@
 <!-- blocks/_section-content.liquid -->
 
+{% doc %}
+  - Renders content blocks placed over the section background
+
+  Private, only offered by section-pro-banner as the static content block. Reads placement and padding from section.settings.
+{% enddoc %}
+
 {% capture blocks %}
   {% content_for "blocks" %}
 {% endcapture %}

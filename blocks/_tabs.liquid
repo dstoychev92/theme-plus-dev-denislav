@@ -1,6 +1,10 @@
 <!-- blocks/_tabs.liquid -->
 
-{% render 'core-tabs', s: block.settings, blocks: block.blocks, attributes: block.shopify_attributes %}
+{% doc %}
+  - Renders tab list and panels from _tab blocks
+
+  Each _tab block renders its own button, and core-tabs moves it into the tab list.
+{% enddoc %}{% render 'core-tabs', s: block.settings, blocks: block.blocks, attributes: block.shopify_attributes %}
 
 {% schema %}
 {

@@ -1,5 +1,12 @@
 <!-- blocks/_card-custom.liquid -->
 
+{% doc %}
+  - Renders custom card with background media and optional link
+
+  Places _card-custom-overlay as 'overlay' and _card-custom-details as 'details' through
+  content_for 'block'. Aspect ratio defaults to settings.card_aspect_ratio.
+{% enddoc %}
+
 {% liquid
   assign aspect_ratio = settings.card_aspect_ratio
   if block.settings.set_aspect_ratio

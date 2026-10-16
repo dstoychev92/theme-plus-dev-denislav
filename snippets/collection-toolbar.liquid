@@ -1,23 +1,23 @@
 {% doc %}
-  - Renders the collection toolbar: count, filters, sorting and columns
+  - Renders collection toolbar with filter button, filter tags, column selects, sort select, and product count
 
-  @param {number} [all_products_count] - number of products before filtering
+  @param {number} [all_products_count] - number of products before filtering, defaults to collection.all_products_count
   @param {string} [class] - The classes
-  @param {collection} collection
-  @param {string} [columns_lg] - column count, defaults to the section setting
-  @param {string} [columns_md] - column count, defaults to the section setting
-  @param {string} [columns_sm] - column count, defaults to the section setting
-  @param {string} [default_sort_by] - collection's default sort key
-  @param {boolean} [enable_filters] - renders the filter button
-  @param {boolean} [enable_layout_buttons] - renders the column switcher
-  @param {boolean} [enable_sorting] - renders the sort select
-  @param {string} [filter_url] - URL the filter form posts to
-  @param {string} [filters] - the filters to summarise
-  @param {string} [form_id] - id of the filter form
-  @param {number} [products_count] - number of products matching the filters
+  @param collection - collection or search object
+  @param {number} [columns_lg] - column count, defaults to section.settings.columns_lg
+  @param {number} [columns_md] - column count, defaults to section.settings.columns_md
+  @param {number} [columns_sm] - column count, defaults to section.settings.columns_sm
+  @param {string} [default_sort_by] - fallback sort key for the clear-all link, defaults to collection.default_sort_by
+  @param {boolean} [enable_filters] - renders the filter button, defaults to section.settings.enable_filters, then true
+  @param {boolean} [enable_layout_buttons] - renders the column selects, defaults to section.settings.enable_layout_buttons, then true
+  @param {boolean} [enable_sorting] - renders the sort select, defaults to section.settings.enable_sorting, then true
+  @param {string} [filter_url] - base URL for the clear-all link, defaults to collection.url
+  @param {object} [filters] - defaults to collection.filters
+  @param {string} [form_id] - ID of the form the sort select belongs to
+  @param {number} [products_count] - number of products matching the filters, defaults to collection.products_count
   @param {section} [section]
-  @param {boolean} [show_products_count] - renders the product count
-  @param {string} [sort_by] - current sort key
+  @param {boolean} [show_products_count] - renders the product count, defaults to section.settings.show_products_count, then true
+  @param {string} [sort_by] - sort key for the clear-all link, defaults to collection.sort_by
 {% enddoc %}
 
 {% liquid

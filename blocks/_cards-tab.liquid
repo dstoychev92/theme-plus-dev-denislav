@@ -1,5 +1,11 @@
 <!-- blocks/_cards-tab.liquid -->
 
+{% doc %}
+  - Renders one tab holding card list blocks
+
+  Sits inside section-card-slider-tabs or the related section. Reads the card list layout from section.settings.
+{% enddoc %}
+
 {% capture list_items %}
   {% content_for 'blocks' %}
 {% endcapture %}

@@ -1,22 +1,24 @@
 {% doc %}
-  - Renders the mobile product gallery
+  - Renders mobile product gallery as carousel or showcase scroll list
+
+  Reads section.id for the product select event.
 
   @param {number} [aspect_ratio] - media aspect ratio
   @param {string} [attributes]
   @param {string} [class] - The classes
-  @param {boolean} [contain_media] - keeps the media inside the page gutters
-  @param {number} [featured_media_id] - id of the media to open on
-  @param {number} [featured_media_index] - position of the featured media
-  @param {boolean} [has_option_media_list] - the gallery is filtered by the selected option
-  @param {string} [id]
-  @param {string} [media_attributes] - attributes for each media item
-  @param {string} [media_style] - 'carousel' or 'stack', defaults to s.layout_mobile
-  @param {string} [pagination_style] - pagination style, defaults to s.pagination_style_mobile then 'none'
-  @param {object} product_media - the media to render, already ordered
+  @param {boolean} [contain_media] - bleeds the carousel track to the viewport edges while items keep the gutters
+  @param {number} [featured_media_id] - id of the media shown first
+  @param {number} [featured_media_index] - 0-based item index to open on, defaults to 0
+  @param {boolean} [has_option_media_list] - marks the first item featured, for option media lists
+  @param {string} [id] - defaults to 'product-media-mobile'
+  @param {string} [media_attributes] - attributes for the scroller
+  @param {string} [media_style] - 'carousel' or 'showcase', defaults to s.layout_mobile then 'carousel'
+  @param {string} [pagination_style] - 'photo', 'position' or 'none', showcase only, defaults to s.pagination_style_mobile then 'none'
+  @param {object} product_media - media to render, already ordered
   @param {object} [s] - settings object
   @param {section} [section]
   @param {string} [style] - inline styles
-  @param {string} [thumbnail_class] - classes for the thumbnails
+  @param {string} [thumbnail_class] - classes for the thumbnail picker
 {% enddoc %}
 
 {% liquid

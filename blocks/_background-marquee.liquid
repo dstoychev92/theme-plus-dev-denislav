@@ -1,5 +1,11 @@
 <!-- blocks/_background-marquee.liquid -->
 
+{% doc %}
+  - Renders rotated scrolling marquee across a background layer
+
+  Sits inside _background or _section-background. Selecting the block in the theme editor pauses the marquee.
+{% enddoc %}
+
 {% capture marquee_class %}
   absolute origin-center -translate-y-1/2 rotate-[--rotation] top-[--top-mobile] -left-1/2 -right-1/2 md:top-[--top]
   whitespace-nowrap !z-20 overflow-hidden select-none pointer-events-none

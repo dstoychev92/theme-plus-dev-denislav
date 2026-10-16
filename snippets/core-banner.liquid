@@ -1,42 +1,42 @@
 <!-- snippets/core-banner.liquid -->
 
 {% doc %}
-  Renders a banner component with a background (image/video) and overlaid content.
-  This snippet follows the s pattern: most parameters can be provided either directly
-  or via the s object. Direct parameters take precedence over s values.
+  - Renders banner with background media and overlaid content
 
-  @param {string} [aria_label]
+  Most parameters come directly or through s. A direct parameter wins over the s value.
+
+  @param {string} [aria_label] - link name, defaults to aria-labelledby on the banner
   @param {number} [aspect_ratio]
   @param {string} [attributes]
-  @param {string} [background]
-  @param {string} [background_attributes]
-  @param {string} [background_class]
-  @param {boolean} [background_image]
+  @param {string} [background] - rendered background markup, replaces core-background
+  @param {string} [background_attributes] - attributes for core-background
+  @param {string} [background_class] - classes for core-background
+  @param {string} [background_image] - rendered media markup for core-background, replaces core-background-media
   @param {block} [block]
-  @param {string} [class]
-  @param {color_scheme} [color_scheme]
-  @param {string} [content]
-  @param {string} [content_class]
-  @param {string} [controls]
+  @param {string} [class] - The classes
+  @param {color_scheme} [color_scheme] - defaults to s.color_scheme
+  @param {string} [content] - rendered content, replaces the placement grid built from text and controls
+  @param {string} [content_class] - classes for the placement grid
+  @param {string} [controls] - rendered slideshow controls for the placement grid
   @param {string} [height]
-  @param {string} [height_mobile]
-  @param {string} [href]
-  @param {string} [id]
+  @param {string} [height_mobile] - defaults to s.height_mobile
+  @param {string} [href] - link URL over the banner, defaults to s.href
+  @param {string} [id] - '-banner' is appended, defaults to id_prefix, then block.id, then section.id
   @param {string} [id_prefix]
-  @param {image} [image]
-  @param {string} [image_mobile]
-  @param {string} [media_type]
-  @param {boolean} [new_window]
-  @param {boolean} [padding]
-  @param {string} [parallax]
-  @param {string} [placeholder]
+  @param {image} [image] - defaults to s.image
+  @param {image} [image_mobile]
+  @param {string} [media_type] - unused
+  @param {boolean} [new_window] - defaults to s.open_in_new_window
+  @param [padding] - padding step for the placement grid, or false
+  @param [parallax] - percent for core-background
+  @param {string} [placeholder] - placeholder_svg_tag name
   @param {object} [s] - settings object
   @param {section} [section]
-  @param {boolean} [set_height]
-  @param {boolean} [set_height_mobile]
+  @param {boolean} [set_height] - defaults to s.set_height, then true
+  @param {boolean} [set_height_mobile] - defaults to s.set_height_mobile, then true
   @param {string} [sizes]
-  @param {string} [style]
-  @param {string} [text]
+  @param {string} [style] - inline styles
+  @param {string} [text] - rendered content for the placement grid
   @param {string} [widths]
 {% enddoc %}
 {% liquid

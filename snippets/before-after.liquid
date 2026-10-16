@@ -1,18 +1,18 @@
 {% doc %}
-  - Renders a before and after image comparison with a draggable handle
+  - Renders before and after image comparison with a draggable handle
 
-  @param {string} [after_image] - the after image
+  @param {image} [after_image] - defaults to s.after_image
   @param {string} [attributes]
-  @param {string} [before_image] - the before image
+  @param {image} [before_image] - defaults to s.before_image
   @param {block} [block]
   @param {string} [class] - The classes
-  @param {string} [handle_color] - CSS color for the handle
-  @param {string} [height] - height step, defaults to s.height
-  @param {string} [orientation] - 'horizontal' or 'vertical'
+  @param {string} [handle_color] - CSS color, defaults to s.handle_color, then '#FFFFFF'
+  @param {string} [height] - height step passed to core-background-image, defaults to s.height
+  @param {string} [orientation] - 'horizontal' or 'vertical', defaults to s.orientation, then 'horizontal'
   @param {object} [s] - settings object
   @param {section} [section]
-  @param {boolean} [set_height] - applies the height
-  @param {string} [start_position] - handle position as a percentage
+  @param {boolean} [set_height] - applies the custom height classes, defaults to s.set_height, then true
+  @param {number} [start_position] - handle position in percent, defaults to s.start_position, then 50, clamped to 3 through 97
 {% enddoc %}
 
 {%- liquid

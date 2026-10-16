@@ -1,5 +1,11 @@
 <!-- blocks/_background-image.liquid -->
 
+{% doc %}
+  - Renders full-size image or video background with optional overlay
+
+  Sits inside _background, _section-background, or _pair-pro-banner.
+{% enddoc %}
+
 {% assign target_device = block.settings.target_device | default: 'both' %}
 
 {% capture class %}

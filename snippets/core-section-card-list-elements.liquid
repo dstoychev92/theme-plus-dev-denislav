@@ -1,5 +1,7 @@
 {% doc %}
-  - Renders the card list itself, as a grid or a slider
+  - Renders card list as grid or slider with header, footer, arrows, and progress bar
+
+  Needs sidePrevInView, sideNextInView, and overflowButtonPlacement in an ancestor x-data.
 
   @param {number} columns_lg - column count
   @param {number} columns_md - column count
@@ -7,16 +9,16 @@
   @param {string} [footer] - content below the cards
   @param {string} [footer_class] - classes for the footer
   @param {string} [header] - content above the cards
-  @param {string} [layout_desktop] - layout at that breakpoint
-  @param {string} [layout_mobile] - layout at that breakpoint
-  @param {string} [layout_tablet] - layout at that breakpoint
+  @param {string} [layout_desktop] - 'grid' or 'slider', defaults to 'slider'
+  @param {string} [layout_mobile] - 'grid' or 'slider', defaults to 'slider'
+  @param {string} [layout_tablet] - 'grid' or 'slider', defaults to layout_desktop
   @param {string} [list_attributes] - attributes for the list
   @param {string} list_items - rendered card markup
-  @param {string} [pagination_style] - slider pagination style
+  @param {string} [pagination_style] - unused
   @param {string} [progress_bar_class] - classes for the progress bar
-  @param {string} [progress_bar_visibility] - when the slider progress bar shows
+  @param {string} [progress_bar_visibility] - 'mobile', 'desktop', 'both', or 'never', defaults to s.progress_bar_visibility, then 'desktop'
   @param {object} [s] - settings object
-  @param {boolean} [slider_control_style] - style for the slider arrows
+  @param {string} [slider_control_style] - arrow background_style, defaults to the theme setting, then 'bare'. s.slider_control_style wins when s.set_pagination_style is on
 {% enddoc %}
 
 {% liquid

@@ -1,5 +1,11 @@
 <!-- blocks/_product-add-buttons.liquid -->
 
+{% doc %}
+  - Renders product form with add to cart and dynamic checkout buttons
+
+  Reads closest.product. Owns the product form that the quantity and subscription blocks join through product_form_id. Use one per product in a section.
+{% enddoc %}
+
 {% liquid
   assign product = closest.product
 

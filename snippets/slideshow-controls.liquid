@@ -1,14 +1,16 @@
 {% doc %}
-  - Renders slideshow arrows and pagination
+  - Renders slideshow arrows and dots, lines, or counter pagination
+
+  Reads $slideshow from an enclosing x-slideshow scope.
 
   @param {string} [attributes]
   @param {string} [class] - The classes
-  @param {number} [initial_slide] - slide the show opens on
-  @param {string} [pagination_style] - pagination style
+  @param {number} [initial_slide] - 1-based slide on screen at first paint, defaults to 1
+  @param {string} [pagination_style] - 'dots', 'lines' or 'counter', defaults to settings.carousel_pagination_style
   @param {object} [s] - settings object
-  @param {boolean} [set_pagination_style] - applies the pagination style setting
+  @param {boolean} [set_pagination_style] - true replaces pagination_style with s.pagination_style and the control style with s.overlay_controls_style, defaults to s.set_pagination_style
   @param {boolean} [show_arrows] - defaults to s.show_arrows, then true. False hides each arrow until it has keyboard focus
-  @param {number} [total_slides] - number of slides
+  @param [total_slides] - slide count from Liquid, or false to let Alpine fill the pagination after startup
 {% enddoc %}
 
 {% liquid

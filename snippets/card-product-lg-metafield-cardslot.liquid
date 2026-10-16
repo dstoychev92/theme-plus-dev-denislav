@@ -1,12 +1,12 @@
 {% doc %}
-  - Wraps card content with the metafields set for its slot
+  - Renders card slot content with its above, beside, and below metafields
 
   Reads the metafield_cardslot_<type>_<position> settings, for the above, beside and below
-  positions.
+  positions. A variant metafield wins over the product metafield.
 
   @param {string} content
   @param {product} [product]
-  @param {string} [type] - slot name, such as price or title
+  @param {string} type - slot name, such as 'price' or 'title'
   @param {variant} [variant]
 {% enddoc %}
 {% liquid

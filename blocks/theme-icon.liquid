@@ -1,5 +1,11 @@
 <!-- blocks/theme-icon.liquid -->
 
+{% doc %}
+  - Renders core icon, art icon, or image with optional link
+
+  Preset widths scale with the surrounding text. Custom width is in pixels.
+{% enddoc %}
+
 {% liquid
   assign icon_set = block.settings.icon_set
   assign image_limit = 24

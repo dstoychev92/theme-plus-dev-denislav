@@ -1,5 +1,11 @@
 <!-- blocks/_pair-pro-banner.liquid -->
 
+{% doc %}
+  - Renders pair column with content block over background layers
+
+  Private, only offered by section-pair. The content is the static _content block with id content. The other blocks are _background layers.
+{% enddoc %}
+
 {% liquid
   # Can't do parallax if height is set to content
   if block.settings.set_height and block.settings.height == 'image'

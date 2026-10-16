@@ -4,16 +4,16 @@
   Column counts come from the section settings, multiplied by the img_columns_* settings for
   an image spanning more than one column.
 
-  @param {number} [columns_lg] - desktop column count, defaults to the section setting
-  @param {number} [columns_md] - tablet column count, defaults to the section setting
-  @param {number} [columns_sm] - mobile column count, defaults to the section setting
-  @param {number} [content_width_custom] - percentage of site width, defaults to 65
-  @param {number} [layout_site_width] - site width in pixels, defaults to settings.layout_site_width
+  @param {number} [columns_lg] - desktop column count, defaults to section.settings.columns_lg then 2
+  @param {number} [columns_md] - tablet column count, defaults to section.settings.columns_md then 2
+  @param {number} [columns_sm] - mobile column count, defaults to section.settings.columns_sm, or columns_sm_custom when that is 'custom', then columns_sm_grid, then settings.slider_columns_mobile
+  @param {number} [content_width_custom] - percentage of site width, defaults to section.settings.content_width_custom then 65
+  @param {number} [layout_site_width] - site width in pixels, defaults to settings.layout_site_width then 1440
   @param {section} [section]
-  @param {string} [section_img_columns_lg] - columns the image spans on desktop, defaults to 1.0
-  @param {string} [section_img_columns_md] - columns the image spans on tablet
-  @param {string} [section_img_columns_sm] - columns the image spans on mobile
-  @param {string} [section_width] - 'full', 'page' or 'custom'
+  @param {number} [section_img_columns_lg] - columns the image spans on desktop, defaults to section.settings.img_columns_lg then 1.0
+  @param {number} [section_img_columns_md] - columns the image spans on tablet, defaults to section.settings.img_columns_md then section_img_columns_lg
+  @param {number} [section_img_columns_sm] - columns the image spans on mobile, defaults to section.settings.img_columns_sm then 1.0
+  @param {string} [section_width] - 'full', 'page', or 'custom', defaults to section.settings.content_width then section.settings.section_width
 {% enddoc %}
 
 {% liquid

@@ -1,5 +1,11 @@
 <!-- blocks/_card-collection.liquid -->
 
+{% doc %}
+  - Renders one collection card
+
+  The image is block.settings.image, then the collection image, then the featured image of its first product.
+{% enddoc %}
+
 {% liquid
   assign collection = block.settings.collection
   assign enable_placeholder_collection = false

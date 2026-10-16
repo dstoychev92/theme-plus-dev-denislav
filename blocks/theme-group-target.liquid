@@ -1,6 +1,10 @@
 <!-- blocks/theme-group-target.liquid -->
 
-{% assign target_device = block.settings.target_device | default: 'both' %}
+{% doc %}
+  - Renders other blocks on desktop, mobile, or both
+
+  Adds the hidden attribute when it holds no blocks.
+{% enddoc %}{% assign target_device = block.settings.target_device | default: 'both' %}
 
 {% capture content %}
   {% content_for "blocks" %}

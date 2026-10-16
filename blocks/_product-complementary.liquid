@@ -1,5 +1,11 @@
 <!-- blocks/_product-complementary.liquid -->
 
+{% doc %}
+  - Renders complementary products from Search & Discovery
+
+  Reads closest.product. The live store renders nothing until the recommendations fetch returns, and the editor shows a loading skeleton.
+{% enddoc %}
+
 {% capture content %}
   <div
     {% comment %} Its own Section API controller and render region, so the recommendations request keeps its cache and state apart from the product section {% endcomment %}

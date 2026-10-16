@@ -1,11 +1,13 @@
 {% doc %}
   - Renders placeholder product cards
 
+  Renders nothing unless settings.placeholder_mode or request.design_mode is set.
+
   @param {string} [appearance]
   @param {number} [aspect_ratio]
   @param {string} [attributes]
-  @param {string} [block_attributes]
-  @param {number} [limit]
+  @param {string} [block_attributes] - attributes placed before attributes on each card
+  @param {number} [limit] - defaults to 10
 {% enddoc %}
 
 {% liquid
