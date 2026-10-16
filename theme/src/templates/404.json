@@ -1,0 +1,18 @@
+{
+  "sections": {
+    "404_E1Vq9C_anlgv0p0": {
+      "type": "404",
+      "blocks": {
+        "search": {
+          "type": "_search"
+        }
+      },
+      "block_order": [
+        "search"
+      ]
+    }
+  },
+  "order": [
+    "404_E1Vq9C_anlgv0p0"
+  ]
+}

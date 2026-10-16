@@ -1,0 +1,83 @@
+{% doc %}
+  - Renders popover panel and its trigger button
+
+  @param {string} [attributes]
+  @param {string} button - rendered trigger markup
+  @param {string} [class] - The classes
+  @param {string} content
+  @param {string} [float_options] - options expression for x-popup:popup
+  @param {string} [max_width] - CSS max-width, defaults to '300px'
+  @param {number} [offset] - gap from the trigger in pixels, defaults to 5
+  @param {string} [popover_class] - classes for the popover
+  @param {string} [popover_options] - options expression for x-popup
+  @param {string} [position] - x-popup placement such as 'bottom' or 'bottom-start', defaults to 'bottom'
+  @param {boolean} [show_arrow] - renders the pointer arrow, defaults to true
+  @param [size] - 'sm' or 'lg' padding and text size, or false for none, defaults to 'sm'
+  @param {string} [style] - inline styles
+{% enddoc %}
+
+{%- liquid
+  assign show_arrow = show_arrow | default: true, allow_false: true
+  assign size = size | default: 'sm', allow_false: true
+  assign position = position | default: 'bottom'
+  assign offset = offset | default: 5
+  assign max_width = max_width | default: '300px'
+
+  capture popover_class
+    case size
+      when 'lg'
+        echo 'px-r6 py-r4 text-r4'
+      when 'sm'
+        echo 'px-r5 py-r5 text-r1'
+    endcase
+
+    if popover_class
+      echo ' ' | append: popover_class
+    endif
+  endcapture
+-%}
+
+<div
+  x-popup="{{ popover_options }}"
+  class="contents {{ class }}"
+  style="{{ style }}"
+  {{ attributes }}
+>
+  {% comment %} Button {% endcomment %}
+  {{ button }}
+
+  {% comment %} Panel {% endcomment %}
+  <div
+    class="
+      absolute z-30 rounded-sm bg-[--popover-bg-color] text-content
+      shadow ring-1 ring-[color:var(--popover-border-color)]
+      w-max no-children-entrance
+      {{ popover_class }}
+    "
+    style="
+      max-width: {{ max_width }};
+      --popover-bg-color: var(--canvas);
+      --popover-border-color: var(--content-alpha-5);
+    "
+    x-popup:popup.transform3d.{{- position -}}.offset.{{- offset -}}px.flip.shift.update.pad.5px="{{ float_options }}"
+    :data-open="$popup.isOpen"
+    x-cloak
+  >
+    {% comment %} Arrow {% endcomment %}
+    {% if show_arrow %}
+      <div
+        x-popup:arrow
+        class="
+          h-r6 w-r6 overflow-hidden
+          before:absolute
+          before:left-1/2 before:top-r5
+          before:h-r5 before:w-r5 before:-translate-x-1/2 before:rotate-45 before:skew-x-3
+          before:skew-y-3 before:bg-[--popover-bg-color] before:shadow before:ring-1
+          before:ring-[color:var(--popover-border-color)]
+        "
+      ></div>
+    {% endif %}
+
+    {{ content }}
+  </div>
+</div>

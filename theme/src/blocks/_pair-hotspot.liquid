@@ -1,0 +1,24 @@
+{% doc %}
+  - Renders one hotspot dot
+
+  Sits inside _pair-hotspots.
+{% enddoc %}
+
+{% render 'hotspot', s: block.settings, attributes: block.shopify_attributes %}
+
+{% schema %}
+{
+  "name": "Hotspot",
+  "tag": null,
+  "settings": [
+    [% json 'schema/position-settings.jsonc', optional_mobile: true %]
+  ],
+  "blocks": [
+  ],
+  "presets": [
+    {
+      "name": "Hotspot"
+    }
+  ]
+}
+{% endschema %}

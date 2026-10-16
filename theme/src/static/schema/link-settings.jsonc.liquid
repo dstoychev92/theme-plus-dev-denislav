@@ -1,0 +1,30 @@
+[
+  [% unless label == false %]
+  {
+    "type": "text",
+    "id": "[= text_id | default: 'text' =]",
+    "label": "Text",
+    [% if conditional %]
+    "visible_if": "{{ [= conditional =] }}",
+    [% endif %]
+    "default": "[= default_text_content | default: 'Link Text' =]"
+  },
+  [% endunless %]
+  {
+    "type": "url",
+    "id": "[= href_id | default: 'href' =]",
+    [% if conditional %]
+    "visible_if": "{{ [= conditional =] }}",
+    [% endif %]
+    "label": "Link"
+  },
+  {
+    "type": "checkbox",
+    "id": "[= open_in_new_window_id | default: 'open_in_new_window' =]",
+    "label": "Open link in new window",
+    [% if conditional %]
+    "visible_if": "{{ [= conditional =] }}",
+    [% endif %]
+    "default": false
+  }
+]

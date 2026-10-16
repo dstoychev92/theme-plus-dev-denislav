@@ -1,0 +1,18 @@
+{% doc %}
+  - Renders Accelerated Checkout Buttons in cart
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+{% enddoc %}
+
+{% if additional_checkout_buttons %}
+  <div
+    {% comment %} Shopify requires this exact class on the wrapper, even though the theme adds no styles for it {% endcomment %}
+    class="additional-checkout-buttons {{ class }}"
+    {% comment %} Dont morph this element when cart is updated to avoid issues {% endcomment %}
+    data-morph-update="none"
+    {{ attributes }}
+  >
+    {{ content_for_additional_checkout_buttons }}
+  </div>
+{% endif %}

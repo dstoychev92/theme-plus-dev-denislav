@@ -1,0 +1,183 @@
+{% doc %}
+  - Renders before and after image comparison with a draggable handle
+
+  @param {image} [after_image] - defaults to s.after_image
+  @param {string} [attributes]
+  @param {image} [before_image] - defaults to s.before_image
+  @param {block} [block]
+  @param {string} [class] - The classes
+  @param {string} [handle_color] - CSS color, defaults to s.handle_color, then '#FFFFFF'
+  @param {string} [height] - height step passed to core-background-image, defaults to s.height
+  @param {string} [orientation] - 'horizontal' or 'vertical', defaults to s.orientation, then 'horizontal'
+  @param {object} [s] - settings object
+  @param {section} [section]
+  @param {boolean} [set_height] - applies the custom height classes, defaults to s.set_height, then true
+  @param {number} [start_position] - handle position in percent, defaults to s.start_position, then 50, clamped to 3 through 97
+{% enddoc %}
+
+{%- liquid
+  assign before_image = before_image | default: s.before_image
+  assign after_image = after_image | default: s.after_image
+  assign orientation = orientation | default: s.orientation | default: 'horizontal'
+  assign handle_color = handle_color | default: s.handle_color | default: '#FFFFFF'
+  assign start_position = start_position | default: s.start_position | default: 50
+  assign set_height = set_height | default: s.set_height, allow_false: true | default: true, allow_false: true
+
+  assign min_start_position = 3
+  assign max_start_position = 100 | minus: min_start_position
+
+  assign start_position = start_position | at_least: min_start_position | at_most: max_start_position
+
+  assign animate_from_position = 0
+
+  if start_position > 50
+    assign animate_from_position = max_start_position
+  endif
+
+  assign icon_class = 'rtl:rotate-180'
+
+  assign alignment = s.content_align | default: s.alignment
+
+  # Both images would otherwise fall back to the same block.id/section.id-derived image id
+  assign image_id_prefix = block.id | default: section.id
+  assign before_image_id_prefix = image_id_prefix | append: '-before'
+  assign after_image_id_prefix = image_id_prefix | append: '-after'
+-%}
+
+{% capture style %}
+  --handle-color: {{ handle_color }};
+  --thumb-size: 2.8rem;
+  {% render 'props-style-custom-height', s: s, set_height: set_height %}
+{% endcapture %}
+
+{% capture attributes %}
+  {{ attributes }}
+  data-lazy-alpine
+  data-lazy-alpine-module="@theme/slider-reveal"
+
+  x-before-after-slider-reveal{% if orientation == 'vertical' %}.vertical{% endif %}.from.{{ animate_from_position }}%.progress.{{ start_position }}%
+{% endcapture %}
+
+{% capture class %}
+  overflow-hidden relative {{ class }}
+  {% if set_height -%}
+    {% render 'props-class-custom-height', s: s %}
+    max-h-screen
+  {% else %}
+    h-full
+  {%- endif %}
+{% endcapture %}
+
+{% capture content %}
+  <input
+    x-model.number="$sliderReveal.progress"
+    type="range"
+    min="{{ min_start_position }}"
+    max="{{ max_start_position }}"
+    class="
+      absolute z-40 size-full !p-0 opacity-0
+      [&::-moz-range-thumb]:rounded-none
+      [&::-webkit-slider-thumb]:rounded-none
+
+      {% if orientation == 'vertical' %}
+        cursor-row-resize
+        [writing-mode:vertical-lr]
+        [&::-moz-range-thumb]:h-[--thumb-size]
+        [&::-webkit-slider-thumb]:h-[--thumb-size]
+        [&::-moz-range-thumb]:w-[100vw]
+        [&::-webkit-slider-thumb]:w-[100vw]
+      {% else %}
+        cursor-col-resize
+        [&::-moz-range-thumb]:h-[100vh]
+        [&::-webkit-slider-thumb]:h-[100vh]
+        [&::-moz-range-thumb]:w-[--thumb-size]
+        [&::-webkit-slider-thumb]:w-[--thumb-size]
+      {% endif %}
+    "
+    aria-label="{{ 'other.accessibility.before_after_controller' | t }}"
+  >
+
+  <div
+    x-slider-reveal:handle
+    class="absolute z-30 size-full flex rtl:items-end will-change-transform"
+    style="transform: translateX({{ animate_from_position }}%)"
+  >
+    <div
+      class="
+        flex items-center
+        {% if orientation == 'vertical' %}
+          h-0 w-full
+        {% else %}
+          w-0 h-full
+        {% endif %}
+      "
+    >
+      <!-- Vertical line -->
+      <div
+        class="
+          absolute start-[-1.5px] bg-[--handle-color]
+          {% if orientation == 'vertical' %}
+            h-[1.5px] w-full
+          {%- else -%}
+            w-[1.5px] h-full
+          {% endif %}
+        "
+      ></div>
+
+      <!-- White circle with blur -->
+      <div
+        class="
+          keyboard-active:group-focus-within/before-after:ring-focus-outline
+          keyboard-active:group-focus-within/before-after:ring-2
+          absolute h-[--thumb-size] w-[--thumb-size] rounded-full border-[1.5px] border-[--handle-color] bg-white/10 backdrop-blur
+          {% if orientation == 'vertical' %}
+            start-[calc(50%+(var(--thumb-size)/-2))] rotate-90
+          {%- else -%}
+            start-[calc(var(--thumb-size)/-2)]
+          {% endif %}
+        "
+      >
+        <div class="flex h-full flex-center">
+          <div class="text-[1rem] text-[color:var(--handle-color)]">
+            {% render 'core-icon', icon: 'stroke-chevron-left', stroke_width_custom: '2.2', class: icon_class %}
+          </div>
+          <div class="text-[1rem] text-[color:var(--handle-color)]">
+            {% render 'core-icon', icon: 'stroke-chevron-right', stroke_width_custom: '2.2', class: icon_class %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="z-0 w-full grid-stack h-full">
+    {% render 'core-background-image',
+      s: s,
+      image: before_image,
+      id_prefix: before_image_id_prefix,
+      class: 'z-0',
+      height: height,
+      placeholder: 'collection-4',
+    %}
+    {% render 'core-background-image',
+      s: s,
+      image: after_image,
+      id_prefix: after_image_id_prefix,
+      class: 'z-40',
+      height: height,
+      placeholder: 'collection-3',
+      attributes: 'x-slider-reveal:reveal'
+    %}
+  </div>
+{% endcapture %}
+
+<before-after
+  class="
+    group/before-after
+    flex flex-col h-full min-h-0
+    vars-content-align-{{ alignment }} text-content-align items-content-align
+    {{ class }}
+  "
+  style="{{ style }}"
+  {{ attributes }}
+>
+  {{ content }}
+</before-after>

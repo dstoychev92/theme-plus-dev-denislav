@@ -1,0 +1,25 @@
+{% doc %}
+  - Renders flex row item holding product blocks
+
+  @param {string} [block_class] - classes for this block instance
+  @param {string} [block_style] - inline styles for this block instance
+{% enddoc %}
+
+[% capture additional_blocks %]
+  [% json 'schema/blocks-theme-node.jsonc' %]
+  [% json 'schema/blocks-product-inline.jsonc' %]
+  [% json 'schema/blocks-product-layout.jsonc' %]
+  [% json 'schema/blocks-product-extended.jsonc' %]
+  {
+    "type": "@app",
+  }
+[% endcapture %]
+
+[% capture additional_presets %]
+  {
+    "name": "Flex item",
+    "blocks": []
+  }
+[%endcapture %]
+
+[% render 'groups/flex-item', additional_blocks: additional_blocks %]

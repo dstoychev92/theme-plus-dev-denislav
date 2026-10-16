@@ -1,0 +1,22 @@
+[% if id_suffix %]
+ [% assign _id_suffix = id_suffix | prepend: '_' %]
+[% endif %]
+[
+  {
+    "type": "select",
+    "label": "[= label | default: 'Show on' =]",
+    "id": "show_on[= _id_suffix =]",
+    "default": "[= default_value | default: 'all' =]",
+    [% if conditional %]
+      "visible_if": "{{ [= conditional =] }}",
+    [% endif %]
+    "options": [
+      {"value": "all", "label": "All devices"},
+      {"value": "mobile", "label": "Mobile only (< 768px)"},
+      {"value": "tablet", "label": "Tablet only (768–1024px)"},
+      {"value": "desktop", "label": "Desktop only (≥ 1024px)"},
+      {"value": "mobile-tablet", "label": "Mobile and tablet (< 1024px)"},
+      {"value": "tablet-desktop", "label": "Tablet and desktop (≥ 768px)"}
+    ]
+  }
+]

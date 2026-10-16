@@ -1,0 +1,36 @@
+[
+  {
+    "type": "header",
+    "content": "Breadcrumbs"
+  },
+  {
+    "type": "checkbox",
+    "id": "enable_breadcrumbs",
+    "label": "Enable breadcrumbs",
+    "default": false
+  },
+  {
+    "type": "collection_list",
+    "id": "product_breadcrumbs_list",
+    "label": "Breadcrumb collections",
+    "info": "Use metafields for unique breadcrumbs on each product. [Learn more](https://groupthought.com/link/analog/v1/docs/breadcrumbs)"
+  },
+  [% unless quickview_context == true %]
+    {
+      "type": "select",
+      "id": "breadcrumbs_position",
+      "label": "Desktop position",
+      "info": "Breadcrumbs will always position above Media on Mobile.",
+      "default": "content",
+      "options": [
+        {"value": "content", "label": "Above content"},
+        {"value": "media", "label": "Above media"}
+      ],
+      "visible_if": "{{ section.settings.enable_breadcrumbs == true }}"
+    },
+  [% endunless %]
+  [% json 'schema/type-preset.jsonc', default_preset: 'btn', label: 'Text style', id_suffix: 'breadcrumbs', select_conditional: "section.settings.enable_breadcrumbs == true" %]
+  [% json 'schema/type-custom.jsonc', resize: true, default_resize: 'sm', id_suffix: 'breadcrumbs', conditional: "section.settings.enable_breadcrumbs == true and section.settings.type_preset_breadcrumbs == 'custom'", resize_conditional: "section.settings.enable_breadcrumbs == true and section.settings.type_preset_breadcrumbs != 'custom'" %]
+  [% json 'schema/link-appearance-setting.jsonc', label: 'Link style', default_appearance: 'clean', id: 'appearance_breadcrumbs', conditional: "section.settings.enable_breadcrumbs == true" %]
+  [% json 'schema/target-device-setting.jsonc', id_suffix: 'breadcrumbs', default_value: 'both', conditional: "section.settings.enable_breadcrumbs == true" %]
+]

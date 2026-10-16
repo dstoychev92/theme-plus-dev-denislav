@@ -1,0 +1,41 @@
+[
+  [% unless header == false %]
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+  [% endunless %]
+  {
+    "type": "checkbox",
+    "id": "set_color_scheme",
+    "label": "Set colors",
+    "default": false
+  },
+  {
+    "type": "color_scheme",
+    "id": "color_scheme",
+    "label": "Color scheme",
+    "visible_if": "{{ block.settings.set_color_scheme }}",
+    "default": "[= default_color_scheme | default: 'scheme-opposite' =]"
+  },
+  {
+    "type": "select",
+    "id": "background",
+    "label": "Background",
+    "default": "[= default_background | default: 'canvas' =]",
+    "options": [
+      {"value": "canvas", "label": "Default"},
+      {"value": "tint", "label": "Tint"},
+      {"value": "transparent", "label": "∅"},
+      {"value": "custom", "label": "⋯"}
+    ],
+    "visible_if": "{{ block.settings.set_color_scheme }}"
+  },
+  {
+    "type": "color",
+    "id": "background_custom",
+    "label": "Background color",
+    "default": "#DEDEDE",
+    "visible_if": "{{ block.settings.set_color_scheme and block.settings.background == 'custom' }}"
+  }
+]

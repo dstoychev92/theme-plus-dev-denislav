@@ -1,0 +1,388 @@
+{% liquid
+  if block.settings.set_parallax
+    assign parallax = block.settings.parallax | default: 0
+    assign parallax_direction = block.settings.parallax_direction | default: 'vertical'
+  endif
+
+  assign col_start = block.settings.col_start
+  assign col_end = block.settings.col_end
+  assign row_start = block.settings.row_start
+
+  assign row_span = 1
+  if block.settings.set_row_span
+    assign row_span = block.settings.row_span
+  endif
+
+  assign col_start_sm = block.settings.col_start_sm
+  assign col_end_sm = block.settings.col_end_sm
+  assign row_start_sm = block.settings.row_start_sm
+
+  assign row_span_sm = 1
+  if block.settings.set_row_span_sm
+    assign row_span_sm = block.settings.row_span_sm
+  endif
+
+  assign set_grid_mobile = block.settings.set_grid_mobile
+  if block.settings.target_device == 'mobile'
+    assign set_grid_mobile = true
+  endif
+
+  assign col_start_md = block.settings.col_start_md
+  assign col_end_md = block.settings.col_end_md
+  assign row_start_md = block.settings.row_start_md
+
+  assign row_span_md = 1
+  if block.settings.set_row_span_md
+    assign row_span_md = block.settings.row_span_md
+  endif
+
+  assign content_align = 'left'
+
+  if block.settings.set_layout
+    assign content_align = block.settings.content_align
+    assign gap = block.settings.gap | default: false, allow_false: true
+  endif
+%}
+
+{%- if request.visual_preview_mode and block.settings.visual_preview_pro -%}
+  {%- render 'grid-editorial-item-preview', s: block.settings, attributes: block.shopify_attributes -%}
+{%- else -%}
+  <div
+    class="
+      flex flex-col gap-layout w-full h-full relative cq-width
+      text-content-align items-content-align
+      {% if content_align %}
+        vars-content-align-{{ content_align }}
+      {% endif %}
+
+      [--col-start:var(--col-start-lg)]
+      [--col-end:var(--col-end-lg)]
+      [--row-start:var(--row-start-lg)]
+      [--row-span:var(--row-span-lg)]
+
+      {% if set_grid_mobile == true %}
+        max-md:[--col-start:var(--col-start-sm)]
+        max-md:[--col-end:var(--col-end-sm)]
+        max-md:[--row-start:var(--row-start-sm)]
+        max-md:[--row-span:var(--row-span-sm)]
+      {% endif %}
+
+      {% if block.settings.set_grid_tablet == true %}
+        md:max-lg:[--col-start:var(--col-start-md)]
+        md:max-lg:[--col-end:var(--col-end-md)]
+        md:max-lg:[--row-start:var(--row-start-md)]
+        md:max-lg:[--row-span:var(--row-span-md)]
+      {% endif %}
+
+      {% if parallax != blank and parallax != 0 %}
+        will-change-transform
+      {% endif %}
+
+      {% render 'props-class-target-device', s: block.settings %}
+
+      {{ block_class }}
+    "
+
+    style="
+      {%- if gap -%}
+        {% render 'props-style-gap', s: block.settings %}
+      {%- endif -%}
+      --col-start-lg: {{col_start}};
+      --col-end-lg: {{col_end | plus: 1}};
+      --row-start-lg: {{row_start}};
+      --row-span-lg: {{row_span}};
+
+      {% if set_grid_mobile == true %}
+        --col-start-sm: {{col_start_sm}};
+        --col-end-sm: {{col_end_sm | plus: 1}};
+        --row-start-sm: {{row_start_sm}};
+        --row-span-sm: {{row_span_sm}};
+      {% endif %}
+
+      {% if block.settings.set_grid_tablet == true %}
+        --col-start-md: {{col_start_md}};
+        --col-end-md: {{col_end_md | plus: 1}};
+        --row-start-md: {{row_start_md}};
+        --row-span-md: {{row_span_md}};
+      {% endif %}
+
+      grid-column: var(--col-start,auto) / var(--col-end,auto);
+      grid-row: var(--row-start,auto) / span var(--row-span,auto);
+
+      {% comment %} Allow short & long image tiles in 12-column grid when tile block aspect ratio is unset {% endcomment %}
+      --tile-min-aspect-ratio:10;
+      --image-min-aspect-ratio:10;
+
+      {{ block_style }}
+    "
+
+    {% if request.design_mode %}
+      :class="
+        {
+          '!opacity-100': $containsSelectedBlock || $isSelectedBlock,
+        }
+      "
+    {% endif %}
+
+    {% if parallax != blank and parallax != 0 %}
+      x-parallax:element.{{ parallax_direction }}.distance.{{ parallax }}%
+    {% endif %}
+    {{ block.shopify_attributes }}
+  >
+    {% content_for 'blocks' %}
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Grid item",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Desktop grid",
+      "info": "Default grid",
+      "visible_if": "{{ block.settings.target_device != 'mobile' }}"
+    },
+    {
+      "type": "range",
+      "id": "col_start",
+      "label": "Column start",
+      "min": 1,
+      "max": 12,
+      "default": 1,
+      "unit": "↦",
+      "visible_if": "{{ block.settings.target_device != 'mobile' }}"
+    },
+    {
+      "type": "range",
+      "id": "col_end",
+      "label": "Column end",
+      "min": 1,
+      "max": 12,
+      "default": 12,
+      "unit": "↤",
+      "visible_if": "{{ block.settings.target_device != 'mobile' }}"
+    },
+    {
+      "type": "range",
+      "id": "row_start",
+      "label": "Row start",
+      "min": 1,
+      "max": 50,
+      "default": 1,
+      "unit": "↧",
+      "visible_if": "{{ block.settings.target_device != 'mobile' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_row_span",
+      "label": "Span multiple rows",
+      "default": false,
+      "visible_if": "{{ block.settings.target_device != 'mobile' }}"
+    },
+    {
+      "type": "range",
+      "id": "row_span",
+      "label": "Row span",
+      "min": 1,
+      "max": 50,
+      "default": 2,
+      "visible_if": "{{ block.settings.target_device != 'mobile' and block.settings.set_row_span }}"
+    },
+    {
+      "type": "header",
+      "content": "Tablet grid",
+      "visible_if": "{{ block.settings.target_device != 'mobile' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_grid_tablet",
+      "label": "Set tablet grid",
+      "default": false,
+      "visible_if": "{{ block.settings.target_device != 'mobile' }}"
+    },
+
+    {
+      "type": "range",
+      "id": "col_start_md",
+      "label": "Column start",
+      "min": 1,
+      "max": 12,
+      "visible_if": "{{ block.settings.target_device != 'mobile' and block.settings.set_grid_tablet == true }}",
+      "default": 1,
+      "unit": "↦"
+    },
+    {
+      "type": "range",
+      "id": "col_end_md",
+      "label": "Column end",
+      "min": 1,
+      "max": 12,
+      "visible_if": "{{ block.settings.target_device != 'mobile' and block.settings.set_grid_tablet == true }}",
+      "default": 12,
+      "unit": "↤"
+    },
+    {
+      "type": "range",
+      "id": "row_start_md",
+      "label": "Row start",
+      "min": 1,
+      "max": 50,
+      "visible_if": "{{ block.settings.target_device != 'mobile' and block.settings.set_grid_tablet == true }}",
+      "default": 1,
+      "unit": "↧"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_row_span_md",
+      "label": "Span multiple rows",
+      "default": false,
+      "visible_if": "{{ block.settings.target_device != 'mobile' and block.settings.set_grid_tablet == true }}"
+    },
+    {
+      "type": "range",
+      "id": "row_span_md",
+      "label": "Row span",
+      "min": 1,
+      "max": 50,
+      "default": 2,
+      "visible_if": "{{ block.settings.target_device != 'mobile' and block.settings.set_grid_tablet == true and block.settings.set_row_span_md }}"
+    },
+    {
+      "type": "header",
+      "content": "Mobile grid",
+      "visible_if": "{{ block.settings.target_device != 'desktop' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_grid_mobile",
+      "label": "Set mobile grid",
+      "default": false,
+      "visible_if": "{{ block.settings.target_device == 'both' }}"
+    },
+    {
+      "type": "range",
+      "id": "col_start_sm",
+      "label": "Column start",
+      "min": 1,
+      "max": 12,
+      "visible_if": "{{ block.settings.target_device != 'desktop' and block.settings.set_grid_mobile == true or block.settings.target_device == 'mobile' }}",
+      "default": 1,
+      "unit": "↦"
+    },
+    {
+      "type": "range",
+      "id": "col_end_sm",
+      "label": "Column end",
+      "min": 1,
+      "max": 12,
+      "visible_if": "{{ block.settings.target_device != 'desktop' and block.settings.set_grid_mobile == true or block.settings.target_device == 'mobile' }}",
+      "default": 12,
+      "unit": "↤"
+    },
+    {
+      "type": "range",
+      "id": "row_start_sm",
+      "label": "Row start",
+      "min": 1,
+      "max": 50,
+      "visible_if": "{{ block.settings.target_device != 'desktop' and block.settings.set_grid_mobile == true or block.settings.target_device == 'mobile' }}",
+      "default": 1,
+      "unit": "↧"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_row_span_sm",
+      "label": "Span multiple rows",
+      "default": false,
+      "visible_if": "{{ block.settings.target_device != 'desktop' and block.settings.set_grid_mobile == true or block.settings.target_device == 'mobile' }}"
+    },
+    {
+      "type": "range",
+      "id": "row_span_sm",
+      "label": "Row span",
+      "min": 1,
+      "max": 50,
+      "visible_if": "{{ block.settings.set_row_span_sm and block.settings.target_device == 'mobile' or block.settings.target_device == 'both' and block.settings.set_grid_mobile == true }}",
+      "default": 2
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_layout",
+      "label": "Set layout",
+      "default": false
+    },
+    {
+      "type": "text_alignment",
+      "id": "content_align",
+      "label": "Alignment",
+      "default": "center",
+      "visible_if": "{{ block.settings.set_layout }}"
+    },
+    [% json 'schema/grid-gap-setting.jsonc', default_gap: 'md', conditional: 'block.settings.set_layout' %]
+    {
+      "type": "header",
+      "content": "Parallax"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_parallax",
+      "label": "Enable parallax",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "parallax",
+      "min": -50,
+      "max": 50,
+      "step": 1,
+      "label": "Parallax amount",
+      "default": 0,
+      "info": "Positive values move the element in the opposite direction of the scroll direction. Negative values move the element in the same direction as the scroll direction.",
+      "unit": "%",
+      "visible_if": "{{ block.settings.set_parallax }}"
+    },
+    {
+      "type": "select",
+      "id": "parallax_direction",
+      "label": "Direction",
+      "default": "vertical",
+      "options": [
+        {
+          "value": "vertical",
+          "label": "↓"
+        },
+        {
+          "value": "horizontal",
+          "label": "→"
+        }
+      ],
+      "visible_if": "{{ block.settings.set_parallax }}"
+    },
+
+    {
+      "type": "header",
+      "content": "Limit by screen size"
+    },
+    [% json 'schema/target-device-setting.jsonc' %]
+    {
+      "type": "checkbox",
+      "id": "visual_preview_pro",
+      "label": "Visual preview pro",
+      "default": false,
+      "visible_if": "{{ false }}"
+    }
+  ],
+  "blocks": [
+    [= additional_blocks =]
+  ],
+  "presets": [
+    [= additional_presets =]
+  ]
+}
+{% endschema %}

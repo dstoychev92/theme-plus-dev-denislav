@@ -1,0 +1,78 @@
+{% doc %}
+  - Renders unit price for a variant
+
+  Prints nothing when the variant carries no unit price. product.selected_selling_plan reduces
+  the unit price by its discount unless ignore_selling_plan is true.
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {boolean} [ignore_selling_plan] - skips the selling plan discount, defaults to false
+  @param {product} [product] - selling plan source
+  @param {string} [style] - inline styles
+  @param {variant} variant - price source
+{% enddoc %}
+
+{%- assign unit_price = variant.unit_price -%}
+{%- assign ignore_selling_plan = ignore_selling_plan | default: false, allow_false: true -%}
+
+{%- if unit_price != blank -%}
+  {% liquid
+    if ignore_selling_plan == false
+      # Select current selling plan if it's specified in the URL
+      assign selected_selling_plan = product.selected_selling_plan
+      if product.requires_selling_plan
+        # Fallback to the first available selling plan
+        assign selected_selling_plan = product.selected_or_first_available_selling_plan_allocation.selling_plan | default: product.selling_plan_groups[0].selling_plans[0]
+      endif
+
+      # Subscription price
+      if selected_selling_plan
+        assign price = variant.price
+        assign compare_at_price = price
+        assign price_adjustment = selected_selling_plan.price_adjustments[0]
+
+        case price_adjustment.value_type
+          when 'percentage'
+            assign plan_discount_amount = price | times: price_adjustment.value | divided_by: 100
+          when 'fixed_amount'
+            assign plan_discount_amount = price_adjustment.value
+          when 'price'
+            assign plan_discount_amount = 0
+            assign price = price_adjustment.value
+        endcase
+
+        # Price after subscription discount
+        assign discounted_price = price | minus: plan_discount_amount
+        assign difference = compare_at_price | minus: discounted_price
+
+        # Multiplying this by additional 100 so we can get the float number of the percentage discount - 2.5%, otherwise it rounds to 2%
+        assign percent_off_times_100 = difference | times: 100 | times: 100 | divided_by: compare_at_price
+        # Dividing this by additional 100 to normalize the discount percentage
+        assign unit_price_discount_amount = unit_price | times: percent_off_times_100 | divided_by: 100 | divided_by: 100
+
+        assign unit_price = unit_price | minus: unit_price_discount_amount
+      endif
+    endif
+  %}
+
+  {% capture unit_price_separator %}
+    <span aria-hidden="true">/</span><span class="sr-only">&nbsp;{{ 'product.unit_price_separator' | t }}&nbsp;</span>
+  {% endcapture %}
+
+  {% capture unit_price_base_unit %}
+    {% if variant.unit_price_measurement.reference_value != 1 %}
+      {{ variant.unit_price_measurement.reference_value }}
+    {% endif %}
+
+    {{ variant.unit_price_measurement.reference_unit }}
+  {% endcapture %}
+
+  <span class="inline-flex {{ class }}" style="{{ style }}" {{ attributes }}>
+    <span class="sr-only">{{ 'product.unit_price' | t }}</span>
+
+    {% render 'money', price: unit_price, show_currency: false, hide_trailing_zeros: true %}
+
+    {{ unit_price_separator }}
+    {{ unit_price_base_unit }}
+  </span>
+{%- endif -%}

@@ -1,0 +1,59 @@
+{% capture page_content %}
+  <div class="flex flex-col gap-y-layout">
+    {%- if section.settings.show_title -%}
+      {%- assign alignment_class = 'text-content inline-richtext text-' | append: section.settings.content_align -%}
+      {% render 'core-text-preset', text: page.title, s: section.settings, tag: 'h1', class: alignment_class %}
+    {%- endif -%}
+
+    {%- if section.settings.show_content -%}
+      <div class="max-w-full text-content prose type-resize-all-{{ section.settings.content_richtext_size }} text-{{ section.settings.content_align }}">
+        {{ page.content }}
+      </div>
+    {%- endif -%}
+  </div>
+{% endcapture %}
+
+{% render 'core-section', s: section.settings, content: page_content %}
+
+{% schema %}
+{
+  "name": "Page",
+  "class": "section-page-default",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "text_alignment",
+      "id": "content_align",
+      "label": "Alignment",
+      "default": "left"
+    },
+    [% json 'schema/section-content-width-setting.jsonc', default_label: 'Width' %]
+    [% json 'schema/section-padding-settings.jsonc' %]
+    [% json 'schema/color-settings-section-solid.jsonc' %]
+    {
+      "type": "header",
+      "content": "Title"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_title",
+      "label": "Show title",
+      "default": true
+    },
+    [% json 'schema/type-preset.jsonc', default_preset: 'h3' %]
+    [% json 'schema/type-custom.jsonc', resize: true, default_font: 'heading', default_size: 9, context: 'section.settings.' %]
+    {
+      "type": "header",
+      "content": "Page text"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_content",
+      "label": "Show content",
+      "info": "Edit your page content in [Online store > Pages](https://admin.shopify.com/pages)",
+      "default": true
+    },
+    [% json 'schema/type-richtext-resize-all-setting.jsonc', default: 'md', id: 'content_richtext_size' %]
+  ]
+}
+{% endschema %}

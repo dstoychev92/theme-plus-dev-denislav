@@ -1,0 +1,36 @@
+[% if id_suffix %]
+  [% assign _id_suffix = id_suffix | prepend: '_' %]
+[% endif %]
+[% if id_prefix %]
+  [% assign id_prefix_ = id_prefix | append: '_' %]
+[% endif %]
+[% assign context = context | default: 'block.settings.' %]
+[% assign padding_id = id_prefix_ | append: 'padding' | append: _id_suffix %]
+[
+  {
+    "type": "select",
+    "id": "[= padding_id =]",
+    "label": "[= padding_label | default: 'Padding' =]",
+    "default": "[= default_padding | default: 'lg' =]",
+    [% if conditional %]
+      "visible_if": "{{ [= conditional =] }}",
+    [% endif %]
+    "options": [
+      {"value": "sm", "label": "S"},
+      {"value": "md", "label": "M"},
+      {"value": "lg", "label": "L"},
+      {"value": "custom", "label": "⋯"}
+    ]
+  },
+  {
+    "type": "range",
+    "id": "[= id_prefix_ =]padding_custom[= _id_suffix =]",
+    "label": "[= padding_custom_label | default: 'Custom padding' =]",
+    "default": 0,
+    "min": 0,
+    "max": 80,
+    "step": 2,
+    "unit": "px",
+    "visible_if": "{{ [= context =][= padding_id =] == 'custom' [% if conditional %] and [= conditional =][% endif %] }}"
+  },
+]

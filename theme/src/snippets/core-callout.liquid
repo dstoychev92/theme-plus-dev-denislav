@@ -1,0 +1,267 @@
+{% doc %}
+  - Renders callout with title, body text, and optional media
+
+  s.layout picks the arrangement. An unknown value prints nothing.
+
+  @param {string} [attributes]
+  @param {string} [body_text]
+  @param {string} [callout_color_class] - classes for the media wrapper
+  @param {string} [callout_color_style] - inline styles for the media wrapper
+  @param {string} [class] - The classes
+  @param {boolean} [color_enabled] - false ignores the s color settings, defaults to true
+  @param {string} [media] - rendered media markup
+  @param {number} [media_px] - media width in pixels before the r multiplier for icons and side layouts, defaults to 32
+  @param {string} [media_type] - 'icon' sizes the media wrapper to media_px
+  @param {object} [s] - settings object
+  @param {string} [title_text]
+{% enddoc %}
+
+{%- liquid
+  assign layout = s.layout
+  assign content_align = s.content_align | default: 'left'
+  assign vertical_align = s.vertical_align | default: 'center'
+  assign color_enabled = color_enabled | default: true, allow_false: true
+
+  assign has_media = false
+  if media != blank
+    assign has_media = true
+  endif
+
+  assign has_title = false
+  if title_text != blank
+    assign has_title = true
+  endif
+
+  assign has_body = false
+  if body_text != blank
+    assign has_body = true
+  endif
+
+  assign is_side = false
+  if layout == 'side_left' or layout == 'side_right'
+    assign is_side = true
+  endif
+
+  assign is_horizontal = false
+  if is_side or layout == 'inline' or layout == 'all_inline'
+    assign is_horizontal = true
+  endif
+
+  assign is_icon = false
+  if media_type == 'icon'
+    assign is_icon = true
+  endif
+
+  # Media width CSS value
+  assign media_px = media_px | default: 32
+  assign media_width_css = 'calc(' | append: media_px | append: 'px * var(--r-multiplier))'
+
+  # Mobile stacking: only when custom width > 150px on side layouts
+  assign stack_mobile = false
+  if is_side and s.media_width == 'custom' and s.media_width_custom > 150
+    assign stack_mobile = true
+  endif
+-%}
+
+{%- comment -%} ── Title ── {%- endcomment -%}
+{%- capture title -%}
+  {%- if has_title -%}
+    {%- capture title_style -%}
+      {%- if color_enabled and s.set_color and s.color == 'custom' -%}
+        --color-custom-text: {{ s.color_custom }};
+      {%- endif -%}
+    {%- endcapture -%}
+    {%- capture title_class -%}
+      max-w-full break-words
+      {% if color_enabled and s.set_color %}
+        text-{{ s.color | default: 'content' }}
+      {% endif %}
+    {%- endcapture -%}
+    {%- render 'core-text-preset', text: title_text, s: s, tag: 'h3', class: title_class, style: title_style -%}
+  {%- endif -%}
+{%- endcapture -%}
+
+{%- comment -%} ── Body ── {%- endcomment -%}
+{%- capture body -%}
+  {%- if has_body -%}
+    {%- capture body_type_class -%}
+      {%- render 'props-class-type-preset', s: s, settings_suffix: 'body' -%}
+    {%- endcapture -%}
+    {%- capture body_style -%}
+      {%- if color_enabled and s.set_color_body and s.color_body == 'custom' -%}
+        --color-custom-text: {{ s.color_custom_body }};
+      {%- endif -%}
+    {%- endcapture -%}
+    {%- capture body_color_class -%}
+      {%- if color_enabled and s.set_color_body -%}
+        text-{{ s.color_body | default: 'muted' }}
+      {%- else -%}
+        text-muted
+      {%- endif -%}
+    {%- endcapture -%}
+    <div class="richtext-elements max-w-full break-words {{ body_type_class }} {{ body_color_class }}" style="{{ body_style }}">
+      {{- body_text -}}
+    </div>
+  {%- endif -%}
+{%- endcapture -%}
+
+{%- comment -%} ── Outer styles ── {%- endcomment -%}
+{%- capture wrapper_style -%}
+  {%- if s.set_gap -%}
+    {%- render 'props-style-gap', s: s -%}
+  {%- else -%}
+    --layout-gutter-x: calc(8px * var(--r-multiplier));
+    --layout-gutter-y: 8px;
+    row-gap: var(--layout-gutter-y);
+    column-gap: var(--layout-gutter-x);
+  {%- endif -%}
+  {%- if is_side -%}
+    --callout-media-width: {{ media_width_css }};
+  {%- endif -%}
+  {%- if is_horizontal -%}
+    {%- render 'props-style-gap', gap: s.gap_x, gap_custom: s.gap_custom_x, vars: false, apply: false -%}
+    --callout-gap-x: var(--custom-gutter-x);
+  {%- endif -%}
+  {%- if s.limit_width -%}
+    {%- render 'props-style-max-width', max_width: s.max_width -%}
+  {%- endif -%}
+{%- endcapture -%}
+
+{%- capture wrapper_class -%}
+  vars-content-align-{{ content_align }}
+  break-words
+  {% unless request.visual_preview_mode %}
+    entrance-item entrance-standard
+  {% endunless %}
+  {{ class }}
+{%- endcapture -%}
+
+{%- comment -%} ── Media wrapper ── {%- endcomment -%}
+{%- capture media_block -%}
+  {%- if has_media -%}
+    <div
+      class="shrink-0 max-w-full {% if stack_mobile %}max-md:shrink{% endif %} {{ callout_color_class }}"
+      style="
+        {% if is_icon %}width: {{ media_width_css }}; max-width: 100%;{% endif %}
+        {{ callout_color_style }}
+      "
+    >
+      {{- media -}}
+    </div>
+  {%- endif -%}
+{%- endcapture -%}
+
+{%- comment -%} ── Layout ── {%- endcomment -%}
+{%- case layout -%}
+  {%- when 'stacked' -%}
+    <div
+      class="flex flex-col items-content-align text-content-align {{ wrapper_class }}"
+      style="{{ wrapper_style }}"
+      {{ attributes }}
+    >
+      {{ media_block }}
+      {{ title }}
+      {{ body }}
+    </div>
+
+  {%- when 'inline' -%}
+    <div
+      class="flex flex-col text-content-align items-content-align {{ wrapper_class }}"
+      style="{{ wrapper_style }}"
+      {{ attributes }}
+    >
+      <div
+        class="flex flex-row items-{{ vertical_align }} max-w-full"
+        style="gap: var(--callout-gap-x);"
+      >
+        {{ media_block }}
+        <div class="min-w-0 max-w-full">
+          {{ title }}
+        </div>
+      </div>
+      {{ body }}
+    </div>
+
+  {%- when 'all_inline' -%}
+    <div
+      class="flex flex-row flex-wrap items-{{ vertical_align }} text-content-align {{ wrapper_class }}"
+      style="{{ wrapper_style }} column-gap: var(--callout-gap-x);"
+      {{ attributes }}
+    >
+      {{ media_block }}
+      <div class="min-w-0 max-w-full">
+        {{ title }}
+      </div>
+      {{ body }}
+    </div>
+
+  {%- when 'below' -%}
+    <div
+      class="flex flex-col items-content-align text-content-align {{ wrapper_class }}"
+      style="{{ wrapper_style }}"
+      {{ attributes }}
+    >
+      {{ title }}
+      {{ body }}
+      {{ media_block }}
+    </div>
+
+  {%- when 'between' -%}
+    <div
+      class="flex flex-col items-content-align text-content-align {{ wrapper_class }}"
+      style="{{ wrapper_style }}"
+      {{ attributes }}
+    >
+      {{ title }}
+      {{ media_block }}
+      {{ body }}
+    </div>
+
+  {%- when 'side_left' -%}
+    <div
+      class="
+        flex flex-row items-{{ vertical_align }}
+        {{ wrapper_class }}
+        {% if stack_mobile %}max-md:flex-col max-md:items-content-align max-md:text-content-align{% endif %}
+      "
+      style="{{ wrapper_style }} column-gap: var(--callout-gap-x);"
+      {{ attributes }}
+    >
+      {%- if has_media -%}
+        <div
+          class="shrink-0 {% if stack_mobile %}max-md:shrink{% endif %} {{ callout_color_class }}"
+          style="width: var(--callout-media-width); max-width: 100%; {{ callout_color_style }}"
+        >
+          {{- media -}}
+        </div>
+      {%- endif -%}
+      <div class="flex flex-col flex-1 min-w-0 text-content-align" style="row-gap: var(--layout-gutter-y);">
+        {{ title }}
+        {{ body }}
+      </div>
+    </div>
+
+  {%- when 'side_right' -%}
+    <div
+      class="
+        flex flex-row-reverse items-{{ vertical_align }}
+        {{ wrapper_class }}
+        {% if stack_mobile %}max-md:flex-col max-md:items-content-align max-md:text-content-align{% endif %}
+      "
+      style="{{ wrapper_style }} column-gap: var(--callout-gap-x);"
+      {{ attributes }}
+    >
+      {%- if has_media -%}
+        <div
+          class="shrink-0 {% if stack_mobile %}max-md:shrink{% endif %} {{ callout_color_class }}"
+          style="width: var(--callout-media-width); max-width: 100%; {{ callout_color_style }}"
+        >
+          {{- media -}}
+        </div>
+      {%- endif -%}
+      <div class="flex flex-col flex-1 min-w-0 text-content-align" style="row-gap: var(--layout-gutter-y);">
+        {{ title }}
+        {{ body }}
+      </div>
+    </div>
+{%- endcase -%}

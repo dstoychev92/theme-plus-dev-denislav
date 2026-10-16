@@ -1,0 +1,20 @@
+[
+  {
+    "type": "paragraph",
+    "content": "The setting for 'show login link' must be enabled in your [customer accounts settings](/admin/settings/customer_accounts)."
+  },
+  {
+    "type": "select",
+    "id": "label_style",
+    "label": "Style",
+    "default": "icon",
+    "options": [
+      {"value": "icon", "label": "Icon"},
+      {"value": "text", "label": "Text"},
+      {"value": "both", "label": "Both"}
+    ]
+  },
+  [% if has_target_device != false %]
+    [% json 'schema/target-device-setting.jsonc', default_value: 'both' %]
+  [% endif %]
+]

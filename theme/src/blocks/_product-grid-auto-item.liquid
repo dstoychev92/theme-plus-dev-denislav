@@ -1,0 +1,16 @@
+{% doc %}
+  - Renders auto grid item holding product blocks
+
+  @param {string} [block_class] - classes for this block instance
+  @param {string} [block_style] - inline styles for this block instance
+{% enddoc %}
+
+[%- capture additional_blocks -%]
+  [% json 'schema/blocks-theme-node.jsonc' %]
+  [% json 'schema/blocks-product-inline.jsonc' %]
+  [% json 'schema/blocks-product-layout.jsonc' %]
+  [% json 'schema/blocks-product-extended.jsonc' %]
+  { "type": "@app" }
+[%- endcapture -%]
+
+[% render 'groups/grid-auto-item', additional_blocks: additional_blocks %]

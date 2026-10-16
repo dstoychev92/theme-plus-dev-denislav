@@ -1,0 +1,34 @@
+{% doc %}
+  - Renders wrapper for one product page block
+
+  Adds the hidden attribute when content is blank.
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {string} [content]
+  @param {object} [s] - settings object
+  @param {string} [style] - inline styles
+  @param {string} [tag] - defaults to 'div'
+  @param {string} [target_device] - 'mobile', 'desktop' or 'both', defaults to s.target_device then 'both'
+{% enddoc %}
+
+{%- liquid
+  assign target_device = target_device | default: s.target_device | default: 'both'
+  assign tag = tag | default: 'div'
+-%}
+
+{% capture class %}
+  {% render 'props-class-target-device', target_device: target_device %}
+  {{ class }}
+{% endcapture %}
+
+<{{ tag }}
+  class="{{ class | strip }}"
+  style="{{ style | strip }}"
+  {% if content == blank %}
+    hidden
+  {% endif %}
+  {{ attributes }}
+>
+  {{ content }}
+</{{ tag }}>

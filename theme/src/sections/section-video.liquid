@@ -1,0 +1,132 @@
+{% comment %}
+  Section: Video
+  Dedicated video section where video is the primary content (not a background).
+  Supports uploaded Shopify videos or external YouTube/Vimeo embeds.
+
+  video_source controls the source: "uploaded" uses Shopify's video picker,
+  "external_video" uses a YouTube/Vimeo URL. Autoplay and loop are optional.
+
+  Unlike section-banner with media_type: "video" (where video is a background
+  behind content), this section gives the video full focus with proper player
+  controls. No content overlay blocks — just the video.
+
+  Color scheme defaults to "scheme-opposite". Supports transparent header.
+{% endcomment %}
+
+{% liquid
+  assign video_source = section.settings.video_source
+  assign video = section.settings.video
+  assign video_link = section.settings.video_link
+  assign autoplay = section.settings.autoplay
+  assign loop = section.settings.loop
+  assign show_custom_controls = section.settings.custom_controls
+
+  if section.index0 == 0
+    assign preload = true
+  endif
+%}
+
+{% capture video_content %}
+  {% case video_source %}
+    {% when 'uploaded' %}
+      {% render 'core-video',
+        video: video,
+        id: section.id,
+        preload: preload,
+        autoplay: autoplay,
+        loop: loop,
+        show_custom_controls: show_custom_controls
+      %}
+
+    {% when 'external_video' %}
+      {% render 'video-external', video_type: video_link.type, video_id: video_link.id, autoplay: autoplay, loop: loop %}
+  {% endcase %}
+{% endcapture %}
+
+{% capture blocks %}
+  {% render 'core-section-background', content: video_content, s: section.settings %}
+{% endcapture %}
+
+{% capture class %}
+  relative entrance-container
+{% endcapture %}
+
+{% render 'core-section-wrapper',
+  s: section.settings,
+  content: blocks,
+  contain_controls_rhythm: true,
+  contain_disables_transparent_header: true,
+  contain_controls_background: true,
+  photoswipe: false,
+  class: class
+%}
+
+{% schema %}
+{
+  "name": "Video",
+  "class": "section-video",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "select",
+      "id": "video_source",
+      "label": "Type",
+      "default": "uploaded",
+      "options": [
+        {"value": "uploaded", "label": "Uploaded"},
+        {"value": "external_video", "label": "External URL"}
+      ]
+    },
+    {
+      "type": "video",
+      "id": "video",
+      "label": "Video",
+      "visible_if": "{{ section.settings.video_source == 'uploaded' }}"
+    },
+    {
+      "type": "video_url",
+      "id": "video_link",
+      "label": "Video URL",
+      "accept": ["youtube", "vimeo"],
+      "info": "Streaming video source from YouTube or Vimeo.",
+      "default": "https://www.youtube.com/watch?v=_9VUPq3SxOc",
+      "visible_if": "{{ section.settings.video_source == 'external_video' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Autoplay",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "loop",
+      "label": "Loop",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    [% json 'schema/section-banner-width-settings.jsonc', contain_section_label: 'Contain section' %]
+    [% json 'schema/section-rounding-settings.jsonc' %]
+    [% json 'schema/section-border-settings.jsonc' %]
+    {
+      "type": "header",
+      "content": "Appearance"
+    },
+    [% json 'schema/color-settings-section-banner.jsonc', default_color_scheme: 'scheme-opposite' %]
+    [% json 'schema/transparent-header-settings.jsonc' %]
+    [% json 'schema/section-target-device-settings.jsonc' %]
+  ],
+  "presets": [
+    {
+      "name": "Video",
+      "category": "Full width"
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "custom.overlays", "custom.drawers"]
+  }
+}
+{% endschema %}

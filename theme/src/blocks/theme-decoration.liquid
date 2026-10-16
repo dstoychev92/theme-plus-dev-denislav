@@ -1,0 +1,272 @@
+{% doc %}
+  - Renders decorative shape, line, or image
+
+  Uses the theme decoration settings unless decoration_custom is 'custom'.
+{% enddoc %}
+
+{% liquid
+  if block.settings.decoration_custom == 'custom'
+    assign s = block.settings
+  else
+    assign s = settings
+  endif
+%}
+
+{% capture class %}
+  wraps-inline-graphics
+  {% comment %} Disable entrance animations in visual preview mode to prevent "No preview available" error {% endcomment %}
+  {% unless request.visual_preview_mode %}
+    entrance-item entrance-standard scale-in-50
+  {% endunless %}
+{% endcapture %}
+
+{% render 'core-decoration', s: s, class: class, attributes: block.shopify_attributes %}
+
+{% schema %}
+{
+  "name": "Decoration",
+  "tag": null,
+  "settings": [
+    {
+      "type": "select",
+      "id": "decoration_custom",
+      "label": "Style",
+      "default": "default",
+      "options": [
+        {"label": "Default", "value": "default"},
+        {"label": "Custom", "value": "custom"}
+      ],
+      "info": "Configure the default in [theme settings](/editor?context=theme&category=Decoration) for 'Decoration accent' under 'Decoration'"
+    },
+    {
+      "type": "select",
+      "id": "decoration_type",
+      "label": "Style",
+      "default": "shape",
+      "options": [
+        {"label": "Shape", "value": "shape"},
+        {"label": "Line", "value": "line"},
+        {"label": "Image", "value": "image"}
+      ],
+      "visible_if": "{{ block.settings.decoration_custom == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "decoration_shape",
+      "label": "Shape",
+      "default": "line-dash",
+      "options": [
+        {"label": "Dash", "value": "line-dash", "group": "Lines"},
+        {"label": "Squiggle", "value": "line-squiggle", "group": "Lines"},
+        {"label": "Slash", "value": "line-slash", "group": "Lines"},
+        {"label": "Dot", "value": "fill-dot", "group": "Shapes"},
+        {"label": "Circle", "value": "fill-circle", "group": "Shapes"},
+        {"label": "Square", "value": "fill-square", "group": "Shapes"},
+        {"label": "Triangle", "value": "fill-triangle", "group": "Shapes"},
+        {"label": "Diamond", "value": "fill-diamond", "group": "Shapes"},
+        {"label": "Plus", "value": "fill-plus", "group": "Marks"},
+        {"label": "Cross", "value": "mark-cross", "group": "Marks"},
+        {"label": "Asterisk", "value": "mark-asterisk", "group": "Marks"},
+        {"label": "Sparkle", "value": "fill-sparkle", "group": "Marks"}
+      ],
+      "visible_if": "{{ block.settings.decoration_custom == 'custom' and block.settings.decoration_type == 'shape' }}"
+    },
+    {
+      "type": "select",
+      "id": "decoration_color",
+      "label": "Color",
+      "default": "content",
+      "options": [
+        {"value": "content", "label": "Text"},
+        {"value": "primary", "label": "Primary"},
+        {"value": "secondary", "label": "Link"},
+        {"value": "custom", "label": "Custom"}
+      ],
+      "visible_if": "{{ block.settings.decoration_custom == 'custom' and block.settings.decoration_type == 'shape' }}"
+    },
+    {
+      "type": "color",
+      "id": "decoration_color_custom",
+      "label": "Custom color",
+      "alpha": true,
+      "default": "#00000036",
+      "visible_if": "{{ block.settings.decoration_custom == 'custom' and block.settings.decoration_type == 'shape' and block.settings.decoration_color == 'custom' }}"
+    },
+    {
+      "type": "range",
+      "id": "decoration_opacity",
+      "label": "Opacity",
+      "default": 30,
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "visible_if": "{{ block.settings.decoration_custom == 'custom' and block.settings.decoration_type == 'shape' and block.settings.decoration_color != 'custom' }}"
+    },
+    {
+      "type": "image_picker",
+      "id": "decoration_image",
+      "label": "Image",
+      "visible_if": "{{ block.settings.decoration_custom == 'custom' and block.settings.decoration_type == 'image' }}"
+    },
+    {
+      "type": "range",
+      "id": "decoration_dash_weight",
+      "label": "Thickness",
+      "default": 3,
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "unit": "px",
+      "visible_if": "{{ block.settings.decoration_custom == 'custom' and block.settings.decoration_type == 'shape' and block.settings.decoration_shape contains 'line-' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "decoration_dash_rounded",
+      "label": "Rounded",
+      "default": false,
+      "visible_if": "{{ block.settings.decoration_custom == 'custom' and block.settings.decoration_type == 'shape' and block.settings.decoration_dash_weight > 1 and block.settings.decoration_shape contains 'line-' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_decoration_outline",
+      "label": "Outline",
+      "default": false,
+      "visible_if": "{{ block.settings.decoration_custom == 'custom' and block.settings.decoration_type == 'shape' and block.settings.decoration_shape contains 'fill-' }}"
+    },
+    {
+      "type": "color",
+      "id": "decoration_outline_color",
+      "label": "Outline color",
+      "alpha": true,
+      "default": "#00000080",
+      "visible_if": "{{ block.settings.decoration_custom == 'custom' and block.settings.decoration_type == 'shape' and block.settings.decoration_shape contains 'fill-' and block.settings.set_decoration_outline }}"
+    },
+    {
+      "type": "range",
+      "id": "decoration_width",
+      "label": "Width",
+      "default": 30,
+      "min": 1,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "visible_if": "{{ block.settings.decoration_custom == 'custom' and block.settings.decoration_type != 'line' }}"
+    },
+
+    {
+      "type": "select",
+      "id": "line_direction",
+      "label": "Direction",
+      "default": "horizontal",
+      "options": [
+        {"value": "horizontal", "label": "→"},
+        {"value": "vertical", "label": "↓"},
+      ],
+      "visible_if": "{{ block.settings.decoration_custom == 'custom' and block.settings.decoration_type == 'line' }}"
+    },
+    {
+      "type": "header",
+      "content": "Width",
+      "visible_if": "{{block.settings.decoration_custom == 'custom' and block.settings.decoration_type == 'line' and block.settings.line_direction == 'horizontal' }}"
+    },
+    {
+      "type": "header",
+      "content": "Height",
+      "visible_if": "{{ block.settings.decoration_custom == 'custom' and block.settings.decoration_type == 'line' and block.settings.line_direction == 'vertical' }}"
+    },
+    {
+      "type": "select",
+      "id": "line_unit",
+      "label": "Unit",
+      "default": "percent",
+      "visible_if": "{{ block.settings.decoration_custom == 'custom' and block.settings.decoration_type == 'line' }}",
+      "options": [
+        {"value": "percent", "label": "%"},
+        {"value": "pixel", "label": "px"},
+      ]
+    },
+    {
+      "type": "range",
+      "id": "line_px",
+      "label": "Size",
+      "unit": "px",
+      "min": 0,
+      "max": 200,
+      "step": 2,
+      "default": 100,
+      "visible_if": "{{ block.settings.decoration_custom == 'custom' and block.settings.decoration_type == 'line' and block.settings.line_unit == 'pixel' }}"
+    },
+    {
+      "type": "range",
+      "id": "line_percent",
+      "label": "Size",
+      "unit": "%",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "default": 100,
+      "visible_if": "{{ block.settings.decoration_custom == 'custom' and block.settings.decoration_type == 'line' and block.settings.line_unit == 'percent' }}"
+    },
+    {
+      "type": "header",
+      "content": "Style",
+      "visible_if": "{{ block.settings.decoration_custom == 'custom' and block.settings.decoration_type == 'line' }}"
+    },
+    {
+      "type": "select",
+      "id": "line_color",
+      "label": "Color",
+      "default": "content",
+      "options": [
+        {"value": "content", "label": "Text"},
+        {"value": "secondary", "label": "Link"},
+        {"value": "custom", "label": "⋯"}
+      ],
+      "visible_if": "{{ block.settings.decoration_custom == 'custom' and block.settings.decoration_type == 'line' }}"
+    },
+    {
+      "type": "color",
+      "id": "line_color_custom",
+      "label": "Custom color",
+      "alpha": true,
+      "default": "#00000036",
+      "visible_if": "{{ block.settings.decoration_custom == 'custom' and block.settings.decoration_type == 'line' and block.settings.line_color == 'custom' }}"
+    },
+    {
+      "type": "range",
+      "id": "line_opacity",
+      "label": "Opacity",
+      "default": 30,
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "visible_if": "{{ block.settings.decoration_custom == 'custom' and block.settings.decoration_type == 'line' and block.settings.line_color != 'custom' }}"
+    },
+    {
+      "type": "range",
+      "id": "line_thickness",
+      "label": "Thickness",
+      "unit": "px",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "default": 1,
+      "visible_if": "{{ block.settings.decoration_custom == 'custom' and block.settings.decoration_type == 'line' }}"
+    },
+
+    {
+      "type": "header",
+      "content": "Offset"
+    },
+    [% json 'schema/offset-settings.jsonc' %]
+  ],
+  "presets": [
+    {
+      "name": "Decoration",
+      "category": "Basic"
+    }
+  ]
+}
+{% endschema %}

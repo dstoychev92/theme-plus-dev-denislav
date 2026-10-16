@@ -1,0 +1,94 @@
+{% doc %}
+  - Renders menu links with optional image inside a megamenu
+
+  Sits inside _megamenu.
+{% enddoc %}
+
+{% liquid
+  assign linklist = block.settings.linklist
+%}
+
+{% if block.settings.custom_col_span %}
+  {% capture style %}
+    --col-span-desktop: {{ block.settings.col_span_lg }};
+    --col-span-tablet: {{ block.settings.col_span_md }};
+  {% endcapture %}
+  {% capture class %}
+    md:col-span-[--col-span-tablet]
+    lg:col-span-[--col-span-desktop]
+  {% endcapture %}
+{% endif %}
+
+{% render 'header-megamenu-linklist',
+  linklist: linklist,
+  attributes: block.shopify_attributes,
+  s: block.settings,
+  class: class,
+  style: style
+%}
+
+{% schema %}
+{
+  "name": "Links",
+  "tag": null,
+  "settings": [
+    {
+      "type": "link_list",
+      "label": "Links",
+      "id": "linklist",
+      "default": "main-menu"
+    },
+    {
+      "type": "header",
+      "content": "Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image",
+      "info": "Image fills the entire width when the menu has more than one level."
+    },
+    [% json 'schema/aspect-ratio-settings.jsonc', aspect_ratio_max: 5 %]
+    {
+      "type": "url",
+      "id": "image_href",
+      "label": "Link"
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "paragraph",
+      "content": "Level 1"
+    },
+    [% json 'schema/type-preset.jsonc', default_preset: 'btn', id_suffix: 'megamenu_level_1', label: 'Style' %]
+    [% json 'schema/type-custom.jsonc', resize: true, default_resize: 'md', resize_label: 'Size', default_font: 'body', default_size: '5', id_suffix: 'megamenu_level_1' %]
+    [% json 'schema/color-dropdown.jsonc', id_suffix: 'megamenu_level_1', default_color: 'muted', muted: true %]
+
+    {
+      "type": "paragraph",
+      "content": "Level 2"
+    },
+    [% json 'schema/type-preset.jsonc', default_preset: 'p', id_suffix: 'megamenu_level_2', label: 'Style' %]
+    [% json 'schema/type-custom.jsonc', resize: true, default_resize: 'md', resize_label: 'Size', default_font: 'body', default_size: '5', id_suffix: 'megamenu_level_2' %]
+    [% json 'schema/color-dropdown.jsonc', id_suffix: 'megamenu_level_2', default_color: 'content', muted: true %]
+
+    {
+      "type": "paragraph",
+      "content": "Level 3"
+    },
+    [% json 'schema/type-preset.jsonc', default_preset: 'p', id_suffix: 'megamenu_level_3', label: 'Style' %]
+    [% json 'schema/type-custom.jsonc', resize: true, default_resize: 'sm', resize_label: 'Size', default_font: 'body', default_size: '5', id_suffix: 'megamenu_level_3' %]
+    [% json 'schema/color-dropdown.jsonc', id_suffix: 'megamenu_level_3', default_color: 'content', muted: true %]
+
+    [% json 'schema/grid-col-span-settings.jsonc' %]
+
+  ],
+  "presets": [
+    {
+      "name": "Links"
+    }
+  ]
+}
+{% endschema %}

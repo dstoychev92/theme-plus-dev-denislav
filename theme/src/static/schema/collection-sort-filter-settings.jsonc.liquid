@@ -1,0 +1,83 @@
+[
+  {
+    "type": "header",
+    "content": "Controls"
+  },
+  {
+    "type": "checkbox",
+    "id": "enable_sorting",
+    "label": "Sort by",
+    "default": true
+  },
+  {
+    "type": "checkbox",
+    "id": "enable_layout_buttons",
+    "label": "Grid toggle",
+    "default": true
+  },
+  {
+    "type": "header",
+    "content": "Filters"
+  },
+  {
+    "type": "checkbox",
+    "id": "enable_filters",
+    "label": "Enable filters",
+    "default": true
+  },
+  {
+    "type": "checkbox",
+    "id": "show_products_count",
+    "label": "Product count",
+    "default": true
+  },
+  {
+    "type": "range",
+    "id": "expanded_filters_count",
+    "min": 0,
+    "max": 20,
+    "step": 1,
+    "label": "Expanded filters",
+    "info": "Limit the filter groups expanded on page load.",
+    "default": 6
+  },
+  {
+    "type": "range",
+    "id": "visible_filter_options_limit",
+    "min": 0,
+    "max": 20,
+    "step": 1,
+    "label": "Visible options",
+    "info": "Limit the filter values displayed before a \"Show all\" toggle",
+    "default": 6
+  },
+  {
+    "type": "select",
+    "id": "filter_mode",
+    "label": "Desktop style",
+    "default": "sidebar",
+    "info": "Mobile filters show in a drawer.",
+    "options": [
+      {"value": "sidebar", "label": "Sidebar"},
+      {"value": "drawer", "label": "Drawer"},
+    ]
+  },
+  {
+    "type": "checkbox",
+    "id": "filter_sidebar_open_by_default",
+    "label": "Sidebar open",
+    "default": true,
+    "visible_if": "{{ section.settings.filter_mode == 'sidebar' }}"
+  },
+  {
+    "type": "select",
+    "id": "out_of_stock_style",
+    "label": "Out of stock",
+    "default": "checkbox",
+    "info": "Toggle presents availability as a one-line Show / Hide control.",
+    "options": [
+      {"value": "checkbox", "label": "Checkbox"},
+      {"value": "toggle", "label": "Toggle"},
+    ]
+  }
+]

@@ -1,0 +1,19 @@
+[
+  {
+    "type": "checkbox",
+    "id": "set_parallax",
+    "label": "Set parallax amount",
+    "default": false
+  },
+  {
+    "type": "range",
+    "id": "parallax",
+    "min": -100,
+    "max": 100,
+    "step": 2,
+    "label": "Parallax amount",
+    "default": [= default_parallax | default: 0 =],
+    "info": "Positive values move the background in the opposite direction of the scroll direction. Negative values move the background in the same direction as the scroll direction.",
+    "visible_if": "{{ [= context =]set_parallax }}"
+  }
+]

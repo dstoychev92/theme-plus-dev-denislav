@@ -1,0 +1,20 @@
+{% doc %}
+  - Renders flex row or column holding flex items
+{% enddoc %}
+
+[%- capture additional_blocks -%]
+  { "type": "_flex-item" }
+[%- endcapture -%]
+
+[%- capture additional_presets -%]
+  {
+    "name": "Flexbox",
+    "category": "Pro",
+    "blocks": [
+      { "type": "_flex-item" },
+      { "type": "_flex-item" }
+    ]
+  }
+[%- endcapture -%]
+
+[% render 'groups/flex', additional_blocks: additional_blocks, additional_presets: additional_presets %]

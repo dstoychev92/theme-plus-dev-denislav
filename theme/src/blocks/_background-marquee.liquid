@@ -1,0 +1,133 @@
+{% doc %}
+  - Renders rotated scrolling marquee across a background layer
+
+  Sits inside _background or _section-background. Selecting the block in the theme editor pauses the marquee.
+{% enddoc %}
+
+{% capture marquee_class %}
+  absolute origin-center -translate-y-1/2 rotate-[--rotation] top-[--top-mobile] -left-1/2 -right-1/2 md:top-[--top]
+  whitespace-nowrap !z-20 overflow-hidden select-none pointer-events-none
+  {% if block.settings.set_color %}
+    text-{{ block.settings.color | default: 'content' }}
+  {% else %}
+    text-content
+  {% endif %}
+{% endcapture %}
+
+{% capture marquee_style %}
+  {% render 'props-style-padding', s: block.settings, apply: false %}
+  --marquee-pt: var(--layout-buffer);
+  --marquee-pb: var(--layout-buffer);
+  --rotation: {{ block.settings.rotation }}deg;
+  --top: {{ block.settings.top }}%;
+  --top-mobile: {{ block.settings.top_mobile }}%;
+  {% if block.settings.set_color and block.settings.color == 'custom' %}
+    --color-custom-text: {{ block.settings.color_custom }};
+  {% endif %}
+{% endcapture %}
+
+{% capture marquee_content %}
+  {% content_for "blocks" %}
+{% endcapture %}
+
+{% capture attributes %}
+  {% if request.design_mode %}
+    @shopify:block:select="$marquee.pause()"
+    @shopify:block:deselect="$marquee.play()"
+  {% endif %}
+  {{ block.shopify_attributes }}
+{% endcapture %}
+
+{% render 'marquee',
+  s: block.settings,
+  content: marquee_content,
+  class: marquee_class,
+  style: marquee_style,
+  attributes: attributes
+%}
+
+{% schema %}
+{
+  "name": "Marquee",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Color"
+    },
+    [% json 'schema/color-dropdown.jsonc', optional: true, custom: true, muted: true %]
+    {
+      "type": "range",
+      "id": "speed",
+      "label": "Speed",
+      "min": -10,
+      "max": 10,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "header",
+      "content": "Text"
+    },
+    [% json 'schema/type-preset.jsonc', default_preset: 'h5', label: 'Text style' %]
+    [% json 'schema/type-custom.jsonc', resize: true, default_font: 'heading', default_size: '9' %]
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    [% json 'schema/grid-gap-setting.jsonc', default_gap: 'lg' %]
+    [% json 'schema/padding-settings.jsonc', default_padding: 'md' %]
+    {
+      "type": "select",
+      "id": "block_alignment",
+      "label": "Block alignment",
+      "info": "Relevant when blocks are different heights",
+      "default": "middle",
+      "options": [
+        {"value": "top", "label": "⤒"},
+        {"value": "middle", "label": "—"},
+        {"value": "bottom", "label": "⤓"}
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Positioning"
+    },
+    [% json 'schema/rotation-setting.jsonc' %]
+    [% json 'schema/position-settings.jsonc', left: false %]
+  ],
+  "presets": [
+    {
+      "name": "Marquee",
+      "settings": {
+        "rotation": 10
+      },
+      "blocks": [
+        {
+          "type": "_background-spotlight-text",
+          "settings": {
+            "text": "Act Now"
+          }
+        },
+        {
+          "type": "_background-spotlight-text",
+          "settings": {
+            "text": "Limited time only"
+          }
+        }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "type": "_background-spotlight-text"
+    },
+    {
+      "type": "_background-marquee-image"
+    },
+    {
+      "type": "theme-decoration"
+    }
+  ]
+}
+{% endschema %}

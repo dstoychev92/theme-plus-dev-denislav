@@ -1,0 +1,63 @@
+{% doc %}
+  - Renders tab list and panels from _tab blocks
+
+  Each _tab block renders its own button, and core-tabs moves it into the tab list.
+{% enddoc %}
+
+[%- capture additional_blocks -%]
+  {
+    "type": "_tab"
+  }
+[%- endcapture -%]
+[%- capture additional_presets -%]
+  {
+    "name": "Tabs",
+    "category": "Layout",
+    "blocks": [
+      {
+        "type": "_tab",
+        "settings": {
+          "title": "Returns"
+        },
+        "blocks": [
+          {
+            "type": "theme-richtext",
+            "settings": {
+              "text": "<p>Explain how returns or exchanges work and how customers can start one. Link to your return policy for the full details.</p>"
+            }
+          }
+        ]
+      },
+      {
+        "type": "_tab",
+        "settings": {
+          "title": "Security"
+        },
+        "blocks": [
+          {
+            "type": "theme-richtext",
+            "settings": {
+              "text": "<p>Describe the payment methods you accept and how transactions and customer data are kept secure.</p>"
+            }
+          }
+        ]
+      },
+      {
+        "type": "_tab",
+        "settings": {
+          "title": "Support"
+        },
+        "blocks": [
+          {
+            "type": "theme-richtext",
+            "settings": {
+              "text": "<p>Tell customers how to reach you with questions — add your support email, hours, or a link to your contact page.</p>"
+            }
+          }
+        ]
+      }
+    ]
+  }
+[%- endcapture -%]
+
+[% render 'groups/tabs', additional_blocks: additional_blocks, additional_presets: additional_presets %]

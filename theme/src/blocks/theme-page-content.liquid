@@ -1,0 +1,72 @@
+{% doc %}
+  - Renders content of a selected page
+
+  Renders an empty wrapper when no page is selected. The wrapper keeps the block selectable in the editor.
+{% enddoc %}
+
+{% liquid
+  assign page = block.settings.page
+  assign limit_width = block.settings.limit_width
+  assign max_width = block.settings.max_width
+  assign size = block.settings.richtext_size | default: 'md'
+%}
+
+{% capture style %}
+  {% if limit_width %}
+    {% render 'props-style-max-width', max_width: max_width %}
+  {% endif %}
+
+  {% if block.settings.set_color and block.settings.color == 'custom' %}
+    --color-custom-text: {{ block.settings.color_custom }};
+  {% endif %}
+{% endcapture %}
+
+{% capture class %}
+  w-full prose type-resize-all-{{ size }}
+  {% if block.settings.set_color %}
+    text-{{ block.settings.color | default: 'content' }}
+  {% else %}
+    text-default
+  {% endif %}
+  {% comment %} Disable entrance animations in visual preview mode to prevent "No preview available" error {% endcomment %}
+  {% unless request.visual_preview_mode %}
+    entrance-item entrance-standard
+  {% endunless %}
+{% endcapture %}
+
+{% if page != blank %}
+  <div class="{{ class }}" style="{{ style }}" {{ block.shopify_attributes }}>
+    {{ page.content }}
+  </div>
+{% else %}
+  {% comment %} Empty wrapper keeps the block selectable in the editor when no page is picked. {% endcomment %}
+  <div {{ block.shopify_attributes }}></div>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Page content",
+  "tag": null,
+  "settings": [
+    {
+      "type": "page",
+      "id": "page",
+      "label": "Page",
+      "info": "Render tables or legacy app content from a page."
+    },
+    [% json 'schema/type-richtext-resize-all-setting.jsonc', default: 'md' %]
+    [% json 'schema/width-limit-setting.jsonc' %]
+    {
+      "type": "header",
+      "content": "Color"
+    },
+    [% json 'schema/color-dropdown.jsonc', optional: true, custom: true, muted: true %]
+  ],
+  "presets": [
+    {
+      "name": "Page content",
+      "category": "Content"
+    }
+  ]
+}
+{% endschema %}

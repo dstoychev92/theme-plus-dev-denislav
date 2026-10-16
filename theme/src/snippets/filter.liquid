@@ -1,0 +1,185 @@
+{% doc %}
+  - Renders one filter group, picking the control for its type
+
+  A group with no applicable values hides itself. The price range always applies, so it always
+  shows. Availability becomes filter-segmented when section.settings.out_of_stock_style is
+  'toggle' and the translated labels are short.
+
+  @param {string} [base_id] - prefix for element ids, defaults to 'filter'
+  @param {string} [content] - rendered control in place of the one picked by filter.type
+  @param {boolean} [expanded] - opens the group on load, forced on when the filter has active values
+  @param {filter} [filter]
+  @param {string} [form] - id of the form the inputs belong to
+  @param {string} [label] - group heading, defaults to filter.label
+  @param {section} [section]
+  @param {boolean} [visible] - forces the group to show
+  @param {number} [visible_limit] - items shown before the Show all button, defaults to 6
+{% enddoc %}
+
+{% liquid
+  assign label = label | default: filter.label
+
+  # Number of items to show initially before showing the "Show all" button
+  assign visible_limit = visible_limit | default: 6
+
+  # Hide the filter if it has no enabled values (i.e. none of the values are applicable to the current filter set)
+  assign visible = visible | default: false
+
+  # Always show price range filter since it always applies
+  if filter.type == 'price_range'
+    assign visible = true
+  endif
+
+  for filter_value in filter.values
+    if filter_value.count > 0
+      assign visible = true
+      break
+    endif
+  endfor
+
+  if visible
+    # Whether the filter is expanded by default (i.e. because it has active values)
+    assign expanded = expanded | default: false
+  else
+    assign expanded = false
+  endif
+
+  if label == blank
+    assign expanded = true
+    assign label = false
+  endif
+
+  #
+  # Filter active state
+  #
+
+  case filter.type
+    when 'price_range'
+      if filter.max_value.value < filter.range_max or filter.min_value.value > 0
+        assign expanded = true
+      endif
+    else
+      if filter.active_values.size > 0
+        assign expanded = true
+      endif
+  endcase
+
+  #
+  # With the "Out of stock: Toggle" setting, availability collapses to a
+  # one-line "Out of stock" Show | Hide segmented control — but only when the
+  # translated labels are short enough to share a row; longer locales fall
+  # back to the checkbox list.
+  #
+
+  assign segmented = false
+  assign out_of_stock_style = section.settings.out_of_stock_style | default: 'checkbox'
+  if visible and filter.param_name == 'filter.v.availability' and out_of_stock_style == 'toggle'
+    if filter.values.size == 2
+      assign segmented_label = 'collection.filters.out_of_stock' | t
+      assign segment_label_a = 'collection.filters.show' | t
+      assign segment_label_b = 'collection.filters.hide' | t
+
+      assign segmented_label_size = segmented_label | strip | size
+      assign segment_a_size = segment_label_a | strip | size
+      assign segment_b_size = segment_label_b | strip | size
+      if segmented_label_size <= 16 and segment_a_size <= 8 and segment_b_size <= 8
+        assign segmented = true
+      endif
+    endif
+  endif
+%}
+
+{% if segmented %}
+  {% render 'filter-segmented', filter: filter, label: segmented_label, base_id: base_id, form: form %}
+{% else %}
+  <div
+    x-disclosure="
+      {
+        isExpanded: {{ expanded }}
+      }
+    "
+    class="flex flex-col"
+    key="{{ filter.param_name }}-{{ expanded }}"
+    {% if visible == false %}
+      hidden
+    {% endif %}
+  >
+    {% if label %}
+      <h3 class="w-full">
+        <button
+          type="button"
+          x-disclosure:button
+          aria-label="{{ label }}"
+          class="
+            cursor-pointer flex-row-center justify-between gap-r5 text-start
+            w-full relative z-0 h-row-md
+          "
+        >
+          {% render 'core-text-preset', text: label, default_type_preset: 'accordion' %}
+
+          <span
+            class="
+              flex flex-center flex-none
+              transition-transform duration-300
+              aspect-square w-[--checkbox-size]
+              origin-center
+              {% if expanded %}
+                rotate-90
+              {% else %}
+               rtl:rotate-180
+              {% endif %}
+            "
+            :class="$disclosure.isExpanded ? '!rotate-90' : '!rotate-0 rtl:!rotate-180'"
+            role="presentation"
+          >
+            {% render 'core-icon', icon: 'stroke-chevron-right', size: 'sm' %}
+          </span>
+        </button>
+      </h3>
+    {% endif %}
+
+    <div
+      x-collapse.duration.400ms
+      class="!ease-in-out nojs:!block"
+      x-disclosure:panel
+      {% unless expanded %}
+        x-cloak
+      {% endunless %}
+    >
+      {% comment %} Need internal div to allow collapse to work right {% endcomment %}
+      <div class="h-fit pt-[calc(var(--filter-group-gap)/2)]">
+        {% if content %}
+          {{ content }}
+        {% else %}
+          {%- case filter.type -%}
+            {%- when 'list' -%}
+              {%- if filter.presentation == 'swatch' -%}
+                {% render 'filter-list-swatches',
+                  base_id: base_id,
+                  filter: filter,
+                  form: form,
+                  visible_limit: visible_limit
+                %}
+              {%- elsif filter.presentation == 'image' -%}
+                {% render 'filter-list-images',
+                  base_id: base_id,
+                  filter: filter,
+                  form: form,
+                  visible_limit: visible_limit
+                %}
+              {%- else -%}
+                {% render 'filter-list', base_id: base_id, filter: filter, form: form, visible_limit: visible_limit %}
+              {%- endif -%}
+
+            {%- when 'boolean' -%}
+              {% comment %} Boolean filters expose their yes/no pair through filter.values just like list filters {% endcomment %}
+              {% render 'filter-list', base_id: base_id, filter: filter, form: form, visible_limit: visible_limit %}
+
+            {%- when 'price_range' -%}
+              {% render 'filter-price', base_id: base_id, filter: filter, form: form %}
+          {%- endcase -%}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endif %}

@@ -1,0 +1,40 @@
+{% doc %}
+  - Renders highlighted text split into words for scroll animation
+
+  Private, only offered by section-text-spotlight.
+{% enddoc %}
+
+{% capture attributes %}
+  {{ block.shopify_attributes }}
+{% endcapture %}
+
+{% capture split_text_attributes %}
+  data-scroll-stagger-item
+{% endcapture %}
+
+{% capture class %}
+  *:auto-stagger-animations-[--entrance-animation-stagger]
+{% endcapture %}
+
+{% render 'inline-highlight-text',
+  s: block.settings,
+  attributes: attributes,
+  split_text_attributes: split_text_attributes,
+  class: class
+%}
+
+{% schema %}
+{
+  "name": "Spotlight text",
+  "tag": null,
+  "settings": [
+    [% json 'schema/highlight-text-settings.jsonc' %]
+  ],
+  "presets": [
+    {
+      "name": "Spotlight text",
+      "category": "Basic"
+    }
+  ]
+}
+{% endschema %}

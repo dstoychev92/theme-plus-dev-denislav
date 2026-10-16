@@ -1,0 +1,40 @@
+{% doc %}
+  - Builds sibling product URL
+
+  With preserve_selected_options, the URL gains an option_values query holding the sibling
+  values whose option name and value name match the current selection. Unmatched options are
+  skipped.
+
+  @param {boolean} [preserve_selected_options]
+  @param {product} product
+  @param {product} sibling
+{% enddoc %}
+
+{%- liquid
+  assign sibling_url = sibling.url
+  assign sibling_option_value_ids = ''
+
+  if preserve_selected_options
+    for product_option in product.options_with_values
+      assign sibling_option = sibling.options_with_values[forloop.index0]
+      if sibling_option.name == product_option.name
+        assign selected_value_name = product_option.selected_value.name | default: product_option.selected_value
+        assign sibling_value = sibling_option.values | where: 'name', selected_value_name | first
+        if sibling_value != blank
+          assign sibling_option_value_ids = sibling_option_value_ids | append: sibling_value.id | append: ','
+        endif
+      endif
+    endfor
+  endif
+
+  if sibling_option_value_ids != ''
+    assign sibling_option_value_ids = sibling_option_value_ids | replace_last: ',', ''
+    assign joiner = '?'
+    if sibling_url contains '?'
+      assign joiner = '&'
+    endif
+    assign sibling_url = sibling_url | append: joiner | append: 'option_values=' | append: sibling_option_value_ids
+  endif
+
+  echo sibling_url
+-%}

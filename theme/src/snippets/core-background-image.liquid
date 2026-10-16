@@ -1,0 +1,229 @@
+{% doc %}
+  - Renders background image with optional mobile source and loading placeholder
+
+  The loading placeholder renders only when loading is 'lazy' and preload is false.
+
+  @param {number} [aspect_ratio] - defaults to s.aspect_ratio when s.set_aspect_ratio is on, then image.aspect_ratio, then 1.7
+  @param {number} [aspect_ratio_mobile] - defaults to s.aspect_ratio_mobile when s.set_aspect_ratio_mobile is on, then image_mobile.aspect_ratio, then 1.7
+  @param {string} [attributes]
+  @param {block} [block]
+  @param {string} [class] - The classes
+  @param {string} [fetchpriority] - defaults to 'auto', 'high' when preload is true
+  @param {string} [height] - 'image' sizes the element from the aspect ratio, any other value fills the parent, defaults to s.height
+  @param {string} [height_mobile] - 'image' sizes the element from the mobile aspect ratio below md, defaults to s.height_mobile
+  @param {string} [id] - defaults to id_prefix with '-image'
+  @param {string} [id_prefix] - prefix for the image ID, defaults to block.id, then section.id
+  @param [image] - defaults to s.image. false renders image_mobile for both sources
+  @param {image} [image_mobile] - image below the md breakpoint, defaults to s.image_mobile
+  @param {string} [image_style] - inline styles for the loading placeholder image
+  @param {string} [loading] - defaults to 'lazy', 'eager' when preload is true
+  @param [placeholder] - placeholder_svg_tag name, or false for none, defaults to 'lifestyle-1'
+  @param {boolean} [preload] - defaults to true in the first section
+  @param {object} [s] - settings object
+  @param {section} [section]
+  @param {boolean} [set_height] - applies height, defaults to s.set_height, then true
+  @param {boolean} [set_height_mobile] - applies height_mobile, defaults to s.set_height_mobile, then true
+  @param {string} [sizes] - defaults to one-column image-grid-sizes
+  @param {string} [style] - inline styles
+  @param [width] - pixel width for core-image
+  @param {string} [widths] - defaults to one-column image-grid-widths
+{% enddoc %}
+
+{% liquid
+  assign image = image | default: s.image, allow_false: true
+  assign image_mobile = image_mobile | default: s.image_mobile, allow_false: true
+  assign placeholder = placeholder | default: 'lifestyle-1', allow_false: true
+
+  assign default_aspect_ratio = 1.7
+
+  assign set_aspect_ratio = s.set_aspect_ratio | default: true, allow_false: true
+  if set_aspect_ratio
+    assign aspect_ratio = aspect_ratio | default: s.aspect_ratio | default: image.aspect_ratio | default: default_aspect_ratio
+  else
+    assign aspect_ratio = aspect_ratio | default: image.aspect_ratio | default: default_aspect_ratio
+  endif
+
+  assign set_aspect_ratio_mobile = s.set_aspect_ratio_mobile | default: true, allow_false: true
+  if set_aspect_ratio_mobile
+    assign aspect_ratio_mobile = aspect_ratio_mobile | default: s.aspect_ratio_mobile | default: image_mobile.aspect_ratio | default: default_aspect_ratio
+  else
+    assign aspect_ratio_mobile = aspect_ratio_mobile | default: image_mobile.aspect_ratio | default: default_aspect_ratio
+  endif
+
+  assign height = height | default: s.height, allow_false: true
+  assign set_height = set_height | default: s.set_height, allow_false: true | default: true, allow_false: true
+
+  assign height_mobile = height_mobile | default: s.height_mobile, allow_false: true
+  assign set_height_mobile = set_height_mobile | default: s.set_height_mobile, allow_false: true | default: true, allow_false: true
+
+  assign mobile_height_overrides = false
+  if set_height_mobile and height_mobile != blank and height_mobile != 'image'
+    assign mobile_height_overrides = true
+  endif
+
+  if id == blank
+    assign id_prefix = id_prefix | default: block.id | default: section.id
+    assign id = id_prefix | append: '-image'
+  endif
+
+  if preload == null and section.index0 == 0
+    assign preload = true
+  endif
+
+  assign loading = loading | default: 'lazy'
+  assign fetchpriority = fetchpriority | default: 'auto'
+
+  if preload == true
+    assign loading = 'eager'
+    assign fetchpriority = 'high'
+  endif
+%}
+
+{% comment %}
+  <img> tag sizes and srcset are populated based on the number of section columns and section width
+  For example, a pair section would have 2 lg and md columns, but only 1 sm column for mobile whereas a full width
+  banner section would have 1 column for all screen sizes.
+{% endcomment %}
+{% unless sizes != blank %}
+  {%- capture sizes -%}
+    {%- render 'image-grid-sizes',
+      columns_lg: 1,
+      columns_md: 1,
+      columns_sm: 1
+    -%}
+  {%- endcapture -%}
+{% endunless %}
+
+{% unless widths != blank %}
+  {%- capture widths -%}
+    {%- render 'image-grid-widths',
+      columns_lg: 1,
+      columns_md: 1,
+      columns_sm: 1
+    -%}
+  {%- endcapture -%}
+{% endunless %}
+
+{% capture attributes %}
+  x-data="
+    {
+      canShowImages: false,
+      get images() {
+        return $el.querySelectorAll('img')
+      },
+      get areAllImagesLoaded() {
+        return Array.from(this.images).every(image => image.complete)
+      }
+    }
+  "
+  @load.capture="if (areAllImagesLoaded) { canShowImages = true }"
+  x-init="if (areAllImagesLoaded) { canShowImages = true }"
+  {{ attributes }}
+{% endcapture %}
+
+{% if loading == 'lazy' and preload == false %}
+  {% capture loading_placeholder %}
+    {% capture loading_placeholder_wrapper_class %}
+      absolute inset-0 size-full
+      {% comment %}
+        When JS is disabled, show placeholder _under_ the main image so that the main
+        image is displayed once it loads.
+      {% endcomment %}
+      z-0
+    {% endcapture %}
+    {% capture loading_placeholder_attributes %}
+      x-show="!canShowImages"
+      x-transition:leave="transition-[opacity,transform] duration-500"
+      x-transition:leave-start="scale-100 opacity-100"
+      x-transition:leave-end="scale-0 opacity-0"
+    {% endcapture %}
+
+    {% render 'image-loading-placeholder',
+      image: image,
+      image_mobile: image_mobile,
+      wrapper_class: loading_placeholder_wrapper_class,
+      image_style: image_style,
+      attributes: loading_placeholder_attributes,
+      preload: true,
+      auto_show: false
+    %}
+  {% endcapture %}
+{% endif %}
+
+{% capture image_class %}
+  size-full inset-0 !z-10
+  {% if request.visual_preview_mode %}
+    {% comment %} In visual preview mode there is nothing to "extend" the container, so we want the placeholder to do it, otherwise nothing appears {% endcomment %}
+    relative
+  {% else %}
+    absolute
+  {% endif %}
+{% endcapture %}
+
+<background-image
+  class="
+    {{ class }} block overflow-hidden w-full
+    {% if height == 'image' and set_height %}
+      h-auto
+      md:aspect-[var(--image-aspect-ratio)]
+      {% unless mobile_height_overrides %}
+        {% # The bare aspect keeps the image band on mobile only while no mobile height overrides it, since an aspect box adds intrinsic height under max-md:h-full %}
+        aspect-[var(--mobile-image-aspect-ratio,var(--image-aspect-ratio))]
+      {% endunless %}
+    {% else %}
+      h-full
+    {% endif %}
+
+    {% if height_mobile == 'image' and set_height_mobile %}
+      max-md:h-auto
+      max-md:aspect-[var(--mobile-image-aspect-ratio,var(--image-aspect-ratio))]
+    {% else %}
+      max-md:h-full
+    {% endif %}
+  "
+  style="
+    {{ style }}
+    {% if height == 'image' and set_height %}
+      {% if aspect_ratio != 0 and aspect_ratio != blank %}
+        --image-aspect-ratio: {{ aspect_ratio }};
+      {% endif %}
+      {% if image_mobile != blank %}
+        {% if aspect_ratio_mobile != 0 and aspect_ratio_mobile != blank %}
+          --mobile-image-aspect-ratio: {{ aspect_ratio_mobile }};
+        {% endif %}
+      {% else %}
+          --mobile-image-aspect-ratio: {{ aspect_ratio }};
+      {% endif %}
+    {% endif %}
+
+    {% if height_mobile == 'image' and set_height_mobile %}
+      {% if image_mobile != blank %}
+        {% if aspect_ratio_mobile != 0 and aspect_ratio_mobile != blank %}
+          --mobile-image-aspect-ratio: {{ aspect_ratio_mobile }};
+        {% endif %}
+      {% else %}
+        --mobile-image-aspect-ratio: {{ aspect_ratio }};
+      {% endif %}
+    {% endif %}
+  "
+  {{ attributes }}
+>
+  {% render 'core-image',
+    id: id,
+    image: image,
+    image_mobile: image_mobile,
+    class: image_class,
+    sizes: sizes,
+    widths: widths,
+    width: width,
+    preload: preload,
+    loading: loading,
+    fetchpriority: fetchpriority,
+    cover: true,
+    aspect_ratio: aspect_ratio,
+    aspect_ratio_mobile: aspect_ratio_mobile,
+    placeholder: placeholder
+  %}
+
+  {{ loading_placeholder }}
+</background-image>

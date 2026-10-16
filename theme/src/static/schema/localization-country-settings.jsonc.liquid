@@ -1,0 +1,52 @@
+[% assign context = context | default: 'section.settings.' %]
+[% assign conditional = context | append: 'show_country' | append: " == true" %]
+
+[
+  {
+    "type": "header",
+    "content": "Country/Region selector",
+    "info": "To add a currency, go to your [markets settings](/admin/settings/markets).",
+    "visible_if": "{{ [= conditional =] }}"
+  },
+  {
+    "type": "header",
+    "content": "Country/Region selector",
+    "visible_if": "{{ [= conditional | replace: '== true', '!= true' =] }}"
+  },
+  {
+    "type": "checkbox",
+    "id": "show_country",
+    "label": "Show country selector",
+    [% if show_country_default == null %]
+      "default": true
+    [% else %]
+      "default": [= show_country_default =]
+    [% endif %]
+  },
+  {
+    "type": "select",
+    "id": "country_display_style",
+    "label": "Country display",
+    "default": "[= country_display_style_default | default: 'name' =]",
+    "options": [
+      {"value": "name", "label": "Country name"},
+      {"value": "symbol", "label": "Country symbol"},
+      {"value": "flag_name", "label": "Flag and country name"},
+      {"value": "flag_symbol", "label": "Flag and country symbol"},
+      {"value": "flag", "label": "Flag"}
+    ],
+    "visible_if": "{{ [= conditional =] }}"
+  },
+  {
+    "type": "select",
+    "id": "currency_display_style",
+    "label": "Currency display",
+    "default": "[= currency_display_style_default | default: 'short' =]",
+    "options": [
+      {"value": "long", "label": "Name"},
+      {"value": "short", "label": "Symbol"},
+      {"value": "none", "label": "None"}
+    ],
+    "visible_if": "{{ [= conditional =] }}"
+  }
+]

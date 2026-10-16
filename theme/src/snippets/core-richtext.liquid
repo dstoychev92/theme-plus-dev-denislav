@@ -1,0 +1,31 @@
+{% doc %}
+  - Renders rich text block
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {string} [richtext_size] - type-resize-all-* suffix, defaults to s.richtext_size, then 'md'
+  @param {object} [s] - settings object
+  @param {string} [style] - inline styles
+  @param {string} [tag] - defaults to 'div'
+  @param {string} [text] - defaults to s.text
+  @param {string} [type] - root class, defaults to 'richtext'
+{% enddoc %}
+
+{% liquid
+  assign type = type | default: 'richtext'
+  assign text = text | default: s.text
+  assign richtext_size = richtext_size | default: s.richtext_size | default: 'md'
+  assign tag = tag | default: 'div'
+%}
+
+<{{ tag }}
+  class="
+    {{ type }}
+    type-resize-all-{{ richtext_size }}
+    {{ class }}
+  "
+  style="{{ style }}"
+  {{ attributes }}
+>
+  {{ text }}
+</{{ tag }}>

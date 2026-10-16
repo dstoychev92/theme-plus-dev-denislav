@@ -1,0 +1,26 @@
+{% doc %}
+  - Renders one-time, daily, or weekly countdown
+{% enddoc %}
+
+<div
+  class="flex flex-row justify-content-align entrance-item entrance-standard"
+  {{ block.shopify_attributes }}
+>
+  {% render 'countdown', s: block.settings %}
+</div>
+
+{% schema %}
+{
+  "name": "Countdown",
+  "tag": null,
+  "settings": [
+    [% json 'schema/countdown-settings.jsonc' %]
+  ],
+  "presets": [
+    {
+      "name": "Countdown",
+      "category": "Content"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,426 @@
+{% doc %}
+  - Renders one-time, daily, or weekly countdown
+
+  A blank one-time date becomes a daily timer. Repeating timers show the end message for one
+  hour before the next cycle.
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {boolean} [enable_animations] - entrance animation when timer enters view
+  @param {string} [end_date] - YYYY-MM-DD for one-time schedule, defaults to s.end_date
+  @param {string} [end_message] - defaults to s.end_message
+  @param {string} [end_time] - HH:MM in 12-hour time, defaults to s.end_time, then '11:59'
+  @param {boolean} [hide_on_complete] - hides one-time timer at completion, defaults to s.hide_on_complete
+  @param {string} [period] - 'am' or 'pm', defaults to s.period, then 'pm'
+  @param {string} [repeat_day] - weekly day from '0' for Sunday to '6', defaults to s.repeat_day, then '1'
+  @param {string} [repeat_frequency] - 'daily' or 'weekly', defaults to s.repeat_frequency, then 'weekly'
+  @param {object} [s] - settings object
+  @param {string} [schedule] - 'once' or 'repeat', defaults to s.schedule, then 'repeat'
+  @param {string} [time_class] - classes for time
+  @param {string} [word_length] - 'letter', 'short' or 'full', defaults to s.word_length
+{% enddoc %}
+
+{%- liquid
+  assign schedule = schedule | default: s.schedule | default: 'repeat'
+  assign repeat_frequency = repeat_frequency | default: s.repeat_frequency | default: 'weekly'
+  assign repeat_day = repeat_day | default: s.repeat_day | default: '1'
+  assign end_date = end_date | default: s.end_date
+  assign end_time = end_time | default: s.end_time | default: '11:59'
+  assign period = period | default: s.period | default: 'pm'
+  assign hide_on_complete = hide_on_complete | default: s.hide_on_complete
+  assign end_message = end_message | default: s.end_message
+  assign word_length = word_length | default: s.word_length
+  assign end_time_split = end_time | split: ':'
+  assign end_time_hour = end_time_split | first | strip | abs
+  assign end_time_minute = end_time_split | last | strip
+  assign days = 0
+  assign hours = 0
+  assign minutes = 0
+  assign seconds = 0
+-%}
+
+{%- comment -%}
+  Convert 12h end_time + period to 24h format.
+  12 AM = 00:xx (midnight), 12 PM = 12:xx (noon).
+  The settings input uses 12h convention so merchants don't need to think in 24h.
+{%- endcomment -%}
+{%- capture converted_time -%}
+  {%- case period -%}
+    {%- when 'am' -%}
+      {%- case end_time_hour -%}
+        {%- when 0, 12 -%}
+          {{- '00' | append: ':' | append: end_time_minute -}}
+        {%- else -%}
+          {{- end_time -}}
+      {%- endcase -%}
+    {%- when 'pm' -%}
+      {%- capture hour -%}
+        {%- case end_time_hour -%}
+          {%- when 0, 12 -%}{{- 12 -}}
+          {%- else -%}
+            {%- if end_time_hour < 12 -%}
+              {{- end_time_hour | plus: 12 -}}
+            {%- else -%}
+              {{- end_time_hour -}}
+            {%- endif -%}
+        {%- endcase -%}
+      {%- endcapture -%}
+      {{- hour | append: ':' | append: end_time_minute -}}
+  {%- endcase -%}
+{%- endcapture -%}
+
+{%- liquid
+  assign target_date = null
+
+  # Blank end_date in "once" mode falls back to daily repeat
+  assign effective_schedule = schedule
+  if schedule == 'once' and end_date == blank
+    assign effective_schedule = 'repeat'
+    assign repeat_frequency = 'daily'
+  endif
+
+  case effective_schedule
+    when 'once'
+      assign target_date = end_date
+
+    when 'repeat'
+      case repeat_frequency
+        when 'daily'
+          assign target_date = 'now' | date: '%Y-%m-%d'
+
+        when 'weekly'
+          # %w returns day of week as 0=Sun, 1=Mon, ..., 6=Sat
+          # | plus: 0 coerces the string to a number for arithmetic
+          assign current_dow = 'now' | date: '%w' | plus: 0
+          assign target_dow = repeat_day | plus: 0
+          assign days_ahead = target_dow | minus: current_dow
+          if days_ahead < 0
+            assign days_ahead = days_ahead | plus: 7
+          endif
+          # Liquid has no date-add — we add seconds to a Unix epoch then
+          # format back. 86400 = seconds per day. Minor DST drift (~1 hour
+          # twice a year) is negligible since the JS plugin handles real-time
+          # precision — Liquid only needs to land on the correct calendar date.
+          assign seconds_ahead = days_ahead | times: 86400
+          assign target_epoch = 'now' | date: '%s' | plus: seconds_ahead
+          assign target_date = target_epoch | date: '%Y-%m-%d'
+      endcase
+  endcase
+
+  if target_date != null
+    # Build "YYYY-MM-DD HH:MM" string then convert to epoch via | date: '%s'
+    assign expiration_date = target_date | append: ' ' | append: converted_time | date: '%s'
+    assign now_epoch = 'now' | date: '%s'
+
+    # For repeat modes: if target time already passed, show the end message
+    # for 1 hour (3600s) then advance to the next cycle.
+    if effective_schedule == 'repeat' and now_epoch >= expiration_date
+      assign seconds_since_expired = now_epoch | minus: expiration_date
+      if seconds_since_expired >= 3600
+        if repeat_frequency == 'daily'
+          assign expiration_date = expiration_date | plus: 86400
+        else
+          assign expiration_date = expiration_date | plus: 604800
+        endif
+      endif
+    endif
+
+    # Server-side display values (before JS hydrates the live countdown)
+    assign time_difference = expiration_date | minus: now_epoch
+    assign days = time_difference | divided_by: 86400 | at_least: 0
+    assign remaining_seconds = time_difference | modulo: 86400
+    assign hours = remaining_seconds | divided_by: 3600 | at_least: 0
+    assign remaining_seconds = remaining_seconds | modulo: 3600
+    assign minutes = remaining_seconds | divided_by: 60 | at_least: 0
+    assign seconds = remaining_seconds | modulo: 60 | at_least: 0
+
+    # ISO 8601 with timezone offset — passed to the x-countdown Alpine directive
+    assign final_expiration_date = expiration_date | date: '%Y-%m-%dT%H:%M:%S.%3N%z'
+  else
+    assign final_expiration_date = null
+  endif
+
+  case word_length
+    when 'letter'
+      assign days_label = 'homepage.countdown_block_letter.days' | t
+      assign hours_label = 'homepage.countdown_block_letter.hours' | t
+      assign minutes_label = 'homepage.countdown_block_letter.minutes' | t
+      assign seconds_label = 'homepage.countdown_block_letter.seconds' | t
+    when 'short'
+      assign days_label = 'homepage.countdown_block_short.days.other' | t
+      assign hours_label = 'homepage.countdown_block_short.hours' | t
+      assign minutes_label = 'homepage.countdown_block_short.minutes' | t
+      assign seconds_label = 'homepage.countdown_block_short.seconds' | t
+      if days == 1
+        assign days_label = 'homepage.countdown_block_short.days.one' | t
+      endif
+    when 'full'
+      assign days_label = 'homepage.countdown_block.days.other' | t
+      assign hours_label = 'homepage.countdown_block.hours' | t
+      assign minutes_label = 'homepage.countdown_block.minutes' | t
+      assign seconds_label = 'homepage.countdown_block.seconds' | t
+      if days == 1
+        assign days_label = 'homepage.countdown_block.days.one' | t
+      endif
+  endcase
+
+  if days < 10
+    assign days = days | prepend: '0'
+  endif
+
+  if hours < 10
+    assign hours = hours | prepend: '0'
+  endif
+
+  if minutes < 10
+    assign minutes = minutes | prepend: '0'
+  endif
+
+  if seconds < 10
+    assign seconds = seconds | prepend: '0'
+  endif
+
+  assign expiration_behaviour = 'show-message'
+  if effective_schedule == 'once' and end_date != blank and hide_on_complete
+    assign expiration_behaviour = 'hide-section'
+  endif
+
+  assign countdown_has_expired = false
+  if now_epoch > expiration_date
+    assign countdown_has_expired = true
+  endif
+
+  assign set_color = s.set_color | default: false
+  assign color = s.color | default: 'muted'
+  assign color_custom = s.color_custom | default: '#000000'
+  assign color_digit = s.color_digit | default: 'content'
+  assign color_custom_digit = s.color_custom_digit | default: '#000000'
+-%}
+
+{% capture digit_class %}
+  block
+  {% if set_color %}
+    text-{{ color_digit }}
+  {% else %}
+    text-default
+  {% endif %}
+{% endcapture %}
+
+{% capture digit_style %}
+  {% if set_color and color_digit == 'custom' %}
+    --color-custom-text: {{ color_custom_digit }};
+  {% endif %}
+{% endcapture %}
+
+{% capture label_class %}
+  {% if set_color %}
+    text-{{ color }}
+  {% else %}
+    text-muted
+  {% endif %}
+{% endcapture %}
+
+{% capture label_style %}
+  {% if set_color and color == 'custom' %}
+    --color-custom-text: {{ color_custom }};
+  {% endif %}
+{% endcapture %}
+
+{% assign separator_class = label_class %}
+{% assign separator_style = label_style %}
+
+{% capture class %}
+  {{ class }}
+  {% render 'props-class-type-preset', s: s %}
+{% endcapture %}
+
+{% liquid
+  # Days only ever count down, so the digits it starts with are all it will ever need
+  assign days_max = days | plus: 0
+%}
+
+{%- capture animated_wheel_track -%}
+  <div
+    x-animated-wheel:track
+    x-cloak
+    class="absolute h-fit inset-0 block pointer-events-none whitespace-pre-line will-change-transform [contain:layout_paint] {{ digit_class }}"
+    style="{{ digit_style }}"
+    aria-hidden="true"
+    data-morph-update="none"
+  ></div>
+{%- endcapture -%}
+
+<div
+  class="{{ class }}"
+  x-data="{ inView: false }"
+  x-countdown="{{ final_expiration_date }}"
+
+  x-intersect:enter="inView = true"
+  x-intersect:leave="inView = false"
+
+  {% if expiration_behaviour == 'hide-section' %}
+    x-show="!$countdown.isExpired"
+    :data-hide-section="$countdown.isExpired"
+    {% if countdown_has_expired %}
+      x-cloak
+      data-hide-section
+    {% endif %}
+  {% endif %}
+  {{ attributes }}
+>
+  <time
+    class="
+      flex flex-wrap gap-[0.375em]
+      {% if enable_animations %}
+        *:animate-in motion-safe:*:slide-in-from-bottom *:fade-in
+        *:animate-opacity-duration-1500 *:animate-transform-duration-1000
+        *:paused *:auto-stagger-animations-225
+      {% endif %}
+      {{ time_class }}
+    "
+    :class="
+      {
+        '*:!running': inView,
+        {% if expiration_behaviour == 'show-message' %}
+          '!hidden': $countdown.isExpired
+        {% endif %}
+      }
+    "
+    {% if countdown_has_expired %}
+      x-cloak
+    {% endif %}
+  >
+    {%- comment -%}
+      Every unit is a row of single-digit wheels (tens + ones, plus hundreds on a long
+      countdown), so a wheel holds at most ten values instead of one per second of the
+      unit. Each digit uses w-[1ch] to prevent jitter, with text-right/text-left
+      alignment to push the digits toward each other — closing the gap that text-center
+      would leave between separate elements.
+    {%- endcomment -%}
+    {% for i in (1..4) %}
+      {%- capture time_unit -%}
+        {%- cycle 'days', 'hours', 'minutes', 'seconds' -%}
+      {%- endcapture -%}
+
+      {%- liquid
+        case time_unit
+          when 'days'
+            assign unit_max = days_max
+            assign unit_value = days
+            assign unit_label = days_label
+          when 'hours'
+            assign unit_max = 23
+            assign unit_value = hours
+            assign unit_label = hours_label
+          when 'minutes'
+            assign unit_max = 59
+            assign unit_value = minutes
+            assign unit_label = minutes_label
+          when 'seconds'
+            assign unit_max = 59
+            assign unit_value = seconds
+            assign unit_label = seconds_label
+        endcase
+
+        # A value of ten or more is still a number here, and only a string can be counted
+        assign unit_value = unit_value | append: ''
+        assign digit_count = unit_value | size
+      -%}
+
+      <span class="flex gap-[0.25em]">
+        <span class="flex">
+          {% for digit in (1..digit_count) %}
+            {%- liquid
+              assign is_first_digit = forloop.first
+              assign is_last_digit = forloop.last
+              assign digit_index = forloop.index0
+              assign place = digit_count | minus: forloop.index
+
+              assign divisor = 1
+              if place > 0
+                for step in (1..place)
+                  assign divisor = divisor | times: 10
+                endfor
+              endif
+
+              assign digit_max = unit_max | divided_by: divisor | at_most: 9
+              assign digit_initial = unit_value | slice: digit_index, 1
+
+              assign digit_align = 'text-center'
+              if is_first_digit
+                assign digit_align = 'text-right'
+              elsif is_last_digit
+                assign digit_align = 'text-left'
+              endif
+
+              # Seconds always keep their leading zero, whatever the merchant picked
+              assign hide_leading_zero = false
+              if is_last_digit == false and time_unit != 'seconds' and s.leading_zero != true
+                assign hide_leading_zero = true
+              endif
+
+              assign unit_number = unit_value | plus: 0
+              assign hide_initially = false
+              if hide_leading_zero and unit_number < divisor
+                assign hide_initially = true
+              endif
+            -%}
+            {% capture digit_value %}Math.floor(Number($countdown.{{ time_unit }}) / {{ divisor }}) % 10{% endcapture %}
+            <span
+              class="block relative overflow-hidden [contain:layout_paint] edge-mask edge-mask-y {{ digit_align }}"
+              x-animated-wheel.reverse.always-visible
+              {% if hide_leading_zero %}
+                x-show="Number($countdown.{{ time_unit }}) >= {{ divisor }}"
+                {% if hide_initially %}
+                  style="display: none"
+                {% endif %}
+              {% endif %}
+            >
+              <span
+                class="{{ digit_class }} w-[1ch]"
+                :class="{ 'opacity-0': $animatedWheel.isTrackVisible }"
+                style="{{ digit_style }}"
+                x-animated-wheel:input
+                x-text="String({{ digit_value }})"
+                x-init="
+                  $watch('$countdown.{{ time_unit }}', (newValue, oldValue) => {
+                    const newDigit = Math.floor(Number(newValue) / {{ divisor }}) % 10;
+                    const oldDigit = Math.floor(Number(oldValue) / {{ divisor }}) % 10;
+                    if (newDigit === oldDigit) return;
+                    $animatedWheel.updatePosition(oldDigit, newDigit);
+                  });
+                "
+                data-min="0"
+                data-max="{{ digit_max }}"
+                data-step="1"
+                :data-value="{{ digit_value }}"
+              >
+                {{ digit_initial }}
+              </span>
+              {{ animated_wheel_track }}
+            </span>
+          {% endfor %}
+        </span>
+
+        <span class="{{ label_class }}" style="{{ label_style }}">
+          {{ unit_label }}
+        </span>
+      </span>
+
+      {% unless forloop.last %}
+        <span class="{{ separator_class }}" style="{{ separator_style }}">:</span>
+      {% endunless %}
+    {% endfor %}
+  </time>
+
+  {%- if expiration_behaviour == 'show-message' and end_message != '' -%}
+    <div
+      x-show="$countdown.isExpired"
+      {% unless countdown_has_expired %}
+        x-cloak
+      {% endunless %}
+    >
+      <p class="inline-richtext [&>a]:text-inherit">{{ end_message }}</p>
+    </div>
+  {%- endif -%}
+</div>

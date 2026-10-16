@@ -1,0 +1,9 @@
+[
+  {
+    "type": "paragraph",
+    "content": "Configure social links in your global theme settings."
+  },
+  [% if has_target_device != false %]
+    [% json 'schema/target-device-setting.jsonc', default_value: 'both' %]
+  [% endif %]
+]

@@ -1,0 +1,80 @@
+{% doc %}
+  - Renders localization form with language and country selects
+
+  @param {string} [attributes]
+  @param {string} [button_class] - classes for the button that opens the popup
+  @param {string} [class] - The classes
+  @param {string} [offset] - popup offset, such as '5px'
+  @param {string} [placement] - popup placement, defaults to 'bottom-start', 'bottom-end', or 'bottom' from s.layout_position
+  @param {string} [popup_class] - classes for the popup
+  @param {object} [s] - settings object
+  @param {section} [section]
+{% enddoc %}
+
+{% liquid
+  assign flag_size = 18
+
+  if placement == blank
+    case s.layout_position
+      when 'left'
+        assign placement = 'bottom-start'
+      when 'right'
+        assign placement = 'bottom-end'
+      else
+        assign placement = 'bottom'
+    endcase
+  endif
+
+  capture end_icon
+    render 'core-icon', icon: 'stroke-chevron-down', class: 'opacity-[--line-alpha-bold]', size: 'sm'
+  endcapture
+
+  # Scoped to the section so two toolbar sections in the header group don't render duplicate form ids
+  assign localization_form_id = 'localization-form-toolbar-' | append: section.id
+%}
+
+{%- form 'localization', id: localization_form_id, x-ref: 'form', class: class -%}
+  <div
+    class="
+      flex flex-row gap-x-[--header-row-gap-x] h-full
+      vars-{{ section.settings.color_scheme.id }}
+    "
+    {% comment %} Prevent morphing from messing with the state of any open selects {% endcomment %}
+    data-morph-update="none"
+    {{ attributes }}
+  >
+    {% if s.show_language %}
+      {%- if localization.available_languages.size > 1 -%}
+        {%- render 'localization-locale-select',
+          placement: placement,
+          offset: offset,
+          size: false,
+          flip: false,
+          match: false,
+          language_style: s.language_style,
+          button_class: button_class,
+          popup_class: popup_class,
+          end_icon: end_icon
+        -%}
+      {%- endif -%}
+    {%- endif -%}
+
+    {% if s.show_country %}
+      {%- if localization.available_countries.size > 1 -%}
+        {%- render 'localization-country-select',
+          placement: placement,
+          offset: offset,
+          size: false,
+          flip: false,
+          match: false,
+          currency_display_style: s.currency_display_style,
+          country_display_style: s.country_display_style,
+          button_class: button_class,
+          popup_class: popup_class,
+          flag_size: flag_size,
+          end_icon: end_icon
+        -%}
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+{% endform %}

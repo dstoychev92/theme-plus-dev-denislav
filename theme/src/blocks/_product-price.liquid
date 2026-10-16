@@ -1,0 +1,134 @@
+{% doc %}
+  - Renders product price with sale and subscription lines
+
+  Reads closest.product. A subscription discount with no regular sale hides the main price line and shows only the subscription line.
+{% enddoc %}
+
+{%- liquid
+  assign product = closest.product
+  assign current_variant = product.selected_or_first_available_variant
+
+  # Check if subscription discount exists but no regular sale
+  assign has_subscription_discount = false
+  assign has_regular_sale = false
+
+  if current_variant
+    if current_variant.compare_at_price != blank and current_variant.compare_at_price > current_variant.price
+      assign has_regular_sale = true
+    endif
+
+    if product.selling_plan_groups.size > 0
+      assign selling_plan = product.selected_selling_plan
+      if product.requires_selling_plan and selling_plan == blank
+        assign selling_plan = product.selected_or_first_available_selling_plan_allocation.selling_plan | default: product.selling_plan_groups[0].selling_plans[0]
+      endif
+      if selling_plan
+        assign adj = selling_plan.price_adjustments[0]
+        if adj.value_type == 'price'
+          if adj.value < current_variant.price
+            assign has_subscription_discount = true
+          endif
+        elsif adj.value > 0
+          assign has_subscription_discount = true
+        endif
+      endif
+    endif
+  endif
+
+  assign hide_product_price = false
+  if has_subscription_discount and has_regular_sale == false
+    assign hide_product_price = true
+  endif
+-%}
+
+{%- capture price_content -%}
+  <product-price
+    class="
+      flex-row-center flex-wrap gap-r6 justify-content-align
+      {% comment %} Hide price if variant is 'unavailable' {% endcomment %}
+      {% unless current_variant %}opacity-0{% endunless %}
+      {% comment %} Hide when subscription discount fully replaces regular price {% endcomment %}
+      {% if hide_product_price %}!hidden{% endif %}
+    "
+    aria-live="polite"
+  >
+    {% if product != blank %}
+    {% render 'product-form-price',
+      product: product,
+      variant: current_variant,
+      s: block.settings
+    %}
+    {% elsif settings.placeholder_mode or request.design_mode %}
+      {% render 'core-text-preset', s:  block.settings, tag: 'div', text: '$100' %}
+    {% endif %}
+  </product-price>
+
+  {% comment %} If a selling plan discount exists, show the selling plan discount on a second line {% endcomment %}
+  {% render 'product-form-price-subscription',
+    product: product,
+    variant: current_variant,
+    s: block.settings,
+    selected_selling_plan: selling_plan,
+    has_subscription_discount: has_subscription_discount
+  %}
+{%- endcapture -%}
+
+{% render 'product-block', s: block.settings, content: price_content, attributes: block.shopify_attributes %}
+
+{% schema %}
+{
+  "name": "Product price",
+  "tag": null,
+  "settings": [
+    [% json 'schema/type-preset.jsonc', default_preset: 'h5' %]
+    [% json 'schema/type-custom.jsonc', resize: true, default_font: 'accent', default_size: '5' %]
+    {
+      "type": "header",
+      "content": "Sale style"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_compare_at_price",
+      "label": "Show compare at price",
+      "default": true,
+    },
+    {
+      "type": "checkbox",
+      "id": "show_discount_amount",
+      "label": "Show discount amount",
+      "default": true,
+    },
+    {
+      "type": "select",
+      "id": "discount_amount_style",
+      "label": "Discount amount",
+      "visible_if": "{{ block.settings.show_discount_amount == true }}",
+      "info": "Calculated from price minus compare at price",
+      "default": "percentage",
+      "options": [
+        {"value": "percentage", "label": "% off"},
+        {"value": "dollar", "label": "$ off"}
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sale_label",
+      "label": "Show sale label",
+      "default": false,
+    },
+    {
+      "type": "text",
+      "id": "sale_label",
+      "label": "Sale label",
+      "visible_if": "{{ block.settings.show_sale_label == true }}",
+      "default": "On Sale"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product price",
+      "category": "Add to cart"
+    }
+  ]
+}
+{% endschema %}

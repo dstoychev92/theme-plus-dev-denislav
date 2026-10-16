@@ -1,0 +1,7 @@
+src/**/*.*
+tmp/**/*.*
+environments/**/*.*
+cypress/**/*.*
+.yalc
+.vscode
+.shopify

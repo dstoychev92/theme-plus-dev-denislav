@@ -1,0 +1,126 @@
+{% doc %}
+  - Renders one cart line item
+
+  @param {string} [form_id] - cart form id prefixing the quantity input id, defaults to 'cart'
+  @param {number} [index] - position in the list, scopes the quantity input id
+  @param {line_item} line_item
+  @param {string} [quantity_size] - stepper size, defaults to 'md'
+  @param {boolean} [show_disclosures] - renders the product's cart disclosures, defaults to true
+  @param {boolean} [show_quantity_selector] - renders the quantity stepper, defaults to false
+{% enddoc %}
+
+{% assign show_quantity_selector = show_quantity_selector | default: false %}
+{% assign show_disclosures = show_disclosures | default: true, allow_false: true %}
+{% assign is_discounted = false %}
+
+{% if line_item.original_price > line_item.final_price %}
+  {% assign is_discounted = true %}
+{% endif %}
+
+{% capture discount_tags %}
+  {%- for discount in line_item.line_level_discount_allocations -%}
+    {% comment %} We need this extra div with 'overflow-hidden' to achieve the "tag" effect on the sides with before/after {% endcomment %}
+    <div class="overflow-hidden">
+      <div class="relative flex border border-content-mix-20 rounded-sm">
+        <span
+          class="
+            flex items-center
+            px-r5 py-r2 border-e border-dashed border-content-mix-20 bg-content-mix-5 font-family-body font-bold text-r2
+            before:absolute before:z-10 before:top-1/2 before:start-0 before:-translate-x-3/4 before:-translate-y-1/2 before:rounded-full before:border before:border-content-mix-20 before:bg-canvas before:w-r5 before:h-r5
+          "
+        >
+          <span>
+            {{ 'cart.savings' | t }}
+            {% render 'money', price: discount.amount, show_currency: false %}
+          </span>
+        </span>
+
+        <span
+          class="
+            flex items-center
+            px-r5 py-r2 bg-content-mix-10 font-family-body text-r2
+            after:absolute after:z-10 after:top-1/2 after:end-0 after:translate-x-3/4 after:-translate-y-1/2 after:rounded-full after:border after:border-content-mix-20 after:bg-canvas after:w-r5 after:h-r5
+          "
+        >
+          {{ discount.discount_application.title }}
+        </span>
+      </div>
+    </div>
+  {%- endfor -%}
+{% endcapture %}
+
+{% capture alert %}
+  {% capture alert_attributes %}
+    :hidden="$cartItem.state !== 'error'"
+    x-show="$cartItem.state === 'error'"
+    x-cloak
+    x-transition.opacity.duration.400ms
+    aria-label="{{ "cart.error_updating_cart" | t }}"
+  {% endcapture %}
+  {% capture alert_icon %}
+    {% render 'core-icon', icon: 'fill-circle-alert' %}
+  {% endcapture %}
+  {% capture alert_content %}
+    {% assign default_error_message = "cart.error_updating_cart" | t %}
+    <p
+      data-default-error="{{ default_error_message | escape_once }}"
+      x-html="$cartItem.errorDescription || $cartItem.errorMessage || $el.dataset.defaultError"
+    ></p>
+  {% endcapture %}
+  {% render 'alert',
+    icon: alert_icon,
+    content: alert_content,
+    type: 'error',
+    attributes: alert_attributes,
+    class: 'rounded-sm !ease-in-out'
+  %}
+{% endcapture %}
+
+{% capture disclosures %}
+  {% if show_disclosures %}
+    {% render 'cart-line-item-disclosures', product: line_item.product %}
+  {% endif %}
+{% endcapture %}
+{% assign disclosures = disclosures | strip %}
+
+<li
+  class="flex flex-col bg-canvas text-content"
+  aria-label="{{ line_item.title | escape_once }}"
+
+  x-cart-item.wait-error.3000ms="{{ line_item.index | plus: 1 }}"
+
+  {% comment %} Identifies the changed line in the shopify:cart:lines-update event {% endcomment %}
+  data-line-key="{{ line_item.key }}"
+
+  key="{{ line_item.key }}-{{ line_item.index | plus: 1 }}"
+
+  {% comment %} Hide line item when removing is in progress. Un-hide if removing fails {% endcomment %}
+  x-show="$cartItem.isRemoving === false"
+  x-collapse.duration.300ms
+
+  :data-state="$cartItem.state"
+>
+  <div class="flex flex-col gap-y-r6 p-[--drawer-padding]">
+    {% render 'cart-line-item-product',
+      line_item: line_item,
+      show_quantity_selector: show_quantity_selector,
+      quantity_size: quantity_size,
+      index: index,
+      form_id: form_id
+    %}
+
+    {% if is_discounted %}
+      <div class="flex flex-col items-start gap-r4">
+        {{ discount_tags }}
+      </div>
+    {% endif %}
+
+    {% if disclosures != blank %}
+      <div class="flex flex-col items-start gap-y-r2">
+        {{ disclosures }}
+      </div>
+    {% endif %}
+
+    {{ alert }}
+  </div>
+</li>

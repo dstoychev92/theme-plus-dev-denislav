@@ -1,0 +1,43 @@
+@layer components {
+  /* Button Rounding */
+  .vars-btn-rounding-sm {
+    --radius-btn: var(--radius-sm);
+  }
+  .vars-btn-rounding-md {
+    --radius-btn: var(--radius-md);
+  }
+  .vars-btn-rounding-none {
+    --radius-btn: var(--radius-none);
+  }
+  .vars-btn-rounding-pill {
+    --radius-btn: var(--radius-pill);
+  }
+
+  /* Tab Rounding */
+  .vars-tab-rounding-sm {
+    --radius-tab: var(--radius-sm);
+  }
+  .vars-tab-rounding-md {
+    --radius-tab: var(--radius-md);
+  }
+  .vars-tab-rounding-none {
+    --radius-tab: var(--radius-none);
+  }
+  .vars-tab-rounding-pill {
+    --radius-tab: var(--radius-pill);
+  }
+
+  /* Element Rounding */
+  .vars-element-rounding-sm {
+    --radius-element-default: var(--radius-sm);
+  }
+  .vars-element-rounding-md {
+    --radius-element-default: var(--radius-md);
+  }
+  .vars-element-rounding-none {
+    --radius-element-default: var(--radius-none);
+  }
+  .vars-element-rounding-pill {
+    --radius-element-default: var(--radius-pill);
+  }
+}

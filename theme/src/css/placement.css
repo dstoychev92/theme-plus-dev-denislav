@@ -1,0 +1,289 @@
+@layer base {
+  :root {
+    /* Mobile: Stack content/controls vertically */
+    /* prettier-ignore */
+    --placement-grid-template-areas-mobile:
+      'content'
+      'controls';
+    --placement-grid-template-columns-mobile: 1fr;
+    --placement-grid-template-rows-mobile: 1fr minmax(0, auto);
+    --placement-controls-horizontal-mobile: center;
+    --placement-controls-vertical-mobile: end;
+
+    /* Desktop: 3-row system for positioning content within container */
+    --placement-grid-template-rows: 1fr 1fr minmax(0, max-content);
+  }
+}
+
+@layer components {
+  /*
+  * Placement Grid System
+  * Grid-based positioning for content and controls within containers.
+  *
+  * Key Concepts:
+  * 1. Grid Structure: 3x3 positioning grid plus full-height variants
+  * 2. Content vs Controls: Content fills available space, controls are compact
+  * 3. Responsive Override: Mobile stacks content/controls vertically
+  * 4. Flex Integration: Uses flexbox within grid areas for precise alignment
+  */
+  .placement-grid {
+    display: grid;
+    grid-template-areas: var(--placement-grid-template-areas-mobile, var(--placement-grid-template-areas));
+    grid-template-rows: var(--placement-grid-template-rows-mobile, var(--placement-grid-template-rows));
+    grid-template-columns: var(--placement-grid-template-columns-mobile, var(--placement-grid-template-columns));
+
+    @media screen(md) {
+      grid-template-areas: var(--placement-grid-template-areas-desktop, var(--placement-grid-template-areas));
+      grid-template-rows: var(--placement-grid-template-rows-desktop, var(--placement-grid-template-rows));
+      grid-template-columns: var(--placement-grid-template-columns-desktop, var(--placement-grid-template-columns));
+    }
+  }
+
+  .placement-content-flex {
+    display: flex;
+    flex-direction: var(--flex-direction);
+    justify-content: var(--placement-content-vertical-mobile, var(--placement-content-vertical));
+    align-items: var(--placement-content-horizontal-mobile, var(--placement-content-horizontal));
+    --flex-direction: column;
+    --flex-across: 0; /* Set flex-col vars so descendent components like theme-spacer can manage their own layouts */
+    --flex-down: 1;
+
+    @media screen(md) {
+      justify-content: var(--placement-content-vertical);
+      align-items: var(--placement-content-horizontal);
+    }
+  }
+
+  .placement-controls-flex {
+    display: flex;
+    flex-direction: var(--flex-direction);
+    justify-content: var(
+      --placement-controls-horizontal-custom,
+      var(--placement-controls-horizontal-mobile, var(--placement-controls-horizontal))
+    );
+    align-items: var(--placement-controls-vertical-mobile, var(--placement-controls-vertical));
+    --flex-direction: row;
+    --flex-across: 1;
+    --flex-down: 0;
+    @media screen(md) {
+      justify-content: var(--placement-controls-horizontal-custom, var(--placement-controls-horizontal));
+      align-items: var(--placement-controls-vertical);
+    }
+  }
+
+  /*
+  * Controls alignment override
+  * Allows a component (eg. slideshow controls) to override the default
+  * controls alignment coming from the placement preset.
+  *
+  * Note: uses logical values (start/end) to respect RTL layouts.
+  */
+  .vars-placement-controls-horizontal-left {
+    --placement-controls-horizontal-custom: start;
+  }
+
+  .vars-placement-controls-horizontal-center {
+    --placement-controls-horizontal-custom: center;
+  }
+
+  .vars-placement-controls-horizontal-right {
+    --placement-controls-horizontal-custom: end;
+  }
+
+  /* TOP ROW POSITIONS */
+  .vars-placement-grid-top-left {
+    /* prettier-ignore */
+    --placement-grid-template-areas:
+      'content  content  content '
+      '.        .        .       '
+      'controls controls controls';
+
+    --placement-grid-template-rows: 1fr auto minmax(0, max-content);
+
+    --placement-content-horizontal: start;
+    --placement-content-vertical: start;
+
+    --placement-controls-horizontal: start;
+    --placement-controls-vertical: end;
+  }
+
+  .vars-placement-grid-top-center {
+    /* prettier-ignore */
+    --placement-grid-template-areas:
+      'content  content  content '
+      '.        .        .       '
+      'controls controls controls';
+
+    --placement-grid-template-rows: 1fr auto minmax(0, max-content);
+    --placement-grid-template-columns: 1fr 2fr 1fr;
+
+    --placement-content-horizontal: center;
+    --placement-content-vertical: start;
+
+    --placement-controls-horizontal: center;
+    --placement-controls-vertical: end;
+  }
+
+  .vars-placement-grid-top-right {
+    /* prettier-ignore */
+    --placement-grid-template-areas:
+      'content  content  content '
+      '.        .        .       '
+      'controls controls controls';
+
+    --placement-grid-template-rows: 1fr auto minmax(0, max-content);
+
+    --placement-content-horizontal: end;
+    --placement-content-vertical: start;
+
+    --placement-controls-horizontal: end;
+    --placement-controls-vertical: end;
+  }
+
+  /* MIDDLE ROW POSITIONS */
+  .vars-placement-grid-middle-left {
+    /* prettier-ignore */
+    --placement-grid-template-areas:
+      '.        .        .        '
+      'content  content  content  '
+      '.        .        .        '
+      'controls controls controls';
+
+    --placement-grid-template-rows: auto 1fr auto minmax(0, max-content);
+
+    --placement-content-horizontal: start;
+    --placement-content-vertical: center;
+
+    --placement-controls-horizontal: start;
+    --placement-controls-vertical: end;
+  }
+
+  .vars-placement-grid-middle-center {
+    /* prettier-ignore */
+    --placement-grid-template-areas:
+      '.        .        .        '
+      'content  content  content  '
+      '.        .        .        '
+      'controls controls controls';
+
+    --placement-grid-template-rows: auto 1fr auto minmax(0, max-content);
+    --placement-grid-template-columns: 1fr 3fr 1fr;
+
+    --placement-content-horizontal: center;
+    --placement-content-vertical: center;
+
+    --placement-controls-horizontal: center;
+    --placement-controls-vertical: end;
+  }
+
+  .vars-placement-grid-middle-right {
+    /* prettier-ignore */
+    --placement-grid-template-areas:
+      '.        .        .        '
+      'content  content  content  '
+      '.        .        .        '
+      'controls controls controls';
+
+    --placement-grid-template-rows: auto 1fr auto minmax(0, max-content);
+    --placement-content-horizontal: end;
+    --placement-content-vertical: center;
+
+    --placement-controls-horizontal: right;
+    --placement-controls-vertical: end;
+  }
+
+  /* BOTTOM ROW POSITIONS */
+  /* Note: in the bottom row position we flip the side of the controls to the opposite side of the content to get out of there way */
+  .vars-placement-grid-bottom-left {
+    /* prettier-ignore */
+    --placement-grid-template-areas:
+      '.        .        .       '
+      'content  content  .       '
+      'content  content  controls';
+
+    --placement-grid-template-rows: auto 1fr minmax(0, max-content);
+
+    --placement-content-horizontal: start;
+    --placement-content-vertical: end;
+
+    --placement-controls-horizontal: end;
+    --placement-controls-vertical: end;
+  }
+
+  .vars-placement-grid-bottom-center {
+    /* prettier-ignore */
+    --placement-grid-template-areas:
+      '.        .          .      '
+      'content  content    content'
+      'controls controls controls';
+
+    --placement-grid-template-rows: auto 1fr minmax(0, max-content);
+
+    --placement-content-horizontal: center;
+    --placement-content-vertical: end;
+
+    --placement-controls-horizontal: center;
+    --placement-controls-vertical: end;
+  }
+
+  .vars-placement-grid-bottom-right {
+    /* prettier-ignore */
+    --placement-grid-template-areas:
+      '.        .        .      '
+      '.        content  content'
+      'controls content  content';
+
+    --placement-grid-template-rows: auto 1fr minmax(0, max-content);
+
+    --placement-content-horizontal: end;
+    --placement-content-vertical: end;
+
+    --placement-controls-horizontal: start;
+    --placement-controls-vertical: end;
+  }
+
+  /* FULL HEIGHT POSITIONS */
+  .vars-placement-grid-full-left {
+    /* prettier-ignore */
+    --placement-grid-template-areas:
+      'content  content .        '
+      'content  content .        '
+      'content  content controls';
+
+    --placement-content-horizontal: start;
+    --placement-content-vertical: space-between;
+
+    --placement-controls-horizontal: end;
+    --placement-controls-vertical: end;
+  }
+
+  .vars-placement-grid-full-center {
+    /* prettier-ignore */
+    --placement-grid-template-areas:
+      'content  content  content '
+      'content  content  content '
+      'controls controls controls';
+
+    --placement-grid-template-columns: 1fr 2fr 1fr;
+
+    --placement-content-horizontal: center;
+    --placement-content-vertical: space-between;
+
+    --placement-controls-horizontal: center;
+    --placement-controls-vertical: end;
+  }
+
+  .vars-placement-grid-full-right {
+    /* prettier-ignore */
+    --placement-grid-template-areas:
+      ' .       content  content '
+      ' .       content  content '
+      'controls content  content';
+
+    --placement-content-horizontal: end;
+    --placement-content-vertical: space-between;
+
+    --placement-controls-horizontal: start;
+    --placement-controls-vertical: end;
+  }
+}

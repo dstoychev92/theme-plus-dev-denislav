@@ -1,0 +1,52 @@
+[
+  {
+    "type": "range",
+    "id": "columns_lg",
+    "min": 2,
+    "max": 6,
+    "step": 1,
+    "label": "Desktop",
+    "default": 4
+  },
+  {
+    "type": "range",
+    "id": "columns_md",
+    "min": 2,
+    "max": 6,
+    "step": 1,
+    "label": "Tablet",
+    "default": 4
+  },
+  {
+    "type": "select",
+    "id": "layout_mobile",
+    "label": "Mobile layout",
+    "default": "slider",
+    "options": [
+      {"value": "slider", "label": "Carousel"},
+      {"value": "grid", "label": "Grid"}
+    ]
+  },
+  {
+    "type": "select",
+    "id": "columns_sm_grid",
+    "label": "Mobile columns",
+    "default": "2",
+    "options": [
+      {"value": "1", "label": "1"},
+      {"value": "2", "label": "2"}
+    ],
+    "visible_if": "{{ section.settings.layout_mobile == 'grid' }}",
+  },
+  {
+    "type": "select",
+    "label": "Progress bar",
+    "id": "progress_bar_visibility",
+    "default": "mobile",
+    "options": [
+      {"value": "mobile", "label": "Mobile"},
+      {"value": "never", "label": "Never"}
+    ],
+    "visible_if": "{{ section.settings.layout_mobile == 'slider' }}"
+  }
+]

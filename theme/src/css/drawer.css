@@ -1,0 +1,45 @@
+@layer base {
+  :root {
+    --drawer-backdrop-enter-duration-mobile: 450ms;
+    --drawer-backdrop-exit-duration-mobile: 550ms;
+
+    /* Mobile value of var(--layout-buffer-x) */
+    --drawer-padding: calc(var(--raw-page-buffer) * var(--b-multiplier-mobile));
+  }
+
+  dialog.animate-drawer {
+    @apply animate-ease-[--ease-in-out-sharp];
+
+    &[open]:not([data-closing]) {
+      @apply animate-in animate-delay-[--drawer-enter-delay] animate-duration-[--drawer-enter-duration];
+
+      &.from-left {
+        @apply slide-in-from-left;
+      }
+
+      &.from-right {
+        @apply slide-in-from-right;
+      }
+
+      &::backdrop {
+        @apply animate-in fade-in max-md:animate-duration-[--drawer-backdrop-enter-duration-mobile] animate-duration-[--drawer-backdrop-enter-duration];
+      }
+    }
+
+    &[open][data-closing] {
+      @apply animate-out animate-duration-[--drawer-exit-duration];
+
+      &.from-left {
+        @apply slide-out-to-left;
+      }
+
+      &.from-right {
+        @apply slide-out-to-right;
+      }
+
+      &::backdrop {
+        @apply animate-out fade-out max-md:animate-delay-[--drawer-backdrop-exit-delay] max-md:animate-duration-[--drawer-backdrop-exit-duration-mobile] animate-duration-[--drawer-backdrop-exit-duration];
+      }
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{% doc %}
+  - Renders skip link, visible on keyboard focus
+
+  @param {string} [class] - The classes
+  @param {boolean} [fixed] - false uses absolute position, defaults to true
+  @param {string} [href] - target, defaults to '#main'
+  @param {string} [label] - link text, defaults to the skip_to_content translation
+{% enddoc %}
+
+{% liquid
+  assign default_label = 'other.accessibility.skip_to_content' | t
+  assign label = label | default: default_label
+  assign href = href | default: '#main'
+  assign fixed = fixed | default: true, allow_false: true
+%}
+{% capture class %}
+  sr-only focus-visible:not-sr-only !px-r3 !py-r2 top-r3 left-r3 z-50
+  {% if fixed %}
+    !fixed
+  {% else %}
+    !absolute
+  {% endif %}
+  {{ class }}
+{% endcapture %}
+{% render 'core-button', label: label, appearance: 'fill', color: 'content', tag: 'a', href: href, class: class %}

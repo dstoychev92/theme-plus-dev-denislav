@@ -1,0 +1,182 @@
+{% doc %}
+  - Renders play button that opens video in a modal dialog
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {string} [color] - suffix for vars-btn-*, defaults to s.color
+  @param {string} [icon] - fill icon name, defaults to 'fill-social-youtube' for a YouTube link, otherwise 'fill-play-circle'
+  @param {string} [id] - suffix for the drop-shadow filter id, defaults to 'video-button'
+  @param {object} [s] - settings object
+  @param {string} [size] - suffix for --row-*, or 'custom', defaults to s.sizing
+  @param {number} [size_custom] - button height in pixels when size is 'custom', defaults to s.sizing_custom
+  @param {video} [video] - Shopify video object, defaults to s.video
+  @param {string} [video_id] - id prefix passed to core-video for an uploaded video
+  @param {object} [video_link] - video_url setting object, defaults to s.video_link
+  @param {string} [video_source] - 'uploaded' or 'external_video', defaults to s.video_source
+{% enddoc %}
+
+{% liquid
+  assign id = id | default: 'video-button'
+  assign video_source = video_source | default: s.video_source
+  assign video = video | default: s.video
+  assign video_link = video_link | default: s.video_link
+  assign color = color | default: s.color
+  assign autoplay = true
+
+  assign is_youtube = false
+  if video_source == 'external_video' and video_link.type == 'youtube'
+    assign is_youtube = true
+  endif
+
+  # Match the play button to the video source: YouTube branding for YouTube, player-style icon for uploaded files
+  if icon == blank
+    if is_youtube
+      assign icon = 'fill-social-youtube'
+    else
+      assign icon = 'fill-play-circle'
+    endif
+  endif
+
+  assign size = size | default: s.sizing
+  if size == 'custom'
+    assign size_custom = size_custom | default: s.sizing_custom
+  endif
+
+  case video_source
+    when 'uploaded'
+      for source in video.sources
+        # Check for mp4, mov or webm source so we can get the correct video URL
+        case source.mime_type
+          when 'video/mp4', 'video/quicktime', 'video/webm'
+            assign video_url = source.url
+            break
+        endcase
+      endfor
+    when 'external_video'
+      assign video_url = video_link
+  endcase
+
+  assign content_style = '--aspect-ratio: 16 / 9'
+%}
+
+{% capture video_content %}
+  {% case video_source %}
+    {% when 'uploaded' %}
+      {% render 'core-video', id: video_id, video: video, autoplay: autoplay, loop: false, controls: true, class: 'w-full' %}
+      {% capture content_style %}
+        --aspect-ratio: {{ video.aspect_ratio | default: '16 / 9' }};
+      {% endcapture %}
+
+    {% when 'external_video' %}
+      {% capture on_init %}
+        const handleDialogOpenChange = (value) => {
+          if (value == true) {
+            {% comment %} Load/Play video when modal opens {% endcomment %}
+            if (state == 'initial') {
+              loadPlayer();
+            } else if (state == 'ready' || state == 'paused') {
+              playVideo();
+            }
+          } else {
+            {% comment %} Unload video when modal closes {% endcomment %}
+            unloadPlayer();
+          }
+        };
+        {% comment %} data-lazy-alpine can defer init until after the dialog has already opened, in which case the watcher below will never fire for the initial true. Trigger the open handler manually in that case. {% endcomment %}
+        if ($dialog.isOpen) handleDialogOpenChange(true);
+        $watch('$dialog.isOpen', handleDialogOpenChange);
+
+        {% comment %} We use this approach, because Vimeo takes some time to start playing and will not pause on time {% endcomment %}
+        $watch('state', (state) => {
+          {% comment %} Unloads the video when modal is closed and video is still playing {% endcomment %}
+          if (state == 'playing' && !$dialog.isOpen) {
+            unloadPlayer();
+          }
+        });
+      {% endcapture %}
+
+      {% comment %} External Video {% endcomment %}
+      {% render 'video-external', video_type: video_link.type, video_id: video_link.id, lazy: true, autoplay: autoplay, class: 'w-full', on_init: on_init %}
+    {% else %}
+      {% comment %} Placeholder {% endcomment %}
+      {% render 'image-placeholder', placeholder: 'image', class: 'h-auto max-w-full' %}
+  {% endcase %}
+{% endcapture %}
+
+<div
+  class="{{ class }}"
+  {% comment %}
+    The video player is only needed once the popup is opened, and the button that opens
+    it lives inside this element — so the first hover, focus, or tap starts it up before
+    that same interaction reaches the button. The video snippet below already handles
+    starting up with the popup open, in case anything beat it to the click.
+  {% endcomment %}
+  data-lazy-alpine
+  data-lazy-alpine-on="interact"
+  x-dialog.modal
+  x-scroll-lock="$dialog.isOpen"
+  {{ attributes }}
+>
+  <a
+    href="{{ video_url }}"
+    target="_blank"
+    class="
+      flex flex-center aspect-square
+      {% if is_youtube %}rounded-sm{% else %}rounded-full{% endif %} border-none
+      vars-btn-fill vars-btn-{{ color }} size-btn
+    "
+    style="
+      {% if size == 'custom' %}
+        --btn-height: {{ size_custom }}px;
+      {% else %}
+        --btn-height: var(--row-{{ size }});
+      {% endif %}
+    "
+    aria-label="{{ 'other.accessibility.video_button_popup' | t }}"
+    x-dialog:button
+  >
+    {% comment %} Custom icon path to handle the shadow because "filter: drop-shadow()" does not work on Safari {% endcomment %}
+    {% capture icon_path_with_shadow %}
+      <defs>
+        <filter id="video-button-dropshadow-{{- id -}}" width="150%" height="150%" x="-50%" y="-50%" filterUnits="userSpaceOnUse">
+          <feDropShadow dx="0" dy="0" flood-color="#000" flood-opacity="0.125" stdDeviation="1"/>
+        </filter>
+      </defs>
+      {%- case icon -%}
+        [% render 'icons-autogenerated/fill-paths' %]
+        {%- else -%}
+          Missing icon: {{ icon }}
+      {%- endcase -%}
+    {% endcapture %}
+
+    {% capture icon_attributes %}
+      filter="url(#video-button-dropshadow-{{- id -}})"
+    {% endcapture %}
+
+    {% render 'core-icon',
+      paths: icon_path_with_shadow,
+      class: '[--icon-size:--btn-height] fill-btn transition',
+      attributes: icon_attributes
+    %}
+  </a>
+
+  {% capture content_class %}
+    {% comment %}
+      "!bg-transparent" fixes a bug where an extra 1px background might appear at the bottom of the video on weird screen sizes,
+      because we use aspect-ratio to properly size the video and it isn't always a nice number. We don't want that 1px to be visible
+    {% endcomment %}
+    !bg-transparent !shadow-none
+    aspect-[--aspect-ratio] h-full justify-center
+    [--dialog-width:auto] [--dialog-max-width:100%] [--dialog-padding:0]
+  {% endcapture %}
+
+  <template x-teleport="body">
+    {% render 'dialog',
+      modal: true,
+      content: video_content,
+      scrollable: false,
+      content_class: content_class,
+      content_style: content_style
+    %}
+  </template>
+</div>

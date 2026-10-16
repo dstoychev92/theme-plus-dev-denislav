@@ -1,0 +1,239 @@
+{% comment %}
+  Section: Tabbed Card Sliders
+  Multiple card sliders behind tabs — each tab switches to a different
+  collection or card set. Great for "New Arrivals" / "Best Sellers" / "Sale"
+  style layouts.
+
+  Each _cards-tab block is a tab containing its own card source blocks.
+  The static _section-title block provides an optional heading above the tabs.
+
+  Tab typography and spacing are configurable. Slider controls (fill/stroke/
+  soft/bare) and progress bar visibility apply to all tab panels. Column count
+  and gap settings are shared across tabs.
+{% endcomment %}
+
+{% capture header %}
+  {% content_for 'block', type: '_section-title', id: 'header' %}
+{% endcapture %}
+
+{% assign tabs = '' %}
+{% assign tab_panels = '' %}
+{% for block in section.blocks %}
+  {% capture tabs %}
+    {{ tabs }}
+    <template x-clone="tabTemplates[{{ forloop.index0 }}]"></template>
+  {% endcapture %}
+
+  {% capture tab_panels %}
+    {{ tab_panels }}
+    {% render block %}
+  {% endcapture %}
+{% endfor %}
+
+{% if header != blank and section.blocks.size != 1 %}
+  {% capture title_row_content %}
+    {{ header }}
+  {% endcapture %}
+{% endif %}
+
+{% if section.blocks.size > 1 %}
+  {% capture header_area_content %}
+    {% render 'core-tablist', tabs: tabs, s: section.settings, class: 'z-20 self-center' %}
+  {% endcapture %}
+{% else %}
+  {% capture header_area_content %}
+    {{ header }}
+  {% endcapture %}
+{% endif %}
+
+{% capture attributes %}
+  x-section-tabs
+  x-data="{
+    sidePrevInView: false,
+    sideNextInView: false,
+    get overflowButtonPlacement() {
+      return (this.sidePrevInView && this.sideNextInView) ? 'side' : 'top'
+    },
+    get tabTemplates() {
+      const templates = Array.from($el.querySelectorAll('[data-tab-template]'));
+      return templates.sort((a, b) => {
+        const indexA = parseInt(a.getAttribute('data-tab-template') ?? '0', 10);
+        const indexB = parseInt(b.getAttribute('data-tab-template') ?? '0', 10);
+        return indexA - indexB;
+      });
+    }
+  }"
+{% endcapture %}
+
+{% render 'core-section-card-slider-tabs-layout',
+  s: section.settings,
+  title_row_content: title_row_content,
+  header_area_content: header_area_content,
+  tab_panels: tab_panels,
+  tab_count: section.blocks.size,
+  class: 'entrance-container',
+  attributes: attributes
+%}
+
+{% schema %}
+{
+  "name": "Tabbed card carousels",
+  "class": "section-card-slider-tabs",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Columns"
+    },
+    [% json 'schema/section-card-slider-settings.jsonc' %]
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "content_width",
+      "label": "Width",
+      "default": "page",
+      "options": [
+        {"value": "full", "label": "Full"},
+        {"value": "page", "label": "Page"},
+      ]
+    },
+    [% json 'schema/section-padding-settings.jsonc' %]
+    {
+      "type": "header",
+      "content": "Content layout"
+    },
+    {
+      "type": "text_alignment",
+      "id": "title_placement",
+      "label": "Title alignment",
+      "default": "center"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_gap_tab_x",
+      "label": "Set tab spacing",
+      "default": false
+    },
+    [% json 'schema/grid-gap-setting.jsonc', default_gap: 'sm', gap_label: 'Tab', gap_custom_label: 'Custom', id_suffix: 'tab_x', context: 'section.settings.', conditional: 'section.settings.set_gap_tab_x' %]
+
+    {
+      "type": "checkbox",
+      "id": "set_gap_tab_y",
+      "label": "Set vertical gap",
+      "default": false
+    },
+    [% json 'schema/grid-gap-setting.jsonc', default_gap: 'sm', gap_label: 'Vertical gap', gap_custom_label: 'Custom', id_suffix: 'tab_y', context: 'section.settings.', conditional: 'section.settings.set_gap_tab_y' %]
+    {
+      "type": "header",
+      "content": "Appearance"
+    },
+    [% json 'schema/color-settings-section-solid.jsonc' %]
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_typography",
+      "label": "Set tab typography",
+      "default": false
+    },
+    [% assign conditional = 'section.settings.enable_typography == true' %]
+    [% json 'schema/type-custom.jsonc', default_font: 'body', default_size: '4', conditional: conditional %]
+    {
+      "type": "header",
+      "content": "Navigation"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_pagination_style",
+      "label": "Set button style",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "slider_control_style",
+      "label": "Style",
+      "default": "soft",
+      "options": [
+        {"value": "fill", "label": "Fill"},
+        {"value": "stroke", "label": "Stroke"},
+        {"value": "soft", "label": "Soft"},
+        {"value": "bare", "label": "∅"}
+      ],
+      "visible_if": "{{ section.settings.set_pagination_style }}"
+    },
+    [% json 'schema/progress-bar-visibility-setting.jsonc' %]
+    [% json 'schema/section-target-device-settings.jsonc' %]
+  ],
+  "blocks": [
+    {
+      "type": "_cards-tab"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Tabbed cards",
+      "category": "Grid",
+      "blocks": [
+        {
+          "id": "header",
+          "type": "_section-title",
+          "static": true,
+          "settings": {
+            "text": "Featured Collections"
+          }
+        },
+        {
+          "type": "_cards-tab",
+          "settings": {
+            "title": "Best Sellers"
+          },
+          "blocks": [
+            {
+              "type": "_cards-products",
+              "settings": {
+                "source": "collection"
+              }
+            }
+          ]
+        },
+        {
+          "type": "_cards-tab",
+          "settings": {
+            "title": "Featured"
+          },
+          "blocks": [
+            {
+              "type": "_cards-products",
+              "settings": {
+                "source": "collection"
+              }
+            }
+          ]
+        },
+        {
+          "type": "_cards-tab",
+          "settings": {
+            "title": "New"
+          },
+          "blocks": [
+            {
+              "type": "_cards-products",
+              "settings": {
+                "source": "collection"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "custom.overlays", "custom.drawers"]
+  }
+}
+{% endschema %}

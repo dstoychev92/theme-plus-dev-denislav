@@ -1,0 +1,321 @@
+{% doc %}
+  - Renders large product card that updates through Section API
+
+  @param {boolean} [api_response] - true for Section API response markup, which loads the first image eagerly
+  @param {string} [appearance] - suffix for vars-card-lg-appearance-*
+  @param {number} [aspect_ratio] - defaults to settings.card_aspect_ratio, ignored when settings.product_card_image_fit is 'uneven'
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {string} [image_fetchpriority]
+  @param {string} [image_loading]
+  @param {string} [image_sizes]
+  @param {string} [image_widths]
+  @param {product} product
+{% enddoc %}
+
+{% liquid
+  assign selected_variant = product.selected_variant
+  assign plain_title = product.title | strip_html
+
+  # Find the first option Shopify exposes as swatches.
+  assign variant_swatch_option = null
+  for product_option in product.options_with_values
+    if product_option.values.first.swatch != null
+      assign variant_swatch_option = product_option
+      break
+    endif
+  endfor
+
+  # Resolve the configured group of sibling products, if this card supports one.
+  assign sibling_group_metafield = null
+  if settings.enable_card_sibling_swatches and settings.metafield_siblings != blank
+    assign sibling_metafield_namespace = settings.metafield_siblings | split: '.' | first
+    assign sibling_metafield_key = settings.metafield_siblings | split: '.' | last
+    assign sibling_group_metafield = product.metafields[sibling_metafield_namespace][sibling_metafield_key]
+  endif
+
+  # Siblings represent distinct products, so they take precedence over same-product variants.
+  assign selection_mode = 'none'
+  if sibling_group_metafield != blank and sibling_group_metafield.type == 'single_line_text_field'
+    assign selection_mode = 'sibling'
+  elsif sibling_group_metafield != blank and sibling_group_metafield.type == 'metaobject_reference'
+    assign selection_mode = 'sibling'
+  elsif settings.enable_card_variant_swatches and variant_swatch_option.values.size > 1
+    assign selection_mode = 'variant'
+  endif
+
+  # Quick Actions treats the card swatch option as already selected rather than offering it again.
+  assign quick_action_promoted_option = null
+  if selection_mode == 'variant'
+    assign quick_action_promoted_option = variant_swatch_option
+  endif
+
+  # A Section API response is always the result of an intentional selection, even when the
+  # selected option combination cannot resolve to a complete Shopify variant.
+  assign selection_is_explicit = false
+  if selected_variant != blank or api_response
+    assign selection_is_explicit = true
+  endif
+
+  # Keep every card destination aligned with the selection represented by its current markup.
+  assign card_url = product.url
+  if selected_variant != blank
+    capture card_url
+      render 'product-url', product: product, variant: selected_variant, selling_plan: false
+    endcapture
+    assign card_url = card_url | strip
+  elsif api_response and selection_mode == 'variant'
+    # product-url preserves selected option values when no complete variant exists.
+    capture card_url
+      render 'product-url', product: product, variant: false, selling_plan: false
+    endcapture
+    assign card_url = card_url | strip
+  endif
+
+  assign selection_position = settings.card_swatch_position | default: 'bottom'
+  assign card_aria_label = product.title
+
+  assign card_product_media = product.media
+  assign has_option_media_list = false
+  assign option_media_entries = null
+
+  if selection_mode == 'variant'
+    if settings.metafield_product_option_media != blank and settings.metafield_product_option_media_list != blank and settings.metafield_product_option_media_swatch != blank
+      assign product_option_media_metafield_namespace = settings.metafield_product_option_media | split: '.' | first
+      assign product_option_media_metafield_key = settings.metafield_product_option_media | split: '.' | last
+      assign product_option_media_metafield = product.metafields[product_option_media_metafield_namespace][product_option_media_metafield_key]
+      assign option_media_entries = product_option_media_metafield.value
+
+      if selection_is_explicit and option_media_entries
+        assign selected_options_array = product.options_with_values | map: 'selected_value'
+        for metaobject_item in option_media_entries
+          for selected in selected_options_array
+            assign value_is_found = metaobject_item[settings.metafield_product_option_media_swatch].value | where: 'label', selected.name | first
+            if value_is_found
+              assign card_product_media = metaobject_item[settings.metafield_product_option_media_list].value
+              assign card_product_media_count = card_product_media.size | default: card_product_media.count
+              if card_product_media_count > 0
+                assign has_option_media_list = true
+              endif
+              break
+            endif
+          endfor
+
+          if value_is_found
+            break
+          endif
+        endfor
+      endif
+    endif
+  endif
+
+  # Only the media subtree participates in selection view transitions.
+  assign primary_media = selected_variant.featured_media | default: product.featured_media
+  if has_option_media_list
+    for media in card_product_media
+      assign primary_media = media
+      break
+    endfor
+  endif
+
+  # Response markup replaces a card already on screen, so its first image should load immediately.
+  assign primary_image_loading = image_loading
+  if api_response
+    assign primary_image_loading = 'eager'
+  endif
+
+  # Uneven grids follow the product image instead of the shared card ratio.
+  if settings.product_card_image_fit == 'uneven'
+    assign uneven_media = product.featured_media
+    if has_option_media_list
+      assign uneven_media = primary_media
+    endif
+    assign uneven_image = uneven_media.preview_image | default: uneven_media
+    assign aspect_ratio = uneven_image.aspect_ratio | default: settings.card_aspect_ratio
+  endif
+%}
+
+{% comment %} Title, price, and rating content {% endcomment %}
+{% capture title_markup %}
+  <span data-test-id="product-card-title" class="font-bold {% if settings.truncate_card_titles %}line-clamp-2{% endif %}">
+    {{ plain_title }}
+  </span>
+{% endcapture %}
+{% capture title_slot %}
+  {% if settings.enable_metafield_cardslot_title %}
+    {% render 'card-product-lg-metafield-cardslot',
+      type: 'title',
+      product: product,
+      variant: selected_variant,
+      content: title_markup
+    %}
+  {% else %}
+    {{ title_markup }}
+  {% endif %}
+{% endcapture %}
+
+{% capture price_markup %}
+  <span>{% render 'card-price', product: product, variant: selected_variant %}</span>
+{% endcapture %}
+{% capture price_slot %}
+  {% if settings.enable_metafield_cardslot_price %}
+    {% render 'card-product-lg-metafield-cardslot',
+      type: 'price',
+      product: product,
+      variant: selected_variant,
+      content: price_markup
+    %}
+  {% else %}
+    {{ price_markup }}
+  {% endif %}
+{% endcapture %}
+
+{% if settings.card_rating_enable and settings.card_rating_position != 'badge' %}
+  {% if product.metafields.reviews.rating.value != blank %}
+    {% capture rating_content %}
+      {% render 'product-rating', product: product, rating_show_count: settings.card_rating_show_count %}
+    {% endcapture %}
+  {% endif %}
+{% endif %}
+
+{% comment %} Media and controls layered over it {% endcomment %}
+{% capture media_content %}
+  {% render 'card-product-lg-media',
+    product: product,
+    product_media: card_product_media,
+    has_option_media_list: has_option_media_list,
+    initial_media: primary_media,
+    initial_image_loading: primary_image_loading,
+    initial_image_fetchpriority: image_fetchpriority,
+    image_widths: image_widths,
+    image_sizes: image_sizes,
+    attributes: 'data-morph-view-transition'
+  %}
+{% endcapture %}
+
+{% capture badge_content %}
+  <div x-show="!$productCard.isActive">
+    {% render 'card-product-lg-media-badges', product: product, variant: selected_variant %}
+  </div>
+{% endcapture %}
+
+{% capture quick_actions_content %}
+  {% render 'card-product-lg-quick-actions',
+    product: product,
+    variant: selected_variant,
+    selection_url: card_url,
+    promoted_option: quick_action_promoted_option,
+    selection_is_explicit: selection_is_explicit
+  %}
+{% endcapture %}
+
+{% capture media_overlay %}
+  <div data-test-id="product-card-badges" class="flex-row-center justify-end">
+    {{ badge_content }}
+  </div>
+
+  {{ quick_actions_content }}
+{% endcapture %}
+
+{% comment %} Sibling or variant selections shown above or below the details {% endcomment %}
+{% capture selection_content %}
+  {% case selection_mode %}
+    {% when 'sibling' %}
+      {% render 'card-product-lg-sibling-swatches',
+        destination_url: card_url,
+        product: product,
+        siblings_metafield: sibling_group_metafield,
+        image_sizes: image_sizes,
+        image_widths: image_widths
+      %}
+    {% when 'variant' %}
+      {% render 'card-product-lg-variant-swatches',
+        destination_url: card_url,
+        product: product,
+        swatch_option: variant_swatch_option,
+        option_media_entries: option_media_entries,
+        selection_is_explicit: selection_is_explicit,
+        image_sizes: image_sizes,
+        image_widths: image_widths
+      %}
+  {% endcase %}
+{% endcapture %}
+
+{% comment %}
+  Keep the card and Section API frame stable while selections morph their children. The preloader
+  warms every visible selection response on interaction, or as a mobile card crosses the viewport's
+  attention band, and gives a directly interacted swatch priority.
+{% endcomment %}
+{% capture card_root_attributes %}
+  data-test-id="product-card"
+  key="product-card-{{ product.id }}"
+  data-lazy-alpine
+  data-morph-update="children"
+  x-data
+  x-product-card
+  x-section-api="api-card-product"
+  x-preloader.interact.attention.all="api-card-product"
+  data-product-card-frame
+  :aria-busy="$sectionApi.state === 'loading' ? 'true' : null"
+  :data-selection-loading="$sectionApi.state === 'loading'"
+  {{ attributes }}
+{% endcapture %}
+
+{% capture destination_link_attributes %}
+  data-product-card-destination
+{% endcapture %}
+
+{% capture details_content %}
+  {% if selection_position == 'top' %}
+    {{ selection_content }}
+  {% endif %}
+
+  {% comment %}
+    The media link owns the card's tab stop. This duplicate desktop link makes the title and price
+    independently clickable without adding another keyboard stop.
+  {% endcomment %}
+  <a
+    href="{{ card_url }}"
+    class="
+      flex flex-col justify-between gap-x-r4 gap-y-r2
+
+      pointer-events-none md:pointer-events-auto items-start text-start
+    "
+    aria-hidden="true"
+    tabindex="-1"
+
+    {{ destination_link_attributes }}
+  >
+    {{ title_slot }}
+    {{ price_slot }}
+
+    {% if settings.card_rating_position == 'details' and rating_content != nil and rating_content != blank %}
+      <div class="flex flex-row type-p whitespace-nowrap text-end max-w-full">
+        {{ rating_content }}
+      </div>
+    {% endif %}
+  </a>
+
+  {% if selection_position == 'bottom' %}
+    {{ selection_content }}
+  {% endif %}
+{% endcapture %}
+
+{% capture card_classes %}
+  min-w-0
+  {{ class }}
+{% endcapture %}
+
+{% render 'card-layout-lg',
+  url: card_url,
+  details: details_content,
+  media: media_content,
+  media_overlay: media_overlay,
+  media_wrapper_attributes: 'x-product-card:media',
+  link_attributes: destination_link_attributes,
+  attributes: card_root_attributes,
+  class: card_classes,
+  aspect_ratio: aspect_ratio,
+  appearance: appearance,
+  aria_label: card_aria_label
+%}

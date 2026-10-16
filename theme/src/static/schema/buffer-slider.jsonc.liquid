@@ -1,0 +1,18 @@
+[% if id_suffix %]
+ [% assign _id_suffix = id_suffix | prepend: '_' %]
+[% endif %]
+[
+  {
+    "type": "range",
+    "id": "buffer[= _id_suffix =]",
+    "label": "[= buffer_label | default: 'Padding' =]",
+    [% if conditional %]
+      "visible_if": "{{ [= conditional =] }}",
+    [% endif %]
+    "default": 20,
+    "min": 0,
+    "max": [= custom_max | default: 200 =],
+    "step": 2,
+    "unit": "px",
+  },
+]

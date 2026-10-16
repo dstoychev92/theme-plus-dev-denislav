@@ -1,0 +1,154 @@
+{% comment %}
+  Section: Card Slider
+  Horizontal scrolling carousel of product, collection, or article cards.
+  Cards slide left/right with touch and arrow navigation.
+
+  Blocks are defined via the shared blocks-card-list fragment: _section-title
+  (static header), _cards-products, _cards-collections, _cards-articles.
+  Column count is configurable per breakpoint.
+
+  Slider controls can be styled (fill/stroke/soft/bare) and a progress bar
+  can show scroll position. content_width controls whether the slider is
+  full-bleed or contained to page width.
+
+  Gap uses the standard preset+custom pattern (sm/md/lg/custom) for both
+  card spacing and title-to-cards vertical gap.
+{% endcomment %}
+
+{% capture header %}
+  {% content_for 'block', type: '_section-title', id: 'header' %}
+{% endcapture %}
+
+{% capture list_items %}
+  {% content_for 'blocks' %}
+{% endcapture %}
+
+{% render 'core-section-card-list',
+  s: section.settings,
+  list_items: list_items,
+  header: header,
+  layout_desktop: 'slider',
+  layout_tablet: 'slider'
+%}
+
+{% schema %}
+{
+  "name": "Card carousel",
+  "class": "section-card-slider",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Columns"
+    },
+    [% json 'schema/section-card-slider-settings.jsonc' %]
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "content_width",
+      "label": "Width",
+      "default": "page",
+      "options": [
+        {"value": "full", "label": "Full"},
+        {"value": "page", "label": "Page"},
+      ]
+    },
+    [% json 'schema/section-padding-settings.jsonc' %]
+    {
+      "type": "header",
+      "content": "Content layout"
+    },
+    {
+      "type": "text_alignment",
+      "id": "title_placement",
+      "label": "Title alignment",
+      "default": "center"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_gap_tab_y",
+      "label": "Set vertical gap",
+      "default": false
+    },
+    [% json 'schema/grid-gap-setting.jsonc', default_gap: 'sm', gap_label: 'Vertical gap', gap_custom_label: 'Custom', id_suffix: 'tab_y', context: 'section.settings.', conditional: 'section.settings.set_gap_tab_y' %]
+    {
+      "type": "header",
+      "content": "Appearance"
+    },
+    [% json 'schema/color-settings-section-solid.jsonc' %]
+    {
+      "type": "header",
+      "content": "Navigation"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_pagination_style",
+      "label": "Set button style",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "slider_control_style",
+      "label": "Style",
+      "default": "soft",
+      "options": [
+        {"value": "fill", "label": "Fill"},
+        {"value": "stroke", "label": "Stroke"},
+        {"value": "soft", "label": "Soft"},
+        {"value": "bare", "label": "∅"}
+      ],
+      "visible_if": "{{ section.settings.set_pagination_style }}"
+    },
+    [% json 'schema/progress-bar-visibility-setting.jsonc' %]
+    [% json 'schema/section-target-device-settings.jsonc' %]
+  ],
+  "blocks": [
+    [% json 'schema/blocks-card-list.jsonc' %]
+  ],
+  "presets": [
+    {
+      "name": "Card carousel",
+      "category": "Grid",
+      "blocks": [
+        {
+          "id": "header",
+          "type": "_section-title",
+          "static": true,
+          "settings": {
+            "text": "Featured Products"
+          }
+        },
+        {
+          "type": "_cards-products",
+          "settings": {
+            "source": "collection"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Article card carousel",
+      "category": "Try: Tell your story",
+      "blocks": [
+        {
+          "id": "header",
+          "type": "_section-title",
+          "static": true,
+          "settings": {
+            "text": "From the journal"
+          }
+        },
+        {
+          "type": "_cards-articles"
+        }
+      ]
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "custom.overlays", "custom.drawers"]
+  }
+}
+{% endschema %}

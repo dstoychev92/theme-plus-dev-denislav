@@ -1,0 +1,46 @@
+{% doc %}
+  - Renders one collection card
+
+  The image is block.settings.image, then the collection image, then the featured image of its first product.
+{% enddoc %}
+
+{% liquid
+  assign collection = block.settings.collection
+  assign enable_placeholder_collection = false
+  assign image = block.settings.image | default: block.settings.collection.image | default: block.settings.collection.products.first.featured_media.preview_image
+
+  if settings.placeholder_mode or request.design_mode
+    assign enable_placeholder_collection = true
+  endif
+%}
+
+{% if collection == blank and enable_placeholder_collection %}
+  {% render 'card-collection', size: 'lg', placeholder: true, attributes: block.shopify_attributes %}
+{% else %}
+  {% render 'card-collection', size: 'lg', image: image, collection: collection, attributes: block.shopify_attributes %}
+{% endif %}
+
+{% schema %}
+{
+  "name": "Collection card",
+  "tag": null,
+  "settings": [
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Collection card",
+      "category": "Featured card"
+    }
+  ]
+}
+{% endschema %}

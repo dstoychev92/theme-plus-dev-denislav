@@ -1,0 +1,49 @@
+/* Use for CSS that we do not like, but must use */
+
+.mask-fill-diamond,
+.mask-fill-circle,
+.mask-fill-triangle,
+.mask-fill-square,
+.mask-fill-dot,
+.mask-fill-plus,
+.mask-fill-sparkle,
+.mask-mark-cross,
+.mask-mark-asterisk {
+  mask-size: 100% 100%;
+  mask-repeat: no-repeat;
+  mask-position: center center;
+}
+.mask-fill-diamond {
+  mask: url(#mask-fill-diamond);
+}
+.mask-fill-circle {
+  mask: url(#mask-fill-circle);
+}
+.mask-fill-triangle {
+  mask: url(#mask-fill-triangle);
+}
+.mask-fill-square {
+  mask: url(#mask-fill-square);
+}
+.mask-fill-dot {
+  mask: url(#mask-fill-dot);
+}
+.mask-fill-plus {
+  mask: url(#mask-fill-plus);
+}
+.mask-fill-sparkle {
+  mask: url(#mask-fill-sparkle);
+}
+.mask-mark-cross {
+  mask: url(#mask-mark-cross);
+}
+.mask-mark-asterisk {
+  mask: url(#mask-mark-asterisk);
+}
+
+/* no-js auto trigger animations */
+@media (scripting: none) {
+  .entrance-container .entrance-item {
+    animation-play-state: running;
+  }
+}

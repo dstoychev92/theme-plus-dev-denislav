@@ -1,0 +1,39 @@
+{% doc %}
+  - Renders inline text group holding inline blocks
+
+  The heading tag setting applies only when the theme setting show_tag_settings is on.
+{% enddoc %}
+
+[%- capture additional_blocks -%]
+  {"type": "_inline-group-target"},
+  [% json 'schema/blocks-inline.jsonc' %]
+[%- endcapture -%]
+
+[%- capture additional_presets -%]
+  {
+    "name": "Text group",
+    "category": "Layout",
+    "blocks": [
+      {
+        "type": "_inline-text",
+        "settings": {
+          "text": "Primary title",
+          "set_color": false,
+          "color": "content",
+          "color_custom": "#000000"
+        }
+      },
+      {
+        "type": "_inline-text",
+        "settings": {
+          "text": "with secondary text",
+          "set_color": true,
+          "color": "muted",
+          "color_custom": "#777777"
+        }
+      }
+    ]
+  }
+[%- endcapture -%]
+
+[% render 'groups/inline', additional_blocks: additional_blocks, additional_presets: additional_presets %]

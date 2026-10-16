@@ -1,0 +1,336 @@
+{% comment %}
+  Section: Custom
+  The most flexible section — accepts virtually any block type for freeform
+  layouts. Use when no specialized section fits or when composing mixed content.
+
+  Accepts all theme-* blocks, _card-showcase, _accordion-group, _tabs,
+  group blocks (row, flex, frame, text, target), _grid-editorial, and @app blocks.
+  Content stacks vertically with configurable gap and text alignment.
+
+  contain_section controls whether content is boxed (page width) or full-bleed.
+  Gap uses the standard preset+custom pattern (sm/md/lg/custom). There is no
+  "none" gap option — for zero gap, set gap to "custom" and gap_custom to 0.
+{% endcomment %}
+
+{% capture blocks %}
+  {% content_for 'blocks' %}
+{% endcapture %}
+
+{% liquid
+  assign alignment = section.settings.alignment | default: section.settings.content_align
+  assign gap = section.settings.gap | default: false, allow_false: true
+%}
+
+{% capture style %}
+  {%- if section.settings.contain_section == false -%}
+    {%- comment -%}
+      Uncontained sections push content edge-to-edge by overriding the default
+      content-start/content-end grid lines. Contained sections rely on the
+      natural grid + --section-content-width math driven by the Width setting.
+    {%- endcomment -%}
+    --section-content-col-start: section-start;
+    --section-content-col-end: section-end;
+  {%- endif -%}
+{% endcapture %}
+
+{% capture wrapped_blocks %}
+  <div
+    class="
+      flex flex-col h-full
+
+      text-content-align
+      vars-content-align-{{ alignment }}
+      items-content-align
+    "
+    style="
+      {%- if gap -%}
+        {% render 'props-style-gap', s: section.settings %}
+      {%- endif -%}
+    "
+  >
+    {{ blocks }}
+  </div>
+{% endcapture %}
+
+{% render 'core-section',
+  s: section.settings,
+  content: wrapped_blocks,
+  class: 'entrance-container',
+  style: style,
+  contain_controls_rhythm: false
+%}
+
+{% schema %}
+{
+  "name": "Section layout",
+  "class": "section-custom",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "checkbox",
+      "id": "contain_section",
+      "label": "Contain section",
+      "default": true
+    },
+    [% json 'schema/section-content-width-setting.jsonc', default_width: 'page', default_label: 'Width', conditional: 'section.settings.contain_section' %]
+    [% json 'schema/section-padding-settings.jsonc' %]
+    {
+      "type": "header",
+      "content": "Content layout"
+    },
+    [% json 'schema/grid-gap-setting.jsonc', default_gap: 'md', context: 'section.settings.' %]
+    {
+      "type": "text_alignment",
+      "id": "alignment",
+      "label": "Alignment",
+      "default": "center"
+    },
+    {
+      "type": "header",
+      "content": "Appearance"
+    },
+    [% json 'schema/color-settings-section-solid.jsonc' %]
+    [% json 'schema/section-target-device-settings.jsonc' %]
+  ],
+  "blocks": [
+    { "type": "@theme" },
+    { "type": "_section-title" },
+    [% json 'schema/blocks-extended.jsonc' %]
+    {
+      "type": "@app"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Section layout",
+    },
+    {
+      "name": "Marquee",
+      "category": "Try: Promote a deal",
+      "settings": {
+        "contain_section": false,
+        "set_rhythm": true,
+        "section_padding_top": 0,
+        "section_padding_bottom": 0
+      },
+      "blocks": [
+        {
+          "type": "_marquee",
+          "settings": {
+            "set_gap": true,
+            "gap": "lg"
+          },
+          "blocks": [
+            {
+              "type": "theme-group-text",
+              "settings": {
+                "type_preset": "h1"
+              },
+              "blocks": [
+                {
+                  "type": "_inline-text",
+                  "settings": { "text": "Fast shipping" }
+                },
+                {
+                  "type": "_inline-text",
+                  "settings": { "text": "Easy returns" }
+                },
+                {
+                  "type": "_inline-text",
+                  "settings": { "text": "New arrivals" }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "FAQ: Accordion",
+      "category": "Try: Build trust",
+      "blocks": [
+        {
+          "type": "_section-title",
+          "settings": {
+            "text": "Common Questions"
+          }
+        },
+        {
+          "type": "_accordion-group",
+          "blocks": [
+            {
+              "type": "_accordion",
+              "settings": {
+                "title": "How long will my order take to ship?",
+                "expand": true
+              },
+              "blocks": [
+                {
+                  "type": "theme-richtext",
+                  "settings": {
+                    "text": "<p>Share where you ship and estimated delivery times. Link to your shipping policy for the full details.</p>"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "_accordion",
+              "settings": {
+                "title": "What is your return policy?"
+              },
+              "blocks": [
+                {
+                  "type": "theme-text",
+                  "settings": {
+                    "text": "Explain how returns or exchanges work and how customers can start one. Link to your return policy for the full details.",
+                    "type_preset": "p"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "FAQ: Tabs",
+      "category": "Try: Build trust",
+      "blocks": [
+        {
+          "type": "_section-title",
+          "settings": {
+            "text": "Common Questions"
+          }
+        },
+        {
+          "type": "_tabs",
+          "blocks": [
+            {
+              "type": "_tab",
+              "settings": {
+                "title": "Returns"
+              },
+              "blocks": [
+                {
+                  "type": "theme-richtext",
+                  "settings": {
+                    "text": "<p>Explain how returns or exchanges work and how customers can start one. Link to your return policy for the full details.</p>"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "_tab",
+              "settings": {
+                "title": "Security"
+              },
+              "blocks": [
+                {
+                  "type": "theme-richtext",
+                  "settings": {
+                    "text": "<p>Describe the payment methods you accept and how transactions and customer data are kept secure.</p>"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "_tab",
+              "settings": {
+                "title": "Support"
+              },
+              "blocks": [
+                {
+                  "type": "theme-richtext",
+                  "settings": {
+                    "text": "<p>Tell customers how to reach you with questions — add your support email, hours, or a link to your contact page.</p>"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Contact",
+      "category": "Try: Forms",
+      "settings": {
+        "content_width": "custom",
+        "content_width_custom": 65,
+        "gap": "sm"
+      },
+      "blocks": [
+        {
+          "type": "theme-text",
+          "settings": {
+            "text": "Get in touch"
+          }
+        },
+        {
+          "type": "theme-decoration"
+        },
+        {
+          "type": "_form-contact",
+          "blocks": [
+            {
+              "type": "_form-input-name",
+              "settings": {
+                "label": "Name"
+              }
+            },
+            {
+              "type": "_form-input-email",
+              "settings": {
+                "label": "Email"
+              }
+            },
+            {
+              "type": "_form-input-text",
+              "settings": {
+                "label": "Message"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Newsletter",
+      "category": "Try: Forms",
+      "settings": {
+        "background": "tint",
+        "content_width": "custom",
+        "content_width_custom": 65,
+        "gap": "sm"
+      },
+      "blocks": [
+        {
+          "type": "theme-text",
+          "settings": {
+            "text": "Newsletter"
+          }
+        },
+        {
+          "type": "theme-richtext",
+          "settings": {
+            "text": "<p>Invite customers to join your mailing list. Tell them what to expect in return, like new products, offers, or updates.</p>"
+          }
+        },
+        {
+          "type": "theme-form-newsletter",
+          "settings": {
+            "show_captcha_terms": false
+          }
+        }
+      ]
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "custom.overlays", "custom.drawers"]
+  }
+}
+{% endschema %}

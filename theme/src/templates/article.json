@@ -1,0 +1,73 @@
+{
+  "sections": {
+    "article_89UPSx_anlgv0p0": {
+      "type": "article",
+      "settings": {
+        "show_image": true,
+        "show_author": false,
+        "show_date": false,
+        "show_read_time": true,
+        "show_tags": true,
+        "show_share": true,
+        "color_scheme": "",
+        "content_width": "custom",
+        "content_width_custom": 65,
+        "content_width_custom_mobile": 100,
+        "set_rhythm": false,
+        "section_padding_top": 40,
+        "section_padding_bottom": 40
+      }
+    },
+    "section_card_slider_3dRUp2_anlgv0p0": {
+      "type": "section-card-slider",
+      "blocks": {
+        "cards_articles_jlFhIZ_anlgv0p0": {
+          "type": "_cards-articles",
+          "name": "Article cards",
+          "settings": {
+            "source": "blog",
+            "blog": "news",
+            "card_limit": 6,
+            "show_author": false,
+            "show_tags": false,
+            "show_date": false,
+            "show_preview": false,
+            "show_link": false
+          }
+        },
+        "header": {
+          "type": "_section-title",
+          "static": true,
+          "settings": {
+            "text": "Recent articles"
+          },
+          "blocks": {
+            "theme_decoration_36AO4g_anlgv0p0": {
+              "type": "theme-decoration",
+              "name": "Decoration"
+            }
+          },
+          "block_order": [
+            "theme_decoration_36AO4g_anlgv0p0"
+          ]
+        }
+      },
+      "block_order": [
+        "cards_articles_jlFhIZ_anlgv0p0"
+      ],
+      "name": "Recent articles",
+      "settings": {
+        "columns_lg": 4,
+        "columns_md": 3,
+        "content_width": "page",
+        "set_rhythm": false,
+        "title_placement": "center",
+        "color_scheme": ""
+      }
+    }
+  },
+  "order": [
+    "article_89UPSx_anlgv0p0",
+    "section_card_slider_3dRUp2_anlgv0p0"
+  ]
+}

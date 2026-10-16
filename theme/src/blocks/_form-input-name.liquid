@@ -1,0 +1,54 @@
+{% doc %}
+  - Renders contact form name input
+
+  Sits inside _form-contact. The label handle is the contact[] key so the merchant's
+  notification email stays readable, and a cleared label falls back to the block id.
+{% enddoc %}
+
+{% liquid
+  # The label doubles as the wire key so the merchant's notification email
+  # stays readable. A cleared label must not produce contact[].
+  assign label_handle = block.settings.label | handleize
+  if label_handle == blank
+    assign label_handle = 'field-' | append: block.id
+  endif
+  assign id = label_handle | append: '-' | append: block.id
+  assign name = 'contact[' | append: label_handle | append: ']'
+%}
+
+{% capture input_attributes %}
+  {% if block.settings.required %}
+    required
+  {% endif %}
+{% endcapture %}
+
+{% render 'field-input',
+  name: name,
+  id: id,
+  label: block.settings.label,
+  size: block.settings.sizing,
+  input_attributes: input_attributes,
+  wrapper_attributes: block.shopify_attributes,
+  class: 'min-w-[150px]'
+%}
+
+{% schema %}
+{
+  "name": "Input name",
+  "tag": null,
+  "settings": [
+    [% json 'schema/form-input-setting.jsonc', default: "Name" %]
+    {
+      "type": "checkbox",
+      "id": "required",
+      "label": "Required",
+      "default": false
+    }
+  ],
+  "presets": [
+    {
+      "name": "Input name"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,70 @@
+{% doc %}
+  - Renders contact form textarea
+
+  Sits inside _form-contact. The label handle is the contact[] key so the merchant's
+  notification email stays readable, and a cleared label falls back to the block id.
+{% enddoc %}
+
+{% liquid
+  # The label doubles as the wire key so the merchant's notification email
+  # stays readable. A cleared label must not produce contact[].
+  assign label_handle = block.settings.label | handleize
+  if label_handle == blank
+    assign label_handle = 'field-' | append: block.id
+  endif
+  assign id = label_handle | append: '-' | append: block.id
+  assign name = 'contact[' | append: label_handle | append: ']'
+%}
+
+{% capture input_attributes %}
+  {% if block.settings.required %}
+    required
+  {% endif %}
+{% endcapture %}
+
+{% capture style %}
+  {% case block.settings.height %}
+    {% when 'sm' %}
+      --height: var(--control-height);
+    {% when 'md' %}
+      --height: var(--r12);
+    {% when 'lg' %}
+      --height: var(--r14);
+    {% when 'xl' %}
+      --height: var(--r15);
+  {% endcase %}
+  height: var(--height);
+{% endcapture %}
+
+{% render 'field-textarea',
+  name: name,
+  id: id,
+  label: block.settings.label,
+  size: block.settings.sizing,
+  style: style,
+  input_attributes: input_attributes,
+  wrapper_attributes: block.shopify_attributes,
+  class: 'min-w-[150px]'
+%}
+
+{% schema %}
+{
+  "name": "Input text",
+  "tag": null,
+  "settings": [
+    [% json 'schema/form-input-setting.jsonc', default: "Message" %]
+    [% json 'schema/size-setting.jsonc', size_id: "height", size_label: "Height", default_size: "lg", exclude: 'xs' %]
+    {
+      "type": "checkbox",
+      "id": "required",
+      "label": "Required",
+      "default": false
+    }
+  ],
+  "presets": [
+    {
+      "name": "Input text"
+    }
+  ]
+}
+{% endschema %}

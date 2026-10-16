@@ -1,0 +1,36 @@
+[% assign context = context | default: 'block.settings.' %]
+[
+  {
+    "type": "checkbox",
+    "id": "set_rounding",
+    "label": "Set rounding",
+    "default": false[% if conditional %],
+    "visible_if": "{{ [= conditional =] }}"
+    [% endif %]
+  },
+  {
+    "type": "select",
+    "id": "rounding_radius",
+    "label": "Radius",
+    "default": "[= default_rounding_radius | default: 'lg' =]",
+    "options": [
+      {"value": "none", "label": "0"},
+      {"value": "sm", "label": "S"},
+      {"value": "md", "label": "M"},
+      {"value": "lg", "label": "L"},
+      {"value": "custom", "label": "⋯"}
+    ],
+    "visible_if": "{{ [= context =]set_rounding [% if conditional %] and [= conditional =][% endif %] }}"
+  },
+  {
+    "type": "range",
+    "id": "rounding_radius_custom",
+    "label": "Radius",
+    "unit": "px",
+    "min": 0,
+    "max": 50,
+    "step": 1,
+    "default": 20,
+    "visible_if": "{{ [= context =]set_rounding and [= context =]rounding_radius == 'custom' [% if conditional %] and [= conditional =][% endif %] }}"
+  }
+]

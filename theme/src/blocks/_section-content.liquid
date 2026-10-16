@@ -1,0 +1,36 @@
+{% doc %}
+  - Renders content blocks placed over the section background
+
+  Private, only offered by section-pro-banner as the static content block. Reads placement and padding from section.settings.
+{% enddoc %}
+
+{% capture blocks %}
+  {% content_for "blocks" %}
+{% endcapture %}
+
+{% capture placement %}
+  {% render 'core-placement-grid',
+    s: section.settings,
+    content: blocks,
+    attributes: block.shopify_attributes
+  %}
+{% endcapture %}
+
+{% render 'core-section-content', content: placement, s: section.settings %}
+
+{% schema %}
+{
+  "name": "Content",
+  "tag": null,
+  "settings": [],
+  "blocks": [
+    {
+      "type": "@theme"
+    },
+    {
+      "type": "@app"
+    },
+    [% json 'schema/blocks-extended.jsonc' %]
+  ]
+}
+{% endschema %}

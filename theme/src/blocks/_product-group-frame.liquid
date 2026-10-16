@@ -1,0 +1,12 @@
+{% doc %}
+  - Renders frame holding product blocks
+{% enddoc %}
+
+[% capture additional_blocks %]
+  [% json 'schema/blocks-theme-node.jsonc' %]
+  [% json 'schema/blocks-product-form.jsonc' %]
+  [% json 'schema/blocks-product-layout.jsonc' %]
+  [% json 'schema/blocks-product-extended.jsonc' %]
+[% endcapture %]
+
+[% render 'groups/frame', additional_blocks: additional_blocks %]

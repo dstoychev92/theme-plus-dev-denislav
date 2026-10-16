@@ -1,0 +1,97 @@
+@layer base {
+  :root {
+    /* Actual Shopify max is 25 sections per page but double it just to be safe */
+    --max-sections: 50;
+  }
+}
+
+@layer components {
+  /**
+     * Page Grid
+     * Transparent Header Support without JS or CLS
+     *
+     * Creates a system that allows sections to opt into overlapping
+     * with a transparent/overlay header while keeping content below the header.
+     *
+     * Grid structure:
+     * - Row 1 (header-start/header-end/banner-start): Contains the header element and top of banner (if header transparent)
+     * - Row 2 (banner-content-start/banner-content-end): Contains banner content e.g. text and buttons (if header transparent)
+     * - Rows 3+ (section-start/section-end): Contains sections
+     * - Last row (footer-start/footer-end): Contains the footer element
+     *
+     * When a section has [data-allows-overlay-header] and the header has
+     * [data-overlay-header], the section spans both rows but its content
+     * starts after the header ends.
+     *
+     * The product section demonstrated fine-grained use of this subgrid
+     * and the banner/slideshow sections demonstrate the default usage.
+     */
+
+  .page-grid {
+    display: grid;
+    grid-template-rows:
+      [header-start]
+      repeat(2, [header-section-start] minmax(0, min-content) [header-section-end])
+      [header-end]
+      /* Pre-fill enough rows for the max sections allowed by shopify. Any empty rows have the effect of streching the main content area of the page to fill the space keeping header and footer in place */
+      repeat(var(--max-sections), [section-start] minmax(0, auto) [section-end])
+      [footer-start]
+      minmax(0, min-content)
+      [footer-end];
+    grid-template-columns: 100%;
+    grid-auto-rows: minmax(0, auto);
+    min-height: 100dvh;
+
+    /* Use display: contents` to flatten the DOM, making children of shopify-section's a direct participant in page-grid */
+    > header {
+      display: contents;
+
+      > .shopify-section {
+        grid-column: 1/-1;
+
+        &:nth-child(1) {
+          grid-row: header-section-start 1 / header-section-end 1;
+          z-index: 51;
+        }
+
+        &:nth-child(2) {
+          grid-row: header-section-start 2 / header-section-end 2;
+          z-index: 50;
+
+          /* Ensure Toolbar does not overlap the Predictive Search Flyout on old Safari */
+          &:has([data-open='true']) {
+            z-index: 52;
+          }
+        }
+      }
+    }
+
+    /* Use display: contents` to flatten the DOM, making shopify-section a direct participant in page-grid */
+    > main {
+      display: contents;
+
+      /* Allow sections to opt into page-grid with grid-template-rows: subgrid  */
+      > .shopify-section {
+        position: relative;
+        grid-column: 1/-1;
+
+        display: grid;
+        grid-template-rows: subgrid;
+
+        /* Subgrid is only Safari 16+ / Chrome 117+ */
+        @supports not (grid-template-rows: subgrid) {
+          grid-template-rows: auto;
+        }
+
+        &:only-child {
+          grid-row: section-start/footer-start;
+        }
+      }
+    }
+
+    > footer {
+      grid-row: footer-start/footer-end;
+      grid-column: 1/-1;
+    }
+  }
+}

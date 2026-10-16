@@ -1,0 +1,4 @@
+src/snippets/styleguide-card-color-scheme-color.liquid
+src/snippets/styleguide-card.liquid
+src/sections/page-styleguide.liquid
+src/templates/page.styleguide.json

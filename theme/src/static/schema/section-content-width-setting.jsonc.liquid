@@ -1,0 +1,47 @@
+[
+  {
+    "type": "select",
+    "id": "content_width",
+    "label": "[= default_label | default: 'Content width' =]",
+    "default": "[= default_width | default: 'page' =]",
+    [% if conditional %]
+    "visible_if": "{{ [= conditional =] }}",
+    [% endif %]
+    "options": [
+      {"value": "full", "label": "Full"},
+      {"value": "page", "label": "Page"},
+      {"value": "custom", "label": "⋯"},
+    ]
+  },
+  {
+    "type": "range",
+    "id": "content_width_custom",
+    "label": "Desktop width",
+    "visible_if": "{{ section.settings.content_width == 'custom' [% if conditional %] and [= conditional =][% endif %] }}",
+    "min": 25,
+    "max": 100,
+    "step": 5,
+    "default": [= default_width_custom | default: 65 =],
+    "unit": "%"
+  },
+  [% unless disable_mobile_width == true %]
+    [% if disable_mobile_width_when_slider == true %]
+    {
+      "type": "paragraph",
+      "visible_if": "{{ section.settings.content_width == 'custom' and section.settings.layout_mobile != 'grid' [% if conditional %] and [= conditional =][% endif %] }}",
+      "content": "Mobile width is unavailable for carousel layout."
+    },
+    [% endif %]
+    {
+      "type": "range",
+      "id": "content_width_custom_mobile",
+      "label": "Mobile width",
+      "visible_if": "{{ section.settings.content_width == 'custom' [% if disable_mobile_width_when_slider == true %] and section.settings.layout_mobile == 'grid' [% endif %] [% if conditional %] and [= conditional =][% endif %] }}",
+      "min": 25,
+      "max": 100,
+      "step": 5,
+      "default": [= default_width_custom_mobile | default: 100 =],
+      "unit": "%"
+    }
+  [% endunless %]
+]

@@ -1,0 +1,153 @@
+{% doc %}
+  - Renders one slideshow slide
+
+  @param {string} [controls_attributes] - attributes for the slideshow controls
+{% enddoc %}
+
+{% liquid
+  assign block_index = section.blocks | find_index: 'id', block.id
+  assign block_position = block_index | plus: 1
+
+  assign visible = false
+  assign preload = false
+
+  if block_index == 0
+    assign visible = true
+  endif
+
+  if section.index0 == 0
+    if block_index == 0
+      assign preload = true
+    else
+      assign loading = 'eager'
+      assign fetchpriority = 'high'
+    endif
+  endif
+%}
+
+{% capture blocks %}
+  {% content_for "blocks" %}
+{% endcapture %}
+
+{% if section.blocks.size > 1 %}
+  {% capture controls %}
+    {% if section.settings.show_controls %}
+      {% render 'slideshow-controls', s: section.settings, initial_slide: block_position, total_slides: section.blocks.size, attributes: controls_attributes %}
+    {% endif %}
+  {% endcapture %}
+{% endif %}
+
+{% capture placement %}
+  {% render 'core-placement-grid',
+    content: blocks,
+    controls: controls,
+    s: section.settings,
+    padding: false
+  %}
+{% endcapture %}
+
+{% capture background_media %}
+  {% render 'core-background-media', s: block.settings, height: section.settings.height, set_height_mobile: section.settings.set_height_mobile, height_mobile: section.settings.height_mobile, preload: preload, loading: loading, fetchpriority: fetchpriority %}
+{% endcapture %}
+
+{% capture background %}
+  {% render 'core-background',
+    s: block.settings,
+    height: section.settings.height,
+    custom_height_type: section.settings.custom_height_type,
+    custom_height_percentage: section.settings.custom_height_percentage,
+    custom_height_px: section.settings.custom_height_px,
+    set_height_mobile: section.settings.set_height_mobile,
+    height_mobile: section.settings.height_mobile,
+    custom_height_type_mobile: section.settings.custom_height_type_mobile,
+    custom_height_percentage_mobile: section.settings.custom_height_percentage_mobile,
+    custom_height_px_mobile: section.settings.custom_height_px_mobile,
+    content: background_media
+  %}
+{% endcapture %}
+
+{% render 'slide',
+  class: 'group/slide',
+  visible: visible,
+  content: placement,
+  background: background,
+  attributes: block.shopify_attributes
+%}
+
+{% schema %}
+{
+  "name": "Slide",
+  "tag": null,
+  "settings": [
+    [% json 'schema/media-settings.jsonc' %]
+    {
+      "type": "paragraph",
+      "content": "Note: Desktop image preloading is disabled when mobile image is set to prevent loading both images on mobile",
+      "visible_if": "{{ block.settings.media_type == 'image' and block.settings.image_mobile != blank }}"
+    },
+    {
+      "type": "header",
+      "content": "Overlay"
+    },
+    [% json 'schema/overlay-settings.jsonc', default_overlay_opacity: 12 %]
+  ],
+  "blocks": [
+    {
+      "type": "@theme"
+    },
+    {
+      "type": "@app"
+    },
+    [% json 'schema/blocks-extended.jsonc' %]
+  ],
+  "presets": [
+    {
+      "name": "Slide",
+      "blocks": [
+        {
+          "type": "theme-text",
+          "settings": {
+            "text": "Introducing",
+            "type_preset": "h5"
+          }
+        },
+        {
+          "type": "theme-decoration"
+        },
+        {
+          "type": "theme-text",
+          "settings": {
+            "text": "New this season",
+            "type_preset": "h2"
+          }
+        },
+        {
+          "type": "theme-richtext",
+          "settings": {
+            "text": "<p>Fresh pieces just landed. Discover what's new and shop the looks you'll love all season.</p>",
+            "limit_width": true,
+            "max_width": 500
+          }
+        },
+        {
+          "type": "theme-group-row",
+          "settings": {
+            "gap": "lg"
+          },
+          "blocks": [
+            {
+              "type": "theme-button"
+            },
+            {
+              "type": "theme-link",
+              "settings": {
+                "appearance": "both"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

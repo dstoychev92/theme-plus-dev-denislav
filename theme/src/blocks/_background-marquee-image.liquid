@@ -1,0 +1,23 @@
+{% doc %}
+  - Renders one image in a background marquee
+
+  Sits inside _background-marquee.
+{% enddoc %}
+
+{% render 'marquee-image', s: block.settings, attributes: block.shopify_attributes %}
+
+{% schema %}
+{
+  "name": "Image",
+  "tag": null,
+  "settings": [
+    [% json 'schema/inline-image-settings.jsonc', link: false %]
+  ],
+  "presets": [
+    {
+      "name": "Image",
+      "category": "Basic"
+    }
+  ]
+}
+{% endschema %}

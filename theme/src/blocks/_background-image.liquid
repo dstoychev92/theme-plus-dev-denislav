@@ -1,0 +1,63 @@
+{% doc %}
+  - Renders full-size image or video background with optional overlay
+
+  Sits inside _background, _section-background, or _pair-pro-banner.
+{% enddoc %}
+
+{% assign target_device = block.settings.target_device | default: 'both' %}
+
+{% capture class %}
+  size-full relative
+  {% render 'props-class-target-device', target_device: target_device %}
+{% endcapture %}
+
+{% capture media_attributes %}
+  {% if block.settings.media_type == 'video' and block.settings.show_image_on_mobile == true %}
+    data-has-mobile-image
+  {% endif %}
+{% endcapture %}
+
+<div class="{{ class }}" {{ block.shopify_attributes }}>
+  <!-- background overlay -->
+  {% render 'core-background-overlay', s: block.settings, class: 'z-20' %}
+
+  <!-- background content -->
+  {% render 'core-background-media', s: block.settings, attributes: media_attributes %}
+</div>
+
+{% schema %}
+{
+  "name": "Banner image",
+  "tag": null,
+  "settings": [
+    [% json 'schema/media-settings.jsonc' %]
+    {
+      "type": "paragraph",
+      "content": "Note: Desktop image preloading is disabled when mobile image is set to prevent loading both images on mobile",
+      "visible_if": "{{ block.settings.media_type == 'image' and block.settings.image_mobile != blank }}"
+    },
+    {
+      "type": "header",
+      "content": "Overlay"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_overlay",
+      "label": "Set overlay",
+      "default": false
+    },
+    [% json 'schema/overlay-settings.jsonc', conditional: 'block.settings.set_overlay == true' %]
+    {
+      "type": "header",
+      "content": "Target device"
+    },
+    [% json 'schema/target-device-setting.jsonc', default_value: 'both' %]
+  ],
+  "blocks": [],
+  "presets": [
+    {
+      "name": "Banner image"
+    }
+  ]
+}
+{% endschema %}

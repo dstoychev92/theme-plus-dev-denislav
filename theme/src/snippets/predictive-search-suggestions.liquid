@@ -1,0 +1,113 @@
+{% doc %}
+  - Renders suggested search terms and empty state collection products in columns
+
+  Reads settings.search_suggested_searches and settings.search_empty_state_collection. Prints
+  nothing when both are blank. Sits inside an x-predictive-search scope.
+
+  @param {string} [heading_class]
+  @param {string} [item_class]
+  @param {string} [item_link_class]
+  @param {string} [result_group_list_class]
+  @param {string} [wrapper_class]
+{% enddoc %}
+{% assign search_term_list = settings.search_suggested_searches | strip_html | strip | split: ',' %}
+{% assign search_empty_state_collection = settings.search_empty_state_collection %}
+{% assign columns_count = 0 %}
+
+{% if search_term_list.size > 0 or search_empty_state_collection != blank %}
+  {% capture suggested_search_column_class %}
+    mb-r9 only:mb-0
+    break-inside-avoid-column
+  {% endcapture %}
+
+  {% comment %} Suggestion content {% endcomment %}
+  {% capture suggestion_items %}
+    {% comment %} Suggested searches {% endcomment %}
+    {% if search_term_list.size > 0 %}
+      {% assign columns_count = columns_count | plus: 1 %}
+      {% assign search_suggested_searches_title = settings.search_suggested_searches_title %}
+
+      <li role="presentation" class="{{ suggested_search_column_class }}">
+        {% if search_suggested_searches_title != blank %}
+          <p class="{{ heading_class }}">
+            {{ search_suggested_searches_title }}
+          </p>
+        {% endif %}
+
+        <ul class="{{ result_group_list_class }}">
+          {%- for query_suggestion in search_term_list -%}
+            {% assign query_suggestion = query_suggestion | strip %}
+
+            {% if query_suggestion != '' %}
+              <li
+                role="presentation"
+                class="{{ item_class }}"
+              >
+                {% assign term = query_suggestion | strip | url_encode %}
+                {% assign query_suggestion_url = routes.search_url | append: '?q=' | append: term %}
+                {% if settings.search_products_only %}
+                  {% assign query_suggestion_url = query_suggestion_url | append: '&type=product' %}
+                {% endif %}
+                <a class="{{ item_link_class }}" href="{{ query_suggestion_url }}" x-predictive-search:option>
+                  {% render 'card-generic', size: 'xs', title: query_suggestion, url: false, media: false %}
+                </a>
+              </li>
+            {% endif %}
+          {%- endfor -%}
+        </ul>
+      </li>
+    {% endif %}
+
+    {% comment %} Empty state collection {% endcomment %}
+    {% if search_empty_state_collection != blank %}
+      {% assign columns_count = columns_count | plus: 1 %}
+      {% assign search_empty_state_collection = collections[search_empty_state_collection] %}
+      {% assign product_list = search_empty_state_collection.products %}
+      {% assign search_empty_state_collection_title = search_empty_state_collection.title %}
+
+      <li role="presentation" class="{{ suggested_search_column_class }} max-md:mb-0">
+        {% if search_empty_state_collection_title != blank %}
+          <p class="{{ heading_class }}">
+            {{ search_empty_state_collection_title }}
+          </p>
+        {% endif %}
+
+        <ul class="{{ result_group_list_class }}">
+          {%- for product in product_list limit: 10 -%}
+            <li
+              role="presentation"
+              class="{{ item_class }}"
+            >
+              <a class="{{ item_link_class }}" href="{{ product.url }}" x-predictive-search:option>
+                {% render 'card-product', size: 'xs', product: product, url: false, view_context: 'search' %}
+              </a>
+            </li>
+          {%- endfor -%}
+        </ul>
+      </li>
+    {% endif %}
+  {% endcapture %}
+
+  <div class="{{ wrapper_class }}">
+    <ul
+      aria-label="{{ 'search.accessibility.search_suggestions' | t }}"
+      style="--suggestion-columns: {{ columns_count }};"
+      class="
+        columns-1
+
+        {% comment %} Adjust number of columns based on the size of the resutls container (varies between popover and flyout) {% endcomment %}
+        @md/results-container:columns-[min(var(--suggestion-columns),2)]
+        @lg/results-container:columns-[min(var(--suggestion-columns),3)]
+        @xl/results-container:columns-[min(var(--suggestion-columns),4)]
+
+        {% comment %} Fallback for browsers that don't support container queries {% endcomment %}
+        supports-[not(container-type:inline-size)]:md:columns-[min(var(--suggestion-columns),2)]
+        supports-[not(container-type:inline-size)]:lg:columns-[min(var(--suggestion-columns),3)]
+        supports-[not(container-type:inline-size)]:xl:columns-[min(var(--suggestion-columns),4)]
+      "
+      x-predictive-search:options
+    >
+      {{ suggestion_items }}
+    </ul>
+  </div>
+{% endif %}

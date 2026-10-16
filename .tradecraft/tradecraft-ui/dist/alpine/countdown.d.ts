@@ -1,0 +1,30 @@
+import { Alpine as AlpineType, AlpineComponent } from 'alpinejs';
+export type CountdownComponent = AlpineComponent<{
+    __countdown_isRoot: boolean;
+    __countdown_endDate: string;
+    __countdown_padDigits: boolean;
+    __countdown_msPerDay: number;
+    __countdown_msPerHour: number;
+    __countdown_msPerMinute: number;
+    __countdown_msPerSecond: number;
+    __countdown_remainingTime: number;
+    __countdown_intervalTimer: ReturnType<typeof setInterval> | undefined;
+    __countdown_days: string;
+    __countdown_hours: string;
+    __countdown_minutes: string;
+    __countdown_seconds: string;
+    get __countdown_endDateParsed(): number;
+    get __countdown_isExpired(): boolean;
+    __countdown_formatDigits: (value: number, applyPad: boolean) => string;
+    __countdown_update: () => void;
+    __countdown_start: () => void;
+}>;
+export type CountdownMagic = {
+    days: string;
+    hours: string;
+    minutes: string;
+    seconds: string;
+    endDate(date: string): void;
+    get isExpired(): boolean;
+};
+export default function (Alpine: AlpineType): void;

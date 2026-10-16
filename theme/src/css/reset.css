@@ -1,0 +1,46 @@
+@layer base {
+  summary::marker,
+  summary::-webkit-details-marker {
+    display: none;
+    content: none;
+  }
+
+  /* When things are hidden, they really really should be hidden */
+  [hidden]:where(:not([hidden='until-found'])) {
+    display: none !important;
+  }
+
+  dialog {
+    max-width: none;
+    max-height: none;
+    margin: 0;
+  }
+
+  [popover] {
+    inset: unset;
+    background: transparent;
+    overflow: visible;
+    padding: 0;
+    width: auto;
+    height: auto;
+  }
+
+  /* Only show focus outlines when user is actively using their keyboard. */
+
+  *:focus-visible {
+    outline: 2px solid transparent;
+  }
+
+  [data-keyboard-active] *:focus-visible {
+    outline-color: var(--focus-outline-color);
+  }
+
+  /*
+  Chages default from tailwind reset from explicit "none" to inherit
+  Remove the inheritance of text transform in Edge and Firefox.
+  */
+  button,
+  select {
+    text-transform: inherit;
+  }
+}

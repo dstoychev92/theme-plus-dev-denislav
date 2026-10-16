@@ -1,0 +1,45 @@
+{% doc %}
+  - Prints typography classes for a type preset
+
+  @param {string} [default_type_preset] - fallback preset, then 'p'
+  @param {string} [id_suffix] - suffix on the setting ids the preset reads
+  @param {object} [s] - settings object
+  @param {string} [settings_suffix] - setting id suffix with '_' prepended, replaces id_suffix
+  @param {string} [tag] - has no effect
+  @param {string} [type_font]
+  @param {string} [type_preset]
+  @param {string} [type_resize]
+  @param {number} [type_size]
+  @param {boolean} [type_uppercase]
+{% enddoc %}
+
+{% liquid
+  if settings_suffix
+    assign id_suffix = settings_suffix | prepend: '_'
+  endif
+
+  assign type_preset_id = 'type_preset' | append: id_suffix
+  assign type_size_id = 'type_size' | append: id_suffix
+  assign type_font_id = 'type_font' | append: id_suffix
+  assign type_resize_id = 'type_resize' | append: id_suffix
+  assign type_uppercase_id = 'type_uppercase' | append: id_suffix
+
+  assign type_preset = type_preset | default: s[type_preset_id] | default: default_type_preset | default: 'p'
+  assign type_size = type_size | default: s[type_size_id] | default: '4'
+  assign type_font = type_font | default: s[type_font_id] | default: 'body'
+  assign type_resize = type_resize | default: s[type_resize_id], allow_false: true
+  assign type_uppercase = type_uppercase | default: s[type_uppercase_id] | default: false, allow_false: true
+
+  assign tag = tag | default: 'p'
+%}
+
+{%- if type_preset == 'custom' -%}
+  {% if type_uppercase == true %} type-case-uppercase {% else %} type-case-normal {% endif %}
+  text-r{{ type_size }}
+  font-family-{{ type_font }} type-apply
+{% else %}
+  type-{{ type_preset }}
+  {% if type_resize %}
+    type-resize-{{ type_resize }}
+  {% endif %}
+{%- endif -%}

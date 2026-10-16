@@ -1,0 +1,27 @@
+{
+  "type": "select",
+  // We default to "sizing" here because "size" is reserved word in Liquid settings schemas...
+  "id": "[= size_id | default: 'sizing' =]",
+  "label": "[= size_label | default: 'Size' =]",
+  "default": "[= default_size | default: 'xl' =]",
+  [% if conditional %]
+    "visible_if": "{{ [= conditional =] }}",
+  [% endif %]
+  "options": [
+    [% unless exclude contains 'xs' %]
+      {"value": "xs", "label": "XS"},
+    [% endunless %]
+    [% unless exclude contains 'sm' %]
+      {"value": "sm", "label": "S"},
+    [% endunless %]
+    [% unless exclude contains 'md' %]
+      {"value": "md", "label": "M"},
+    [% endunless %]
+    [% unless exclude contains 'lg' %]
+      {"value": "lg", "label": "L"},
+    [% endunless %]
+    [% unless exclude contains 'xl' %]
+      {"value": "xl", "label": "XL"}
+    [% endunless %]
+  ]
+}

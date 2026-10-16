@@ -1,0 +1,94 @@
+<!-- [autocomment] -->
+{% doc %}
+  - Renders background container with overlay and optional parallax
+
+  Adds core-background-overlay from s in front of content.
+
+  @param {string} [attributes]
+  @param {block} [block]
+  @param {string} [class] - The classes
+  @param {string} content
+  @param {number} [custom_height_percentage]
+  @param {number} [custom_height_percentage_mobile]
+  @param {number} [custom_height_px]
+  @param {number} [custom_height_px_mobile]
+  @param {string} [custom_height_type]
+  @param {string} [custom_height_type_mobile]
+  @param {string} [height]
+  @param {string} [height_mobile]
+  @param {string} [id] - defaults to id_prefix with '-background'
+  @param {string} [id_prefix] - defaults to block.id, then section.id
+  @param [parallax] - percent, defaults to s.parallax when s.set_parallax is on, then settings.parallax
+  @param {object} [s] - settings object
+  @param {section} [section]
+  @param {boolean} [set_height]
+  @param {boolean} [set_height_mobile]
+  @param {string} [style] - inline styles
+{% enddoc %}
+{% liquid
+  if parallax == blank
+    if s.set_parallax
+      assign parallax = s.parallax
+    else
+      assign parallax = settings.parallax
+    endif
+  endif
+
+  if id == blank
+    assign id_prefix = id | default: id_prefix | default: block.id | default: section.id
+    assign id = id_prefix | append: '-background'
+  endif
+%}
+
+<background
+  id="{{ id }}"
+  class="
+    size-full grid-stack relative reverse-z-stack overflow-hidden z-0 {{ class }}
+    {% render 'props-class-custom-height',
+      s: s,
+      set_height: set_height, height: height, custom_height_type: custom_height_type,
+      set_height_mobile: set_height_mobile, height_mobile: height_mobile, custom_height_type_mobile: custom_height_type_mobile
+    %}
+    {% comment %} vh units are breaking the visual preview on some screen sizes, so we are using a aspect-ratio to set the height instead {% endcomment %}
+    {% if request.visual_preview_mode %}
+      aspect-video !min-h-0
+    {% endif %}
+  "
+
+  style="
+    {% if parallax != 0 %}
+      --parallax-height: calc({{ 0 | plus: parallax | abs | times: 2 }} * 1%);
+      --parallax-top: calc(var(--parallax-height) * -0.5);
+    {% endif %}
+    {% render 'props-style-custom-height',
+      s: s,
+      set_height: set_height, height: height, custom_height_type: custom_height_type, custom_height_percentage: custom_height_percentage, custom_height_px: custom_height_px,
+      set_height_mobile: set_height_mobile, height_mobile: height_mobile, custom_height_type_mobile: custom_height_type_mobile, custom_height_percentage_mobile: custom_height_percentage_mobile, custom_height_px_mobile: custom_height_px_mobile
+    %}
+    {{ style }}
+  "
+  {{ attributes }}
+>
+  <div
+    class="
+      block relative reverse-z-stack
+      {% if parallax != 0 %}
+        h-[calc(100%+var(--parallax-height))]
+        top-[--parallax-top]
+      {% else %}
+        h-full
+      {% endif %}
+
+      {% if parallax != blank and parallax != 0 %}
+        will-change-transform
+      {% endif %}
+    "
+
+    {% if parallax != 0 %}
+      x-parallax:element.reverse.distance.{{ parallax | divided_by: 2 }}%
+    {% endif %}
+  >
+    {% render 'core-background-overlay', s: s %}
+    {{ content }}
+  </div>
+</background>

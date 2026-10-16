@@ -1,0 +1,22 @@
+{% doc %}
+  - Renders auto grid holding product blocks
+{% enddoc %}
+
+[%- capture additional_blocks -%]
+  [% json 'schema/blocks-theme-node.jsonc' %]
+  [% json 'schema/blocks-product-inline.jsonc' %]
+  [% json 'schema/blocks-product-layout.jsonc' %]
+  [% json 'schema/blocks-product-extended.jsonc' %]
+  { "type": "_product-grid-auto-item" },
+  { "type": "@app" }
+[%- endcapture -%]
+
+[%- capture additional_presets -%]
+  {
+    "name": "Grid auto",
+    "category": "Pro",
+    "blocks": []
+  }
+[%- endcapture -%]
+
+[% render 'groups/grid-auto', additional_blocks: additional_blocks, additional_presets: additional_presets %]

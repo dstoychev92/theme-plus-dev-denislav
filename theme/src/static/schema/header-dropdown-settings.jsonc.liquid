@@ -1,0 +1,17 @@
+[
+  {
+    "type": "text",
+    "id": "title",
+    "label": "Title",
+    "default": "Dropdown"
+  },
+  {
+    "type": "link_list",
+    "label": "Links",
+    "id": "links",
+    "default": "main-menu"
+  },
+  [% if has_target_device != false %]
+    [% json 'schema/target-device-setting.jsonc', default_value: 'both' %]
+  [% endif %]
+]

@@ -1,0 +1,22 @@
+[
+  {
+    "type": "text",
+    "id": "[= id | default: 'label' =]",
+    "label": "[= label | default: 'Label' =]",
+    "default": "[= default | default: 'Name' =]"
+  },
+  [% unless size == false %]
+    {
+      "type": "select",
+      // We default to "sizing" here because "size" is reserved word in Liquid settings schemas...
+      "id": "[= size_id | default: 'sizing' =]",
+      "label":  "[= size_label | default: 'Size' =]",
+      "default": "[= default_size | default: 'md' =]",
+      "options": [
+        {"value": "sm", "label": "S"},
+        {"value": "md", "label": "M"},
+        {"value": "lg", "label": "L"}
+      ]
+    }
+  [% endunless %]
+]

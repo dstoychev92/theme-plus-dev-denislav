@@ -1,0 +1,76 @@
+{% doc %}
+  - Renders inline text with type preset
+{% enddoc %}
+
+{% liquid
+  assign limit_width = block.settings.limit_width
+  assign max_width = block.settings.max_width
+%}
+
+[% render 'props/assign-seo-tag-from-type-preset' %]
+
+{% capture style %}
+  {% if block.settings.set_color and block.settings.color == 'custom' %}
+    --color-custom-text: {{ block.settings.color_custom }};
+  {% endif %}
+
+  {% if limit_width %}
+    {% render 'props-style-max-width', max_width: max_width %}
+  {% endif %}
+{% endcapture %}
+
+{% capture class %}
+  {% if block.settings.set_color %}
+    text-{{ block.settings.color | default: 'content' }}
+  {% else %}
+    text-default
+  {% endif %}
+  inline-richtext
+
+  {% comment %} Disable entrance animations in visual preview mode to prevent "No preview available" error {% endcomment %}
+  {% unless request.visual_preview_mode %}
+    entrance-item entrance-standard
+  {% endunless %}
+{% endcapture %}
+
+<div class="{{ class }}" style="{{ style }}" {{ block.shopify_attributes }}>
+  {% render 'core-text-preset', tag: tag, s: block.settings %}
+</div>
+
+{% schema %}
+{
+  "name": "Text",
+  "tag": null,
+  "settings": [
+    {
+      "type": "inline_richtext",
+      "id": "text",
+      "label": "Text"
+    },
+    [% json 'schema/type-preset.jsonc', default_preset: 'p' %]
+    [% json 'schema/type-custom.jsonc', resize: true, default_font: 'heading', default_size: '10' %]
+    {
+      "type": "header",
+      "content": "Color"
+    },
+    [% json 'schema/color-dropdown.jsonc', optional: true, custom: true, muted: true %]
+
+    {
+      "type": "header",
+      "content": "Width"
+    },
+    [% json 'schema/width-limit-setting.jsonc' %]
+
+    [% json 'schema/seo-settings.jsonc' %]
+  ],
+  "presets": [
+    {
+      "name": "Text",
+      "category": "Basic",
+      "settings": {
+        "text": "Title"
+      }
+    }
+  ]
+}
+{% endschema %}

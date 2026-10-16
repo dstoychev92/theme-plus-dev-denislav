@@ -1,0 +1,1014 @@
+{% capture content %}
+  <h1 class="type-h1 my-r8">{{ shop.name }} Styleguide</h1>
+
+  <h2 id="fonts" class="type-h2 mb-r7 mt-r12"><a href="#fonts">Fonts</a></h2>
+
+  {% capture typography_fonts_content %}
+    <div class="font-family-heading">
+      <p class="text-r6 font-bold">Heading: {{ settings.font_family_heading.family | capitalize }} | style: {{ settings.font_family_heading.style }} | baseline_ratio: {{ settings.font_family_heading.baseline_ratio }}</p>
+      <p class="text-r4">Crazy Frederick bought many very exquisite opal jewels</p>
+      <p class="text-r4 font-bold">Crazy Frederick bought many very exquisite opal jewels</p>
+      <p class="text-r4 font-italic">Crazy Frederick bought many very exquisite opal jewels</p>
+      <p class="text-r4 font-bold italic">Crazy Frederick bought many very exquisite opal jewels</p>
+    </div>
+    <div class="font-family-subheading">
+      <p class="text-r6 font-bold">Subheading: {{ settings.font_family_subheading.family | capitalize }} | style: {{ settings.font_family_subheading.style }} | baseline_ratio: {{ settings.font_family_subheading.baseline_ratio }}</p>
+      <p class="text-r4">Crazy Frederick bought many very exquisite opal jewels</p>
+      <p class="text-r4 font-bold">Crazy Frederick bought many very exquisite opal jewels</p>
+      <p class="text-r4 font-italic">Crazy Frederick bought many very exquisite opal jewels</p>
+      <p class="text-r4 font-bold italic">Crazy Frederick bought many very exquisite opal jewels</p>
+    </div>
+    <div class="font-family-accent">
+      <p class="text-r6 font-bold">Accent: {{ settings.font_family_accent.family | capitalize }} | style: {{ settings.font_family_accent.style }} | baseline_ratio: {{ settings.font_family_accent.baseline_ratio }}</p>
+      <p class="text-r4">Crazy Frederick bought many very exquisite opal jewels</p>
+      <p class="text-r4 font-bold">Crazy Frederick bought many very exquisite opal jewels</p>
+      <p class="text-r4 font-italic">Crazy Frederick bought many very exquisite opal jewels</p>
+      <p class="text-r4 font-bold italic">Crazy Frederick bought many very exquisite opal jewels</p>
+    </div>
+    <div class="font-family-body">
+      <p class="text-r6 font-bold">Body: {{ settings.font_family_body.family | capitalize }} | style: {{ settings.font_family_body.style }} | baseline_ratio: {{ settings.font_family_body.baseline_ratio }}</p>
+      <p class="text-r4">Crazy Frederick bought many very exquisite opal jewels</p>
+      <p class="text-r4 font-bold">Crazy Frederick bought many very exquisite opal jewels</p>
+      <p class="text-r4 font-italic">Crazy Frederick bought many very exquisite opal jewels</p>
+      <p class="text-r4 font-bold italic">Crazy Frederick bought many very exquisite opal jewels</p>
+    </div>
+  {% endcapture %}
+
+  {% render 'styleguide-card', content: typography_fonts_content %}
+
+  {% capture typography_elements_content %}
+    <h1 class="type-h1">H1 Heading</h1>
+
+    <h2 class="type-h2">H2 Heading</h2>
+
+    <h3 class="type-h3">H3 Heading</h3>
+
+    <h4 class="type-h4">H4 Heading</h4>
+
+    <h5 class="type-h5">H5 Heading</h5>
+
+    <h6 class="type-h6">H6 Heading</h6>
+
+    <p class="type-p">Paragraph text</p>
+
+    <hr class="my-r10 border-line-bold">
+
+    <div class="type-btn">Button text</div>
+
+    <div class="type-accordion">Accordion text</div>
+
+    <div class="type-tab">Tab text</div>
+
+    <hr class="my-r10 border-line-bold">
+
+    <div class="type-section">Section title</div>
+
+    <div class="type-kicker">Kicker title / list title</div>
+  {% endcapture %}
+
+  {% render 'styleguide-card', content: typography_elements_content %}
+
+  <h2 id="richtext" class="type-h2 mb-r7 mt-r12"><a href="#richtext">Richtext output (page, product description, article, etc.)</a></h2>
+
+  {% capture typographic_prose_sizes_content %}
+
+    <div class="prose type-resize-all-xl mt-r8">
+      <h3>Typographic elements in type-resize-all-xl prose wrapper</h3>
+    </div>
+
+    <div class="prose type-resize-all-lg mt-r8">
+      <h3>Typographic elements in type-resize-all-lg prose wrapper</h3>
+    </div>
+
+    <div class="prose type-resize-all-md mt-r8">
+      <h3>Typographic elements in type-resize-all-md prose wrapper</h3>
+    </div>
+
+    <div class="prose type-resize-all-sm mt-r8">
+      <h3>Typographic elements in type-resize-all-sm prose wrapper</h3>
+    </div>
+
+    <div class="prose type-resize-all-xs mt-r8">
+      <h3>Typographic elements in type-resize-all-xs prose wrapper</h3>
+    </div>
+  {% endcapture %}
+
+  {% render 'styleguide-card', content: typographic_prose_sizes_content %}
+
+  {% capture typographic_richtext_elements_content %}
+    <div class="prose">
+      <h1>History of the Web</h1>
+      <p class="lead">
+        The web has evolved from static documents into dynamic, interactive platforms shaping everyday life.
+      </p>
+      <p>
+        <strong>Tim Berners-Lee</strong> proposed the World Wide Web in 1989 as a way to share information across systems.
+        Hosted at CERN in 1991, the first website explained the basics of the web, linking to related documents.
+      </p>
+      <p>
+        The 1990s saw explosive growth as businesses flocked online, giving rise to the <code>.com</code> era.
+      </p>
+
+      <h5>Web 2.0 and User Content</h5>
+      <p>
+        Sites like <a href="https://wikipedia.org">Wikipedia</a>, <a href="https://youtube.com">YouTube</a>, and <a href="https://facebook.com">Facebook</a> ushered in the age of user-generated content.
+      </p>
+
+      <h5>Text Styles</h5>
+      <p>
+        Use <em>emphasis</em>, <strong>bold</strong>, <code>code</code>, and <kbd>Ctrl</kbd> + <kbd>Z</kbd> to represent keyboard input.
+      </p>
+
+      <h5>Lists</h5>
+      <ul>
+        <li>HTML</li>
+        <li>CSS</li>
+        <li>JavaScript</li>
+      </ul>
+      <ol>
+        <li>Plan</li>
+        <li>Design</li>
+        <li>Deploy</li>
+      </ol>
+
+      <dl>
+        <dt>HTML</dt>
+        <dd>Structure of web pages</dd>
+        <dt>CSS</dt>
+        <dd>Visual styling</dd>
+      </dl>
+
+      <h5>Table</h5>
+      <table>
+        <thead>
+          <tr>
+            <th>Tech</th>
+            <th>Purpose</th>
+            <th>Year</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>HTML</td>
+            <td>Page structure</td>
+            <td>1991</td>
+          </tr>
+          <tr>
+            <td>CSS</td>
+            <td>Styling</td>
+            <td>1996</td>
+          </tr>
+          <tr>
+            <td>JavaScript</td>
+            <td>Interactivity</td>
+            <td>1995</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h5>Blockquote / Indent Support</h5>
+      <blockquote>
+        <p>"Vague but exciting." — <strong>Mike Sendall</strong></p>
+      </blockquote>
+
+      <!-- Nested blockquote for indent level 2 -->
+      <blockquote>
+        <blockquote>
+          <p>This represents a second level of indentation.</p>
+        </blockquote>
+      </blockquote>
+
+      <!-- Outdent would remove one blockquote level -->
+
+      <h5>Conclusion</h5>
+      <p>
+        The web continues to grow—from a simple document-sharing tool to a foundation for global communication and commerce.
+      </p>
+    </div>
+  {% endcapture %}
+
+  {% render 'styleguide-card', content: typographic_richtext_elements_content %}
+
+  <h2 id="centering" class="type-h2 mb-r7 mt-r12"><a href="#centering">Baseline ratio centering</a></h2>
+
+  {% capture typography_centering_content %}
+    {% assign methods = 'vars-type-center,py-type-center-swap,py-type-center-add,my-type-center-swap,my-type-center-add,ty-type-center' | split: ',' %}
+    {% assign caps = 'normal,uppercase' | split: ',' %}
+    {% assign centering_sizes = 'r13' | split: ',' %}
+
+    {% assign fonts = 'heading,subheading,accent,body' | split: ',' %}
+    {% assign label_class = '' %}
+
+    <div class="prose">
+      <h3> Centering fonts with <code>baseline_ratio</code> and css <code>cap</code> height values. </h3>
+      <p> HTML wraps fonts in a content box. When two different fonts are used in a line, the font baseline is used to align them.</p>
+      <p> This magic assumes inline positioning. When fonts are displayed inside buttons and badges we lose the magic baseline information.</p>
+      <p> We also gain an extra bit of alignment complexity.</p>
+      <h6> For most fonts, centering a capitalized letter requires two ratios:</h6>
+      <ul>
+      <li>Baseline: distance from the bottom of the content box to the baseline</li>
+      <li>Cap height: distance from the top of the content box to the top of the capitalized letters</li>
+      </ul>
+
+      <h6> Centering a lowercase letter requires a third value:</h6>
+      <ul>
+      <li>X-height: distance from the top of the content box to the top of a lowercase x</li>
+      </ul>
+
+      <h6> Lowercase fonts also have:</h6>
+      <ul>
+      <li>Ascender: the top of a curve letter like f may protrude above the cap height</li>
+      <li>Descender: the bottom of a j or p</li>
+      </ul>
+
+      <p> This is why visually centering a font is challenging. The centering is not the same for uppercase and lowercase letters.</p>
+
+      <h6>How it works:</h6>
+      <p>To achieve visual centering, we calculate the space above the cap-height and below the baseline, represented below as the colored areas.</p>
+
+      <p>We turn those values into three classes that can be used to center text:</p>
+      <ul>
+      <li>One that only calculates the vars and lets you decide how to center the text</li>
+      <li>Two that trim them from the line height, and apply them as margin or padding but flipped so the text is perfectly centered when capitalized and optically near-centered when lowercase containing capital letters</li>
+      </ul>
+
+      <p>The reason this is not done everywhere is because it's not an improvement over baseline centering, and only works perfectly in cases where the font is uppercase. It works very well in buttons and badges, but will not improve the rhythm of prose text.</p>
+
+    </div>
+
+    <div class="w-full overflow-x-auto overflow-y-hidden">
+      {% for method in methods %}
+        <h2 class="type-kicker my-r6">Centering: <code class="p-r2 bg-content/10">{{ method | capitalize }}</code></h2>
+        <p class="whitespace-nowrap relative flex-row-center flex-nowrap gap-r2">
+          {% for size in centering_sizes %}
+            {% for capitalization in caps %}
+              {% for font_family in fonts %}
+
+                {% capture label_class %}
+                  font-family-{{font_family}}
+                  text-{{size}}
+                  type-case-{{ capitalization }}
+                  {{method}}
+                  type-apply
+                {% endcapture %}
+
+                {% capture g_class %}
+                  inline-block
+                  absolute
+                  left-0
+                  right-0
+                  border-y border-dashed border-canvas/30 bg-primary/20
+                {% endcapture %}
+
+                {% if method contains 'swap' %}
+                  {% assign start = 'end' %}
+                  {% assign end = 'start' %}
+                {% else %}
+                  {% assign start = 'start' %}
+                  {% assign end = 'end' %}
+                {% endif %}
+
+                <span class="bg-content/10 flex">
+                  <span class="{{ label_class }} bg-content/10 relative">
+
+                    {{ font_family | capitalize }}
+
+                    <!-- Baseline trim -->
+                    <span class="{{ g_class }} bg-primary/10" style="height: var(--baseline-space); inset-block-{{end}}: 0;"></span>
+                    <!-- Cap trim -->
+                    <span class="{{ g_class }} bg-secondary/10" style="height: var(--cap-space); inset-block-{{start}}: 0;"></span>
+
+                  </span>
+                </span>
+
+              {% endfor %}
+            {% endfor %}
+          {% endfor %}
+        </p>
+      {% endfor %}
+    </div>
+  {% endcapture %}
+
+  {% render 'styleguide-card', content: typography_centering_content %}
+
+  <h2 id="spacing" class="type-h2 mb-r7 mt-r12"><a href="#spacing">Spacing</a></h2>
+
+  {% capture spacing_content %}
+    <div class="flex flex-col gap-y-r2">
+      {% for step in (1..15) %}
+        <div class="flex flex-row items-center gap-x-r4">
+          <span class="min-w-[3.5rem] text-r2 font-bold text-muted">r{{ step }}</span>
+          <span class="h-r4 bg-primary" style="width: var(--r{{ step }});"></span>
+        </div>
+      {% endfor %}
+    </div>
+    <p class="mt-r6 text-r2 text-muted">Each bar is as wide as its --r variable at the current viewport. Resize the window to see the responsive values.</p>
+  {% endcapture %}
+
+  {% render 'styleguide-card', content: spacing_content %}
+
+  <hr class="my-r10 border-line-bold">
+
+  <h2 id="form-elements" class="type-h2 mb-r7 mt-r12"><a href="#form-elements">Form Elements</a></h2>
+  {% capture form_elements_content %}
+    <h3 id="text-input-fields" class="mt-r8 py-r5 text-r6 font-bold first:mt-0"><a href="#text-input-fields">Text input fields</a></h3>
+    <div class="flex flex-col gap-y-r6">
+      <div class="flex flex-col items-start gap-r4 md:flex-row md:flex-wrap">
+        {% assign input_sizes = 'sm,md,lg' | split: ',' %}
+        {% assign input_labels = 'Small,Medium,Large' | split: ',' %}
+        {% for size in input_sizes %}
+          {% assign input_label = input_labels[forloop.index0] %}
+          {% assign input_name = 'input-' | append: size %}
+          {% render 'field-input', placeholder: 'e.g. test@test.com', label: input_label, size: size, type: 'email', name: input_name %}
+        {% endfor %}
+      </div>
+
+      <div class="flex flex-col items-start gap-r4 md:flex-row md:flex-wrap">
+        {% render 'field-input', label: "Disabled", name: 'input-disabled', disabled: true %}
+        {% render 'field-input', label: "w/ value", value: 'test@test.com', type: 'email', name: 'email', class: 'max-w-[200px]' %}
+        {% render 'field-input', label: "w/o label", name: 'input-no-label', class: 'max-w-[200px]', hide_label: true %}
+        {% render 'field-input', label: "w/ error", name: 'input-error', class: 'max-w-[200px]', value: 'Some Value', error_message: 'Error!' %}
+        {% render 'field-input', label: "w/ success", name: 'input-success', class: 'max-w-[200px]', value: 'Some Value', success_message: 'Success!' %}
+      </div>
+
+      <div class="flex flex-col items-start gap-r4 md:flex-row md:flex-wrap">
+        {% capture input_button %}
+          {% render 'core-button', label: 'Apply', sizing: 'sm', color: 'primary' %}
+        {% endcapture %}
+        {% comment %} Accessories render raw, so the caller carries the spacing {% endcomment %}
+        {% capture input_accessory %}
+          <span class="text-r3 text-muted me-r4">USD</span>
+        {% endcapture %}
+        {% render 'field-input', label: "w/ start icon", name: 'input-start-icon', start_icon: 'stroke-header-search', class: 'max-w-[200px]' %}
+        {% render 'field-input', label: "w/ end icon", name: 'input-end-icon', end_icon: 'stroke-chevron-down', class: 'max-w-[200px]' %}
+        {% render 'field-input', label: "w/ accessory", name: 'input-accessory', end_accessory: input_accessory, class: 'max-w-[200px]' %}
+        {% render 'field-input', label: "w/ button", name: 'input-button', button: input_button, class: 'max-w-[240px]' %}
+        {% render 'field-input', label: "w/ long label truncating in a narrow field", name: 'input-long-label', class: 'max-w-[200px]' %}
+      </div>
+    </div>
+
+    <h3 id="textarea-fields" class="mt-r8 py-r5 text-r6 font-bold first:mt-0"><a href="#textarea-fields">Textarea Fields</a></h3>
+    <div class="flex flex-col gap-y-r5">
+      <div class="flex flex-col items-start gap-r4 md:flex-row md:flex-wrap">
+        {% assign textarea_sizes = 'sm,md,lg' | split: ',' %}
+        {% assign textarea_labels = 'Small,Medium,Large' | split: ',' %}
+        {% for size in textarea_sizes %}
+          {% assign textarea_label = textarea_labels[forloop.index0] %}
+          {% assign textarea_name = 'textarea-' | append: size %}
+          {% render 'field-textarea', placeholder: 'Enter your message here', label: textarea_label, name: textarea_name, size: size %}
+        {% endfor %}
+      </div>
+
+      <div class="flex flex-col gap-y-r5">
+        {% render 'field-textarea', label: "Textarea Input w/ Value", name: "textarea-with-value", value: "Why hello there", size: 'md', class: 'max-w-[200px]' %}
+      </div>
+    </div>
+
+    <h3 id="range-fields" class="mt-r8 py-r5 text-r6 font-bold first:mt-0"><a href="#range-fields">Range Fields</a></h3>
+    <div class="flex flex-col items-start gap-r4 md:flex-row md:flex-wrap">
+      {% render 'field-range', label: 'Medium', prefix: '$' %}
+    </div>
+
+    <h3 id="stepper-fields" class="mt-r8 py-r5 text-r6 font-bold first:mt-0"><a href="#stepper-fields">Stepper Fields</a></h3>
+    <div class="flex flex-col items-start gap-r4 md:flex-row md:flex-wrap">
+      {% assign stepper_sizes = 'sm,md,lg' | split: ',' %}
+      {% assign stepper_labels = 'Small,Medium,Large' | split: ',' %}
+      {% for size in stepper_sizes %}
+        {% assign stepper_label = stepper_labels[forloop.index0] %}
+        {% assign stepper_name = 'stepper-' | append: size %}
+        {% render 'field-stepper', label: stepper_label, size: size, name: stepper_name %}
+      {% endfor %}
+    </div>
+
+    <h3 id="select-fields" class="mt-r8 py-r5 text-r6 font-bold first:mt-0"><a href="#select-fields">Select Fields</a></h3>
+    <div class="flex flex-col gap-y-r5">
+      <div class="flex flex-col items-start gap-r4 md:flex-row md:flex-wrap">
+        {% capture select_options %}
+          <option value="0">First</option>
+          <option value="1">Second</option>
+          <option value="2">Third</option>
+        {% endcapture %}
+
+        {% assign select_sizes = 'xs,sm,md,lg,xl' | split: ',' %}
+        {% assign select_labels = 'X-Small,Small,Medium,Large,X-Large' | split: ',' %}
+        {% for size in select_sizes %}
+          {% assign select_label = select_labels[forloop.index0] %}
+          {% assign select_name = 'select-' | append: size %}
+          {% render 'field-select', label: select_label, name: select_name, options: select_options, size: size %}
+        {% endfor %}
+      </div>
+
+      <div class="flex flex-col items-start gap-r4 md:flex-row md:flex-wrap">
+        {% render 'field-select', label: "Disabled Select", name: 'select-disabled', options: select_options, disabled: true, size: 'md' %}
+
+        {% capture checked_select_options %}
+          <option value="0">First</option>
+          <option value="1" selected>Second</option>
+          <option value="2">Third</option>
+        {% endcapture %}
+
+        {% render 'field-select', label: "Select w/ value", name: 'select-with-value', value: '1', options: checked_select_options %}
+      </div>
+    </div>
+
+    <h3 id="custom-select-fields" class="mt-r8 py-r5 text-r6 font-bold first:mt-0"><a href="#custom-select-fields">Custom Select Fields</a></h3>
+    <p class="mb-r4 text-r3 text-muted">field-custom-select: the custom select inside the field wrapper, with its floating label and messages.</p>
+    <div class="flex flex-col gap-y-r5">
+      <div class="flex flex-col items-start gap-r4 md:flex-row md:flex-wrap">
+        {% capture custom_select_options %}
+          {% render 'custom-select-option', label: "First", value: '1' %}
+          {% render 'custom-select-option', label: "Second", value: '2' %}
+          {% render 'custom-select-option', label: "Third", value: '3' %}
+        {% endcapture %}
+        {% assign custom_select_sizes = 'xs,sm,md,lg,xl' | split: ',' %}
+        {% assign custom_select_labels = 'X-Small,Small,Medium,Large,X-Large' | split: ',' %}
+        {% for size in custom_select_sizes %}
+          {% assign custom_select_label = custom_select_labels[forloop.index0] %}
+          {% assign custom_select_name = 'custom-select-field-' | append: size %}
+          {% render 'field-custom-select', name: custom_select_name, size: size, options: custom_select_options, label: custom_select_label %}
+        {% endfor %}
+      </div>
+      <div class="flex flex-col items-start gap-r4 md:flex-row md:flex-wrap">
+        {% render 'field-custom-select', label: 'Disabled', name: 'custom-select-field-disabled', options: custom_select_options, disabled: true %}
+        {% render 'field-custom-select', label: 'w/ value', name: 'custom-select-field-value', options: custom_select_options, value: 2 %}
+      </div>
+    </div>
+
+    <h3 id="custom-select" class="mt-r8 py-r5 text-r6 font-bold first:mt-0"><a href="#custom-select">Custom Select Fields</a></h3>
+    <p class="mb-r4 text-r3 text-muted">custom-select: the bare primitive without the field wrapper.</p>
+    <div class="flex flex-col gap-y-r5">
+      <div class="flex flex-col items-start gap-r4 md:flex-row md:flex-wrap">
+        {% assign bare_select_sizes = 'xs,sm,md,lg,xl' | split: ',' %}
+        {% assign bare_select_labels = 'X-Small,Small,Medium,Large,X-Large' | split: ',' %}
+        {% for size in bare_select_sizes %}
+          {% assign bare_select_label = bare_select_labels[forloop.index0] %}
+          {% assign bare_select_name = 'custom-select-' | append: size %}
+          {% render 'custom-select', name: bare_select_name, size: size, options: custom_select_options, label: bare_select_label %}
+        {% endfor %}
+      </div>
+      <div class="flex flex-col items-start gap-r4 md:flex-row md:flex-wrap">
+        {% render 'custom-select', label: 'Disabled', name: 'custom-select-disabled', options: custom_select_options, disabled: true %}
+        {% render 'custom-select', label: 'w/ value', name: 'custom-select-value', options: custom_select_options, value: 2 %}
+      </div>
+    </div>
+
+    <h3 id="radio-fields-checkboxes" class="mt-r8 py-r5 text-r6 font-bold first:mt-0"><a href="#radio-fields-checkboxes">Radio Fields / Checkboxes</a></h3>
+    <div class="flex flex-col gap-y-r2">
+      {% render 'field-radio', id: 'styleguide-radio-1', name: 'radio', value: '1', label: 'Option' %}
+      {% render 'field-radio', id: 'styleguide-radio-2', name: 'radio', value: '2', label: 'Disabled Option', disabled: true %}
+      {% render 'field-radio', id: 'styleguide-radio-3', name: 'radio', value: '3', label: 'Checked Option', checked: true %}
+      {% render 'field-checkbox', name: 'checkbox', label: 'Option' %}
+      {% render 'field-checkbox', name: 'checkbox-disabled', label: 'Disabled Option', disabled: true %}
+      {% render 'field-checkbox', name: 'checkbox-checked', label: 'Checked Option', checked: true %}
+    </div>
+  {% endcapture %}
+
+  {% render 'styleguide-card', content: form_elements_content %}
+
+  <h2 id="feedback" class="type-h2 mb-r7 mt-r12"><a href="#feedback">Feedback</a></h2>
+
+  {% capture feedback_content %}
+    <h3 id="alerts" class="mt-r8 py-r5 text-r6 font-bold first:mt-0"><a href="#alerts">Alerts</a></h3>
+    <div class="flex flex-col gap-y-r4">
+      {% capture alert_icon %}
+        {% render 'core-icon', icon: 'fill-circle-info' %}
+      {% endcapture %}
+      {% capture alert_button %}
+        {% render 'core-button', label: 'Undo', sizing: 'xs', appearance: 'stroke', color: 'content' %}
+      {% endcapture %}
+      {% render 'alert', content: 'Neutral alert with icon and button', icon: alert_icon, button: alert_button %}
+      {% render 'alert', content: 'Success alert', type: 'success' %}
+      {% render 'alert', content: 'Error alert', type: 'error' %}
+    </div>
+
+    <h3 id="spinner" class="mt-r8 py-r5 text-r6 font-bold first:mt-0"><a href="#spinner">Spinner</a></h3>
+    {% render 'spinner' %}
+  {% endcapture %}
+
+  {% render 'styleguide-card', content: feedback_content %}
+
+  <h2 id="buttons" class="type-h2 mb-r7 mt-r12"><a href="#buttons">Buttons</a></h2>
+
+  {% capture button_content %}
+    {% assign button_colors = 'primary,secondary,black,white,canvas,content' | split: ',' %}
+    {% assign button_sizes = 'xs,sm,md,lg' | split: ',' %}
+    {% assign button_size_labels = 'X-Small,Small,Medium,Large' | split: ',' %}
+    {% assign button_appearances = 'fill,stroke,soft' | split: ',' %}
+
+    {% for color in button_colors %}
+      <h3 class="text-r6 text-stain-contrast font-bold">{{ color | capitalize }}</h3>
+      <div class="flex flex-row flex-wrap gap-r4">
+        <div class="flex-row-center flex-wrap gap-r2">
+          {% for size in button_sizes %}
+            {% assign button_label = button_size_labels[forloop.index0] %}
+            {% render 'core-button', label: button_label, color: color, appearance: 'fill', sizing: size %}
+          {% endfor %}
+        </div>
+        <div class="flex-row-center flex-wrap gap-r2">
+          {% for appearance in button_appearances %}
+            {% assign button_label = appearance | capitalize %}
+            {% render 'core-button', label: button_label, color: color, appearance: appearance, sizing: 'md' %}
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  {% endcapture %}
+
+  {% capture all_buttons %}
+    <div class="vars-stain-white bg-transparent pb-r6">
+      {{ button_content }}
+    </div>
+    <div class="vars-stain-black bg-stain p-r6">
+      {{ button_content }}
+    </div>
+    <div class="vars-stain-white bg-stain p-r6" style="background-image: url('{{ section.settings.background_image | image_url }}'); background-size: cover;">
+      {{ button_content }}
+    </div>
+  {% endcapture %}
+
+  {% render 'styleguide-card', content: all_buttons %}
+
+  <h2 id="links" class="type-h2 mb-r7 mt-r12"><a href="#links">Links</a></h2>
+
+  {% capture link_content %}
+    {% assign link_colors = 'primary,secondary,black,white,canvas,content' | split: ',' %}
+    {% assign link_sizes = 'xs,sm,md,lg,auto' | split: ',' %}
+    {% assign link_size_labels = 'X-Small,Small,Medium,Large,Auto' | split: ',' %}
+    {% assign link_appearances = 'clean,line,icon,both,bare' | split: ',' %}
+
+    {% for color in link_colors %}
+      <h3 class="text-r6 font-bold">{{ color | capitalize }}</h3>
+      <div
+        class="
+          flex flex-row flex-wrap
+          {% if color == 'white' %}
+            bg-white-contrast/20
+          {% endif %}
+          {% if color == 'canvas' %}
+            bg-content/20
+          {% endif %}
+        "
+      >
+        <div class="flex-row-center flex-wrap gap-r2">
+          {% for size in link_sizes %}
+            {% assign link_label = link_size_labels[forloop.index0] %}
+            {% render 'core-link', text: link_label, color: color, appearance: 'clean', type_resize: size %}
+          {% endfor %}
+        </div>
+        <div class="flex-row-center flex-wrap gap-r2 p-r4">
+          {% render 'core-link', text: "Custom icon Left", appearance: 'icon', color: color, start_icon: 'fill-reset' %}
+          {% render 'core-link', text: "Custom icon Right", appearance: 'icon', color: color, end_icon: 'fill-reset' %}
+          {% render 'core-link', text: "Custom icon on both sides", appearance: 'icon', color: color, start_icon: 'fill-reset', end_icon: 'fill-globe' %}
+        </div>
+        <div class="flex-row-center flex-wrap gap-r2 p-r4">
+          {% for appearance in link_appearances %}
+            {% assign link_label = appearance | capitalize %}
+            {% render 'core-link', text: link_label, color: color, appearance: appearance %}
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+
+    <h3 class="text-r6 font-bold">Inline</h3>
+    <div class="prose">
+      <p>
+        The first
+        {% render 'core-link', text: 'website', type_preset: 'p', appearance: 'line' %}
+        was simple, a far cry from the
+        {% render 'core-link', text: 'interactive', type_preset: 'p', appearance: 'both' %}
+        , media-rich sites we encounter today. It provided basic information and links to further resources.
+      </p>
+    </div>
+  {% endcapture %}
+
+  {% render 'styleguide-card', content: link_content %}
+
+  <h2 id="converted-icons" class="type-h2 mb-r7 mt-r12"><a href="#converted-icons">Converted Icons</a></h2>
+
+  {%- assign icon_types = 'Stroke, Fill' | split: ', ' -%}
+  {% for type in icon_types %}
+    {%- assign icon_card_label = type | append: ' Icons' -%}
+    {%- case type -%}
+      {%- when 'Stroke' -%}
+        {%- assign icon_list = [% render 'icons-autogenerated/stroke-list' %] -%}
+      {%- when 'Fill' -%}
+        {%- assign icon_list = [% render 'icons-autogenerated/fill-list' %] -%}
+    {%- endcase -%}
+    {%- assign icon_arr = icon_list | strip | split: ',' -%}
+    {% capture icon_grid_markup %}
+
+    <div x-data="{
+      cartColor: '#cccccc',
+      iconWidth: 24
+    }"
+    x-bind:style="`--color-cart-indicator: ${cartColor}; --my-container-width: ${iconWidth}px;`">
+
+      <div class="flex gap-r4 mb-r4">
+        <div>
+          <label for="cart-color-{{ type | downcase }}" class="block text-r3 mb-r2">Cart Indicator Color:</label>
+          <input
+            type="color"
+            id="cart-color-{{ type | downcase }}"
+            x-model="cartColor"
+            class="w-r8 h-r8 border border-gray-300 rounded cursor-pointer">
+        </div>
+
+        <div>
+          <label for="icon-size-{{ type | downcase }}" class="block text-r3 mb-r2">Icon Size: <span x-text="iconWidth"></span>px</label>
+          <input
+            type="range"
+            id="icon-size-{{ type | downcase }}"
+            x-model.number="iconWidth"
+            min="8"
+            max="100"
+            step="2"
+            class="w-full">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-12 gap-r6 py-r7">
+
+        {% for icon in icon_arr %}
+          <div class="flex flex-col items-center text-r5 bg-content/5 min-w-r12 rounded gap-r4 p-r4 justify-between">
+            <div class="flex flex-center" style="font-size:var(--my-container-width);width:var(--my-container-width);height:var(--my-container-width);">
+              {% render 'core-icon', icon: icon %}
+            </div>
+            <div class="text-r1 type-kicker text-center text-muted">
+              {{ icon }}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endcapture %}
+
+    {% render 'styleguide-card', label: icon_card_label, content: icon_grid_markup %}
+
+  {% endfor %}
+
+  <h2 id="colors" class="type-h2 mb-r7 mt-r12"><a href="#colors">Colors</a></h2>
+
+  <div class="grid grid-cols-1 gap-r4 sm:grid-cols-2 md:grid-cols-3">
+    {% for scheme in settings.color_scheme_group %}
+      {% assign scheme_label = scheme.id %}
+
+      {% capture scheme_content %}
+        <div class="vars-{{ scheme.id }} bg-canvas text-content p-r8 mb-r6">
+          {% render 'core-text-preset',
+            text: 'Accent Title',
+            class: 'inline-richtext',
+            default_type_preset: 'kicker'
+          %}
+          <div class="flex flex-col gap-y-r5 prose">
+            <h4 class="text-content">
+              Main title
+            </h4>
+            <h2 class="text-muted">
+              Limit title
+            </h2>
+            <p>
+              <span class="text-muted">Text muted</span> & <span class="text-muted-subtle">Text muted-subtle</span>
+            </p>
+            <p>
+              Lorem ipsum dolor sit amet with <span class="text-secondary underline">link color</span> for contrast.
+            </p>
+            <div class="flex gap-r8 mt-r9">
+              {% render 'core-button', type: 'submit', sizing: 'xs', appearance: 'fill', color: 'primary', label: 'Primary Button' %}
+              {% render 'core-link', text: 'Text link' %}
+            </div>
+          </div>
+        </div>
+
+        <div class="vars-{{ scheme.id }} flex flex-col bg-canvas text-content p-r6 rounded">
+          {% render 'styleguide-card-color-scheme-color', name: "canvas" %}
+          {% render 'styleguide-card-color-scheme-color', name: "content" %}
+          {% render 'styleguide-card-color-scheme-color', name: "secondary" %}
+          {% render 'styleguide-card-color-scheme-color', name: "muted" %}
+          {% render 'styleguide-card-color-scheme-color', name: "sale" %}
+          {% render 'styleguide-card-color-scheme-color', name: "primary" %}
+
+          <div class="flex flex-row gap-x-r2">
+            <div class="flex flex-col flex-1 gap-y-r2 my-r9">
+              <span class="text-r3 font-bold font-family-accent">Alpha Lines</span>
+              <p class="mt-r5 text-r1 font-bold text-muted">line-subtle</p>
+              <hr class="border-line-subtle">
+              <p class="mt-r5 text-r1 font-bold text-muted">line</p>
+              <hr>
+              <p class="mt-r5 text-r1 font-bold text-muted">line-bold</p>
+              <hr class="border-line-bold">
+            </div>
+          </div>
+
+          <div class="flex flex-row gap-x-r2">
+            <div class="flex flex-col flex-1 gap-y-r2 my-r9">
+              <span class="text-r3 font-bold font-family-accent">Mix lines</span>
+              <p class="mt-r5 text-r1 font-bold text-muted">line-subtle</p>
+              <hr class="border-[var(--line-subtle)]">
+              <p class="mt-r5 text-r1 font-bold text-muted">line</p>
+              <hr class="border-[var(--line)]">
+              <p class="mt-r5 text-r1 font-bold text-muted">line-bold</p>
+              <hr class="border-[var(--line-bold)]">
+            </div>
+          </div>
+        </div>
+      {% endcapture %}
+
+      {% render 'styleguide-card', label: scheme_label, content: scheme_content %}
+    {% endfor %}
+  </div>
+
+  <h2 id="swatches" class="type-h2 mb-r7 mt-r12"><a href="#swatches">Swatches</a></h2>
+
+  {% capture swatch_content %}
+    <div class="flex flex-row flex-wrap items-center gap-r2">
+      {% assign swatch_sizes = 'xs,sm,md,lg,xl' | split: ',' %}
+      {% for swatch_size in swatch_sizes %}
+        {% render 'swatch', color: '#b41e1e', shape: 'circle', size: swatch_size %}
+      {% endfor %}
+    </div>
+    <div class="mt-r4 flex flex-row flex-wrap items-center gap-r2">
+      {% render 'swatch', color: '#b41e1e', shape: 'circle' %}
+      {% render 'swatch', color: '#b41e1e', shape: 'circle', selected: true %}
+      {% render 'swatch', color: '#b41e1e', shape: 'square' %}
+      {% render 'swatch', color: '#b41e1e', shape: 'square', selected: true %}
+      {% render 'swatch', color: '#b41e1e', shape: 'circle', available: false %}
+      {% render 'swatch', color: '#b41e1e', shape: 'square', available: false %}
+      {% if section.settings.background_image %}
+        {% render 'swatch', image: section.settings.background_image, shape: 'circle', size: 'md' %}
+      {% endif %}
+    </div>
+  {% endcapture %}
+
+  {% render 'styleguide-card', content: swatch_content %}
+
+  <h2 id="badges" class="type-h2 mb-r7 mt-r12"><a href="#badges">Badges</a></h2>
+
+  {% capture badge_content %}
+    <div class="flex flex-row flex-wrap items-center gap-r4">
+      {% assign badge_sizes = 'sm,md,lg' | split: ',' %}
+      {% assign badge_labels = 'Small,Medium,Large' | split: ',' %}
+      {% for badge_size in badge_sizes %}
+        {% assign badge_label = badge_labels[forloop.index0] %}
+        {% render 'card-product-lg-media-badges-style', content: badge_label, size: badge_size %}
+      {% endfor %}
+      {% render 'card-product-lg-media-badges-style', content: 'Custom colors', bg_color: '#b41e1e', text_color: '#ffffff' %}
+    </div>
+  {% endcapture %}
+
+  {% render 'styleguide-card', content: badge_content %}
+
+  <h2 id="rating" class="type-h2 mb-r7 mt-r12"><a href="#rating">Rating</a></h2>
+
+  {% capture rating_content %}
+    {% render 'product-rating', placeholder: true %}
+  {% endcapture %}
+
+  {% render 'styleguide-card', content: rating_content %}
+
+  {% for block in section.blocks %}
+    {% case block.type %}
+      {% when 'cards' %}
+        <h2 id="prices" class="type-h2 mb-r7 mt-r12"><a href="#prices">Prices</a></h2>
+
+        {% capture price_content %}
+          <div class="flex flex-col gap-y-r4">
+            <div class="flex flex-row items-center gap-x-r6">
+              <span class="min-w-[8rem] text-r3 font-bold text-muted">card-price</span>
+              {% render 'card-price', product: block.settings.product %}
+            </div>
+            <div class="flex flex-row items-center gap-x-r6">
+              <span class="min-w-[8rem] text-r3 font-bold text-muted">money</span>
+              {% render 'money', price: 123400 %}
+            </div>
+            <div class="flex flex-row items-center gap-x-r6">
+              <span class="min-w-[8rem] text-r3 font-bold text-muted">money w/ currency</span>
+              {% render 'money', price: 123400, show_currency: true %}
+            </div>
+            <div class="flex flex-row items-center gap-x-r6">
+              <span class="min-w-[8rem] text-r3 font-bold text-muted">price-per-unit</span>
+              {% assign price_variant = block.settings.product.selected_or_first_available_variant %}
+              {% capture unit_price_output %}
+                {% render 'price-per-unit', product: block.settings.product, variant: price_variant %}
+              {% endcapture %}
+              {% if unit_price_output == blank %}
+                <span class="text-r2 text-muted">No unit-price data on this product</span>
+              {% else %}
+                {{ unit_price_output }}
+              {% endif %}
+            </div>
+          </div>
+          <p class="mt-r6 text-r2 text-muted">The sale price shows when the product has a compare-at price. The unit price prints nothing when the variant has no unit-price data.</p>
+        {% endcapture %}
+
+        {% render 'styleguide-card', content: price_content %}
+
+        {% capture card_attributes %}
+          style="background-image: url('{{ section.settings.background_image | image_url }}'); background-size: cover;"
+        {% endcapture %}
+
+        <h2 id="cards" class="type-h2 mb-r7 mt-r12"><a href="#cards">Cards</a></h2>
+
+        {% for type in (1..3) %}
+          {% capture card_type %}{% cycle 'product', 'collection', 'article' %}{% endcapture %}
+
+          <div class="mb-r10">
+            {% capture card_content %}
+              {% comment %} auto-fill floored at 260px, since card-md and card-sm keep a 250px minimum width {% endcomment %}
+              <div class="relative grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-r6 items-start">
+                {% for size in (1..4) %}
+                  {% capture card_size %}{% cycle 'lg', 'md', 'sm', 'xs' %}{% endcapture %}
+
+                  <div class="flex flex-col gap-y-r5">
+                    <h3 class="text-r4 font-bold text-muted">{{ card_size | upcase }}</h3>
+
+                    {% case card_type %}
+                      {% when 'product' %}
+                        {% render 'card-product', product: block.settings.product, size: card_size, button: true %}
+                      {% when 'collection' %}
+                        {% render 'card-collection', collection: block.settings.collection, size: card_size %}
+                      {% when 'article' %}
+                        {% render 'card-article', article: block.settings.article, size: card_size, show_author: true, show_tags: true, show_date: true, show_preview: true, show_link: true %}
+                    {% endcase %}
+                  </div>
+                {% endfor %}
+              </div>
+            {% endcapture %}
+
+            {% render 'styleguide-card', label: card_type, content: card_content, attributes: card_attributes %}
+          </div>
+        {% endfor %}
+
+    {% endcase %}
+  {% endfor %}
+
+  <h2 id="disclosure" class="type-h2 mb-r7 mt-r12"><a href="#disclosure">Disclosure</a></h2>
+
+  {% capture disclosure_content %}
+    {% capture disclosure_panel %}
+      <p class="type-p pb-r6">Panel content that expands and collapses.</p>
+    {% endcapture %}
+
+    <h3 id="disclosure-chevron" class="mt-r8 py-r5 text-r6 font-bold first:mt-0"><a href="#disclosure-chevron">Rotate arrow</a></h3>
+    {% comment %} Bare x-disclosure-group, since two section groups in one section share one section-store key {% endcomment %}
+    <div
+      x-disclosure-group
+      data-has-icon
+      class="group/accordions flex flex-col w-full border-t border-t-line-subtle"
+    >
+      {% render 'product-disclosure-item', id: 'StyleguideDisclosureOne', title: 'Expanded item', content: disclosure_panel, expanded: true, button_style: 'chevron' %}
+      {% render 'product-disclosure-item', id: 'StyleguideDisclosureTwo', title: 'Collapsed item', content: disclosure_panel, button_style: 'chevron' %}
+      {% render 'product-disclosure-item', id: 'StyleguideDisclosureThree', title: 'Another collapsed item', content: disclosure_panel, button_style: 'chevron' %}
+    </div>
+
+    <h3 id="disclosure-plus-minus" class="mt-r8 py-r5 text-r6 font-bold first:mt-0"><a href="#disclosure-plus-minus">Plus and minus</a></h3>
+    <div
+      x-disclosure-group
+      data-has-icon
+      class="group/accordions flex flex-col w-full border-t border-t-line-subtle"
+    >
+      {% render 'product-disclosure-item', id: 'StyleguidePlusDisclosureOne', title: 'Expanded item', content: disclosure_panel, expanded: true, button_style: 'plus-minus' %}
+      {% render 'product-disclosure-item', id: 'StyleguidePlusDisclosureTwo', title: 'Collapsed item', content: disclosure_panel, button_style: 'plus-minus' %}
+      {% render 'product-disclosure-item', id: 'StyleguidePlusDisclosureThree', title: 'Another collapsed item', content: disclosure_panel, button_style: 'plus-minus' %}
+    </div>
+  {% endcapture %}
+
+  {% render 'styleguide-card', content: disclosure_content %}
+
+  <h2 id="tabs" class="type-h2 mb-r7 mt-r12"><a href="#tabs">Tabs</a></h2>
+
+  {% capture tabs_demo_content %}
+    <h3 id="tabs-underline" class="mt-r8 py-r5 text-r6 font-bold first:mt-0"><a href="#tabs-underline">Underline</a></h3>
+    {% capture tab_buttons %}
+      {% render 'core-tab', label: 'First', selected: true, appearance: 'underline' %}
+      {% render 'core-tab', label: 'Second', appearance: 'underline' %}
+      {% render 'core-tab', label: 'Third', appearance: 'underline' %}
+    {% endcapture %}
+
+    <div x-tabs class="flex w-full flex-col gap-y-r6">
+      {% render 'core-tablist', tabs: tab_buttons, appearance: 'underline' %}
+
+      {% comment %} Hide all but the first tab panel until Alpine has loaded and taken over rendering {% endcomment %}
+      <div class="contents prealpine:[&>:not(:first-of-type)]:!hidden">
+        <div x-tabs:tabpanel><p class="type-p">First panel</p></div>
+        <div x-tabs:tabpanel><p class="type-p">Second panel</p></div>
+        <div x-tabs:tabpanel><p class="type-p">Third panel</p></div>
+      </div>
+    </div>
+
+    <h3 id="tabs-outline" class="mt-r8 py-r5 text-r6 font-bold first:mt-0"><a href="#tabs-outline">Outline</a></h3>
+    {% capture tab_buttons %}
+      {% render 'core-tab', label: 'First', selected: true, appearance: 'outline' %}
+      {% render 'core-tab', label: 'Second', appearance: 'outline' %}
+      {% render 'core-tab', label: 'Third', appearance: 'outline' %}
+    {% endcapture %}
+
+    <div x-tabs class="flex w-full flex-col gap-y-r6">
+      {% render 'core-tablist', tabs: tab_buttons, appearance: 'outline' %}
+
+      {% comment %} Hide all but the first tab panel until Alpine has loaded and taken over rendering {% endcomment %}
+      <div class="contents prealpine:[&>:not(:first-of-type)]:!hidden">
+        <div x-tabs:tabpanel><p class="type-p">First panel</p></div>
+        <div x-tabs:tabpanel><p class="type-p">Second panel</p></div>
+        <div x-tabs:tabpanel><p class="type-p">Third panel</p></div>
+      </div>
+    </div>
+  {% endcapture %}
+
+  {% render 'styleguide-card', content: tabs_demo_content %}
+
+  <h2 id="overlays" class="type-h2 mb-r7 mt-r12"><a href="#overlays">Overlays</a></h2>
+
+  {% capture overlay_content %}
+    <h3 id="tooltip" class="mt-r8 py-r5 text-r6 font-bold first:mt-0"><a href="#tooltip">Tooltip</a></h3>
+    <div class="flex flex-row flex-wrap items-center gap-r4">
+      {% capture tooltip_trigger %}
+        {% render 'core-button', label: 'Hover me', sizing: 'sm', color: 'content', appearance: 'stroke' %}
+      {% endcapture %}
+      {% render 'core-tooltip', trigger: tooltip_trigger, content: 'Small tooltip' %}
+      {% render 'core-tooltip', trigger: tooltip_trigger, content: 'Large tooltip above the trigger', size: 'lg', position: 'top' %}
+    </div>
+
+    <h3 id="popover" class="mt-r8 py-r5 text-r6 font-bold first:mt-0"><a href="#popover">Popover</a></h3>
+    {% capture popover_button %}
+      {% render 'core-button', label: 'Open popover', sizing: 'sm', color: 'content', appearance: 'stroke', attributes: 'x-popup:button' %}
+    {% endcapture %}
+    {% capture popover_content %}
+      <p class="type-p">Popover content that stays open until a click outside or Escape closes it.</p>
+    {% endcapture %}
+    {% render 'core-popover', button: popover_button, content: popover_content %}
+
+    <h3 id="dialog" class="mt-r8 py-r5 text-r6 font-bold first:mt-0"><a href="#dialog">Dialog</a></h3>
+    <div x-dialog.modal>
+      {% render 'core-button', label: 'Open dialog', sizing: 'sm', color: 'content', appearance: 'stroke', attributes: 'x-dialog:button' %}
+      {% capture dialog_demo_content %}
+        <p class="type-p">Dialog content. The close button or Escape closes it.</p>
+      {% endcapture %}
+      {% render 'dialog', content: dialog_demo_content, modal: true, label: 'Example dialog' %}
+    </div>
+
+    <h3 id="drawer" class="mt-r8 py-r5 text-r6 font-bold first:mt-0"><a href="#drawer">Drawer</a></h3>
+    {% comment %} .modal opens with showModal, since the drawer panel only sizes itself in the top layer {% endcomment %}
+    <div x-dialog.modal>
+      {% render 'core-button', label: 'Open drawer', sizing: 'sm', color: 'content', appearance: 'stroke', attributes: 'x-dialog:button' %}
+      {% capture drawer_demo_content %}
+        <p class="type-p">Drawer content.</p>
+      {% endcapture %}
+      {% render 'drawer', title: 'Example drawer', aria_label: 'Example drawer', content: drawer_demo_content, side: 'right' %}
+    </div>
+  {% endcapture %}
+
+  {% render 'styleguide-card', content: overlay_content %}
+{% endcapture %}
+
+{% render 'core-section', s: section.settings, content: content %}
+
+{% schema %}
+{
+  "name": "Styleguide",
+  "class": "section-page-styleguide",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Styleguide"
+    },
+    {
+      "type": "paragraph",
+      "content": "Use this to configure global settings"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme"
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Background image"
+    },
+    [% json 'schema/section-content-width-setting.jsonc' %]
+  ],
+  "blocks": [
+    {
+      "type": "cards",
+      "name": "Cards",
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product"
+        },
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection"
+        },
+        {
+          "type": "article",
+          "id": "article",
+          "label": "Article"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

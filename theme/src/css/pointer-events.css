@@ -1,0 +1,17 @@
+@layer utilities {
+  /*
+   * Makes an element transparent to pointer events (clicks, hovers, etc.)
+   * while still allowing its children to receive them. Useful for overlays
+   * positioned on top of interactive content — the overlay itself won't
+   * intercept clicks, but buttons or links within it still work.
+   *
+   * Effectively makes `pointer-events: none` non-inheritable.
+   */
+  .pointer-events-passthrough {
+    pointer-events: none;
+
+    > * {
+      pointer-events: auto;
+    }
+  }
+}

@@ -1,0 +1,13 @@
+[
+  {
+    "type": "select",
+    "id": "content_width",
+    "label": "Content width",
+    "default": "[= default_width | default: 'page' =]",
+    "visible_if": "{{ section.settings.contain_section == false or section.settings.section_width == 'full' }}",
+    "options": [
+      {"value": "full", "label": "Full"},
+      {"value": "page", "label": "Page"}
+    ]
+  }
+]

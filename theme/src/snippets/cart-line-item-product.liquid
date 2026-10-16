@@ -1,0 +1,326 @@
+{% doc %}
+  - Renders cart product row from a line item or a product
+
+  Pass either line_item or product, never both. The quantity stepper and remove button render for
+  a line item only.
+
+  @param {string} [attributes] - attributes for the image wrapper
+  @param {string} [form_id] - cart form id prefixing the quantity input id, defaults to 'cart'
+  @param {number} [index] - position in the list, scopes the quantity input id
+  @param {line_item} [line_item]
+  @param {boolean} [preload_image]
+  @param {product} [product]
+  @param {string} [quantity_size] - stepper size, defaults to 'md'
+  @param {boolean} [show_quantity_selector] - renders the quantity stepper in place of quantity text, defaults to false
+{% enddoc %}
+
+{% liquid
+  assign aspect_ratio = settings.card_aspect_ratio
+  assign quantity_size = quantity_size | default: 'md'
+  assign show_quantity_selector = show_quantity_selector | default: false
+  assign show_quantity_text = false
+
+  if line_item != null
+    # Line item
+    assign url = line_item.url
+    assign title = line_item.product.title | strip_html
+    assign image = line_item.image
+    assign variant = line_item.variant
+    assign selling_plan_allocation = line_item.selling_plan_allocation
+    assign quantity = line_item.quantity
+    assign price = line_item.final_line_price
+    assign compare_at_price = selling_plan_allocation.compare_at_price | default: variant.compare_at_price
+
+    # Show the automatic discount or compare at price, but not both
+    # Automatic discount gets priority
+    if line_item.original_line_price > price
+      assign comparison_price = line_item.original_line_price
+    elsif compare_at_price > line_item.original_price
+      assign comparison_price = quantity | times: compare_at_price
+    endif
+  elsif product != null
+    # Product
+    assign url = product.url
+    assign image = product.selected_variant.featured_image | default: product.featured_image
+    assign title = product.title | strip_html
+    assign variant = product.selected_variant
+    assign selling_plan_allocation = product.selected_selling_plan_allocation
+    assign price = selling_plan_allocation.price | default: variant.price
+    assign compare_at_price = selling_plan_allocation.compare_at_price | default: variant.compare_at_price
+
+    if compare_at_price > price
+      assign comparison_price = compare_at_price
+    endif
+
+    # Preorder metafield
+    if settings.metafield_preorder != blank
+      assign preorder_metafield_namespace = settings.metafield_preorder | split: '.' | first
+      assign preorder_metafield_key = settings.metafield_preorder | split: '.' | last
+      assign preorder_metafield = product.metafields[preorder_metafield_namespace][preorder_metafield_key]
+    endif
+
+    # Line item property metafield
+    if settings.metafield_line_item_property != blank
+      assign lip_namespace = settings.metafield_line_item_property | split: '.' | first
+      assign lip_key = settings.metafield_line_item_property | split: '.' | last
+      assign lip_value = product.metafields[lip_namespace][lip_key].value
+    endif
+  endif
+
+  # 2x the largest rendered size (90px) so object-cover crops stay sharp on high-DPI screens
+  assign image_width = 180 | at_most: image.width
+
+  if settings.product_card_image_fit == 'uneven'
+    assign aspect_ratio = image.aspect_ratio
+  endif
+
+  assign cover = false
+  case settings.product_card_image_fit
+    when 'scale'
+      assign cover = false
+    when 'crop'
+      assign cover = true
+    when 'uneven'
+      assign cover = true
+  endcase
+
+  # Show quantity text when selector is disabled
+  if show_quantity_selector == false
+    assign show_quantity_text = true
+  endif
+  # Hide both if no quantity
+  if quantity == null
+    assign show_quantity_selector = false
+    assign show_quantity_text = false
+  endif
+%}
+
+{% comment %} Quantity selector {% endcomment %}
+{% if show_quantity_selector %}
+  {% assign quantity_label = 'cart.quantity_label' | t %}
+  {% # Prefix with the cart form id — the cart page and cart drawer are both in the DOM, so an unscoped id would collide %}
+  {% assign quantity_input_id = form_id | default: 'cart' | append: '-item-quantity-' | append: index %}
+
+  {% capture quantity_stepper_input_attributes %}
+    x-model.fill.number.lazy="$cartItem.quantity"
+    required
+
+    {% # data-morph-form-state="server" causes morphing to update the `value` property of this element as well as the attribute so the UI is updated to reflect the actual cart quantity %}
+    data-morph-form-state="server"
+
+    {% # Reconcile Alpine's retained cart state after morphing updates the live input value %}
+    @morph:sync-control="$cartItem.quantity = parseInt($event.detail.value)"
+
+    @blur="
+      if ($el.checkValidity()) {
+        $cartItem.submitAsync()
+      }
+    "
+    x-ref="quantityInput"
+    @focus="$el.select()"
+    key="{{ quantity }}"
+  {% endcapture %}
+
+  {% capture quantity_stepper_attributes %}
+    {% comment %} Wrap the submitAsync function so that if user hits stockout, the picker animates to the amount of items actually added to cart {% endcomment %}
+    @increment.debounce.500ms="
+      if ($refs.quantityInput.checkValidity()) {
+        if ($data.$animatedWheel !== undefined) {
+          $animatedWheel.updatePosition(async () => {
+            await $cartItem.submitAsync()
+          })
+        } else {
+          await $cartItem.submitAsync()
+        }
+      }
+    "
+    @decrement.debounce.500ms="
+      if ($refs.quantityInput.checkValidity()) {
+        if ($data.$animatedWheel !== undefined) {
+          $animatedWheel.updatePosition(async () => {
+            await $cartItem.submitAsync()
+          })
+        } else {
+          await $cartItem.submitAsync()
+        }
+      }
+    "
+    :class="{
+      'pointer-events-none opacity-50 cursor-not-allowed': $cartItem.state === 'pending' && !$cartItem.isRemoving
+    }"
+  {% endcapture %}
+
+  {% capture quantity_input %}
+    {% render 'product-quantity-stepper',
+      id: quantity_input_id,
+      label: quantity_label,
+      name: 'updates[]',
+      size: quantity_size,
+      value: quantity,
+      stepper_input_attributes: quantity_stepper_input_attributes,
+      stepper_attributes: quantity_stepper_attributes,
+      min: 0
+    %}
+  {% endcapture %}
+{% endif %}
+
+{% comment %} Image {% endcomment %}
+{% capture image %}
+  <div
+    class="relative overflow-hidden rounded-sm"
+    data-test-id="product-card-image"
+    {{ attributes }}
+  >
+    {%- render 'core-image',
+      image: image,
+      alt_default: title,
+      width: image_width,
+      aspect_ratio: aspect_ratio,
+      cover: cover,
+      preload: preload_image
+    -%}
+
+    {% render 'image-loading-placeholder',
+      cover: cover,
+      image: image,
+      wrapper_class: 'absolute inset-0 z-0 size-full'
+    %}
+  </div>
+{% endcapture %}
+
+{% comment %} Title and options {% endcomment %}
+{% capture title_and_options %}
+  <div class="flex flex-1 flex-col gap-y-r3">
+    <a href="{{ url }}" class="flex-0 {% if settings.truncate_cart_titles %}line-clamp-2{% endif %} type-p text-r4 font-bold [word-break:break-word]">{{ title }}</a>
+
+    {% comment %} Subscription plan name {% endcomment %}
+    {% if selling_plan_allocation %}
+      <p class="text-r2 text-primary">{{ selling_plan_allocation.selling_plan.name }}</p>
+    {% endif %}
+
+    {% if variant.options[0] != 'Default Title' %}
+      <p class="flex flex-row flex-wrap gap-x-r2 text-r2 text-muted">
+        {% for option in variant.options -%}
+          <span>{{ option }}</span>
+          {% unless forloop.last %}/{% endunless %}
+        {%- endfor %}
+      </p>
+    {% endif %}
+
+    {% if line_item != null %}
+      {% comment %} Line item properties, including files {% endcomment %}
+      {%- assign prop_count = line_item.properties | size -%}
+      {%- if prop_count != 0 -%}
+        {%- for p in line_item.properties -%}
+          {%- assign property_first_char = p.first | slice: 0 -%}
+          {%- if p.last != blank and property_first_char != '_' -%}
+            <p class="flex flex-wrap gap-x-r2 text-r2">
+              <span class="font-bold">{{ p.first }}: </span>
+              <span>
+                {%- if p.last contains '/uploads/' -%}
+                  <a href="{{ p.last }}">{{ p.last | split: '/' | last }}</a>
+                {%- else -%}
+                  {{ p.last }}
+                {%- endif -%}
+              </span>
+            </p>
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+
+    {% elsif product != null %}
+      {% comment %} Force metafield-based line item properties to show in pop-up notification {% endcomment %}
+
+      {% comment %} Product line item property {% endcomment %}
+      {%- if lip_value != blank -%}
+        <p class="flex flex-wrap gap-x-r2 text-r2">
+          <span class="font-bold">{{ 'product.line_item_property.label' | t }}: </span>
+          <span>{{ lip_value }}</span>
+        </p>
+      {%- endif -%}
+
+      {% comment %} Product preorder label {% endcomment %}
+      {%- if preorder_metafield.value == true -%}
+        <p class="flex flex-wrap gap-x-r2 text-r2">
+          <span class="font-bold">{{ 'product.pre_order.cart_line_label' | t }}: </span>
+          <span>{{ 'product.pre_order.cart_line_value' | t }}</span>
+        </p>
+      {% endif %}
+    {% endif %}
+
+    {% if show_quantity_text %}
+      <p class="text-r2 text-muted">{{ 'cart.quantity_label' | t }}: {{ quantity }}</p>
+    {% endif %}
+  </div>
+{% endcapture %}
+
+{% comment %} Price {% endcomment %}
+{% capture price %}
+  <div class="flex flex-col items-end justify-between gap-y-r2">
+    {% comment %} No fixed width here — the row must be able to wrap when the compare-at price makes it wider than its grid column, otherwise it overlays the title {% endcomment %}
+    <div class="flex flex-row flex-wrap justify-end gap-x-r4 text-end text-r4">
+      {% if comparison_price %}
+        <span class="line-through text-muted" data-test-id="cart-line-compare-price">
+          <span class="sr-only">{{ 'product.accessibility.item_on_sale_compare_at' | t }}</span>
+          {% render 'money', price: comparison_price, show_currency: false %}
+        </span>
+      {% endif %}
+      <span class="font-bold" data-test-id="cart-line-regular-price">
+        {% render 'money', price: price, hide_trailing_zeros: false %}
+      </span>
+    </div>
+    {% render 'price-per-unit', variant: variant, class: 'text-r2 text-muted' %}
+  </div>
+{% endcapture %}
+
+<div class="grid gap-x-r5 gap-y-r6 grid-cols-[80px_1fr_auto] md:grid-cols-[90px_1fr_auto] grid-rows-[1fr_minmax(0,min-content)]">
+  <a
+    href="{{ url }}"
+    class="col-start-1 row-span-2 flex flex-col self-start shrink-0 aspect-[--aspect-ratio] [&_img]:bg-[--photo-background]"
+    style="--aspect-ratio: {{ aspect_ratio }}"
+  >
+    {{ image }}
+  </a>
+
+  <div class="col-start-2 row-start-1">
+    {{ title_and_options }}
+  </div>
+
+  <div class="col-start-3 row-start-1">
+    {{ price }}
+  </div>
+
+  {% if line_item %}
+    <div class="col-start-2 col-span-2 row-start-2 self-end flex flex-row items-center justify-between gap-x-r6">
+      {% if show_quantity_selector %}
+        {{ quantity_input }}
+      {% endif %}
+
+      <div class="flex flex-row items-center gap-x-r6 justify-end">
+        <span x-cloak x-show="$cartItem.state === 'pending' && !$cartItem.isRemoving">
+          {% render 'spinner' %}
+        </span>
+
+        {% assign remove_label = 'cart.remove' | t %}
+
+        {% capture remove_button_attributes %}
+          :role="'button'"
+          @click.stop.prevent="$cartItem.remove()"
+          title="{{ remove_label }}"
+          aria-label="{{ remove_label }} {{ title }}"
+        {% endcapture %}
+
+        <a
+          href="{{ line_item.url_to_remove }}"
+          {{ remove_button_attributes }}
+          class="
+            btn-appearance rounded-form-field flex flex-center w-[--btn-height] h-[--btn-height] vars-btn-stroke vars-btn-md vars-btn-content
+            hover:!vars-stain-error
+          "
+        >
+          {% render 'core-icon', icon: 'fill-trash', size: 'sm' %}
+        </a>
+      </div>
+    </div>
+  {% endif %}
+</div>

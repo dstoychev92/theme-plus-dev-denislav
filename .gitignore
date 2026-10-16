@@ -1,0 +1,11 @@
+node_modules/
+theme/dist/
+theme/upload/
+theme/.tradecraft-build/
+shopify.theme.toml
+.tradecraft/reports/
+.tradecraft/cache/
+# The splice to-do list stays in Git, so the work carries across sessions
+splice/*/*
+!splice/*/todo.md
+.DS_Store

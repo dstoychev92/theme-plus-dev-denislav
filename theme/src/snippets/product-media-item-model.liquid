@@ -1,0 +1,135 @@
+{% doc %}
+  - Renders product 3D model with its poster image and play button
+
+  Reads $slide in the showcase layout and $scrollList on mobile to pause the model when it
+  leaves the current slide.
+
+  @param {number} [aspect_ratio] - media aspect ratio
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {string} [layout_desktop] - 'showcase' or 'stack', defaults to s.layout_desktop then 'stack'
+  @param {string} [loading]
+  @param {media} media - product media of type 'model'
+  @param {boolean} [preload]
+  @param {object} [s] - settings object
+  @param {section} [section]
+{% enddoc %}
+
+{% liquid
+  assign image = media.preview_image
+  assign layout_desktop = layout_desktop | default: s.layout_desktop | default: 'stack'
+%}
+
+{%- capture widths -%}
+  {%- render 'image-grid-widths',
+    columns_lg: 2,
+    columns_md: 2,
+    columns_sm: 1
+  -%}
+{%- endcapture -%}
+
+{%- capture sizes -%}
+  {%- render 'image-grid-sizes',
+    columns_lg: 2,
+    columns_md: 2,
+    columns_sm: 1,
+    section_width: section.settings.content_width
+  %}
+{%- endcapture -%}
+
+<div
+  class="relative overflow-hidden flex flex-col {{ class }}"
+  {{ attributes }}
+
+  data-lazy-alpine
+  data-lazy-alpine-module="@theme/shopify-media"
+
+  x-shopify-media:model
+  @theme:model:loaded="
+    {% comment %}
+      Unfortunately, we can't use x-intersect to pause these because it fires when the model gets out of view, but by the time this happens,
+      the slideshow already switched to another slide(assuming it's also a model) and the Model Viewer autoplays the model that's in view.
+      The order of things is the following: the model is now playing but x-intersect fires up and pauses the model that we are currently on which shouldn't happen.
+      That's why we watch the slideshow index and pause the model when it's not the current slide.
+    {% endcomment %}
+
+    {% comment %} Desktop {% endcomment %}
+    {% if layout_desktop == 'showcase' %}
+      {% comment %} Pause video on slide change {% endcomment %}
+      $watch('$slide.isCurrentSlide', (isCurrentSlide) => {
+        if (!$media.matches.sm) {
+          if (!isCurrentSlide && state == 'playing') {
+            pauseModel();
+          }
+        }
+      })
+    {% endif %}
+
+    {% comment %} Mobile {% endcomment %}
+    if ($media.matches.sm) {
+      $watch('$scrollList.centeredIndex', (centeredIndex) => {
+        if (centeredIndex != {{ media.position | minus: 1 }} && state == 'playing') {
+          pauseModel();
+        }
+      });
+    }
+  "
+>
+  {% comment %} Once the model is initialized, it has its own button overlay for playing the model. inert since opacity alone leaves the hidden button tabbable {% endcomment %}
+  <div
+    class="transition-opacity duration-300"
+    :class="{ 'opacity-0 pointer-events-none': hasLoaded }"
+    :inert="hasLoaded"
+  >
+    {% render 'core-image',
+      image: image,
+      sizes: sizes,
+      widths: widths,
+      preload: preload,
+      loading: loading,
+      alt: media.alt,
+      aspect_ratio: aspect_ratio,
+      class: 'size-full relative z-10'
+    %}
+
+    {% comment %} Play Model button {% endcomment %}
+    <button
+      {% comment %} Negative outline offset since the button fills the clipped media box, which cuts off an outline drawn outside it {% endcomment %}
+      class="absolute inset-0 z-10 flex flex-center text-white keyboard-focus:outline-offset-[-2px]"
+      @click="initModel"
+      :disabled="isLoading"
+      aria-label="{{ 'other.accessibility.view_model' | t }}"
+      style="--icon-size: var(--model-icon-size, var(--row-lg));"
+    >
+      {% render 'core-icon',
+        icon: 'fill-3d-model',
+        class: 'drop-shadow-[0_2px_3px_rgba(0_0_0_/_20%)]',
+        attributes: 'x-show="!isLoading"'
+      %}
+    </button>
+  </div>
+
+  <div
+    class="absolute inset-0"
+    @pointerdown="getPointerCoordinates"
+    @click="togglePlayPause"
+    {% comment %} Arrow keys orbit the model camera, so stop them here since the slideshow reads left/right as slide changes {% endcomment %}
+    @keydown.left.stop=""
+    @keydown.right.stop=""
+    @keydown.up.stop=""
+    @keydown.down.stop=""
+  >
+    {% comment %} Model Viewer {% endcomment %}
+    <template x-if="hasLoaded">
+      {{
+        media
+        | model_viewer_tag:
+          image_size: 1946,
+          class: 'size-full bg-canvas',
+          x-ref: 'model',
+          reveal: 'interaction',
+          interaction-prompt-threshold: 500
+      }}
+    </template>
+  </div>
+</div>

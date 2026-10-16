@@ -1,0 +1,180 @@
+<div
+  class="w-full relative @container"
+  style="
+    --cols: 12;
+    --cell-size: calc(100cqw/var(--cols));
+    {% if block.settings.set_gap %}
+      {% render 'props-style-gap', s: block.settings, apply: false, vars: false %}
+      --grid-gap: min(var(--custom-gutter-x), calc(100cqw/(var(--cols) - 1)));
+    {% else %}
+      --grid-gap: 0px;
+    {% endif %}
+  "
+  x-data
+  {% if request.design_mode %}
+    x-grid-inspector
+  {% endif %}
+
+  {{ block.shopify_attributes }}
+>
+  {% if request.design_mode %}
+    {% comment %} Debug grid lines for theme editor {% endcomment %}
+    <div
+      class="
+        z-0 absolute inset-0 pointer-events-none grid h-full w-full
+        gap-[--grid-gap]
+        opacity-0 transition-opacity duration-300
+      "
+      aria-hidden="true"
+      :class="
+        {
+          '!opacity-100': $containsSelectedBlock || $isSelectedBlock
+        }
+      "
+      :style="
+        {
+          'grid-template-rows': debugGridRows.join(' '),
+          'grid-template-columns': debugGridCols.join(' '),
+        }
+      "
+    >
+      <div data-debug-grid-rows class="contents">
+        <template x-for="(row, index) in debugGridRows">
+          <div
+            class="
+              flex flex-row justify-start items-start col-span-full w-full relative
+              pointer-events-none min-h-0 overflow-hidden
+
+              {% if block.settings.set_gap == false %}
+                shadow-[0_1px_0_0_var(--content-alpha-20),0_2px_0_0_var(--canvas-alpha-20)] last:shadow-none
+              {% else %}
+                bg-content/5
+                shadow-[0_1px_0_0_var(--canvas-alpha-20),0_-1px_0_0_var(--canvas-alpha-20)]
+              {% endif %}
+            "
+            :style="
+              {
+                'grid-row-start': String(index + 1)
+              }
+            "
+            data-design-mode-grid-row
+          >
+            <span
+              class="absolute top-r2 left-r2 font-bold text-content/50 text-r4 [text-shadow:_1px_1px_0_var(--canvas-alpha-30)]"
+              :class="
+                {
+                  {% comment %} Hide first row number since it will overlap the first column number {% endcomment %}
+                  'hidden': index == 0
+                }
+              "
+              x-text="index + 1"
+            ></span>
+          </div>
+        </template>
+      </div>
+      <div data-debug-grid-cols class="contents">
+        <template x-for="(col, index) in debugGridCols">
+          <div
+            class="
+              flex flex-row justify-start items-start h-full
+              relative pointer-events-none min-h-0 overflow-hidden
+
+              {% if block.settings.set_gap == false %}
+                shadow-[1px_0px_0_0_var(--content-alpha-20),2px_0_0_0_var(--canvas-alpha-20)] last:shadow-none
+              {% else %}
+                bg-content/5
+                shadow-[1px_0px_0_0_var(--canvas-alpha-20),-1px_0px_0_0_var(--canvas-alpha-20)]
+              {% endif %}
+            "
+            :style="
+              {
+                'grid-column': String(index + 1),
+                'grid-row-start': 1,
+                'grid-row-end': debugGridRows.length + 1
+              }
+            "
+            data-design-mode-grid-col
+          >
+            <span
+              class="absolute top-r2 left-r2 text-content/50 text-r4 font-bold [text-shadow:_1px_1px_0_var(--canvas-alpha-30)]"
+              x-text="index + 1"
+            ></span>
+          </div>
+        </template>
+      </div>
+    </div>
+  {% endif %}
+
+  <div
+    class="
+      grid h-fit w-full items-start
+      reverse-z-stack
+      relative
+      gap-[--grid-gap]
+      {% if block.settings.row_height == 'auto' %}
+        auto-rows-[minmax(0,min-content)]
+      {% else %}
+        auto-rows-[--cell-size]
+      {% endif %}
+      grid-cols-[repeat(var(--cols),minmax(0,var(--cell-size)))]
+    "
+    {% if request.design_mode %}
+      x-grid-inspector:source
+      @shopify:block:select="observeSourceGrid()"
+      @shopify:block:deselect="unobserveSourceGrid()"
+      :class="
+        {
+          '*:opacity-60': $containsSelectedBlock,
+        }
+      "
+    {% endif %}
+  >
+    {% content_for 'blocks' %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Grid editorial",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Gap"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_gap",
+      "label": "Set gap",
+      "default": false
+    },
+    [% json 'schema/grid-gap-setting.jsonc', default_gap: 'md', default_gap_custom: 2, conditional: 'block.settings.set_gap' %]
+    {
+      "type": "select",
+      "id": "row_height",
+      "label": "Row height",
+      "default": "auto",
+      "options": [
+        {"value": "auto", "label": "Auto"},
+        {"value": "fixed", "label": "Fixed"},
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "Rows expand to fit the content of the tallest grid item.",
+      "visible_if": "{{ block.settings.row_height == 'auto' }}"
+    },
+    {
+      "type": "paragraph",
+      "content": "Rows have a fixed height, making a grid of even squares. If blocks are taller than their row span, they will be clipped.",
+      "visible_if": "{{ block.settings.row_height == 'fixed' }}"
+    }
+  ],
+  "blocks": [
+    [= additional_blocks =]
+  ],
+  "presets": [
+    [= additional_presets =]
+  ]
+}
+{% endschema %}

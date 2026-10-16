@@ -1,0 +1,122 @@
+/**
+ * Entrance animations
+ *
+ * Items animate in when their container enters the viewport. Stagger delays
+ * are applied so children animate one after another. Animations stay paused
+ * until the container has intersected (handled by JS that sets
+ * data-has-intersected).
+ *
+ * Structure
+ * ---------
+ * - .entrance-container  Wrapper that observes intersection and holds items.
+ * - .entrance-item       Each animating child. Add one variant class per item.
+ *
+ * Opt-out
+ * -------
+ * Add .no-children-entrance on a container to disable entrance on its
+ * descendants (e.g. to avoid double animation inside a card that already
+ * animates).
+ *
+ * CSS variables (customize per container or globally)
+ * ---------------------------------------------------
+ * - --entrance-animation-stagger         Delay between each child (default 150ms).
+ * - --entrance-animation-duration        Main animation duration (default 1200ms).
+ * - --entrance-animation-slide-in-from-bottom  Slide distance for standard (default 15px).
+ *
+ * Example (Liquid/HTML)
+ * --------------------
+ * {% comment %} Container with optional overrides {% endcomment %}
+ * <div
+ *   class="entrance-container"
+ *   data-intersection
+ *   style="--entrance-animation-stagger: 100ms; --entrance-animation-duration: 800ms;"
+ * >
+ *   <div class="entrance-item entrance-standard">First</div>
+ *   <div class="entrance-item entrance-standard">Second</div>
+ *   <div class="entrance-item entrance-draw">
+ *     <svg>...</svg>
+ *   </div>
+ * </div>
+ *
+ * {% comment %} Nested list: only the list animates, not its items {% endcomment %}
+ * <div class="entrance-item entrance-standard no-children-entrance">
+ *   <ul>
+ *     <li>Item 1</li>
+ *     <li>Item 2</li>
+ *   </ul>
+ * </div>
+ */
+
+@layer base {
+  :root {
+    /* Default stagger between child entrance animations  */
+    --entrance-animation-stagger: 150ms;
+
+    /* Default duration for entrance animations  */
+    --entrance-animation-duration: 1000ms;
+
+    /* Default distance for slide-in-from-bottom entrance animations  */
+    --entrance-animation-slide-in-from-bottom: 15px;
+
+    /* Default ease for entrance animations  */
+    --entrance-animation-ease: var(--ease-in-out);
+  }
+}
+
+@layer utilities {
+  /* If JS enabled, delay animations until the section is ready (near center of viewport) */
+  @media (scripting: enabled) {
+    main > .shopify-section:not(:first-of-type):not([data-has-intersected='true']) .entrance-container {
+      --entrance-animation-play-state: paused;
+    }
+  }
+
+  /* Visitors who ask for reduced motion get content in place, with no fade or slide */
+  @media (prefers-reduced-motion: reduce) {
+    .entrance-container .entrance-item {
+      --entrance-animation-duration: 0ms;
+      --entrance-animation-play-state: running;
+      --entrance-animation-fill-mode: none;
+    }
+  }
+
+  .entrance-container {
+    /* Utility class to prevent children from animating when already in another entrance container */
+    .no-children-entrance * {
+      --entrance-animation-duration: 0ms;
+      --entrance-animation-play-state: running;
+      --entrance-animation-fill-mode: none;
+    }
+
+    /* An item which can animate */
+    .entrance-item {
+      &,
+      &.entrance-draw svg * {
+        animation-play-state: var(--entrance-animation-play-state, running);
+        @apply stagger-animation fill-mode-[--entrance-animation-fill-mode,backwards];
+        @apply animate-duration-[--entrance-animation-duration];
+        @apply animate-opacity-duration-[calc(var(--entrance-animation-duration)*1.5)];
+        @apply animate-blur-duration-[calc(var(--entrance-animation-duration)*1.5)];
+        @apply animate-draw-duration-[calc(var(--entrance-animation-duration)*4)];
+        @apply animate-in stagger-[--entrance-animation-stagger];
+        @apply animate-ease-[--entrance-animation-ease];
+      }
+
+      &.entrance-standard {
+        /* Add entrance animations here for text, buttons, links, etc  */
+      }
+
+      &.entrance-fade {
+        @apply fade-in;
+      }
+
+      &.entrance-draw svg {
+        path,
+        ellipse,
+        circle {
+          @apply draw-in;
+        }
+      }
+    }
+  }
+}

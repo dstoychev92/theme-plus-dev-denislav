@@ -1,0 +1,40 @@
+[% assign context = context | default: 'block.settings.' %]
+[% assign conditional = context | append: 'logo' | append: " != blank" %]
+[% assign inverse_conditional = context | append: 'logo' | append: " == blank" %]
+
+[
+  {
+    "type": "image_picker",
+    "id": "logo",
+    "label": "Image"
+  },
+  {
+    "type": "range",
+    "id": "logo_max_limit",
+    "label": "Width",
+    "min": 5,
+    "max": 495,
+    "step": 5,
+    "unit": "px",
+    "default": 120,
+    "visible_if": "{{ [= conditional =] }}"
+  },
+  {
+    "type": "range",
+    "id": "logo_font_size",
+    "label": "Font size",
+    "min": 1,
+    "max": 15,
+    "step": 1,
+    "default": 5,
+    "info": "If you do not select a logo image your store name will be used instead at this font size",
+    "visible_if": "{{ [= inverse_conditional =] }}"
+  },
+  {
+    "type": "checkbox",
+    "id": "enable_logo_background",
+    "label": "Enable background",
+    "default": true,
+    "visible_if": "{{ [= inverse_conditional =] }}"
+  },
+]

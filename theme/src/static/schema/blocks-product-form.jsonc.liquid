@@ -1,0 +1,20 @@
+[
+  {"type": "_product-title"},
+  {"type": "_product-price"},
+  {"type": "_product-description"},
+  {"type": "_product-disclosures"},
+  {"type": "_product-pickup"},
+  {"type": "_product-rating"},
+  {"type": "_product-sku"},
+  {"type": "_product-stock-status"},
+  {"type": "_product-option-selectors"},
+  {"type": "_product-option-siblings"},
+  {"type": "_product-subscription"},
+  {"type": "_product-quantity"},
+  {"type": "_product-add-buttons"},
+  [% unless quickview_context %]
+    {"type": "_product-upsell"},
+    {"type": "_product-complementary"},
+  [% endunless %]
+  {"type": "_product-sharing"}
+]

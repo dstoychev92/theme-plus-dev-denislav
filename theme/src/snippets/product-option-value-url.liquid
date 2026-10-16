@@ -1,0 +1,29 @@
+{% doc %}
+  - Builds destination URL for one product option value
+
+  A value with no variant but a product_url links to that combined-listing child with the
+  option_values query.
+
+  @param {product_option} option
+  @param {product} product
+  @param [selling_plan] - selling plan for the query, or false to omit it, defaults to product.selected_selling_plan
+  @param {product_option_value} value
+{% enddoc %}
+
+{%- if value.variant == null and value.product_url != null -%}
+  {%- render 'product-url',
+    product: product,
+    base_url: value.product_url,
+    option_position: option.position,
+    value_id: value.id,
+    selling_plan: selling_plan
+  -%}
+{%- else -%}
+  {%- render 'product-url',
+    product: product,
+    variant: value.variant,
+    option_position: option.position,
+    value_id: value.id,
+    selling_plan: selling_plan
+  -%}
+{%- endif -%}

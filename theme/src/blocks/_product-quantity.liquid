@@ -1,0 +1,115 @@
+{% doc %}
+  - Renders product form quantity stepper
+
+  Reads closest.product. The input joins the form buttons block through product_form_id and starts at the variant minimum quantity.
+{% enddoc %}
+
+{% liquid
+  assign product = closest.product
+
+  if product == blank and request.visual_preview_mode
+    assign product = collections.all.products.first
+  endif
+
+  assign label = 'cart.quantity_label' | t
+  assign current_variant = product.selected_or_first_available_variant
+  assign min_quantity = current_variant.quantity_rule.min | default: 1
+%}
+
+[% render 'props/assign-product-form-id' %]
+
+{% assign id = product_form_id | append: '-quantity' %}
+
+{% capture field_style %}
+  {% if block.settings.set_rounding %}
+    --radius-form-field: var(--radius-{{ block.settings.rounding_style }});
+  {% endif %}
+  {% if block.settings.set_border %}
+    --field-default-border-color: {{ block.settings.border_color }};
+    --field-border-width: {{ block.settings.border_width }}px;
+  {% endif %}
+{% endcapture %}
+
+{% capture content %}
+  {% render 'product-quantity-stepper',
+    label: label,
+    name: 'quantity',
+    size: block.settings.size,
+    value: min_quantity,
+    min: min_quantity,
+    stepper_attributes: 'data-morph-update="none"',
+    stepper_input_attributes: 'x-model.fill.number="quantity" required',
+    id: id,
+    form: product_form_id,
+    style: field_style
+  %}
+{% endcapture %}
+
+{% render 'product-block',
+  s: block.settings,
+  content: content,
+  attributes: block.shopify_attributes,
+  class: 'flex flex-col'
+%}
+
+{% schema %}
+{
+  "name": "Form quantity",
+  "tag": null,
+  "settings": [
+    {
+      "type": "select",
+      "id": "size",
+      "label": "Size",
+      "default": "md",
+      "options": [
+        {"value": "xs", "label": "XS"},
+        {"value": "sm", "label": "S"},
+        {"value": "md", "label": "M"},
+        {"value": "lg", "label": "L"},
+        {"value": "xl", "label": "XL"}
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Rounding"
+    },
+    [% json 'schema/rounding-element.jsonc' %]
+    {
+      "type": "header",
+      "content": "Border"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_border",
+      "label": "Set border",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "border_width",
+      "label": "Thickness",
+      "unit": "px",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "default": 1,
+      "visible_if": "{{ block.settings.set_border }}"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Color",
+      "alpha": true,
+      "default": "#000000",
+      "visible_if": "{{ block.settings.set_border }}"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Form quantity",
+      "category": "Add to cart"
+    }
+  ]
+}
+{% endschema %}

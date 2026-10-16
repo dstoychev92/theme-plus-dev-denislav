@@ -1,0 +1,91 @@
+[
+  {
+    "type": "inline_richtext",
+    "id": "text",
+    "label": "Text",
+    "default": "<em><strong>Grab</strong></em> your customer's <em><strong>attention</strong></em> with <em><strong>spotlight text</strong></em>"
+  },
+  [% if link_warning == true %]
+  {
+    "type": "paragraph",
+    "content": "Links are not supported inside a background marquee.",
+    "visible_if": "{{ block.settings.text contains '</a>' }}"
+  },
+  [% endif %]
+  {
+    "type": "header",
+    "content": "Typography"
+  },
+  {
+    "type": "checkbox",
+    "id": "enable_typography",
+    "label": "Set typography",
+    "default": false
+  },
+  [% assign conditional = 'block.settings.enable_typography == true' %]
+  [% json 'schema/type-custom.jsonc', default_font: 'heading', default_size: '9', conditional: conditional %]
+  {
+    "type": "header",
+    "content": "Color"
+  },
+  [% json 'schema/color-dropdown.jsonc', optional: true, custom: true, muted: true %]
+  {
+    "type": "header",
+    "content": "Outline"
+  },
+  {
+    "type": "checkbox",
+    "id": "outline_text",
+    "label": "Outline text",
+    "default": false
+  },
+  {
+    "type": "paragraph",
+    "content": "Outline text may not render well with all font families and can reduce readability at small sizes.",
+    "visible_if": "{{ block.settings.outline_text == true }}"
+  },
+  {
+    "type": "header",
+    "content": "Background highlight",
+    "info": "Use italic and bold together to create a background highlight.",
+    "visible_if": "{{ block.settings.highlight_toggle == 'auto' }}"
+  },
+  {
+    "type": "header",
+    "content": "Background highlight",
+    "visible_if": "{{ block.settings.highlight_toggle == 'full' or block.settings.highlight_toggle == 'none' }}"
+  },
+  {
+    "type": "select",
+    "id": "highlight_toggle",
+    "label": "Background highlight",
+    "default": "auto",
+    "options": [
+      {"value": "none", "label": "None"},
+      {"value": "full", "label": "Full"},
+      [% unless enable_auto_highlight_text == false %]
+        {"value": "auto", "label": "Auto"}
+      [% endunless %]
+    ]
+  },
+  {
+    "type": "color",
+    "alpha": true,
+    "id": "highlight_color",
+    "label": "Color",
+    "default": "#77777730",
+    "visible_if": "{{ block.settings.highlight_toggle != 'none' }}"
+  },
+  {
+    "type": "select",
+    "id": "highlight_appearance",
+    "label": "Style",
+    "default": "partial",
+    "options": [
+      {"value": "full", "label": "Full background"},
+      {"value": "partial", "label": "Thick line"},
+      {"value": "underline", "label": "Line"}
+    ],
+    "visible_if": "{{ block.settings.highlight_toggle != 'none' }}"
+  }
+]

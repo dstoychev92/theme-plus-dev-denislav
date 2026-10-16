@@ -1,0 +1,11 @@
+/* TODO: Remove this once we upgrade to Tailwind 4.0.0 and can use the new transition-behavior property: https://tailwindcss.com/docs/transition-behavior */
+
+@layer utilities {
+  .transition-discrete {
+    transition-behavior: allow-discrete;
+  }
+
+  .transition-normal {
+    transition-behavior: normal;
+  }
+}

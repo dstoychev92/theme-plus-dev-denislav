@@ -1,0 +1,110 @@
+{% doc %}
+  - Renders product cards from product list or collection
+
+  card_limit applies only to the collection source.
+{% enddoc %}
+
+{% liquid
+  case block.settings.source
+    when 'collection'
+      assign products = block.settings.collection.products
+      assign limit = block.settings.card_limit
+    when 'product_list'
+      assign products = block.settings.product_list
+  endcase
+
+  if block.settings.set_aspect_ratio
+    assign aspect_ratio = block.settings.aspect_ratio
+  endif
+%}
+
+{% if request.visual_preview_mode %}
+  {% render 'placeholder-cards-product',
+    limit: 8,
+    block_attributes: block.shopify_attributes,
+    aspect_ratio: aspect_ratio
+  %}
+{% elsif products.size == 0 or products == blank %}
+  {% render 'placeholder-cards-product',
+    limit: limit,
+    block_attributes: block.shopify_attributes,
+    aspect_ratio: aspect_ratio
+  %}
+{% else %}
+  {%- capture image_widths -%}
+    {%- render 'image-grid-widths' -%}
+  {%- endcapture -%}
+  {%- capture image_sizes -%}
+    {%- render 'image-grid-sizes' -%}
+  {%- endcapture -%}
+
+  {% for product in products limit: limit %}
+    {% if forloop.first %}
+      {% assign attributes = block.shopify_attributes %}
+    {% endif %}
+    {% render 'card-product',
+      size: 'lg',
+      product: product,
+      attributes: attributes,
+      aspect_ratio: aspect_ratio,
+      image_widths: image_widths,
+      image_sizes: image_sizes
+    %}
+  {% endfor %}
+{% endif %}
+
+{% schema %}
+{
+  "name": "Product cards",
+  "tag": null,
+  "settings": [
+    {
+      "type": "select",
+      "id": "source",
+      "label": "Source",
+      "default": "product_list",
+      "options": [
+        {"value": "product_list", "label": "Product list"},
+        {"value": "collection", "label": "Collection"}
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Product list"
+    },
+    {
+      "type": "product_list",
+      "id": "product_list",
+      "label": "Product list"
+    },
+    {
+      "type": "header",
+      "content": "Collection"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection"
+    },
+    {
+      "type": "range",
+      "id": "card_limit",
+      "min": 1,
+      "max": 20,
+      "step": 1,
+      "label": "Card limit",
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Aspect ratio"
+    },
+    [% json 'schema/aspect-ratio-settings.jsonc' %]
+  ],
+  "presets": [
+    {
+      "name": "Product cards"
+    }
+  ]
+}
+{% endschema %}

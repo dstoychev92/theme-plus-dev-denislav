@@ -1,0 +1,115 @@
+{% doc %}
+  - Renders one tab button
+
+  Render it inside an x-tabs root.
+
+  @param {string} [appearance] - 'outline' or 'underline', defaults to s.tab_style, then settings.tab_style
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {string} [color] - unused
+  @param {string} [form] - ID of the form it belongs to
+  @param {string} [href] - target when tag is 'a'
+  @param {string} [id]
+  @param {string} label
+  @param {object} [s] - settings object
+  @param {boolean} [selected] - marks it the open tab
+  @param {string} [style] - inline styles
+  @param {string} [tag] - 'button' or 'a', defaults to 'button'
+  @param {string} [type] - type attribute for 'button', defaults to 'button'
+{% enddoc %}
+
+{% liquid
+  assign tag = tag | default: 'button'
+  assign type = type | default: 'button'
+  assign color = color | default: s.tab_color | default: 'content'
+  assign appearance = appearance | default: s.tab_style
+
+  if appearance == blank or appearance == 'inherit'
+    assign appearance = settings.tab_style
+  endif
+%}
+
+{% capture attributes %}
+  {{ attributes }}
+  role="tab"
+  x-tabs:tab
+  :data-state="$tab.isSelected ? 'active' : 'inactive'"
+  :data-tab-index="$tab.index"
+  {% if selected %}
+    aria-selected="true"
+  {% endif %}
+{% endcapture %}
+
+{% capture class %}
+  keyboard-focus:outline-offset-[-2px]
+  relative group/tab whitespace-nowrap
+  flex-row-center transition-opacity
+  h-btn
+  mx-[calc(var(--layout-gutter-x)/2)]
+  hit-area-x-[calc(var(--layout-gutter-x)/2)]
+
+  {% case appearance %}
+    {% when 'outline' %}
+      [--tab-px:1em]
+      [--tab-py:0.5em]
+      px-[var(--tab-px)]
+      py-[var(--tab-py)]
+    {% when 'underline' %}
+      rounded-none
+  {% endcase %}
+  [&:nth-child(2)]:ms-0
+  [&:nth-child(2)]:hit-area-s-0
+  [&:nth-last-child(2)]:me-0
+  [&:nth-last-child(2)]:hit-area-e-0
+  entrance-item entrance-fade
+  {{ class }}
+{% endcapture %}
+
+{% capture content %}
+  <span
+    class="relative z-20 text-content transition-colors"
+    :class="{
+      'text-muted group-hover/tab:!text-content': !$tab.isSelected
+    }"
+  >
+    {{ label }}
+    {% case appearance %}
+      {% when 'underline' %}
+        <div class="h-px bg-content absolute left-0 right-0 bottom-[-2px]" hidden x-show="$tab.isSelected" x-shared-layout:element="tab-underline"></div>
+    {% endcase %}
+  </span>
+  {% case appearance %}
+    {% when 'outline' %}
+      <div class="absolute inset-0 bg-content/10 z-0 rounded-tab" hidden x-show="$tab.isSelected" x-shared-layout:element="tab-bg"></div>
+  {% endcase %}
+{% endcapture %}
+
+{% case tag %}
+  {% when 'button' %}
+    <button
+      type="{{ type }}"
+      {% if id %}
+        id="{{ id }}"
+      {% endif %}
+      {% if form %}
+        form="{{ form }}"
+      {% endif %}
+      class="{{ class }}"
+      style="{{ style }}"
+      {{ attributes }}
+    >
+      {{ content }}
+    </button>
+  {% when 'a' %}
+    <a
+      href="{{ href }}"
+      class="cursor-pointer {{ class }}"
+      {% if id %}
+        id="{{ id }}"
+      {% endif %}
+      style="{{ style }}"
+      {{ attributes }}
+    >
+      {{ content }}
+    </a>
+{% endcase %}

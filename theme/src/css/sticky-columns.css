@@ -1,0 +1,41 @@
+/**
+ * Sticky positioning for x-sticky-columns:column elements.
+ *
+ * Alpine sets data-enable-sticky and --sticky-columns-offset on the column.
+ * The x-sticky-columns:column plugin sets --header-bottom and --header-sticky-offset on the column
+ * from the page store. They never live on body, since a custom property write on body
+ * recomputes the style of every element on the page.
+ *
+ * Padding: set [--sticky-padding:…] on the element, or override with [--sticky-column-padding:…].
+ *
+ * --flush-top uses --header-sticky-offset so the column can sit flush with the viewport top
+ * when the page is scrolled to the top (product media, pair columns).
+ */
+@layer components {
+  .sticky-column {
+    --sticky-column-header-offset: var(--header-bottom, 0px);
+    --sticky-column-padding: var(--sticky-padding, 0px);
+
+    @screen md {
+      &[data-enable-sticky='true'] {
+        position: sticky;
+        top: calc(
+          var(--sticky-column-header-offset) + var(--sticky-column-padding) + var(--sticky-columns-offset, 0px)
+        );
+      }
+    }
+  }
+
+  .sticky-column--flush-top {
+    --sticky-column-header-offset: var(--header-sticky-offset, 0px);
+  }
+
+  .sticky-column--end {
+    @screen md {
+      &[data-enable-sticky='true'] {
+        top: auto;
+        bottom: 0;
+      }
+    }
+  }
+}

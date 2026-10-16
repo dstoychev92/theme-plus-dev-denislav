@@ -1,0 +1,56 @@
+[% if id_suffix %]
+  [% assign _id_suffix = id_suffix | prepend: '_' %]
+[% endif %]
+[% assign context = context | default: 'block.settings.' %]
+[% assign default_conditional = context | append: 'type_preset' | append: _id_suffix | append: " == 'custom'" %]
+[% assign default_cnd_inverse = context | append: 'type_preset' | append: _id_suffix | append: " != 'custom'" %]
+[% assign conditional = conditional | default: default_conditional %]
+[% assign conditional_inverse = resize_conditional | default: default_cnd_inverse %]
+[
+  [% if resize == true %]
+    {
+      "type": "select",
+      "id": "type_resize[= _id_suffix =]",
+      "label": "[= resize_label | default: 'Text size' =]",
+      "default": "[= default_resize | default: 'md' =]",
+      "options": [
+        {"value": "xs", "label": "XS"},
+        {"value": "sm", "label": "S"},
+        {"value": "md", "label": "M"},
+        {"value": "lg", "label": "L"},
+        {"value": "xl", "label": "XL"}
+      ],
+      "visible_if": "{{ [= conditional_inverse =] }}"
+    },
+  [% endif %]
+  {
+    "type": "select",
+    "id": "type_font[= _id_suffix =]",
+    "label": "Font",
+    "default": "[= default_font | default: 'body' =]",
+    "options": [
+      {"value": "heading", "label": "Heading"},
+      {"value": "subheading", "label": "Subheading"},
+      {"value": "accent", "label": "Accent"},
+      {"value": "body", "label": "Body"}
+    ],
+    "visible_if": "{{ [= conditional =] }}"
+  },
+  {
+    "type": "range",
+    "id": "type_size[= _id_suffix =]",
+    "label": "Size",
+    "min": 1,
+    "max": 15,
+    "step": 1,
+    "default": [= default_size | default: 4 =],
+    "visible_if": "{{ [= conditional =] }}"
+  },
+  {
+    "type": "checkbox",
+    "id": "type_uppercase[= _id_suffix =]",
+    "label": "Uppercase",
+    "default": [= default_uppercase | default: false =],
+    "visible_if": "{{ [= conditional =] }}"
+  }
+]

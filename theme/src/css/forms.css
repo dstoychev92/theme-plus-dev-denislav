@@ -1,0 +1,194 @@
+@layer base {
+  :root {
+    /* Checkbox variables */
+    --checkbox-radius: min(var(--radius-form-field), 5px);
+    --checkbox-bg-color: transparent;
+    --checkbox-border-color: var(--content-mix-20);
+    --checkbox-border-gradient-start: var(--content-mix-80);
+    --checkbox-border-gradient-end: theme(colors.content.DEFAULT);
+    --checkbox-border-gradient: linear-gradient(
+      to bottom,
+      var(--checkbox-border-gradient-start),
+      var(--checkbox-border-gradient-end)
+    );
+    --checkbox-focus-border-color: var(--focus-outline-color);
+    --checkbox-keyboard-focus-border-color: var(--focus-outline-color);
+    --checkbox-checkmark-icon: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2016%2012'%3E%3Cpath%20fill='white'%20d='M5.5%2011.2L1%206.7l1.4-1.4%203.1%203.1%208-8%201.4%201.4z'/%3E%3C/svg%3E");
+
+    /* State-specific color variables */
+    --checkbox-disabled-bg-color: var(--content-mix-20);
+    --checkbox-disabled-border-color: var(--content-mix-20);
+
+    /* Radio variables */
+    --radio-bg-color: transparent;
+    --radio-border-color: var(--content-mix-20);
+    --radio-border-gradient-start: var(--content-mix-80);
+    --radio-border-gradient-end: theme(colors.content.DEFAULT);
+    --radio-border-gradient: linear-gradient(
+      to bottom,
+      var(--radio-border-gradient-start),
+      var(--radio-border-gradient-end)
+    );
+    --radio-focus-border-color: var(--focus-outline-color);
+    --radio-keyboard-focus-border-color: var(--focus-outline-color);
+    --radio-inner-bg-color: theme(colors.content.DEFAULT);
+    --radio-inner-padding: 3px;
+    --radio-inner-stroke: 2px;
+
+    /* State-specific color variables */
+    --radio-checked-border-color: theme(colors.content.DEFAULT);
+    --radio-disabled-bg-color: var(--content-mix-20);
+    --radio-disabled-border-color: var(--content-mix-20);
+  }
+}
+
+@layer components {
+  .vars-field {
+    --input-text-color: var(--content);
+    --input-placeholder-text-color: var(--content-mix-50);
+
+    --field-default-border-color: var(--line-subtle);
+    --field-focus-border-color: var(--line-bold);
+    --field-keyboard-focus-border-color: var(--secondary);
+
+    --field-border-color: var(--field-default-border-color);
+    --field-border-width: 1px;
+
+    --leading-control: 1.25em;
+    --label-shrunken-text-size: var(--font-r1);
+    --label-animation-duration: 175ms;
+    --field-active: 1;
+    --field-inactive: calc(1 - var(--field-active));
+
+    --label-padding-s: calc(var(--control-padding) / 2 + var(--field-radius) / 4);
+    --label-padding-e: calc(var(--control-padding) / 2);
+
+    --input-bg-color: var(--canvas);
+    --input-padding-s: max(var(--control-padding), calc(var(--field-radius) * 0.75), var(--r3));
+    --input-padding-e: max(var(--control-padding), calc(var(--field-radius) * 0.75), var(--r3));
+    --input-padding-y: calc(var(--control-padding));
+    --input-height: calc(var(--control-height));
+
+    --fieldset-padding-s: calc(var(--label-padding-s) - var(--field-border-width));
+    --fieldset-padding-e: calc(var(--label-padding-e) - var(--field-border-width));
+
+    --field-radius: min(var(--radius-form-field), var(--input-height) / 2, var(--max-field-radius, 99999px));
+    --focus-outline-width: 2px;
+    --focus-outline-outset: 4px;
+  }
+
+  .vars-field:focus-within {
+    --field-active: 1;
+    --field-border-color: var(--field-focus-border-color);
+  }
+
+  .vars-field:has(:autofill) {
+    --field-active: 1;
+  }
+
+  /* Checkbox input styles */
+  .checkbox {
+    @apply aspect-square;
+    @apply hit-area-after-[5px];
+    @apply appearance-none;
+    @apply transition-colors cursor-pointer;
+    @apply rounded-[--checkbox-radius] ring-offset-2;
+
+    background-color: var(--checkbox-bg-color);
+    border-color: var(--checkbox-border-color);
+    border-width: 1px;
+    border-style: solid;
+
+    /* Size */
+    width: var(--checkbox-size);
+    height: var(--checkbox-size);
+
+    /* Checked state */
+    &:checked,
+    &.checkbox-checked {
+      --checkbox-border-color: transparent;
+      background-image: var(--checkbox-border-gradient);
+      background-color: transparent;
+
+      &:after {
+        content: '';
+        pointer-events: none;
+        position: absolute;
+        inset: 0;
+        background-image: var(--checkbox-checkmark-icon);
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 65% 65%;
+      }
+    }
+
+    /* Disabled state */
+    &:disabled {
+      --checkbox-bg-color: var(--checkbox-disabled-bg-color);
+      --checkbox-border-color: var(--checkbox-disabled-border-color);
+      background-image: none;
+      @apply cursor-auto;
+      &::before {
+        display: none;
+      }
+      &::after {
+        display: none;
+      }
+    }
+
+    /* Keyboard focus state */
+    @apply keyboard-focus:ring-[--checkbox-keyboard-focus-border-color];
+    @apply keyboard-focus:ring-2;
+    @apply keyboard-focus:ring-offset-1;
+    @apply keyboard-focus:!outline-none;
+  }
+
+  /* Radio input styles */
+  .radio {
+    @apply aspect-square;
+    @apply hit-area-after-[5px];
+    @apply appearance-none;
+    @apply transition-colors cursor-pointer;
+    /* @apply border-solid border; */
+    @apply rounded-full ring-offset-2;
+
+    background-color: var(--radio-bg-color);
+    border-color: var(--radio-border-color);
+    border-width: 1px;
+    border-style: solid;
+
+    /* Size and colors */
+    width: var(--radio-size);
+    height: var(--radio-size);
+
+    /* Checked state */
+    &:checked,
+    &.radio-checked {
+      --radio-border-color: transparent;
+
+      &:before {
+        content: '';
+        pointer-events: none;
+        @apply absolute inset-0;
+        @apply mask-border-[4px];
+        background-image: var(--radio-border-gradient);
+      }
+    }
+
+    /* Disabled state */
+    &:disabled {
+      --radio-bg-color: var(--radio-disabled-bg-color);
+      --radio-border-color: var(--radio-disabled-border-color);
+      @apply cursor-auto;
+      &::before {
+        display: none;
+      }
+    }
+
+    /* Keyboard focus state */
+    @apply keyboard-focus:ring-[--radio-keyboard-focus-border-color];
+    @apply keyboard-focus:ring-2;
+    @apply keyboard-focus:ring-offset-1;
+    @apply keyboard-focus:!outline-none;
+  }
+}

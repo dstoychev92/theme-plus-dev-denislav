@@ -1,0 +1,54 @@
+{% doc %}
+  - Renders custom card content over the media
+
+  Static child of _card-custom, placed with id 'overlay', holding other blocks. Renders nothing
+  when empty.
+{% enddoc %}
+
+{% capture blocks %}
+  {% content_for 'blocks' %}
+{% endcapture %}
+
+{% if blocks != blank %}
+  {% capture placement %}
+    {% render 'core-placement-grid',
+      content: blocks,
+      s: block.settings
+    %}
+  {% endcapture %}
+
+  <div
+    class="pointer-events-auto size-full {% if block.settings.color_scheme %}vars-{{ block.settings.color_scheme }}{% endif %}"
+    {{ block.shopify_attributes }}
+  >
+    {{ placement }}
+  </div>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Over image",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    [% json 'schema/vertical-placement-setting.jsonc' %]
+    [% json 'schema/horizontal-placement-setting.jsonc' %]
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    [% json 'schema/color-settings-image.jsonc' %]
+  ],
+  "blocks": [
+    {
+      "type": "@theme"
+    },
+    {
+      "type": "@app"
+    }
+  ]
+}
+{% endschema %}

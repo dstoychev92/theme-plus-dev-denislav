@@ -1,0 +1,36 @@
+{
+  "theme": "analog",
+  "store": "store",
+  "packages": {
+    "analog": {
+      "path": "theme",
+      "version": "1.1.0-beta.3"
+    },
+    "tradecraft-ui": {
+      "path": ".tradecraft/tradecraft-ui",
+      "version": "26.5.3",
+      "adopted": false
+    },
+    "vendor/motion-plus": {
+      "path": ".tradecraft/vendor/motion-plus",
+      "version": "2.11.2",
+      "adopted": false
+    },
+    "tradecraft-build": {
+      "path": ".tradecraft/tradecraft-build",
+      "version": "3.4.1",
+      "adopted": false
+    },
+    "vendor/shopify-events": {
+      "path": ".tradecraft/vendor/shopify-events",
+      "version": "0.0.0",
+      "adopted": false
+    },
+    "tradecraft-tools": {
+      "path": ".tradecraft/tradecraft-tools",
+      "version": "0.2.0",
+      "adopted": false
+    }
+  },
+  "schemaVersion": 1
+}

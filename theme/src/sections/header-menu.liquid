@@ -1,0 +1,564 @@
+{% liquid
+  assign icon_size = section.settings.icon_size | plus: 110.0 | divided_by: 130.0
+  assign icon_stroke_weight = section.settings.icon_stroke_weight
+
+  assign left_items = ''
+  assign center_items = ''
+  assign right_items = ''
+
+  assign left_items_class = ''
+  assign center_items_class = ''
+  assign right_items_class = ''
+
+  if section.settings.color_scheme.settings.color_canvas.lightness < 50
+    assign header_menu_style = 'dark'
+  else
+    assign header_menu_style = 'light'
+  endif
+
+  assign render_search_left_mobile = false
+  assign render_search_right = section.settings.show_search_button
+  assign right_search_target_device = section.settings.target_device_search_button
+  if section.settings.show_search_button and section.settings.search_position_mobile == 'left'
+    case section.settings.target_device_search_button
+      when 'mobile'
+        assign render_search_left_mobile = true
+        assign render_search_right = false
+      when 'both'
+        assign render_search_left_mobile = true
+        assign right_search_target_device = 'desktop'
+    endcase
+  endif
+
+  assign render_account_left_mobile = false
+  assign render_account_right = section.settings.show_account_button
+  assign right_account_target_device = section.settings.target_device_account_button
+  if section.settings.show_account_button and section.settings.account_position_mobile == 'left'
+    case section.settings.target_device_account_button
+      when 'mobile'
+        assign render_account_left_mobile = true
+        assign render_account_right = false
+      when 'both'
+        assign render_account_left_mobile = true
+        assign right_account_target_device = 'desktop'
+    endcase
+  endif
+%}
+
+{% capture nav_link_icon_type_class %}
+  {%- render 'props-class-type-preset', s: section.settings, settings_suffix: 'nav_link' -%}
+{% endcapture %}
+
+{% capture class %}
+  group/header-menu vars-control-xs md:vars-control-sm
+  [--control-font-size:--font-size-calc]
+  [--header-menu-link-hit-area-x:calc(var(--header-row-gap-x)/2)]
+  {% comment %} We use a 'shadow' so that the mega menu covers the line except when header menu is transparent and thus the header menu will appear to have one continous background {% endcomment %}
+  shadow-[0_1px_0px_0px_oklch(var(--content-oklch)/var(--header-section-border-opacity))]
+{% endcapture %}
+
+{% capture style %}
+  {% render 'props-style-gap', s: section.settings, vars: false, apply: false %}
+  --header-row-gap-x:var(--custom-gutter-x);
+  --icon-size: {{ icon_size }}em;
+  {% comment %}
+    These column widths drive desktop layout only. On mobile the logo is always centered, so the
+    grid stays symmetric (see stylesheet) and these -md variables are ignored below the md breakpoint.
+  {% endcomment %}
+  {% if section.settings.logo_position == 'center' %}
+    --left-column-width-md: minmax(0, 1fr);
+    --right-column-width-md: minmax(0, 1fr);
+  {% else %}
+    {% case section.settings.menu_position %}
+      {% when 'left' %}
+        --center-column-width-md: minmax(0, auto);
+        --left-column-width-md: minmax(0, 1fr);
+        --right-column-width-md: max-content;
+      {% when 'center' %}
+        --center-column-width-md: minmax(0, auto);
+      {% when 'right' %}
+        --left-column-width-md: max-content;
+        --center-column-width-md: minmax(0, auto);
+        --right-column-width-md: minmax(0, 1fr);
+    {% endcase %}
+  {% endif %}
+
+  {% case icon_stroke_weight %}
+    {% when 'light' %}
+      --icon-stroke-weight: var(--icon-stroke-weight-light);
+    {% when 'bold' %}
+      --icon-stroke-weight: var(--icon-stroke-weight-bold);
+  {% endcase %}
+{% endcapture %}
+
+{% capture attributes %}
+  aria-label="{{ 'header.accessibility.global' | t }}"
+  data-test-id="header-menu"
+
+  {% comment %} Update this section when the cart API is called so the cart icon is updated {% endcomment %}
+  x-cart-api-section
+
+  data-header-menu-style="{{ header_menu_style }}"
+{% endcapture %}
+
+{% comment %} Always add drawer button to left {% endcomment %}
+{% capture left_items %}
+  {% render 'header-drawer-button', s: section.settings, target_device: section.settings.target_device_drawer_button, icon_type_class: nav_link_icon_type_class %}
+  {% if render_account_left_mobile %}
+    {% render 'header-account-button', s: section.settings, target_device: 'mobile', icon_type_class: nav_link_icon_type_class %}
+  {% endif %}
+  {% if render_search_left_mobile %}
+    {% render 'header-search-button', s: section.settings, target_device: 'mobile', icon_type_class: nav_link_icon_type_class %}
+  {% endif %}
+{% endcapture %}
+
+{% comment %} Handle logo positioning {% endcomment %}
+
+{% if section.settings.logo_position == 'left' %}
+  {% capture left_items %}
+    {{ left_items }}
+    {% render 'header-logo', s: section.settings, target_device: 'desktop' %}
+  {% endcapture %}
+  {% capture center_items %}
+    {% render 'header-logo', s: section.settings, target_device: 'mobile' %}
+  {% endcapture %}
+{% elsif section.settings.logo_position == 'center' %}
+  {% capture center_items %}
+    {% render 'header-logo', s: section.settings %}
+  {% endcapture %}
+{% endif %}
+
+{% comment %} Handle navigation positioning {% endcomment %}
+{% if section.settings.target_device_drawer_button == 'mobile' %}
+  {% capture navigation %}
+    {% render 'header-menu-navigation', s: section.settings, target_device: 'desktop' %}
+  {% endcapture %}
+{% endif %}
+
+{% if section.settings.logo_position == 'left' %}
+  {% if section.settings.menu_position == 'left' %}
+    {% comment %} The group containing the navigation should be allowed to shrink so that the content can overflow {% endcomment %}
+    {% assign left_items_class = 'md:min-w-0 md:grow-1' %}
+    {% assign center_items_class = 'md:hidden' %}
+    {% capture left_items %}
+      {{ left_items }}
+      {{ navigation }}
+    {% endcapture %}
+  {% elsif section.settings.menu_position == 'center' %}
+    {% comment %} The group containing the navigation should be allowed to shrink so that the content can overflow {% endcomment %}
+    {% assign center_items_class = 'md:min-w-0 md:grow-1' %}
+    {% capture center_items %}
+      {{ center_items }}
+      {{ navigation }}
+    {% endcapture %}
+  {% elsif section.settings.menu_position == 'right' %}
+    {% assign center_items_class = 'md:hidden' %}
+    {% comment %} The group containing the navigation should be allowed to shrink so that the content can overflow {% endcomment %}
+    {% assign right_items_class = 'md:min-w-0 md:grow-1' %}
+    {% capture right_items %}
+      {{ navigation }}
+    {% endcapture %}
+  {% endif %}
+{% elsif section.settings.logo_position == 'center' %}
+  {% comment %} Navigation is always in the left group when logo is centered so the group content should be allowed to overflow {% endcomment %}
+  {% assign left_items_class = 'md:min-w-0 md:grow-1' %}
+  {% assign right_items_class = 'md:grow-1' %}
+  {% capture left_items %}
+    {{ left_items }}
+    {{ navigation }}
+  {% endcapture %}
+{% endif %}
+
+{% if render_search_right or render_account_right or section.settings.show_cart_button %}
+  {% capture right_items %}
+    {{ right_items }}
+    {% if render_search_right %}
+      {% render 'header-search-button', s: section.settings, target_device: right_search_target_device, icon_type_class: nav_link_icon_type_class %}
+    {% endif %}
+
+    {% if render_account_right %}
+      {% render 'header-account-button', s: section.settings, target_device: right_account_target_device, icon_type_class: nav_link_icon_type_class %}
+    {% endif %}
+
+    {% if section.settings.show_cart_button %}
+      {% render 'header-cart-button', s: section.settings, icon_type_class: nav_link_icon_type_class %}
+    {% endif %}
+  {% endcapture %}
+{% endif %}
+
+{% capture content %}
+  <div
+    class="
+      header-menu-area-left focus-group flex-row-center min-w-0 justify-start gap-x-[--header-row-gap-x]
+      {{ left_items_class }}
+    "
+    data-test-id="header-menu-left-items"
+  >
+    {{ left_items }}
+  </div>
+  <div
+    class="
+      header-menu-area-center focus-group flex-row-center min-w-0 justify-center gap-x-[--header-row-gap-x]
+      {{ center_items_class }}
+    "
+    data-test-id="header-menu-center-items"
+  >
+    {{ center_items }}
+  </div>
+  <div
+    class="
+      header-menu-area-right focus-group flex-row-center min-w-0 justify-end gap-x-[--header-row-gap-x]
+      {{ right_items_class }}
+    "
+    data-test-id="header-menu-right-items"
+  >
+    {{ right_items }}
+  </div>
+{% endcapture %}
+
+{% render 'header-section',
+  s: section.settings,
+  class: class,
+  inner_class: 'header-menu-grid',
+  attributes: attributes,
+  style: style,
+  tag: 'nav',
+  content: content
+%}
+{% comment %} Megamenus and dropdowns rendered outside the header nav so they are not clipped by overflow/edge-masks {% endcomment %}
+{% capture megamenu_blocks %}{% content_for 'blocks' %}{% endcapture %}
+{% render 'header-menu-popups', s: section.settings, blocks: megamenu_blocks %}
+
+{% # Help Google show a brand name and logo in search results or knowledge panels %}
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": {{ shop.name | json }},
+    {% if section.settings.logo %}
+    "logo": {{ section.settings.logo | image_url: width: section.settings.logo.width | prepend: "https:" | json }},
+    {% endif %}
+    "url": {{ shop.url | json }}
+  }
+</script>
+
+{% stylesheet %}
+  .header-menu-grid {
+    display: grid;
+    grid-template-areas: 'left center right';
+    /*
+      Mobile: symmetric outer columns so the centered logo stays centered regardless of the
+      desktop menu position setting. Desktop layout is applied at the md breakpoint below.
+    */
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(max-content, auto)
+      minmax(0, 1fr);
+    column-gap: var(--header-row-gap-x);
+    align-items: stretch;
+  }
+
+  @media (min-width: [= screen_md =]px) {
+    .header-menu-grid {
+      grid-template-columns:
+        var(--left-column-width-md, minmax(max-content, 1fr))
+        var(--center-column-width-md, minmax(max-content, auto))
+        var(--right-column-width-md, minmax(max-content, 1fr));
+    }
+  }
+
+  .header-menu-area-left {
+    grid-area: left;
+  }
+
+  .header-menu-area-center {
+    grid-area: center;
+  }
+
+  .header-menu-area-right {
+    grid-area: right;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Menu",
+  "class": "section-header-menu relative",
+  "tag": "section",
+  "limit": 1,
+  "settings": [
+    {
+      "type": "link_list",
+      "label": "Links",
+      "id": "linklist",
+      "default": "main-menu"
+    },
+
+    [% json 'schema/color-settings-section-solid.jsonc', default_color_scheme: 'scheme-default' %]
+
+    {
+      "type": "checkbox",
+      "id": "transparent",
+      "label": "Allow transparent header",
+      "default": false,
+      "info": "First section must support transparent headers and have transparent header options enabled."
+    },
+    {
+      "type": "header",
+      "content": "Logo"
+    },
+
+    [% json 'schema/header-logo-settings.jsonc', context: 'section.settings.' %]
+    [% json 'schema/header-white-logo-settings.jsonc', context: 'section.settings.' %]
+
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+
+    {
+      "type": "select",
+      "id": "logo_position",
+      "label": "Logo",
+      "default": "left",
+      "options": [
+        {"value": "left", "label": "Left"},
+        {"value": "center", "label": "Center"},
+      ]
+    },
+
+    {
+      "type": "select",
+      "id": "menu_position",
+      "label": "Menu",
+      "default": "center",
+      "options": [
+        {"value": "left", "label": "Left"},
+        {"value": "center", "label": "Center"},
+        {"value": "right", "label": "Right"},
+      ],
+      "visible_if": "{{ section.settings.logo_position == 'left' }}"
+    },
+
+    {
+      "type": "select",
+      "id": "content_width",
+      "label": "Width",
+      "default": "full",
+      "options": [
+        {"value": "full", "label": "Full"},
+        {"value": "page", "label": "Page"}
+      ]
+    },
+    {
+      "type": "range",
+      "id": "padding_y",
+      "label": "Padding",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    [% json 'schema/grid-gap-setting.jsonc', context: 'section.settings.', default_gap: 'md', default_gap_custom: 30 %]
+    {
+      "type": "header",
+      "content": "Megamenu"
+    },
+    {
+      "type": "select",
+      "id": "megamenu_width",
+      "label": "Width",
+      "default": "full",
+      "options": [
+        {"value": "full", "label": "Full"},
+        {"value": "page", "label": "Page"}
+      ]
+    },
+    [% json 'schema/size-setting.jsonc', size_id: 'megamenu_padding', size_label: 'Padding', default_size: 'md', conditional: "section.settings.megamenu_width == 'page'" %]
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+
+    [% json 'schema/type-preset.jsonc', default_preset: 'btn', id_suffix: 'nav_link', label: 'Main menu', context: 'section.settings.' %]
+    [% json 'schema/type-custom.jsonc', resize: true, resize_label: 'Size', default_font: 'body', default_size: '4', id_suffix: 'nav_link', context: 'section.settings.' %]
+
+    [% json 'schema/type-preset.jsonc', default_preset: 'p', id_suffix: 'dropdown', label: 'Dropdown', context: 'section.settings.' %]
+    [% json 'schema/type-custom.jsonc', resize: true, resize_label: 'Size', default_font: 'body', default_size: '4', id_suffix: 'dropdown', context: 'section.settings.' %]
+
+
+    {
+      "type": "header",
+      "content": "Sticky"
+    },
+    {
+      "type": "select",
+      "id": "sticky_style",
+      "label": "Sticky scroll",
+      "default": "never",
+      "options": [
+        {"value": "always", "label": "Sticky"},
+        {"value": "scroll", "label": "Scroll up"},
+        {"value": "never", "label": "None"}
+      ]
+    },
+    {
+      "type": "select",
+      "id": "sticky_background_style",
+      "label": "Background",
+      "default": "solid",
+      "visible_if": "{{ section.settings.sticky_style != 'never' }}",
+      "options": [
+        {"value": "solid", "label": "Solid"},
+        {"value": "blur", "label": "Blur"}
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Buttons"
+    },
+
+    [% json 'schema/target-device-setting.jsonc', id_suffix: 'drawer_button', default_value: 'mobile', exclude: 'desktop', label: 'Menu Drawer' %]
+
+    {
+      "type": "checkbox",
+      "id": "show_cart_button",
+      "label": "Cart",
+      "default": true
+    },
+
+    {
+      "type": "checkbox",
+      "id": "show_search_button",
+      "label": "Search",
+      "default": false
+    },
+
+    [% json 'schema/target-device-setting.jsonc', id_suffix: 'search_button', default_value: 'both', conditional: 'section.settings.show_search_button == true' %]
+
+    {
+      "type": "select",
+      "id": "search_position_mobile",
+      "label": "Mobile position",
+      "default": "right",
+      "options": [
+        {"value": "left", "label": "Left"},
+        {"value": "right", "label": "Right"}
+      ],
+      "visible_if": "{{ section.settings.show_search_button == true and section.settings.target_device_search_button != 'desktop' }}"
+    },
+
+    {
+      "type": "checkbox",
+      "id": "show_account_button",
+      "label": "Account",
+      "default": false
+    },
+    [% json 'schema/target-device-setting.jsonc', id_suffix: 'account_button', default_value: 'both', conditional: 'section.settings.show_account_button == true' %]
+
+    {
+      "type": "select",
+      "id": "account_position_mobile",
+      "label": "Mobile position",
+      "default": "right",
+      "options": [
+        {"value": "left", "label": "Left"},
+        {"value": "right", "label": "Right"}
+      ],
+      "visible_if": "{{ section.settings.show_account_button == true and section.settings.target_device_account_button != 'desktop' }}"
+    },
+
+    {
+      "type": "select",
+      "id": "label_style",
+      "label": "Desktop style",
+      "default": "text",
+      "options": [
+        {"value": "text", "label": "Text"},
+        {"value": "icon", "label": "Icon"},
+        {"value": "both", "label": "Both"}
+      ],
+      "info": "Buttons are always icons on mobile"
+    },
+
+    {
+      "type": "range",
+      "id": "icon_size",
+      "label": "Icon size",
+      "min": 50,
+      "max": 200,
+      "step": 10,
+      "default": 110,
+      "unit": "%",
+      "info": "Percentage of text size"
+    },
+    {
+      "type": "select",
+      "id": "icon_stroke_weight",
+      "label": "Icon stroke weight",
+      "default": "regular",
+      "options": [
+        {"value": "light", "label": "Light"},
+        {"value": "regular", "label": "Regular"},
+        {"value": "bold", "label": "Bold"}
+      ]
+    },
+
+    {
+      "type": "header",
+      "content": "Collection images",
+      "info": "Displays collection images as headers in the mega menu.",
+      "visible_if": "{{ section.settings.show_collection_images == true }}"
+    },
+    {
+      "type": "header",
+      "content": "Collection images",
+      "visible_if": "{{ section.settings.show_collection_images == false }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_collection_images",
+      "label": "Show collection images",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "collection_images_aspect_ratio",
+      "min": 0.5,
+      "max": 5,
+      "step": 0.1,
+      "unit": ":1",
+      "label": "Collection image aspect ratio",
+      "default": 2.5,
+      "visible_if": "{{ section.settings.show_collection_images == true }}"
+    },
+
+    {
+      "type": "header",
+      "content": "Links"
+    },
+
+    {
+      "type": "checkbox",
+      "id": "underline_current_page",
+      "label": "Underline current page",
+      "default": true
+    },
+  ],
+  "blocks": [
+    {
+      "type": "_megamenu"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Menu",
+      "blocks": []
+    }
+  ],
+  "enabled_on": {
+    "groups": ["header"]
+  }
+}
+{% endschema %}

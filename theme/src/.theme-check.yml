@@ -1,0 +1,3 @@
+# used only for navigation and hints, validation and linting runs on dist
+root: .
+extends: theme-check:nothing

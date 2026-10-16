@@ -1,0 +1,35 @@
+{% doc %}
+  - Renders compact disclosure rows for a cart line item
+
+  Shows only disclosures whose display preferences include the cart surface.
+  The full disclosure content stays on the product page.
+
+  @param {product} product
+{% enddoc %}
+
+{% liquid
+  assign disclosures = product.metafields.shopify.disclosure.value
+%}
+
+{% if disclosures != blank %}
+  {% for disclosure in disclosures %}
+    {% liquid
+      unless disclosure.display_preferences.value.surfaces contains 'cart'
+        continue
+      endunless
+
+      assign title = disclosure.title.value | escape
+      assign symbol = disclosure.symbol.value
+    %}
+
+    {% if title != blank %}
+      <p class="flex items-center gap-x-r2 text-r2 text-muted" data-test-id="cart-line-disclosure">
+        {% if symbol %}
+          {% # Empty alt since the title names the disclosure %}
+          {{ symbol | image_url: width: 32 | image_tag: loading: 'lazy', class: 'h-[1em] w-auto shrink-0 object-contain', alt: '' }}
+        {% endif %}
+        <span>{{ title }}</span>
+      </p>
+    {% endif %}
+  {% endfor %}
+{% endif %}

@@ -1,0 +1,11 @@
+# Validation and linting run on the built theme in dist.
+#
+#   pnpm analog theme-check
+#
+# The command passes `--path .`, never `--path dist`. An explicit `--config` file
+# resolves root relative to --path, so `--path dist` looks in dist/dist and
+# inspects 0 files without failing. src/.theme-check.yml keeps VS Code navigation
+# working on the source files.
+
+root: dist
+extends: theme-check:recommended

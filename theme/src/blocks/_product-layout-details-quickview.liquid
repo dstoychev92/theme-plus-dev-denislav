@@ -1,0 +1,74 @@
+{% doc %}
+  - Renders quick view product details column
+
+  Private, only offered by product-quickview-drawer. Each child theme block is a render region, so a variant change updates its whole subtree. App blocks stay outside the regions.
+{% enddoc %}
+
+<div
+  style="
+    {% render 'props-style-gap', s: block.settings %}
+    {% if block.settings.content_align == 'left' %}
+      --title-flex: row;
+      --title-justify: space-between;
+      --title-align: start;
+    {% else %}
+      --title-flex: column;
+      --title-justify: center;
+      --title-align: center;
+    {% endif %}
+  "
+  class="
+    flex flex-col max-w-full px-root-buffer
+    vars-content-align-{{ block.settings.content_align }}
+    text-content-align items-content-align
+  "
+  x-product-form
+  x-data="{ quantity: 1 }"
+  x-id="['input']"
+  data-morph-update="children"
+  data-test-id="product-form"
+  {{ block.shopify_attributes }}
+>
+  {% comment %}
+    Each direct theme block is a render region so variant changes update its entire rendered subtree,
+    including nested blocks inside containers such as frames. Keep this boundary here instead of in
+    product-block, which is not rendered by every block. App blocks stay outside our render regions so
+    their injected DOM and client-side state are left untouched.
+  {% endcomment %}
+  {% for block in block.blocks %}
+    {% if block.type == '@theme' %}
+      <div class="contents" data-render-region="{{ block.id }}">
+        {% render block %}
+      </div>
+    {% else %}
+      {% render block %}
+    {% endif %}
+  {% endfor %}
+</div>
+
+{% schema %}
+{
+  "name": "Details",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text_alignment",
+      "id": "content_align",
+      "label": "Alignment",
+      "default": "left"
+    },
+    {
+      "type": "header",
+      "content": "Block spacing"
+    },
+    [% json 'schema/grid-gap-setting.jsonc', context: 'block.settings.' %]
+  ],
+  "blocks": [
+    [% json 'schema/blocks-product-form.jsonc', quickview_context: true %]
+    [% json 'schema/blocks-theme-node.jsonc' %]
+    [% json 'schema/blocks-product-layout.jsonc' %]
+    [% json 'schema/blocks-product-extended.jsonc' %]
+    {"type": "@app"},
+  ]
+}
+{% endschema %}

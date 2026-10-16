@@ -1,0 +1,24 @@
+{% doc %}
+  - Renders block.settings.code bare or inside a div
+
+  block.settings.output 'wrapped' adds the div, and prevent_dynamic_updates keeps it out of
+  section morphs.
+
+  @param {string} [attributes]
+  @param {block} [block]
+  @param {string} [class] - The classes
+{% enddoc %}
+
+{% if block.settings.output == 'wrapped' %}
+  <div
+    class="w-full {{ class }}"
+    {% if block.settings.prevent_dynamic_updates %}
+      data-morph-update="none"
+    {% endif %}
+    {{ attributes }}
+  >
+    {{ block.settings.code }}
+  </div>
+{% else %}
+  {{ block.settings.code }}
+{% endif %}

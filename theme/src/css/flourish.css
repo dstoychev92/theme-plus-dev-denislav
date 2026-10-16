@@ -1,0 +1,12 @@
+@layer components {
+  .border-highlight {
+    @apply border-gradient;
+    --border-gradient-from: oklch(from var(--border-highlight-color, var(--content)) l c h / 0.1);
+    --border-gradient-to: oklch(from var(--border-highlight-color, var(--content)) l c h / 0.1);
+  }
+
+  .frosted-glass {
+    background-color: oklch(from var(--frosted-glass-color, var(--content)) l c h / 0.2);
+    @apply backdrop-blur-xl backdrop-opacity-90;
+  }
+}

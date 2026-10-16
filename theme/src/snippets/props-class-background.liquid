@@ -1,0 +1,39 @@
+{% doc %}
+  - Prints color scheme and background classes
+
+  @param {string} [background] - 'canvas', 'tint', 'transparent' or 'custom', defaults to s.background
+  @param {boolean} [background_blur] - blurs what sits behind a custom background
+  @param {string} [background_custom] - read but unused, props-style-background prints it
+  @param {color_scheme} [color_scheme]
+  @param {object} [s] - settings object
+  @param {boolean} [set_color_scheme] - false prints nothing, defaults to s.set_color_scheme then true
+{% enddoc %}
+
+{% liquid
+  assign set_color_scheme = set_color_scheme | default: s.set_color_scheme | default: true, allow_false: true
+
+  if set_color_scheme
+    assign color_scheme = color_scheme | default: s.color_scheme
+    assign background = background | default: s.background
+    assign background_custom = background_custom | default: s.background_custom
+    assign background_blur = background_blur | default: s.background_blur
+  endif
+%}
+
+{% if set_color_scheme %}
+  text-content
+  {% if color_scheme %}
+    vars-{{ color_scheme }}
+  {% endif %}
+  {% case background %}
+    {% when 'canvas' %}
+      bg-canvas
+    {% when 'tint' %}
+      bg-content-mix-5
+    {% when 'transparent' %}
+      bg-transparent
+  {% endcase %}
+  {% if background == 'custom' and background_blur == true %}
+    backdrop-blur-md
+  {% endif %}
+{% endif %}

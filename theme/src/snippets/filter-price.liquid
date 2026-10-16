@@ -1,0 +1,46 @@
+{% doc %}
+  - Renders price range filter
+
+  @param {string} [base_id] - prefix for element ids, defaults to 'filter'
+  @param {filter} filter
+  @param {string} form - id of the form the inputs belong to
+  @param {string} [id] - id suffix, defaults to 'price'
+{% enddoc %}
+
+{% liquid
+  assign base_id = base_id | default: 'filter'
+  assign id = id | default: 'price' | handleize
+  assign id = base_id | append: '-' | append: id
+  # Floor the minimums and ceil the maximums so every cent value stays inside the whole-dollar range
+  assign filter_max_range = filter.range_max | divided_by: 100.0 | ceil
+  if filter.min_value.value != blank
+    assign filter_min_value = filter.min_value.value | divided_by: 100.0 | floor
+  endif
+  if filter.max_value.value != blank
+    assign filter_max_value = filter.max_value.value | divided_by: 100.0 | ceil
+  endif
+  # The filter object has no range minimum. The price range starts at 0.
+  assign filter_min_placeholder = 0
+  assign filter_max_placeholder = filter.range_max | divided_by: 100.0 | ceil
+%}
+
+{% capture attributes %}
+  {% comment %} Preserve the range component (and a focused number input's native caret) while values update. {% endcomment %}
+  key="{{ filter.param_name }}-{{ filter.range_max }}"
+{% endcapture %}
+
+{% render 'field-range',
+  id: id,
+  min_name: filter.min_value.param_name,
+  max_name: filter.max_value.param_name,
+  min_limit: 0,
+  max_limit: filter_max_range,
+  min_value: filter_min_value,
+  max_value: filter_max_value,
+  min_placeholder: filter_min_placeholder,
+  max_placeholder: filter_max_placeholder,
+  prefix: cart.currency.symbol,
+  label: filter.label,
+  form: form,
+  attributes: attributes
+%}

@@ -1,0 +1,161 @@
+{% doc %}
+  - Renders drawer dialog sliding in from left or right
+
+  Place it inside an element with x-dialog.
+
+  @param {string} [aria_label] - accessible name for the drawer
+  @param {string} [attributes]
+  @param {boolean} [autofocus_close_button] - false stops the close button taking focus, defaults to true
+  @param {string} [class] - The classes
+  @param {string} [close_button] - rendered close button, in place of the default
+  @param {string} [close_button_attributes] - attributes for the close button
+  @param {string} content
+  @param {string} [content_class] - classes for the content
+  @param {string} [footer] - content pinned to the bottom
+  @param {string} [footer_attributes] - attributes for the footer
+  @param {string} [header] - header content in place of the title and close button
+  @param {string} [header_attributes] - attributes for the header
+  @param {string} [id]
+  @param {boolean} [open] - opens it on load
+  @param {boolean} [scrollable] - lets the content scroll, defaults to true
+  @param {string} [side] - 'left' or 'right', defaults to 'left'
+  @param {string} [title] - heading text
+  @param {string} [under_header] - content directly under the header
+{% enddoc %}
+
+{% liquid
+  assign side = side | default: 'left'
+  assign position_class = 'justify-start'
+  assign origin_class = 'origin-left'
+
+  # We only want to sort of hint at the motion on the entry animation so only animate 25% of the way
+  assign autofocus_close_button = autofocus_close_button | default: true, allow_false: true
+  assign scrollable = scrollable | default: true, allow_false: true
+
+  if side == 'right'
+    assign position_class = 'justify-end'
+    assign origin_class = 'origin-right'
+  endif
+%}
+
+{% capture content_class %}
+  {% if scrollable %}
+    scroll-area-y
+  {% else %}
+    overflow-hidden
+  {% endif %}
+
+  {{ content_class }}
+{% endcapture %}
+
+<dialog
+  {% if aria_label %}
+    aria-label="{{ aria_label }}"
+  {% endif %}
+  data-drawer
+  x-dialog:dialog
+  {% if open %}
+    open
+  {% endif %}
+
+  {% if id %}
+    id="{{ id }}"
+  {% endif %}
+
+  class="
+    group/dialog
+    animate-drawer from-{{ side }}
+    fixed m-0 w-screen-dynamic h-screen md:w-[--drawer-desktop-width] md:max-w-[90dvw]
+    {% if side == 'left' %}mr-auto{% else %}ml-auto{% endif %}
+    backdrop:bg-canvas/75 md:backdrop:bg-canvas/50 md:backdrop:backdrop-blur-md
+    bg-canvas text-content overflow-hidden
+    outline outline-[0.5px] outline-line-subtle shadow-high
+
+    {{ origin_class }}
+    {{ position_class }}
+    {{ class }}
+  "
+
+  :data-closing="!$dialog.isOpen && $dialog.wasOpen"
+  x-cloak
+
+  {% comment %} Prevent morphing from resetting the state of the drawer {% endcomment %}
+  data-morph-update="children"
+
+  {% if scrollable %}
+    x-overflow
+  {% endif %}
+
+  {{ attributes }}
+>
+  <div class="flex flex-col w-full h-screen-dynamic max-h-[--drawer-max-height]">
+    <div
+      class="flex flex-col gap-y-r6 flex-none z-30 px-[--drawer-padding] py-r5 transition-[box-shadow] duration-300"
+      {% if scrollable %}
+        :class="
+          {
+            'shadow': $overflow.start,
+          }
+        "
+      {% endif %}
+    >
+      <div
+        class="flex flex-row justify-end vars-control-md text-content"
+        {{ header_attributes }}
+      >
+        {% if header != blank %}
+          {{ header }}
+        {% else %}
+          <div class="grow flex-row-center gap-x-r3 h-full py-0 font-family-heading font-bold">
+            {{ title }}
+          </div>
+
+          {% if close_button == blank %}
+            {% render 'drawer-close-button',
+              side: side,
+              autofocus_close_button: autofocus_close_button,
+              close_button_attributes: close_button_attributes
+            %}
+          {% else %}
+            {{ close_button }}
+          {% endif %}
+        {% endif %}
+      </div>
+      {{ under_header }}
+    </div>
+
+    <div
+      class="relative flex-1 flex flex-col {{ content_class }}"
+      {% comment %} Dont wait for child animations to complete before finishing opening or closing drawer {% endcomment %}
+      data-skip-animation-wait
+      {% if scrollable %}
+        x-overflow:viewport
+      {% endif %}
+    >
+      {% if scrollable %}
+        <div x-overflow:start class="w-full h-px" aria-hidden="true" role="presentation"></div>
+      {% endif %}
+      {{ content }}
+      {% if scrollable %}
+        <div x-overflow:end class="w-full h-px" aria-hidden="true" role="presentation"></div>
+      {% endif %}
+    </div>
+
+    {% if footer != blank %}
+      <div
+        {% if scrollable %}
+          :class="
+            {
+              'shadow': $overflow.end,
+            }
+          "
+        {% endif %}
+        {{ footer_attributes }}
+        class="flex bg-canvas border-t border-t-line-subtle z-20 flex-row gap-x-r2 justify-between items-center p-[--drawer-padding] sticky bottom-0"
+        data-skip-animation-wait
+      >
+        {{ footer }}
+      </div>
+    {% endif %}
+  </div>
+</dialog>

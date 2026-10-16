@@ -1,0 +1,20 @@
+import { CartLineItem } from './cart-line-item';
+import { DiscountApplication } from './discount';
+export type Cart = {
+    attributes: Record<string, any>;
+    cart_level_discount_applications: DiscountApplication[];
+    checkout_charge_amount: string;
+    currency: object;
+    discount_applications: DiscountApplication[];
+    empty: boolean;
+    item_count: number;
+    items: CartLineItem[];
+    items_subtotal_price: string;
+    note: string;
+    original_total_price: string;
+    requires_shipping: boolean;
+    taxes_included: boolean;
+    total_discount: string;
+    total_price: string;
+    total_weight: number;
+};

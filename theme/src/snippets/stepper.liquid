@@ -1,0 +1,153 @@
+{% doc %}
+  - Renders number input with plus and minus buttons
+
+  @param {string} [aria_label] - accessible name for the input
+  @param {string} [attributes]
+  @param {string} [button_attributes] - attributes for both buttons
+  @param {string} [button_class] - classes for both buttons
+  @param {string} [class] - The classes
+  @param {boolean} [disabled]
+  @param {string} [form] - id of the form it belongs to
+  @param {string} [id] - element id, defaults to the name handleized
+  @param {string} [input_attributes] - attributes for the input
+  @param {string} [input_class] - classes for the input
+  @param {number} [max] - highest value
+  @param {number} [min] - lowest value, defaults to 0
+  @param {string} name
+  @param {string} [size] - 'sm', 'md' or 'lg'
+  @param {number} [step] - amount each press changes, defaults to 1
+  @param {number} [value] - current value, defaults to min
+{% enddoc %}
+
+{% liquid
+  assign min = min | default: 0
+  assign value = value | default: min
+  assign step = step | default: 1
+  assign id = id | default: name | handleize
+%}
+
+<div
+  class="relative min-w-min flex-row-center justify-between h-control {{ class }}"
+  style="
+    {% case size %}
+      {% when 'sm' %}
+        --icon-size: 0.8em;
+        --stepper-outer: calc(var(--control-padding) * 2);
+        --stepper-inner: calc(var(--control-padding));
+      {% when 'md' %}
+        --icon-size: 0.9em;
+        --stepper-outer: calc(var(--control-padding) * 1.75);
+        --stepper-inner: calc(var(--control-padding) * 0.75);
+      {% when 'lg' %}
+        --icon-size: 1.0em;
+        --stepper-outer: calc(var(--control-padding) * 1.25);
+        --stepper-inner: calc(var(--control-padding) * 0.75);
+    {% endcase %}
+  "
+  x-data
+  x-stepper
+  x-animated-wheel
+  {{ attributes }}
+>
+  <button
+    type="button"
+    class="bg-transparent disabled:opacity-50 transition-transform duration-200 rounded-s-form-field nojs:hidden flex-row-center ps-[--stepper-outer] pe-[--stepper-inner] flex-0 h-full min-w-row-xs {{ button_class }}"
+    {{ button_attributes }}
+    aria-controls="{{ id }}"
+    aria-label="{{ 'product.accessibility.stepper_minus' | t | escape_once }}"
+    @click.prevent="
+      if ($data.$animatedWheel !== undefined) {
+        $animatedWheel.updatePosition(() => $stepper.decrement())
+      } else {
+        $stepper.decrement()
+      }
+    "
+    x-press
+    :class="
+      {
+        'scale-75': $isPressing,
+        {% if min != blank %}
+          'pointer-events-none opacity-30': $stepper.value <= {{ min }},
+        {% endif %}
+      }
+    "
+  >
+    {% render 'core-icon', icon: 'stroke-bare-minus' %}
+  </button>
+
+  <div class="relative h-full overflow-hidden">
+    <input
+      class="
+        size-full bg-transparent flex-row-center
+        min-w-[3ch] max-w-control
+        supports-[field-sizing:content]:[field-sizing:content]
+        supports-[field-sizing:content]:!max-w-[120px]
+        flex-1 text-center
+        {{ input_class }}
+      "
+      type="number"
+      {% if form %}
+        form="{{ form }}"
+      {% endif %}
+      id="{{ id }}"
+      name="{{ name }}"
+      min="{{ min }}"
+      {% if max != blank %}
+        max="{{ max }}"
+      {% endif %}
+      value="{{ value }}"
+      step="{{ step }}"
+      {% if aria_label %}
+        aria-label="{{ aria_label | escape_once }}"
+      {% endif %}
+      {% if disabled %}
+        disabled
+      {% endif %}
+      {{ input_attributes }}
+      x-stepper:input
+      x-animated-wheel:input
+    >
+
+    <div
+      x-animated-wheel:track
+      x-cloak
+      class="absolute h-fit inset-0 bg-canvas block text-center pointer-events-none whitespace-pre-line"
+      aria-hidden="true"
+      data-morph-update="none"
+    ></div>
+  </div>
+
+  <button
+    type="button"
+    class="bg-transparent disabled:opacity-50 transition-transform duration-200 rounded-e-form-field nojs:hidden flex-row-center ps-[--stepper-inner] pe-[--stepper-outer] flex-0 h-full min-w-row-xs {{ button_class }}"
+    {{ button_attributes }}
+    @click.prevent="
+      if ($data.$animatedWheel !== undefined) {
+        $animatedWheel.updatePosition(() => $stepper.increment())
+      } else {
+        $stepper.increment()
+      }
+    "
+    aria-controls="{{ id }}"
+    aria-label="{{ 'product.accessibility.stepper_plus' | t | escape_once }}"
+    x-press
+    :class="
+      {
+        'scale-75': $isPressing,
+        {% if max != blank %}
+          'pointer-events-none opacity-30': $stepper.value >= {{ max }}
+        {% endif %}
+      }
+    "
+  >
+    {% render 'core-icon', icon: 'stroke-bare-plus' %}
+  </button>
+
+  <output
+    class="sr-only"
+    aria-live="assertive"
+    for="{{ id }}"
+    x-text="$stepper.value"
+  >
+  </output>
+</div>

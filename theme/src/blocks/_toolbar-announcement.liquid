@@ -1,0 +1,32 @@
+{% doc %}
+  - Renders announcement text in the header toolbar
+
+  Private, only offered by header-toolbar. Text style comes from section.settings.
+{% enddoc %}
+
+{% render 'core-inline-richtext',
+  s: section.settings,
+  text: block.settings.announcement_text,
+  class: 'self-center [&>a]:text-inherit',
+  attributes: block.shopify_attributes
+%}
+
+{% schema %}
+{
+  "name": "Announcement",
+  "tag": null,
+  "settings": [
+    {
+      "type": "inline_richtext",
+      "id": "announcement_text",
+      "label": "Text",
+      "default": "Make an announcement"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Announcement"
+    }
+  ]
+}
+{% endschema %}

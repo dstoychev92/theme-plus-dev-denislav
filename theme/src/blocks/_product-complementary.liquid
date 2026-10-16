@@ -1,0 +1,92 @@
+{% doc %}
+  - Renders complementary products from Search & Discovery
+
+  Reads closest.product. The live store renders nothing until the recommendations fetch returns, and the editor shows a loading skeleton.
+{% enddoc %}
+
+{% capture content %}
+  <div
+    {% comment %} Its own Section API controller and render region, so the recommendations request keeps its cache and state apart from the product section {% endcomment %}
+    x-section-api="{{ section.id }}-complementary"
+    data-render-region="complementary"
+    {% comment %} The section owns the attributes, so data-product-id follows a sibling or combined-listing switch. The controller owns the children, so a section update keeps the loaded cards {% endcomment %}
+    data-morph-update="attributes"
+    data-product-id="{{ closest.product.id }}"
+    x-product-complementary.limit.{{ block.settings.limit }}
+    data-test-id="product-complementary"
+  >
+    {%- comment -%}
+      Check for visual preview mode first, since the recommendation logic can behave unpredictably in visual preview window and may not always show.
+      The capture and strip force the empty state to zero text nodes, because the wrapper's :empty selector fails on whitespace and Shopify keeps snippet whitespace that trim dashes do not remove.
+    {%- endcomment -%}
+    {%- capture recommendations_content -%}
+      {%- if request.visual_preview_mode -%}
+        {%- render 'product-upsell-list', loader: true -%}
+      {%- elsif recommendations.performed -%}
+        {%- if recommendations.intent == 'complementary' and recommendations.products.size > 0 -%}
+          {%- render 'product-upsell-list', s: block.settings, products: recommendations.products -%}
+        {%- else -%}
+          {% comment %} Render with no products so product-upsell-list can show placeholder cards in the editor, or on the live store when settings.placeholder_mode is on {% endcomment %}
+          {%- render 'product-upsell-list', s: block.settings -%}
+        {%- endif -%}
+      {%- elsif request.design_mode -%}
+        {% comment %} Loading skeleton only in the editor {% endcomment %}
+        {%- render 'product-upsell-list', s: block.settings, loader: true -%}
+      {%- else -%}
+        {% comment %} The live storefront shows nothing until the fetch morphs recommendations or placeholder cards in. The template keeps the element out of :empty, so the wrapper stays displayed and x-intersect can start the fetch {% endcomment %}
+        <template data-pending></template>
+      {%- endif -%}
+    {%- endcapture -%}
+    {{- recommendations_content | strip -}}
+  </div>
+{% endcapture %}
+
+{% comment %} The pending wrapper cancels its row gap in the details column, so it adds no space but keeps its slot for x-intersect. Hidden once a fetch leaves the element empty {% endcomment %}
+{% render 'product-block',
+  s: block.settings,
+  content: content,
+  class: 'has-[[data-pending]]:-mb-[--layout-gutter-y] has-[>:only-child:empty]:hidden w-full',
+  attributes: block.shopify_attributes
+%}
+
+{% schema %}
+{
+  "name": "Complementary products",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "From [Search & Discovery](https://apps.shopify.com/search-and-discovery)"
+    },
+    {
+      "type": "paragraph",
+      "content": "Once the app is installed you can [create complementary products](/admin/apps/search-and-discovery/product-recommendations/new) that are unique to each product."
+    },
+    {
+      "type": "paragraph",
+      "content": "Complementary products with variants will open a quick-view window. [Learn more](https://groupthought.com/link/analog/v1/docs/complementary-products)"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "Bought together"
+    },
+    {
+      "type": "range",
+      "id": "limit",
+      "label": "Product limit",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "default": 1
+    }
+  ],
+  "presets": [
+    {
+      "name": "Complementary products",
+      "category": "Additional product info"
+    }
+  ]
+}
+{% endschema %}

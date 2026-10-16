@@ -1,0 +1,21 @@
+[
+  {
+    "type": "checkbox",
+    "id": "set_rounding",
+    "label": "Set rounding",
+    "default": false
+  },
+  {
+    "type": "select",
+    "id": "rounding_style",
+    "label": "Rounding",
+    "default": "none",
+    "options": [
+      {"value": "none", "label": "0"},
+      {"value": "sm", "label": "S"},
+      {"value": "md", "label": "M"},
+      {"value": "pill", "label": "L"}
+    ],
+    "visible_if": "{{ block.settings.set_rounding }}"
+  }
+]

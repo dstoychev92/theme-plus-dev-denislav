@@ -1,0 +1,202 @@
+{% doc %}
+  - Renders scrollable product gallery thumbnails with prev and next buttons
+
+  Reads and sets currentSlideIndex on the enclosing gallery scope. Reads
+  section.settings.contain_section and block.settings.contain_media_mobile for the rounding.
+
+  @param {string} [alignment] - 'top' or 'bottom', vertical orientation only
+  @param {number} [aspect_ratio] - thumbnail aspect ratio, defaults to 1
+  @param {string} [attributes]
+  @param {block} [block]
+  @param {string} [class] - The classes
+  @param {number} [featured_media_id] - id of the thumbnail marked current before Alpine starts
+  @param {string} [id] - gallery id, resolved through $id for aria-controls
+  @param {number} [image_size] - thumbnail size in pixels, defaults to 50
+  @param {string} [orientation] - 'horizontal' or 'vertical', defaults to 'horizontal'
+  @param {object} product_media - media to render, already ordered
+  @param {section} [section]
+  @param {number} [thumbnail_spacing] - gap in pixels, defaults to 3
+{% enddoc %}
+
+{%- liquid
+  assign image_size = image_size | default: 50
+  assign thumbnail_spacing = thumbnail_spacing | default: 3
+  assign product_media_size_count = product_media.size | default: product_media.count
+  assign orientation = orientation | default: 'horizontal'
+  assign aspect_ratio = aspect_ratio | default: 1
+
+  case orientation
+    when 'vertical'
+      assign orientation_class = 'flex-col'
+      assign root_orientation_class = 'flex-col min-h-0'
+      assign viewport_orientation_class = 'flex-1 min-h-0'
+      assign scroller_orientation_class = 'h-full min-h-0'
+      assign scroll_class = 'scroll-area-y'
+    else
+      # defaults to 'horizontal'
+      assign orientation = 'horizontal'
+      assign orientation_class = 'flex-row'
+      assign root_orientation_class = 'w-full'
+      assign viewport_orientation_class = ''
+      assign scroller_orientation_class = ''
+      assign scroll_class = 'scroll-area-x snap-x'
+  endcase
+-%}
+
+{% comment %} Thumbnails {% endcomment %}
+{% capture thumbnails %}
+  {% for media in product_media %}
+    <div
+      class="
+        relative flex flex-center shrink-0
+
+        [%- # TODO: implement vertical snapping once x-scroll-list supports it %]
+        {% if orientation == 'horizontal' %}
+          snap-start
+        {% endif %}
+
+      "
+      x-data="{
+        get isCurrentSlide() {
+          return currentSlideIndex == {{ forloop.index0 }}
+        },
+      }"
+      x-scroll-list:item
+      x-ref="thumbnail"
+    >
+      {% assign preview_image = media.preview_image %}
+      {% capture image %}
+        {% render 'core-image',
+          image: preview_image,
+          width: image_size,
+          alt: media.alt,
+          class: "relative z-10 js:z-0 min-w-[--image-size]",
+          aspect_ratio: aspect_ratio,
+        %}
+        {% render 'image-loading-placeholder',
+          image: preview_image,
+          wrapper_class: "absolute inset-0 z-0 w-full"
+        %}
+      {% endcapture %}
+
+      {% capture thumbnail_image_class %}
+        product-media-thumbnail
+        border-0 transition-none relative p-0 bg-transparent [--control-height:var(--image-size)]
+        overflow-hidden
+        {% if section.settings.contain_section %}
+          md:rounded-[--media-rounding]
+        {% endif %}
+        {% if block.settings.contain_media_mobile %}
+          max-md:rounded-[--media-rounding-mobile]
+        {% endif %}
+      {% endcapture %}
+
+      {% capture thumbnail_image_attributes %}
+        @click.prevent="currentSlideIndex = {{ forloop.index0 }}"
+        aria-label="{{ 'product.gallery.accessibility.show_slide' | t: index: forloop.index, total: product_media_size_count }}"
+        {% if media.id == featured_media_id %}aria-current="true"{% endif %}
+        :aria-current="isCurrentSlide"
+        :aria-controls="$id('{{ id }}') + '_{{ forloop.index }}/{{ product_media_size_count }}'"
+        data-test-id="thumbnail-picker-image"
+      {% endcapture %}
+      <a href="{{ media.preview_image.src | image_url }}" :role="'button'" class="{{ thumbnail_image_class }}" {{ thumbnail_image_attributes }}>
+        {{ image }}
+      </a>
+    </div>
+  {% endfor %}
+{% endcapture %}
+
+{% liquid
+  assign show_overflow_initially = false
+  assign scroller_alignment_class = 'justify-start'
+  assign scroller_alignment_attributes = ''
+
+  if product_media_size_count > 4
+    assign show_overflow_initially = true
+  endif
+
+  if orientation == 'vertical' and alignment == 'bottom'
+    assign scroller_alignment_class = ''
+    capture scroller_alignment_attributes
+      echo ':class="$overflow.start === false && $overflow.end === false ? '
+      echo "'justify-end'"
+      echo ' : '
+      echo "'justify-start'"
+      echo '"'
+    endcapture
+  endif
+%}
+
+<div
+  class="
+    relative flex duration-300 overflow-hidden
+    {{ root_orientation_class }}
+    {{ class }}
+  "
+  style="--thumbnail-spacing: {{ thumbnail_spacing }}px;"
+  x-scroll-list
+  x-overflow.autoregister
+  x-id="['product-media-thumbnail-picker']"
+  data-test-id="thumbnail-picker"
+  {{ attributes }}
+>
+  {% render 'product-media-thumbnail-picker-button', direction: 'prev', orientation: orientation, id: id %}
+
+  <div
+    class="
+      relative z-0 whitespace-nowrap edge-mask w-full
+      {{ viewport_orientation_class }}
+      {% if show_overflow_initially %}
+        {% if orientation == 'vertical' %}
+          edge-mask-b
+        {% else %}
+          edge-mask-r
+        {% endif %}
+      {% endif %}
+    "
+    :class="
+      {
+        {% if orientation == 'vertical' %}
+          'edge-mask-t': $overflow.start,
+          'edge-mask-b': $overflow.end,
+        {% else %}
+          'edge-mask-r': $overflow.end,
+          'edge-mask-l': $overflow.start,
+        {% endif %}
+      }
+    "
+    style="--image-size: {{ image_size }}px"
+    :id="$id('product-media-thumbnail-picker')"
+    x-scroll-list:viewport
+    x-roving-tab
+    aria-orientation="{{ orientation }}"
+    data-test-id="thumbnail-picker-scroll-container"
+    role="toolbar"
+  >
+    <div
+      class="
+        flex items-stretch gap-[--thumbnail-spacing]
+        scroll-p-r5 scrollbar-hide
+        {{ scroller_alignment_class }}
+        {{ scroll_class }}
+        {{ orientation_class }}
+        {{ scroller_orientation_class }}
+      "
+      {{ scroller_alignment_attributes }}
+      x-scroll-list:scroller
+      x-overflow:viewport
+      x-overflow:container
+      x-roving-tab:list
+      x-ref="scrollTrack"
+    >
+      {{ thumbnails }}
+    </div>
+  </div>
+
+  {% render 'product-media-thumbnail-picker-button', direction: 'next', orientation: orientation, id: id %}
+</div>
+
+{% comment %}
+  Styles for this file live in src/css/product-media-thumbnails.css. Shopify serves stylesheet-tag CSS per page, and a
+  Section API region update drops the inline copy, so the theme bundle must carry these rules.
+{% endcomment %}

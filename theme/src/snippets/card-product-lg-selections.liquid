@@ -1,0 +1,69 @@
+{% doc %}
+  - Renders swatch selection toolbar for a large product card
+
+  Renders nothing when selection_links is blank. Reads $sectionApi, so render it inside
+  x-section-api.
+
+  @param {string} destination_url - href of the more swatches link
+  @param {number} [selected_selection_id]
+  @param {string} [selection_links] - swatch link markup
+  @param {number} swatch_limit - visible swatch count, the rest become the more swatches link
+  @param {number} total_selections
+{% enddoc %}
+
+{% if selection_links != blank %}
+  {% comment %}
+    data-link-area-ignore prevents empty swatch-row space from opening the product link.
+  {% endcomment %}
+  <div class="relative flex-row-center z-40 min-h-[24px] text-r2" data-link-area-ignore>
+    <div
+      data-test-id="product-card-swatches"
+      data-product-card-selections
+      class="w-full flex-col md:flex-row-center gap-x-r2 py-r2 justify-between overflow-hidden"
+    >
+      <div class="flex items-center gap-r4 flex-1 justify-start min-w-0">
+        <div
+          role="toolbar"
+          aria-label="{{ 'product.swatches.plural' | t }}"
+          x-selection-group
+          data-selected-id="{{ selected_selection_id }}"
+          :data-selection-loading="$sectionApi.isDelayedLoading"
+          x-roving-tab
+          x-roving-tab:list
+          class="
+            flex-row-center gap-x-r4 max-w-full min-h-fit
+            scrollbar-hide overflow-x-auto overflow-y-hidden
+            min-w-0 max-md:flex-1 flex-none edge-mask
+          "
+          :data-overflow-start="$overflow.start"
+          :data-overflow-end="$overflow.end"
+          :class="
+            {
+              'edge-mask-r': $overflow.end,
+              'edge-mask-l': $overflow.start,
+            }
+          "
+          x-overflow.autoregister
+        >
+          {{ selection_links }}
+        </div>
+
+        {% if total_selections > swatch_limit %}
+          {% assign more_selections = total_selections | minus: swatch_limit %}
+          <a
+            href="{{ destination_url }}"
+            data-product-card-destination
+            class="
+              text-r2 whitespace-nowrap transition hover:text-muted
+              pointer-events-none md:pointer-events-auto
+              min-w-0 flex-none
+            "
+            aria-label="{{ 'collection.accessibility.product_card.view_more_swatches' | t: count: more_selections }}"
+          >
+            {{ 'collection.more_swatches' | t: count: more_selections }}
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endif %}

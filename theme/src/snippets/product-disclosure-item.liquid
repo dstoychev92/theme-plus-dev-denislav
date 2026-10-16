@@ -1,0 +1,119 @@
+{% doc %}
+  - Renders one product disclosure as accordion item
+
+  The icon, counter, and muted-title styles read the data markers on a
+  group/accordions ancestor.
+
+  @param {string} [button_style] - 'chevron' or 'plus-minus', defaults to settings.accordion_button_style
+  @param {string} [content] - panel HTML
+  @param {boolean} [expanded]
+  @param {string} id - base for the item, button, and panel IDs
+  @param {object} [s] - settings object
+  @param {image} [symbol] - image before the title
+  @param {string} title
+{% enddoc %}
+
+{% liquid
+  assign button_style = button_style | default: settings.accordion_button_style
+%}
+
+{% comment %} Show counter when enabled {% endcomment %}
+{% capture title_class %}
+  group-[[data-has-counter]]/accordions:before:[content:counter(accordion-group)_'.']
+{% endcapture %}
+{% assign title_style = 'counter-increment: accordion-group' %}
+
+<div
+  {% if expanded %}
+    x-disclosure.expand
+  {% else %}
+    x-disclosure
+  {% endif %}
+  :data-accordion="$disclosure.isInGroup ? $disclosure.groupIndex : null"
+  :data-state="$disclosure.isExpanded ? 'open' : 'closed'"
+  class="group/accordion w-full no-children-entrance"
+  role="group"
+  id="{{ id }}"
+>
+  <button
+    class="
+      keyboard-focus:outline-offset-[-2px]
+      flex items-center justify-between gap-x-r6 min-h-row-lg w-full py-r8
+      text-start text-content whitespace-normal transition-opacity duration-200
+      group-[[data-muted-title]]/accordions:aria-[expanded=false]:opacity-50
+    "
+    x-disclosure:button
+    :data-state="$disclosure.isExpanded ? 'open' : 'closed'"
+    id="{{ id }}-label"
+  >
+    <div class="flex items-center gap-x-r5 min-w-0">
+      {% if symbol %}
+        {% # Empty alt since the title names the disclosure %}
+        {{ symbol | image_url: width: 48 | image_tag: loading: 'lazy', class: 'size-r6 shrink-0 object-contain', alt: '' }}
+      {% endif %}
+
+      {% render 'core-text-preset',
+        s: s,
+        text: title,
+        class: title_class,
+        style: title_style
+      %}
+    </div>
+
+    {% capture icon_class %}
+      shrink-0
+      group-[&:not([data-has-icon])]/accordions:hidden
+    {% endcapture %}
+
+    {% capture chevron_icon_class %}
+      transition-transform {% if expanded %}-rotate-180{% endif %}
+      {{ icon_class }}
+    {% endcapture %}
+
+    {% capture chevron_icon_attributes %}
+      :class="{ '-rotate-180': $disclosure.isExpanded }"
+    {% endcapture %}
+
+    {% if button_style == 'chevron' %}
+      {% render 'core-icon',
+        icon: 'stroke-chevron-down',
+        size: 'sm',
+        attributes: chevron_icon_attributes,
+        class: chevron_icon_class
+      %}
+    {% elsif button_style == 'plus-minus' %}
+      {% render 'core-icon',
+        icon: 'stroke-bare-plus',
+        class: icon_class,
+        attributes: 'x-show="!$disclosure.isExpanded"'
+      %}
+      {% render 'core-icon',
+        icon: 'stroke-bare-minus',
+        class: icon_class,
+        attributes: 'x-show="$disclosure.isExpanded" x-cloak'
+      %}
+    {% endif %}
+  </button>
+  <div
+    x-collapse.duration.400ms
+    class="
+      !ease-in-out w-full nojs:!block
+
+      {% unless expanded %}
+        prealpine:hidden
+      {% endunless %}
+    "
+    x-disclosure:panel
+    :data-state="$disclosure.isExpanded ? 'open' : 'closed'"
+    id="{{ id }}-panel"
+  >
+    {% if content != blank %}
+      <div class="pb-r8 w-full">
+        {{ content }}
+      </div>
+    {% endif %}
+  </div>
+  <svg role="presentation" class="w-full h-px">
+    <rect width="100%" height="1" class="fill-line-subtle"></rect>
+  </svg>
+</div>

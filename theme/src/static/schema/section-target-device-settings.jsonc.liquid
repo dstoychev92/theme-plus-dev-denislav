@@ -1,0 +1,25 @@
+[
+  {
+    "type": "header",
+    "content": "Target device",
+    "visible_if": "{{ settings.show_target_device_settings == true }}"
+  },
+  {
+    "type": "checkbox",
+    "id": "set_target_device",
+    "label": "Set target device",
+    "visible_if": "{{ settings.show_target_device_settings == true }}",
+    "default": false
+  },
+  {
+    "type": "select",
+    "label": "Show on",
+    "id": "target_device",
+    "default": "desktop",
+    "visible_if": "{{ settings.show_target_device_settings == true and section.settings.set_target_device == true }}",
+    "options": [
+      {"value": "mobile", "label": "Mobile"},
+      {"value": "desktop", "label": "Desktop"}
+    ]
+  }
+]

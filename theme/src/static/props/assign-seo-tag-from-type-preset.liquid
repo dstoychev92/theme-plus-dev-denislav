@@ -1,0 +1,14 @@
+[% assign context = context | default: 'block.settings.' %]
+
+{% liquid
+  if settings.show_tag_settings and [= context =]set_heading_tag
+    assign tag = [= context =]heading_tag | default: 'h2'
+  else
+    # Make an educated guess at the correct tag semantics based on the type preset
+    assign tag = [= context =]type_preset | default: 'p'
+    assign tag = tag | replace: 'kicker', 'h3' | replace: 'micro', 'p' | replace: 'section', 'h2' | replace: 'custom', 'p'
+    if tag != 'p' and tag != 'h2' and tag != 'h3' and tag != 'h4' and tag != 'h5' and tag != 'h6'
+      assign tag = 'p'
+    endif
+  endif
+%}

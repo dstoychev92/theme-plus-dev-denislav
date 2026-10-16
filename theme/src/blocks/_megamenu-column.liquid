@@ -1,0 +1,102 @@
+{% doc %}
+  - Renders megamenu column of tiles or cards
+
+  Sits inside _megamenu. One child takes the column span itself. More children share a nested card-grid.
+{% enddoc %}
+
+{% liquid
+  assign col_span_lg = block.settings.col_span_lg
+  assign col_span_md = block.settings.col_span_md
+%}
+
+{% capture content %}
+  {% content_for 'blocks' %}
+{% endcapture %}
+
+{% capture style %}
+  --col-span-lg: {{ col_span_lg }};
+  --col-span-md: {{ col_span_md }};
+{% endcapture %}
+
+{% capture grid_class %}
+  lg:col-span-[--col-span-lg] col-span-[--col-span-md]
+  animate-delay-[calc(var(--header-menu-flyout-enter-duration)/2)]
+  cq-width
+{% endcapture %}
+
+{% if block.blocks.size == 1 %}
+  <div
+    {{ block.shopify_attributes }}
+    class="contents lg:*:col-span-[--col-span-lg] *:col-span-[--col-span-md]"
+    style="{{ style }}"
+  >
+    {{ content }}
+  </div>
+{% else %}
+  {% capture grid_style %}
+    {{ style }}
+    {% if block.settings.set_gap %}
+      {% render 'props-style-gap', gap: block.settings.gap, gap_custom: block.settings.gap_custom %}
+    {% endif %}
+  {% endcapture %}
+  {% render 'card-grid',
+    items: content,
+    columns_lg: block.blocks.size,
+    columns_md: block.blocks.size,
+    style: grid_style,
+    class: grid_class,
+    attributes: block.shopify_attributes
+  %}
+{% endif %}
+
+{% schema %}
+{
+  "name": "Media",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Columns"
+    },
+    {
+      "type": "range",
+      "id": "col_span_lg",
+      "label": "Desktop",
+      "min": 1,
+      "max": 6,
+      "default": 1
+    },
+    {
+      "type": "range",
+      "id": "col_span_md",
+      "label": "Tablet",
+      "min": 1,
+      "max": 6,
+      "default": 1
+    },
+    {
+      "type": "header",
+      "content": "Gap"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_gap",
+      "label": "Set gap",
+      "default": false
+    },
+    [% json 'schema/grid-gap-setting.jsonc', default_gap: 'md', conditional: 'block.settings.set_gap' %]
+  ],
+  "blocks": [
+    {"type": "_tile-image"},
+    {"type": "_card-product"},
+    {"type": "_card-collection"},
+    {"type": "_card-custom"},
+    {"type": "_tile-frame"}
+  ],
+  "presets": [
+    {
+      "name": "Megamenu column"
+    }
+  ]
+}
+{% endschema %}

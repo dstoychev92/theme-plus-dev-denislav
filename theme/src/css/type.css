@@ -1,0 +1,474 @@
+@layer components {
+  /* Typography is passed down as css variabled and
+   * applied as close to the element as possible.
+   */
+  .apply-font-family {
+    font-family: var(--font-family);
+    font-style: var(--font-style);
+    font-weight: var(--font-weight, var(--font-weight-normal));
+  }
+
+  .type-apply {
+    font-family: var(--font-family);
+    font-style: var(--font-style);
+    font-weight: var(--font-weight, var(--font-weight-normal));
+    text-transform: var(--caps-transform);
+    letter-spacing: var(--caps-tracking);
+    font-size: calc(var(--font-size, var(--font-size-md)) * var(--font-family-adjust) * var(--caps-adjust));
+    line-height: max(var(--leading-floor, 0), var(--leading, var(--leading-block)));
+  }
+
+  .type-case-uppercase {
+    --caps-transform: uppercase;
+    --caps-tracking: var(--font-caps-tracking);
+    --caps-adjust: 0.85;
+  }
+
+  .type-case-normal {
+    --caps-transform: none;
+    --caps-tracking: normal;
+    --caps-adjust: 1;
+  }
+
+  /* Baseline ratio and font centering
+   * If the height of a font box is 1, --font-baseline-ratio describes the distance from the bottom of the content box
+   * to the baseline. This method of font certering requires a new css property: height: 1cap and will not work in
+   * older safari versions.
+   * You can see a database of google font ratios at https://designmeme.github.io/finding-baseline/
+  */
+  .vars-type-center {
+    --baseline-space: calc(var(--font-baseline-ratio) * 1em);
+    --cap-space: calc(1em - 1cap - var(--baseline-space));
+  }
+
+  @supports (height: 1cap) {
+    /* Swap top and bottom and subtract from line height,
+     * best for cases where line height is known to be 1, like buttons and badges.
+     * Keeps the height of the text block the same but modifies line height
+     * in a way that may affect icons or other elements in the wrapper
+     */
+    .my-type-center-swap {
+      @apply vars-type-center;
+      margin-top: var(--baseline-space);
+      margin-bottom: var(--cap-space);
+      line-height: calc(1em - var(--baseline-space) - var(--cap-space));
+    }
+    .py-type-center-swap {
+      @apply vars-type-center;
+      padding-top: var(--baseline-space);
+      padding-bottom: var(--cap-space);
+      line-height: calc(1em - var(--baseline-space) - var(--cap-space));
+    }
+
+    /* Add to the smaller value between the baseline and cap
+     * Max will zero out the negative value, performing the equivalent of an if
+     * statement because the position that does not need space will not get a negative value
+     */
+    .my-type-center-add {
+      @apply vars-type-center;
+      margin-top: max(calc(var(--baseline-space) - var(--cap-space)), 0px);
+      margin-bottom: max(calc(var(--cap-space) - var(--baseline-space)), 0px);
+    }
+    .py-type-center-add {
+      @apply vars-type-center;
+      padding-top: max(calc(var(--baseline-space) - var(--cap-space)), 0px);
+      padding-bottom: max(calc(var(--cap-space) - var(--baseline-space)), 0px);
+    }
+    .ty-type-center {
+      @apply vars-type-center;
+      --balance: calc(var(--baseline-space) - var(--cap-space));
+      transform: translateY(calc(var(--balance) / 2));
+    }
+  }
+
+  /* There are three levels of RTE:
+  * - inline-richtext: Supports italics, bold, links
+  * - richtext: Supports italics, bold, links, p, h1-h6 and lists.
+  * - prose: Supports most HTML including tables, blockquotes, lists, indentations, and left/right alignment via shopify-specific classes.
+  */
+  .inline-richtext,
+  .richtext,
+  .prose {
+    * {
+      @apply type-apply;
+    }
+    a {
+      @apply link-line;
+    }
+    &.text-default a,
+    .text-default a {
+      @apply text-secondary;
+    }
+
+    word-break: break-word;
+  }
+
+  /* Used when "Set color" is false. RTE links default to text-secondary, unless color is set explicitly. */
+  .text-default {
+    @apply text-content;
+  }
+
+  .inline-richtext {
+    strong,
+    b {
+      --font-weight: var(--font-weight-bold);
+    }
+
+    em {
+      --font-style: italic;
+    }
+  }
+
+  .richtext {
+    @apply richtext-elements;
+    /* Typed richtext settings can't produce tables/blockquotes/media, but dynamic
+     * sources piped into richtext wrappers (e.g. collection.description) can —
+     * style those like prose while keeping richtext's own text margins. */
+    @apply prose-elements;
+    @apply prose-media-margins;
+    @apply richtext-element-margins;
+    @apply leading-prose;
+  }
+
+  .prose {
+    @apply richtext-elements;
+    @apply prose-elements;
+    @apply prose-element-margins;
+    @apply leading-prose;
+  }
+
+  /* Applies the step-wise font-size pattern to richtext_size settings */
+  .type-resize-all-xs * {
+    --font-size: var(--font-size-xs);
+  }
+
+  .type-resize-all-sm * {
+    --font-size: var(--font-size-sm);
+  }
+
+  .type-resize-all-md * {
+    --font-size: var(--font-size-md);
+  }
+
+  .type-resize-all-lg * {
+    --font-size: var(--font-size-lg);
+  }
+
+  .type-resize-all-xl * {
+    --font-size: var(--font-size-xl);
+  }
+
+  /* Applies step-wise font-resize directly to an element */
+  .type-resize-xs {
+    --font-size: var(--font-size-xs);
+  }
+
+  .type-resize-sm {
+    --font-size: var(--font-size-sm);
+  }
+
+  .type-resize-md {
+    --font-size: var(--font-size-md);
+  }
+
+  .type-resize-lg {
+    --font-size: var(--font-size-lg);
+  }
+
+  .type-resize-xl {
+    --font-size: var(--font-size-xl);
+  }
+
+  /* Prose leading is more generous */
+  .leading-prose * {
+    --leading: var(--leading-prose);
+  }
+
+  .leading-block * {
+    --leading: var(--leading-block);
+  }
+
+  /* Applied to wrappers that clip overflow (rows, marquees, etc.).
+   * Floors --leading-block-{N} via max() in head-type.liquid, so descendant
+   * text whose preset leading would clip descenders gets bumped, while text
+   * already above the floor keeps its natural value.
+   */
+  .leading-clip-safe {
+    --leading-floor: 1.15;
+  }
+
+  .richtext-elements {
+    h1 {
+      @apply type-h1;
+    }
+
+    h2 {
+      @apply type-h2;
+    }
+
+    h3 {
+      @apply type-h3;
+    }
+
+    h4 {
+      @apply type-h4;
+    }
+
+    h5 {
+      @apply type-h5;
+    }
+
+    h6 {
+      @apply type-h6;
+    }
+
+    p,
+    li {
+      @apply type-p;
+    }
+
+    strong,
+    b {
+      font-weight: var(--font-weight-bold);
+    }
+
+    em {
+      font-style: italic;
+    }
+
+    ol {
+      list-style-type: decimal;
+      padding-left: 2rem;
+    }
+
+    ul {
+      list-style-type: disc;
+      padding-left: 2rem;
+    }
+
+    /* Shrink-wrapped block: each list gets its own line while --list-align can still center the box */
+    ol,
+    ul {
+      width: fit-content;
+      max-width: 100%;
+      margin-inline: var(--list-align, 0 auto);
+    }
+
+    li {
+      padding-left: 0.5rem;
+    }
+  }
+
+  /* text-align can't place a block box, so the alignment contexts carry it to lists as margins */
+  .text-start,
+  .text-left,
+  .vars-content-align-start,
+  .vars-content-align-left {
+    --list-align: 0 auto;
+  }
+
+  .text-center,
+  .vars-content-align-center {
+    --list-align: auto;
+  }
+
+  .text-end,
+  .text-right,
+  .vars-content-align-end,
+  .vars-content-align-right {
+    --list-align: auto 0;
+  }
+
+  .richtext-element-margins {
+    *:last-child {
+      margin-block-end: 0;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p {
+      margin-block-end: 1rem;
+    }
+  }
+
+  .prose-media-margins {
+    table,
+    pre {
+      margin-block-end: 1rem;
+    }
+
+    img,
+    hr,
+    picture,
+    video {
+      margin-block: 3rem;
+    }
+  }
+
+  .prose-element-margins {
+    @apply prose-media-margins;
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      margin-block-start: 1rem;
+      margin-block-end: 0.5rem;
+    }
+
+    p,
+    li {
+      margin-block: 0.5rem;
+    }
+
+    *:first-child,
+    meta + * {
+      margin-block-start: 0;
+    }
+  }
+
+  .prose-elements {
+    dt {
+      font-weight: var(--font-weight-bold);
+    }
+
+    hr {
+      border-color: oklch(var(--content-oklch) / var(--line-alpha-bold));
+      border-top-width: 1px;
+    }
+
+    blockquote {
+      font-weight: var(--font-weight-bold);
+      font-style: italic;
+      color: var(--content);
+      border-left: 4px solid oklch(var(--content-oklch) / var(--line-alpha-subtle));
+      padding-left: 1em;
+    }
+
+    img,
+    picture,
+    video {
+      display: block;
+    }
+
+    kbd {
+      font-weight: var(--font-weight-bold);
+      font-family: inherit;
+      color: var(--content);
+      box-shadow:
+        0 0 0 1px oklch(var(--shadow-oklch) / 0.1),
+        0 3px 0 oklch(var(--shadow-oklch) / 0.1);
+      font-size: var(--font-size-sm);
+      border-radius: 5px;
+      padding: 0.25em 0.5em;
+    }
+
+    code {
+      @apply vars-font-family-accent;
+      font-weight: var(--font-weight-bold);
+      font-size: var(--font-size-sm);
+    }
+    code::before,
+    code::after {
+      content: '`';
+    }
+
+    pre {
+      color: var(--content);
+      background-color: oklch(var(--content-oklch) / 0.05);
+      overflow-x: auto;
+      font-weight: 400;
+      font-size: var(--font-size-sm);
+      line-height: 1.5;
+      border-radius: 6px;
+      padding: 1em 1.5em;
+    }
+
+    pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      color: inherit;
+      font: inherit;
+    }
+    pre code::before,
+    pre code::after {
+      content: none;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: var(--font-size-sm);
+      line-height: 1.5;
+    }
+
+    td {
+      @apply type-p;
+    }
+
+    /* The RTE often emits header rows as bare th rows with no thead */
+    thead,
+    tr:not(:has(td)) {
+      border-bottom: 1px solid oklch(var(--content-oklch) / var(--line-alpha-bold));
+    }
+    thead th {
+      @apply type-h6;
+      padding-block: 1em;
+      padding-inline: 0.5em;
+      text-align: start;
+    }
+    tbody tr:has(td) {
+      border-bottom: 1px solid oklch(var(--content-oklch) / var(--line-alpha-subtle));
+    }
+    tbody td,
+    tfoot td {
+      padding-block: 1em;
+      padding-inline: 0.5em;
+      text-align: start;
+    }
+
+    thead th:first-child,
+    tbody td:first-child,
+    tfoot td:first-child {
+      padding-inline-start: 0;
+    }
+
+    /* Target the standard youtube embed and make it responsive */
+    iframe[width='560'][height='315'] {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      height: auto;
+    }
+  }
+
+  /* .rte-table-wrapper is auto-generated by JS around RTE tables */
+  .rte-table-wrapper {
+    overflow-x: auto;
+  }
+
+  /* ================ Metafield tags in cardslots ================ */
+  .metafield-cardslot-content > div {
+    display: inline;
+  }
+  .metafield-cardslot-content {
+    p,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      display: inline;
+    }
+    .metafield-rich_text_field {
+      @apply richtext;
+    }
+  }
+}

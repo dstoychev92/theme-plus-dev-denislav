@@ -1,0 +1,55 @@
+{% comment %}
+  Product page section displaying product media and the product form.
+  This section uses the section rendering API to update itself when the variant, quantity or selling plan changes. Any changes made in this file
+  or any sub blocks or snippets will be reflected in the product page for the current product, variant, and selling plan when the user changes the variant, quantity, or selling plan.
+{% endcomment %}
+
+{% comment %}
+  Other sections on the product page update when siblings change (theme.product.js);
+  they update on intersect, interact, or after a timeout to avoid 400s from too many section requests.
+{% endcomment %}
+
+{% capture content_media %}
+  {% content_for 'block', type: '_product-layout-media', id: 'media', class_static: 'md:col-[media-start/media-end]' %}
+{% endcapture %}
+
+{% capture content_details %}
+  {% content_for 'block', type: '_product-layout-details', id: 'details', class_static: 'md:col-[details-start/details-end]' %}
+{% endcapture %}
+
+{% capture attributes %}
+  x-view-event
+  data-view-event-payload="{{ product | standard_event_data: 'view' | escape }}"
+{% endcapture %}
+
+{% render 'product-section',
+  s: section.settings,
+  content_media: content_media,
+  content_details: content_details,
+  attributes: attributes,
+  lazy_alpine: false
+%}
+
+{% # Product schema.org markup for Google search results. %}
+<script type="application/ld+json">
+  {{ product | structured_data }}
+</script>
+
+{% schema %}
+{
+  "name": "Product page",
+  "class": "section-product main-product",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "enable_history",
+      "label": "Enable history",
+      "info": "Preserve URL history when navigating between product variants and subscription options",
+      "default": true,
+      "visible_if": "{{ false }}"
+    },
+    [% json 'schema/product-section-settings.jsonc' %]
+  ]
+}
+{% endschema %}

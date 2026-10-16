@@ -1,0 +1,93 @@
+{% doc %}
+  - Renders upsell products with one-click add to cart
+
+  Reads closest.product. An empty product list falls back to the paired upsell metafield when include_metafield_upsells is on. The live store renders nothing without upsells, and the editor shows placeholder slots.
+{% enddoc %}
+
+{% liquid
+  assign product = closest.product
+  assign upsell_list = block.settings.product_list
+
+  if block.settings.include_metafield_upsells
+    assign upsell_list_metafield_namespace = settings.metafield_upsell_list | split: '.' | first
+    assign upsell_list_metafield_key = settings.metafield_upsell_list | split: '.' | last
+    assign upsell_list_metafield = product.metafields[upsell_list_metafield_namespace][upsell_list_metafield_key]
+    assign upsell_list = upsell_list | default: upsell_list_metafield.value
+  endif
+
+  # An empty product_list is an empty array, which is truthy, so the branches below would
+  # take it for a single product and hand card-product a form with no product
+  if upsell_list == blank
+    assign upsell_list = null
+  endif
+
+  # A list answers size, a single product reference answers neither, so it falls to 0
+  assign upsell_list_size_count = upsell_list.size | default: upsell_list.count
+%}
+
+{% capture content %}
+  {% comment %} Placeholder slots appear only in the editor so merchants can find and configure the block; live stores render nothing without an upsell list {% endcomment %}
+  {% if upsell_list == blank and request.visual_preview_mode %}
+    {% render 'product-upsell-list', limit: 2 %}
+  {% elsif upsell_list == blank and request.design_mode %}
+    {% render 'product-upsell-list', s: block.settings, limit: 2 %}
+  {% elsif upsell_list %}
+    {% if upsell_list_size_count > 0 %}
+      {% comment %} List reference {% endcomment %}
+      {%- render 'product-upsell-list', s: block.settings, products: upsell_list -%}
+    {% else %}
+      {% comment %} Single reference {% endcomment %}
+      {%- render 'product-upsell-list', s: block.settings, single_product: upsell_list -%}
+    {% endif %}
+  {% endif %}
+{% endcapture %}
+
+{% render 'product-block', s: block.settings, content: content, attributes: block.shopify_attributes, class: 'w-full' %}
+
+{% schema %}
+{
+  "name": "Upsell",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "Pair with"
+    },
+    {
+      "type": "paragraph",
+      "content": "Upsell is best as a one-click add to cart, so upsell products should have no variants. Upsell products with variants will open a quick-view window. [Learn more](https://groupthought.com/link/analog/v1/docs/upsell-products)"
+    },
+    {
+      "type": "product_list",
+      "id": "product_list",
+      "label": "Products",
+      "info": "Choose products or connect a dynamic source. [Learn more](https://groupthought.com/link/analog/v1/docs/upsell-products)"
+    },
+    {
+      "type": "range",
+      "id": "limit",
+      "label": "Product limit",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 1
+    },
+    {
+      "type": "checkbox",
+      "id": "include_metafield_upsells",
+      "label": "Use paired upsells",
+      "default": false,
+      "info": "When 'Products' is empty, show the paired upsells for the current product. [Learn more](https://groupthought.com/link/analog/v1/docs/upsell-products)",
+      "visible_if": "{{ settings.metafield_upsell_list != blank }}"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Upsell",
+      "category": "Additional product info"
+    }
+  ]
+}
+{% endschema %}

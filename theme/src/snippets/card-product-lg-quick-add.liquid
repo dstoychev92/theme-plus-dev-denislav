@@ -1,0 +1,385 @@
+{% doc %}
+  - Renders Quick Add button and option menu on a product card
+
+  Reads $productCard, $productForm, and $sectionApi, so render it inside x-product-card and
+  x-product-form. A sold-out product renders a Sold out link to the product page and no menu.
+
+  @param {string} [appearance] - button appearance, defaults to 'blur'
+  @param {string} [class] - The classes
+  @param {string} [color] - button color, defaults to 'content'
+  @param {boolean} [icon_swap] - shows the cart icon in place of the label on touch devices
+  @param {number} longest_value_characters - longest value name length, 5 or fewer uses a grid
+  @param {product_option} option - product option offered in the menu
+  @param {number} option_value_count - number of values in the option
+  @param {string} [placeholder_button_aria_label] - accessible name for the closed button, defaults to its text
+  @param {string} [placeholder_button_class] - classes for the closed button
+  @param {string} [placeholder_button_label_attributes] - attributes for the closed button label
+  @param {string} [placeholder_button_label_class] - classes for the closed button label
+  @param {product} product
+{% enddoc %}
+
+{% liquid
+  assign color = color | default: 'content'
+  assign appearance = appearance | default: 'blur'
+  assign placeholder_button_text = 'product.quick_add' | t
+  assign placeholder_button_tag = 'button'
+
+  assign is_out_of_stock = false
+
+  if product.available == false
+    assign is_out_of_stock = true
+  endif
+
+  if is_out_of_stock
+    assign placeholder_button_text = 'product.sold_out' | t
+    assign placeholder_button_tag = 'a'
+    assign placeholder_button_href = product.url
+  endif
+
+  assign placeholder_button_aria_label = placeholder_button_aria_label | default: placeholder_button_text
+
+  if icon_swap == true
+    assign swap_touch_content_class = 'mouse:hidden'
+    assign swap_pointer_content_class = 'touch:hidden'
+  else
+    assign swap_touch_content_class = 'hidden'
+    assign swap_pointer_content_class = ''
+  endif
+
+  assign close_aria_label = 'other.accessibility.close' | t
+  assign quick_add_aria_label = 'product.accessibility.quick_add' | t
+  assign unavailable_text = 'product.unavailable' | t
+  assign adding_to_cart_text = 'product.adding_to_cart' | t
+  assign added_to_cart_text = 'product.added_to_cart' | t
+  assign error_adding_to_cart_text = 'product.error_adding_to_cart' | t
+%}
+
+{%- capture cart_icon -%}
+  fill-add-{{- settings.cart_icon -}}
+{%- endcapture -%}
+
+{% capture placeholder_button_label %}
+  {% render 'core-icon', icon: cart_icon, size: 'lg', class: swap_touch_content_class %}
+
+  <span class="{{ swap_pointer_content_class }}">
+    {{ placeholder_button_text }}
+  </span>
+{% endcapture %}
+
+{% capture placeholder_button_label_class %}
+  leading-[--leading-block] text-center overflow-hidden text-ellipsis whitespace-nowrap
+  {{ placeholder_button_label_class }}
+{% endcapture %}
+
+{% capture placeholder_button_class %}
+  pointer-events-auto w-fit relative z-10 max-md:!overflow-visible max-md:hit-area-[--card-lg-media-padding]
+  !will-change-[transform,opacity,backdrop-filter,background-color]
+  {{ placeholder_button_class }}
+  origin-bottom touch:origin-bottom-right row-start-2
+{% endcapture %}
+
+{% capture placeholder_button_attributes %}
+  data-test-id="product-card-quick-add-placeholder"
+  :disabled="$sectionApi.state === 'loading'"
+  :aria-expanded="$productCard.isQuickAddMenuVisible"
+  :aria-controls="$id('quick-add-menu')"
+  data-close-label="{{ close_aria_label | escape_once }}"
+  data-open-label="{{ placeholder_button_aria_label | escape_once }}"
+  :aria-label="$productCard.isQuickAddMenuVisible ? $el.dataset.closeLabel : $el.dataset.openLabel"
+
+  {% unless is_out_of_stock %}
+    x-product-card:quick-add-button
+  {% endunless %}
+
+  x-show="!$productCard.isQuickAddMenuVisible"
+  x-transition:enter="transition-[opacity,transform,background-color] duration-[calc(var(--quick-actions-exit-animation-duration)*0.9),var(--quick-actions-exit-animation-duration),var(--quick-actions-exit-animation-duration)]"
+  x-transition:enter-start="opacity-0 scale-150 bg-canvas"
+  x-transition:enter-end="opacity-100 scale-100"
+  x-transition:leave="transition-[opacity,transform,background-color] duration-[calc(var(--quick-actions-exit-animation-duration)*0.9),var(--quick-actions-exit-animation-duration),var(--quick-actions-exit-animation-duration)]"
+  x-transition:leave-start="opacity-100 scale-100"
+  x-transition:leave-end="opacity-0 scale-150 bg-canvas"
+
+  {% unless is_out_of_stock %}
+    data-available="true"
+  {% endunless %}
+{% endcapture %}
+
+{% comment %} The button that says "Quick Add" that appears when the user hovers over the card but not the button {% endcomment %}
+{% capture placeholder_button %}
+  {% render 'core-button',
+    tag: placeholder_button_tag,
+    href: placeholder_button_href,
+    label: placeholder_button_label,
+    appearance: appearance,
+    sizing: 'lg',
+    color: color,
+    attributes: placeholder_button_attributes,
+    class: placeholder_button_class,
+    label_class: placeholder_button_label_class,
+    label_attributes: placeholder_button_label_attributes,
+    wrap: true
+  %}
+{% endcapture %}
+
+{% capture close_button %}
+  <button
+    class="
+      md:hidden aspect-square p-0 min-h-0 size-row-md bg-canvas rounded-full flex flex-center
+      row-start-1 justify-self-center self-end
+      {% comment %} Big hit area so user doesnt accidentally navigate away from the card when clicking the close button {% endcomment %}
+      hit-area-x-[200%]
+      hit-area-t-[20px]
+    "
+    type="button"
+    aria-label="{{ close_aria_label }}"
+    x-cloak
+    x-show="$productCard.isQuickAddMenuVisible"
+    x-transition:enter="transition-[opacity,transform] delay-100 duration-[250ms,300ms]"
+    x-transition:enter-start="opacity-0 translate-y-full"
+    x-transition:enter-end="opacity-100 translate-y-0"
+    x-transition:leave="transition-[opacity,transform] delay-0 duration-[200ms,250ms]"
+    x-transition:leave-start="opacity-100 translate-y-0"
+    x-transition:leave-end="opacity-0 translate-y-full"
+    @click.stop="$productCard.isQuickAddMenuActive = false"
+  >
+    {% render 'core-icon', icon: 'stroke-bare-x' %}
+  </button>
+{% endcapture %}
+
+{% comment %} Quick Add option menu {% endcomment %}
+{% liquid
+  # Short labels fit evenly in a compact grid; longer labels need flexible columns.
+  assign max_chars = 5
+  if longest_value_characters <= max_chars
+    assign layout_mode = 'grid'
+  else
+    assign layout_mode = 'flex'
+    assign cols_desktop_max = option_value_count | at_most: 3 | at_least: 1
+    assign remainder_desktop = option_value_count | modulo: cols_desktop_max
+    if remainder_desktop == 1 and cols_desktop_max > 2
+      assign cols_desktop = cols_desktop_max | minus: 1
+    else
+      assign cols_desktop = cols_desktop_max
+    endif
+  endif
+%}
+
+{% capture submitting_spinner %}{% render 'spinner' %}{% endcapture %}
+{% capture success_icon %}{% render 'core-icon', icon: 'stroke-bare-check' %}{% endcapture %}
+{% capture error_icon %}{% render 'core-icon', icon: 'stroke-bare-x' %}{% endcapture %}
+
+{% capture quick_add_menu %}
+  <quick-add-menu
+    class="
+      flex flex-col items-center justify-start overflow-clip w-full max-h-full row-start-2
+      contain-paint
+      touch:origin-bottom-right origin-bottom
+      relative z-20
+      bg-canvas rounded-[--menu-radius]
+      will-change-[transform,opacity]
+      hit-area-[--card-lg-media-padding]
+      {% comment %}
+        [&[inert]]:opacity-0 hides the menu after leave classes end and before
+        nested x-shows set display:none
+      {% endcomment %}
+      [&[inert]]:opacity-0
+    "
+    style="
+      --menu-radius: min(var(--radius-btn, var(--radius-md)), calc(var(--control-height)/2));
+      --menu-padding: min(var(--r6), calc(var(--r5) + var(--menu-radius)));
+    "
+    :inert="!$productCard.isQuickAddMenuVisible"
+    :id="$id('quick-add-menu')"
+    x-cloak
+    x-show="$productCard.isQuickAddMenuVisible"
+    x-transition:enter="transition-[transform,opacity] delay-[50ms] duration-[var(--quick-actions-enter-animation-duration),calc(var(--quick-actions-enter-animation-duration)*0.75)]"
+    x-transition:enter-start="scale-75 touch:scale-0 opacity-0"
+    x-transition:enter-end="scale-100 opacity-100"
+    x-transition:leave="transition-[transform,opacity] delay-[75ms,100ms] duration-[var(--quick-actions-exit-animation-duration),calc(var(--quick-actions-exit-animation-duration)*0.9)]"
+    x-transition:leave-start="scale-100 opacity-100"
+    x-transition:leave-end="scale-75 touch:scale-0 opacity-0"
+    x-product-card:quick-add-menu
+  >
+    <ul
+      data-test-id="product-card-quick-add"
+      class="
+        {% if layout_mode == "grid" %}
+          grid grid-cols-[--grid-cols]
+        {% else %}
+          flex flex-row flex-wrap
+        {% endif %}
+        gap-[--quick-add-button-space] p-[--menu-padding]
+        relative w-full h-full overflow-y-auto
+        origin-bottom touch:origin-bottom-right
+        will-change-[transform,opacity]
+        [--quick-add-button-ideal-cols:var(--quick-add-button-cols-mobile)]
+        md:[--quick-add-button-ideal-cols:var(--quick-add-button-cols-desktop)]
+      "
+      style="
+        --option-size: var(--row-md);
+        --quick-add-button-space: var(--r3);
+        {% if layout_mode == "grid" %}
+          --grid-cols: repeat(auto-fit, minmax({{max_chars}}ch, 1fr));
+        {% else %}
+          --quick-add-button-ideal-cols-mobile: 2;
+          --quick-add-button-ideal-cols-desktop: {{ cols_desktop }};
+          --quick-add-button-basis: calc((100% / var(--quick-add-button-ideal-cols)) - (var(--layout-gutter-x) * (var(--quick-add-button-ideal-cols) - 1)));
+        {% endif %}
+      "
+      x-show="$productCard.isQuickAddMenuVisible"
+      x-transition:enter="transition-[transform,opacity] delay-[50ms] duration-[var(--quick-actions-enter-animation-duration),calc(var(--quick-actions-enter-animation-duration)*0.75)]"
+      x-transition:enter-start="scale-75 opacity-0"
+      x-transition:enter-end="scale-100 opacity-100"
+      x-transition:leave="transition-[transform,opacity] delay-[50ms] duration-[var(--quick-actions-exit-animation-duration),calc(var(--quick-actions-exit-animation-duration)*0.75)]"
+      x-transition:leave-start="scale-100 opacity-100"
+      x-transition:leave-end="scale-75 opacity-0"
+      x-roving-tab
+      x-roving-tab:list
+      aria-label="{{ quick_add_aria_label }}"
+    >
+      {% for value in option.values %}
+        {% liquid
+          assign unavailable = false
+          if value.variant == blank or value.variant.available == false
+            assign unavailable = true
+          endif
+        %}
+        <li
+          class="
+            relative max-w-full
+            {% if layout_mode == "flex" %}
+              flex-1 basis-[--quick-add-button-basis]
+            {% endif %}
+          "
+          x-data="
+            {
+              get isSubmittingOptionVariant() {
+                return $productForm.state !== 'idle' &&
+                  Number($productForm.formData?.get('id')) === Number({{ value.variant.id }})
+              }
+            }
+          "
+        >
+          <button
+            class="
+              btn vars-btn-stroke max-md:vars-btn-sm vars-btn-md vars-btn-content
+              flex flex-center whitespace-nowrap
+              data-[selected=true]:vars-btn-fill
+              relative z-10 type-btn type-resize-xs w-full
+              [--btn-padding-x:var(--btn-padding)]
+
+              {% if unavailable == true %}
+                cursor-not-allowed
+              {% else %}
+                cursor-pointer
+              {% endif %}
+            "
+
+            type="submit"
+            name="id"
+            x-id="['quick-add-btn']"
+            :id="$id('quick-add-btn')"
+            :disabled="$productForm.state == 'pending' || $sectionApi.state === 'loading'{% if unavailable == true %} || true{% endif %}"
+
+            {% if unavailable == true %}
+              title="{{ value.name | escape_once }} - {{ unavailable_text }}"
+              data-available="false"
+              disabled
+              @click.stop.prevent=""
+            {% else %}
+              title="{{ value.name | escape_once }}"
+              data-available="true"
+              value="{{ value.variant.id }}"
+            {% endif %}
+          >
+            {% if unavailable == true %}
+              {% comment %} Strikethrough {% endcomment %}
+              <svg
+                role="presentation"
+                class="pointer-events-none absolute inset-0 z-20 h-full p-r3 m-auto opacity-0 [[data-available=false]_&]:opacity-100"
+                viewBox="0 0 38 38"
+              >
+                <path
+                  d="M38 0 L0 38"
+                  fill="none"
+                  stroke-width="3"
+                  vector-effect="non-scaling-stroke"
+                  stroke-linecap="round"
+                  class="stroke-canvas [[data-selected=true]_&]:stroke-content"
+                />
+                <path
+                  d="M38 0 L0 38"
+                  fill="none"
+                  stroke-width="1"
+                  vector-effect="non-scaling-stroke"
+                  stroke-linecap="round"
+                  class="stroke-content [[data-selected=true]_&]:stroke-canvas"
+                />
+              </svg>
+            {% endif %}
+            {% comment %} Initial State. We never use x-show with this because doing so would cause jumping {% endcomment %}
+            <span
+              class="flex-row-center gap-x-r3 truncate delay-300 transition-opacity will-change-opacity"
+              :class="{
+                'opacity-0 !delay-0': isSubmittingOptionVariant
+              }"
+            >
+              <span aria-hidden="true" role="presentation">{{ value.name }}</span>
+              <span class="sr-only">
+                {% if value.variant == blank or value.variant.available == false %}
+                  {{ value.name | escape_once }} - {{ unavailable_text }}
+                {% else %}
+                  {{ 'product.add_product_to_cart_html' | t: title: value.name }}
+                {% endif %}
+              </span>
+            </span>
+
+            {% comment %} Saving State {% endcomment %}
+            <span
+              class="absolute inset-0 flex-row-center justify-center will-change-opacity"
+              x-cloak
+              x-show="isSubmittingOptionVariant && $productForm.state === 'pending'"
+              x-transition.opacity.duration.500ms
+            >
+              {{ submitting_spinner }}
+              <span class="sr-only" aria-live="polite" role="status">{{- adding_to_cart_text -}}</span>
+            </span>
+
+            {% comment %} Success State {% endcomment %}
+            <span class="absolute inset-0 flex-row-center justify-center gap-x-r3 will-change-opacity" x-cloak x-show="isSubmittingOptionVariant && $productForm.state === 'success'" x-transition.opacity.duration.500ms>
+              {{ success_icon }}
+              <span class="sr-only" aria-live="polite" role="status">{{- added_to_cart_text -}}</span>
+            </span>
+
+            {% comment %} Error State {% endcomment %}
+            <span class="absolute vars-scheme-error inset-0 text-content flex-row-center justify-center gap-x-r3 will-change-opacity" x-cloak x-show="isSubmittingOptionVariant && $productForm.state === 'error'" x-transition.opacity.duration.500ms>
+              {{ error_icon }}
+              <span class="sr-only" aria-live="polite" role="status">{{- error_adding_to_cart_text -}}</span>
+            </span>
+          </button>
+        </li>
+      {% endfor %}
+    </ul>
+  </quick-add-menu>
+{% endcapture %}
+
+<div
+  data-test-id="product-card-quick-add-toolbar"
+  {% # tabindex=-1 in markup since a section morph strips a runtime-added attribute %}
+  tabindex="-1"
+  {% # Park keyboard focus here while an add request disables the menu buttons %}
+  x-focus-park="$productForm?.state === 'pending'"
+  class="
+    group/quick-add-toolbar relative w-full h-fit max-h-full items-end touch:justify-items-end justify-items-center
+    grid grid-cols-1 max-md:grid-rows-[minmax(0,1fr),minmax(0,max-content)] grid-rows-1 gap-y-r2 *:col-span-full
+    !pointer-events-passthrough
+    {{ class }}
+  "
+  x-id="['quick-add-menu']"
+>
+  {{ close_button }}
+  {{ placeholder_button }}
+  {% unless is_out_of_stock %}
+    {{ quick_add_menu }}
+  {% endunless %}
+</div>

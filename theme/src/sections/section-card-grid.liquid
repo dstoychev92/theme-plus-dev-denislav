@@ -1,0 +1,241 @@
+{% comment %}
+  Section: Card Grid
+  Static grid layout for product, collection, or article cards — all cards
+  visible at once (no scrolling).
+
+  Same block types as card-slider (_section-title, _cards-products,
+  _cards-collections, _cards-articles) but renders in a grid rather than a
+  carousel. Column count is configurable per breakpoint.
+
+  Better for SEO than sliders since all content is visible. Cards stack into
+  fewer columns on mobile. Content width can be full-bleed or page-contained.
+
+  Gap uses the standard preset+custom pattern (sm/md/lg/custom).
+{% endcomment %}
+
+{% capture header %}
+  {% content_for 'block', type: '_section-title', id: 'header' %}
+{% endcapture %}
+
+{% capture list_items %}
+  {% content_for 'blocks' %}
+{% endcapture %}
+
+{% render 'core-section-card-list',
+  s: section.settings,
+  list_items: list_items,
+  header: header,
+  layout_desktop: 'grid',
+  layout_tablet: 'grid',
+  class: 'entrance-container'
+%}
+
+{% schema %}
+{
+  "name": "Card grid",
+  "class": "section-card-grid",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Columns"
+    },
+    [% json 'schema/section-card-grid-settings.jsonc' %]
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    [% json 'schema/section-content-width-setting.jsonc', disable_mobile_width_when_slider: true %]
+    [% json 'schema/section-padding-settings.jsonc' %]
+    {
+      "type": "header",
+      "content": "Content layout"
+    },
+    {
+      "type": "text_alignment",
+      "id": "title_placement",
+      "label": "Title alignment",
+      "default": "center"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_gap_tab_y",
+      "label": "Set vertical gap",
+      "default": false
+    },
+    [% json 'schema/grid-gap-setting.jsonc', default_gap: 'sm', gap_label: 'Vertical gap', gap_custom_label: 'Custom', id_suffix: 'tab_y', context: 'section.settings.', conditional: 'section.settings.set_gap_tab_y' %]
+    {
+      "type": "header",
+      "content": "Appearance"
+    },
+    [% json 'schema/color-settings-section-solid.jsonc' %]
+    [% json 'schema/section-target-device-settings.jsonc' %]
+  ],
+  "blocks": [
+    [% json 'schema/blocks-card-list.jsonc' %]
+  ],
+  "presets": [
+    {
+      "name": "Card grid",
+      "category": "Grid",
+      "blocks": [
+        {
+          "id": "header",
+          "type": "_section-title",
+          "static": true,
+          "settings": {
+            "text": "Featured Products"
+          }
+        },
+        {
+          "type": "_cards-products",
+          "settings": {
+            "source": "collection"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Quote card grid",
+      "category": "Try: Build trust",
+      "blocks": [
+        {
+          "id": "header",
+          "type": "_section-title",
+          "static": true,
+          "settings": {
+            "text": "Loved by customers"
+          }
+        },
+        {
+          "type": "_card-custom",
+          "blocks": [
+            {
+              "type": "_card-custom-overlay",
+              "static": true,
+              "id": "overlay",
+              "blocks": []
+            },
+            {
+              "type": "_card-custom-details",
+              "static": true,
+              "id": "details",
+              "blocks": [
+                {
+                  "type": "theme-richtext",
+                  "settings": {
+                    "text": "<p>\"Easily the best purchase I've made this year. Quality is unreal.\"</p>"
+                  }
+                },
+                {
+                  "type": "theme-text",
+                  "settings": {
+                    "text": "Avery R.",
+                    "type_preset": "p"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "_card-custom",
+          "blocks": [
+            {
+              "type": "_card-custom-overlay",
+              "static": true,
+              "id": "overlay",
+              "blocks": []
+            },
+            {
+              "type": "_card-custom-details",
+              "static": true,
+              "id": "details",
+              "blocks": [
+                {
+                  "type": "theme-richtext",
+                  "settings": {
+                    "text": "<p>\"I keep coming back. The little details show real care.\"</p>"
+                  }
+                },
+                {
+                  "type": "theme-text",
+                  "settings": {
+                    "text": "Jordan M.",
+                    "type_preset": "p"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "_card-custom",
+          "blocks": [
+            {
+              "type": "_card-custom-overlay",
+              "static": true,
+              "id": "overlay",
+              "blocks": []
+            },
+            {
+              "type": "_card-custom-details",
+              "static": true,
+              "id": "details",
+              "blocks": [
+                {
+                  "type": "theme-richtext",
+                  "settings": {
+                    "text": "<p>\"Held up beautifully through everyday use. Worth every dollar.\"</p>"
+                  }
+                },
+                {
+                  "type": "theme-text",
+                  "settings": {
+                    "text": "Sam L.",
+                    "type_preset": "p"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+                {
+          "type": "_card-custom",
+          "blocks": [
+            {
+              "type": "_card-custom-overlay",
+              "static": true,
+              "id": "overlay",
+              "blocks": []
+            },
+            {
+              "type": "_card-custom-details",
+              "static": true,
+              "id": "details",
+              "blocks": [
+                {
+                  "type": "theme-richtext",
+                  "settings": {
+                    "text": "<p>\"Made a huge difference in my daily routine, I don't leave home anymore.\"</p>"
+                  }
+                },
+                {
+                  "type": "theme-text",
+                  "settings": {
+                    "text": "Bobson D.",
+                    "type_preset": "p"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "custom.overlays", "custom.drawers"]
+  }
+}
+{% endschema %}

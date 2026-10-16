@@ -1,0 +1,118 @@
+[
+  {
+    "type": "select",
+    "id": "height",
+    "label": "Desktop height",
+    "default": "[= default_height | default: 'content' =]",
+    "visible_if": "{{ section.settings.height_mode == 'column' }}",
+    "options": [
+      [% unless content_height == false %]
+        {"value": "content", "label": "Content height"},
+      [% endunless %]
+      [% unless image_height == false %]
+        {"value": "image", "label": "[= image_height_label | default: 'Image height' =]"},
+      [% endunless %]
+      {"value": "screen", "label": "Full screen height"},
+      {"value": "screen-five-sixths", "label": "Five sixths screen"},
+      {"value": "screen-three-quarters", "label": "Three quarters screen"},
+      {"value": "screen-one-half", "label": "One half screen"},
+      {"value": "screen-one-third", "label": "One third screen"},
+      {"value": "screen-one-quarter", "label": "One quarter screen"},
+      {"value": "custom", "label": "Custom"}
+    ]
+  },
+  {
+    "type": "select",
+    "id": "custom_height_type",
+    "label": "Height type",
+    "default": "[= default_custom_height_type | default: 'percentage' =]",
+    "options": [
+      {"value": "percentage", "label": "%"},
+      {"value": "px", "label": "px"},
+    ],
+    "visible_if": "{{ section.settings.height_mode == 'column' and block.settings.height == 'custom' }}"
+  },
+  {
+    "type": "range",
+    "id": "custom_height_percentage",
+    "min": 0,
+    "max": 100,
+    "step": 1,
+    "unit": "%",
+    "label": "Custom height",
+    "default": 33,
+    "visible_if": "{{ section.settings.height_mode == 'column' and block.settings.height == 'custom' and block.settings.custom_height_type == 'percentage' }}",
+    "info": "Percentage of screen height"
+  },
+  {
+    "type": "range",
+    "id": "custom_height_px",
+    "min": 0,
+    "max": 1000,
+    "step": 50,
+    "unit": "px",
+    "label": "Custom height",
+    "default": 350,
+    "visible_if": "{{ section.settings.height_mode == 'column' and block.settings.height == 'custom' and block.settings.custom_height_type == 'px' }}"
+  },
+  {
+    "visible_if": "{{ section.settings.height_mode != 'column' }}",
+    "type": "paragraph",
+    "content": "Desktop height setting isn't available when the height is set by the section."
+  },
+
+  {
+    "type": "select",
+    "id": "height_mobile",
+    "label": "Mobile height",
+    "default": "[= default_height_mobile | default: default_height | default: 'content' =]",
+    "options": [
+      [% unless content_height == false %]
+        {"value": "content", "label": "Content height"},
+      [% endunless %]
+      [% unless image_height == false %]
+        {"value": "image", "label": "[= image_height_label_mobile | default: image_height_label | default: 'Image height' =]"},
+      [% endunless %]
+      {"value": "screen", "label": "Full screen height"},
+      {"value": "screen-five-sixths", "label": "Five sixths screen"},
+      {"value": "screen-three-quarters", "label": "Three quarters screen"},
+      {"value": "screen-one-half", "label": "One half screen"},
+      {"value": "screen-one-third", "label": "One third screen"},
+      {"value": "screen-one-quarter", "label": "One quarter screen"},
+      {"value": "custom", "label": "Custom"},
+    ]
+  },
+  {
+    "type": "select",
+    "id": "custom_height_type_mobile",
+    "label": "Mobile height type",
+    "default": "[= default_custom_height_type_mobile | default: 'percentage' =]",
+    "options": [
+      {"value": "percentage", "label": "%"},
+      {"value": "px", "label": "px"},
+    ],
+    "visible_if": "{{ block.settings.height_mobile == 'custom' }}"
+  },
+  {
+    "type": "range",
+    "id": "custom_height_percentage_mobile",
+    "min": 0,
+    "max": 100,
+    "step": 1,
+    "unit": "%",
+    "label": "Mobile custom height",
+    "default": 33,
+    "visible_if": "{{ block.settings.height_mobile == 'custom' and block.settings.custom_height_type_mobile == 'percentage' }}"
+  },
+  {
+    "type": "range",
+    "id": "custom_height_px_mobile",
+    "min": 0,
+    "max": 1000,
+    "step": 50,
+    "unit": "px",
+    "label": "Mobile custom height",
+    "default": 350,
+    "visible_if": "{{ block.settings.height_mobile == 'custom' and block.settings.custom_height_type_mobile == 'px' }}"
+  }
+]

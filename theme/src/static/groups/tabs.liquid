@@ -1,0 +1,47 @@
+{% render 'core-tabs', s: block.settings, blocks: block.blocks, attributes: block.shopify_attributes %}
+
+{% schema %}
+{
+  "name": "Tabs",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_typography",
+      "label": "Set typography",
+      "default": false
+    },
+    [% assign conditional = 'block.settings.enable_typography == true' %]
+    [% json 'schema/type-custom.jsonc', default_font: 'body', default_size: '4', conditional: conditional %]
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_gap_tab_x",
+      "label": "Set tab spacing",
+      "default": false
+    },
+    [% json 'schema/grid-gap-setting.jsonc', default_gap: 'sm', gap_label: 'Tab', gap_custom_label: 'Custom', id_suffix: 'tab_x', conditional: 'block.settings.set_gap_tab_x' %]
+
+    {
+      "type": "checkbox",
+      "id": "set_gap_tab_y",
+      "label": "Set vertical gap",
+      "default": false
+    },
+    [% json 'schema/grid-gap-setting.jsonc', default_gap: 'sm', gap_label: 'Vertical gap', gap_custom_label: 'Custom', id_suffix: 'tab_y', conditional: 'block.settings.set_gap_tab_y' %]
+  ],
+  "blocks": [
+    [= additional_blocks =]
+  ],
+  "presets": [
+    [= additional_presets =]
+  ]
+}
+{% endschema %}

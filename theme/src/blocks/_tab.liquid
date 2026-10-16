@@ -1,0 +1,28 @@
+{% doc %}
+  - Renders one tab holding other blocks
+
+  @param {number} [block_index] - position among the sibling blocks, counted from 0
+  @param {string} [tab_button_class] - classes for the tab button
+{% enddoc %}
+
+[%- capture additional_blocks -%]
+  { "type": "@app" },
+  { "type": "@theme" },
+  [% json 'schema/blocks-extended.jsonc', no_tabs: true %]
+[%- endcapture -%]
+
+[%- capture additional_presets -%]
+  {
+    "name": "Tab",
+    "blocks": [
+      {
+        "type": "theme-richtext",
+        "settings": {
+        "text": "<p>This tab is your playground. Keep it simple with plain text, or go wild with buttons, images, and layouts.</p>"
+        }
+      }
+    ]
+  }
+[%- endcapture -%]
+
+[% render 'groups/tab', block_index: block_index, additional_blocks: additional_blocks, additional_presets: additional_presets %]

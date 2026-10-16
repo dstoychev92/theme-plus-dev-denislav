@@ -1,0 +1,42 @@
+<!-- [autocomment] -->
+
+{% doc %}
+  - Renders section content column
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {string} content
+  @param {string} [content_align] - horizontal alignment, defaults to s.content_align
+  @param {string} [inner_col_class] - replaces col-section-content
+  @param {object} [s] - settings object
+  @param {string} [style] - inline styles
+  @param {string} [tag] - unused
+{% enddoc %}
+{% liquid
+  assign tag = tag | default: 'div'
+  assign content_align = content_align | default: s.content_align
+%}
+
+{% capture class %}
+  size-full relative z-10 flex flex-col cq-width
+  row-section-content
+
+  {% if inner_col_class %}
+    {{ inner_col_class }}
+  {% else %}
+    col-section-content
+  {% endif %}
+
+  pt-[--section-content-pt,var(--section-setting-space)]
+  pb-[--section-setting-space]
+
+  {% if content_align %}
+    vars-content-align-{{ content_align }}
+  {% endif %}
+
+  {{ class }}
+{% endcapture %}
+
+<section-content class="{{ class }}" style="{{ style }}" {{ attributes }}>
+  {{ content }}
+</section-content>

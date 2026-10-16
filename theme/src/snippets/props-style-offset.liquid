@@ -1,0 +1,22 @@
+{% doc %}
+  - Prints relative offset variables and rules from the settings
+
+  Prints nothing unless s.set_offset is true. s.offset_unit is 'percent' or 'pixel'.
+
+  @param {object} [s] - settings object
+{% enddoc %}
+
+{% if s.set_offset %}
+  position: relative;
+  {% if s.offset_unit == 'percent' %}
+    --offset-percent-x: {{ s.offset_percent_x | default: 0 }}%;
+    --offset-percent-y: {{ s.offset_percent_y | default: 0 }}%;
+    bottom: var(--offset-percent-y);
+    left: var(--offset-percent-x);
+  {% elsif s.offset_unit == 'pixel' %}
+    --offset-pixels-x: {{ s.offset_pixels_x | default: 0 }}px;
+    --offset-pixels-y: {{ s.offset_pixels_y | default: 0 }}px;
+    bottom: var(--offset-pixels-y);
+    left: var(--offset-pixels-x);
+  {% endif %}
+{% endif %}

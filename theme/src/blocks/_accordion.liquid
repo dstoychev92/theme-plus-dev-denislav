@@ -1,0 +1,11 @@
+{% doc %}
+  - Renders accordion holding other blocks
+
+  @param {string} [block_class] - classes for this block instance
+{% enddoc %}
+
+[% capture additional_blocks %]
+  { "type": "@theme" },
+  [% json 'schema/blocks-extended.jsonc', no_accordions: true %]
+[% endcapture %]
+[% render 'groups/accordion', additional_blocks: additional_blocks %]

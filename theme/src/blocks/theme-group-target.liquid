@@ -1,0 +1,11 @@
+{% doc %}
+  - Renders other blocks on desktop, mobile, or both
+
+  Adds the hidden attribute when it holds no blocks.
+{% enddoc %}
+
+[%- capture additional_blocks -%]
+  { "type": "@theme" },
+  [% json 'schema/blocks-extended.jsonc' %]
+[%- endcapture -%]
+[% render 'groups/target', additional_blocks: additional_blocks %]

@@ -1,0 +1,33 @@
+/* Bundled here since Shopify serves stylesheet-tag CSS per page and this section only renders through the Section API */
+
+.cart-notification-position {
+  top: calc(var(--header-bottom, 0px) + 16px);
+}
+
+.cart-notification-enter {
+  transition-duration: var(--notification-enter-duration), calc(var(--notification-enter-duration) * 0.75);
+
+  &.start {
+    transform: translateY(-20px) translateX(10px) scale(0.9);
+    opacity: 0;
+  }
+
+  &.end {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.cart-notification-leave {
+  transition-duration: var(--notification-exit-duration), calc(var(--notification-exit-duration) * 0.75);
+
+  &.start {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 1;
+  }
+
+  &.end {
+    transform: translateY(-20px) translateX(10px) scale(0.9);
+    opacity: 0;
+  }
+}

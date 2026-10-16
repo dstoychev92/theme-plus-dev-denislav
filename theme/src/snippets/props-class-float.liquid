@@ -1,0 +1,47 @@
+{% doc %}
+  - Prints positioning classes for a floating element
+
+  props-style-float sets the variables these classes read.
+
+  @param {number} [left] - horizontal position, prints the left class when set
+  @param {number} [left_mobile] - mobile horizontal position, prints the mobile left class when set
+  @param {number} [rotation] - defaults to 0. The rotation class prints for every value
+  @param {object} [s] - settings object
+  @param {boolean} [set_position_mobile] - false ignores the mobile position, defaults to s.set_position_mobile then true
+  @param {number} [top] - vertical position, prints the top class when set
+  @param {number} [top_mobile] - mobile vertical position, prints the mobile top class when set
+{% enddoc %}
+
+{%- liquid
+  assign top = top | default: s.top
+  assign left = left | default: s.left
+  assign top_mobile = top_mobile | default: s.top_mobile
+  assign left_mobile = left_mobile | default: s.left_mobile
+  assign rotation = rotation | default: s.rotation | default: 0
+
+  # Allow passing "false" to disable mobile position from outside this snippet
+  if set_position_mobile == null
+    assign set_position_mobile = s.set_position_mobile | default: true, allow_false: true
+  endif
+-%}
+
+absolute -translate-x-1/2 -translate-y-1/2 origin-center
+
+{% if rotation %}
+  rotate-[--float-rotation]
+{% endif %}
+
+{% if set_position_mobile and top_mobile %}
+  top-[--float-top-mobile]
+  md:top-[--float-top]
+{% elsif top %}
+  top-[--float-top]
+{% endif %}
+
+{% if set_position_mobile and left_mobile %}
+  left-[--float-left-mobile]
+  md:left-[--float-left]
+{% elsif left %}
+  left-[--float-left]
+{% endif %}
+

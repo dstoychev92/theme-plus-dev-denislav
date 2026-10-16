@@ -1,0 +1,183 @@
+<!-- [autocomment] -->
+
+{% doc %}
+  - Renders styled link as anchor, button, or span
+
+  @param {string} [appearance] - 'clean', 'line', 'icon', 'both' or 'bare', defaults to s.appearance, then 'clean'
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {string} [color] - stain color token such as 'content' or 'sale', defaults to s.color, then 'content'
+  @param {string} [content] - content replacing text and icons
+  @param {string} [end_icon] - icon after text, only for 'icon' and 'both'
+  @param {string} [href] - defaults to s.href
+  @param {string} [icon] - fallback for start_icon and end_icon, defaults to 'stroke-chevron-right'
+  @param {string} [icon_class] - classes for both icons
+  @param {boolean} [new_window] - opens new tab with noopener and screen-reader warning, defaults to s.open_in_new_window
+  @param {object} [s] - settings object
+  @param {string} [settings_suffix] - suffix picking a settings group for props-class-type-preset
+  @param {string} [start_icon] - icon before text, only for 'icon' and 'both'
+  @param {string} [style] - inline styles
+  @param {string} [tag] - 'a' by default, or 'button' or 'span'
+  @param {string} [text] - defaults to s.text
+  @param {string} [text_slot] - content replacing text while keeping underline
+  @param {string} [type_preset]
+  @param {string} [type_resize]
+{% enddoc %}
+{% liquid
+  assign href = href | default: s.href
+  assign text_slot = text_slot
+  assign text = text | default: s.text
+  assign color = color | default: s.color | default: 'content'
+  assign appearance = appearance | default: s.appearance | default: 'clean'
+  assign new_window = new_window | default: s.open_in_new_window | default: null
+
+  case color
+    when 'primary'
+      assign color_class = 'vars-stain-primary'
+    when 'secondary'
+      assign color_class = 'vars-stain-secondary'
+    when 'black'
+      assign color_class = 'vars-stain-black'
+    when 'white'
+      assign color_class = 'vars-stain-white'
+    when 'canvas'
+      assign color_class = 'vars-stain-canvas'
+    when 'content'
+      assign color_class = 'vars-stain-content'
+    when 'muted'
+      assign color_class = 'vars-stain-muted'
+    when 'sale'
+      assign color_class = 'vars-stain-sale'
+  endcase
+
+  case appearance
+    when 'clean'
+      assign appearance_class = 'vars-link-clean'
+    when 'line'
+      assign appearance_class = 'vars-link-line'
+    when 'icon'
+      assign appearance_class = 'vars-link-icon'
+    when 'both'
+      assign appearance_class = 'vars-link-both'
+    when 'bare'
+      assign appearance_class = 'vars-link-bare'
+    else
+      assign appearance_class = 'vars-link-clean'
+  endcase
+
+  case appearance
+    when 'icon', 'both'
+      assign default_icon = icon | default: 'stroke-chevron-right'
+      assign start_icon = start_icon | default: default_icon
+      assign end_icon = end_icon | default: default_icon
+    else
+      assign start_icon = null
+      assign end_icon = null
+  endcase
+%}
+
+{% assign icon_class = icon_class | append: ' absolute rtl:rotate-180' %}
+{% assign icon_start_class = icon_class | append: ' start-0' %}
+{% assign icon_end_class = icon_class | append: ' end-[-1.5em]' %}
+
+{% capture class %}
+  {% render 'props-class-type-preset', default_type_preset: 'p', type_preset: type_preset, settings_suffix: settings_suffix, s: s, type_resize: type_resize %}
+
+  group inline-flex flex-row items-center text-size-apply overflow-hidden relative
+  {% comment %} Links should max out at their "natural" width i.e. width of the contained text {% endcomment %}
+  max-w-max
+
+  {% if tag == 'button' %}
+    select-none
+  {% endif %}
+  {% unless tag == 'span' %}
+    cursor-pointer
+  {% endunless %}
+
+  {% comment %} Link use control styling with the modification that horizontal padding is double that of vertical padding to mimic buttons {% endcomment %}
+  [--link-icon-end:1.5em]
+
+  {% comment %} Color {% endcomment %}
+  text-stain
+
+  {{ appearance_class }}
+  {{ color_class }}
+  {{ class }}
+{% endcapture %}
+
+{% comment %} Create underline effect spans {% endcomment %}
+{% capture underline %}
+  {% assign underline_class = 'absolute start-0 bottom-0 w-full h-px bg-current transition-transform duration-300' %}
+  {% case appearance %}
+    {% when 'line', 'clean' %}
+      <span class="{{ underline_class }} scale-x-[--link-underline-scale] origin-[--link-underline-origin]"></span>
+    {% when 'both' %}
+      <span class="{{ underline_class }} scale-x-[--link-underline-scale] origin-[--link-underline-origin] duration-700"></span>
+  {% endcase %}
+  {% if appearance == 'line' %}
+    <span class="{{ underline_class }} scale-x-[--link-underline-off-scale] origin-[--link-underline-off-origin] delay-150"></span>
+  {% endif %}
+{% endcapture %}
+
+{% comment %} Create inner content wrapped for hover offset {% endcomment %}
+{%- if content == null -%}
+  {%- capture content -%}
+    {%- if text_slot != blank -%}
+      {{ text_slot }}
+      {{ underline }}
+    {%- elsif text != blank -%}
+      <span>{{ text }}</span>
+      {{ underline }}
+    {%- endif -%}
+  {%- endcapture -%}
+
+  {%- if start_icon or end_icon -%}
+    {%- capture content -%}
+      <span class="transform -translate-x-[1.5em] flex items-center justify-center vars-icon-grade-bold group-hover:translate-x-0 transition-transform duration-300 rtl:translate-x-[1.5em]">
+        {%- render 'core-icon', icon: start_icon, class: icon_start_class, size: 'sm' -%}
+        <span class="ps-[1.5em] me-[-1.5em] whitespace-nowrap">
+          <span class="flex me-[--link-icon-end] relative">
+            {{ content }}
+          </span>
+        </span>
+        {%- render 'core-icon', icon: end_icon, class: icon_end_class, size: 'sm' -%}
+      </span>
+    {%- endcapture -%}
+  {%- endif -%}
+{%- endif -%}
+
+{% case tag %}
+  {% when 'button' %}
+    <button
+      class="{{ class }}"
+      style="{{ style }}"
+      {{ attributes }}
+    >
+      {{ content }}
+    </button>
+  {% when 'span' %}
+    <span
+      class="{{ class }}"
+      style="{{ style }}"
+      {{ attributes }}
+    >
+      {{ content }}
+    </span>
+  {% else %}
+    <a
+      href="{{ href }}"
+      class="{{ class }}"
+      style="{{ style }}"
+      {% if new_window %}
+        target="_blank"
+        rel="noopener"
+      {% endif %}
+      {{ attributes }}
+    >
+      {{ content }}
+
+      {% if new_window %}
+        <span class="sr-only">, {{ 'other.accessibility.opens_in_new_tab' | t }}</span>
+      {% endif %}
+    </a>
+{% endcase %}

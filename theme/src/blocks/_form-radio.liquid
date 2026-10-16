@@ -1,0 +1,59 @@
+{% doc %}
+  - Renders one radio in contact form radio group
+
+  Private, only offered by _form-radio-group. Reads the group id off the front of its own id,
+  since a nested block id is '<parent id>__<own id>' and content_for 'blocks' passes nothing.
+  The group rebinds the name with Alpine after hydration.
+{% enddoc %}
+
+{% liquid
+  assign label = block.settings.label
+  assign label_handle = label | handleize
+  assign id = label_handle | append: '-' | append: block.id
+
+  # Every radio in a group has to share one name, and the group's id is the only thing that
+  # makes the group unique. A child block cannot be handed anything by its parent — content_for
+  # 'blocks' takes no arguments and the block object exposes only id, settings, type and
+  # shopify_attributes — so the group's id is read off the front of our own: a nested block's id
+  # is '<parent id>__<own id>'. The group builds the same name in x-data and binds it with :name,
+  # so Alpine re-asserts it on hydration and this value only has to be right before then.
+  assign own_id = block.id | split: '__' | last
+  assign group_id = block.id | remove_last: own_id | remove_last: '__'
+  assign name = 'contact[' | append: group_id | append: ']'
+%}
+
+{% capture attributes %}
+  :name="radioGroupName"
+  {{ block.shopify_attributes }}
+{% endcapture %}
+
+{% render 'field-radio',
+  name: name,
+  id: id,
+  label: label,
+  value: label_handle,
+  size: false,
+  disabled: block.settings.disabled,
+  input_attributes: attributes
+%}
+
+{% schema %}
+{
+  "name": "Radio",
+  "tag": null,
+  "settings": [
+    [% json 'schema/form-input-setting.jsonc', default: "Radio item", size: false %]
+    {
+      "type": "checkbox",
+      "id": "disabled",
+      "label": "Disabled",
+      "default": false
+    }
+  ],
+  "presets": [
+    {
+      "name": "Radio"
+    }
+  ]
+}
+{% endschema %}

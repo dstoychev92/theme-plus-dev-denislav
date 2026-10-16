@@ -1,0 +1,45 @@
+{% doc %}
+  - Renders drawer close button
+
+  Place it inside an element with x-dialog.
+
+  @param {boolean} [autofocus_close_button] - false stops it taking focus when the drawer opens, defaults to true
+  @param {string} [class] - The classes
+  @param {string} [close_button_attributes] - attributes for the button
+  @param {string} [close_button_icon_attributes] - attributes for the icon
+  @param {string} [close_button_icon_class] - classes for the icon
+  @param {string} [content] - content in place of the icon
+  @param {string} [icon] - icon name, defaults to 'stroke-bare-x'
+  @param {string} [icon_size] - core-icon size, defaults to 'xl'
+  @param {string} [side]
+{% enddoc %}
+
+{% liquid
+  assign side = side | default: 'left'
+  assign autofocus_close_button = autofocus_close_button | default: true, allow_false: true
+  assign close_button_label = 'other.accessibility.close' | t
+  assign icon = icon | default: 'stroke-bare-x'
+  assign icon_size = icon_size | default: 'xl'
+%}
+
+<button
+  class="text-r4 hit-area-x-[--drawer-padding] hit-area-y-r5 hover:opacity-75 rounded-full flex flex-center relative {{ class }}"
+  aria-label="{{ close_button_label }}"
+  x-dialog:close
+  data-skip-animation-wait
+  {{ close_button_attributes }}
+  {% if autofocus_close_button %}
+    autofocus
+  {% endif %}
+>
+  {% if content %}
+    {{ content }}
+  {% else %}
+    {% render 'core-icon',
+      icon: icon,
+      size: icon_size,
+      class: close_button_icon_class,
+      attributes: close_button_icon_attributes
+    %}
+  {% endif %}
+</button>

@@ -1,0 +1,134 @@
+{
+  "name": "Overlays",
+  "type": "custom.overlays",
+  "sections": {
+    "product-quickview-drawer": {
+      "type": "product-quickview-drawer",
+      "blocks": {
+        "media": {
+          "type": "_product-layout-media-quickview",
+          "name": "Media",
+          "static": true,
+          "settings": {
+            "layout_mobile": "carousel",
+            "layout_carousel_spacing_mobile": 5,
+            "pagination_style_mobile": "photo",
+            "carousel_indicator_photo_spacing_mobile": 3,
+            "carousel_indicator_photo_size_mobile": 50,
+            "video_autoplay": true,
+            "custom_controls": true
+          },
+          "blocks": {}
+        },
+        "details": {
+          "type": "_product-layout-details-quickview",
+          "name": "Details",
+          "static": true,
+          "blocks": {
+            "product_title": {
+              "type": "_product-title",
+              "settings": {
+                "type_preset": "h3",
+                "type_font": "heading",
+                "type_size": 9,
+                "type_uppercase": false
+              },
+              "blocks": {}
+            },
+            "product_price": {
+              "type": "_product-price",
+              "settings": {
+                "type_preset": "h5",
+                "type_font": "accent",
+                "type_size": 5,
+                "type_uppercase": false
+              },
+              "blocks": {}
+            },
+            "product_description": {
+              "type": "_product-description",
+              "settings": {
+                "richtext_size": "md",
+                "enable_truncate": true,
+                "truncate_lines": 5
+              },
+              "blocks": {}
+            },
+            "product_option_siblings": {
+              "type": "_product-option-siblings",
+              "blocks": {}
+            },
+            "product_option_selectors": {
+              "type": "_product-option-selectors",
+              "settings": {
+                "input_type": "auto"
+              },
+              "blocks": {}
+            },
+            "product_subscription": {
+              "type": "_product-subscription",
+              "settings": {},
+              "blocks": {}
+            },
+            "product_stock_status": {
+              "type": "_product-stock-status",
+              "settings": {
+                "stockout_style": "low",
+                "stockout_low_threshold": 10,
+                "stockout_show_count": false
+              },
+              "blocks": {}
+            },
+            "product_quantity": {
+              "type": "_product-quantity",
+              "blocks": {}
+            },
+            "product_add_buttons": {
+              "type": "_product-add-buttons",
+              "settings": {
+                "appearance": "fill",
+                "color": "content",
+                "enable_payment_button": true,
+                "enable_gift_card_recipient": true
+              },
+              "blocks": {}
+            },
+            "product_pickup": {
+              "type": "_product-pickup",
+              "blocks": {}
+            },
+            "product_sharing": {
+              "type": "_product-sharing",
+              "settings": {
+                "share_label": "Share",
+                "target_device": "both"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "product_title",
+            "product_price",
+            "product_description",
+            "product_option_siblings",
+            "product_option_selectors",
+            "product_subscription",
+            "product_stock_status",
+            "product_quantity",
+            "product_add_buttons",
+            "product_pickup",
+            "product_sharing"
+          ]
+        }
+      },
+      "name": "Product quickview",
+      "settings": {
+        "enable_history": false,
+        "color_scheme": ""
+      }
+    }
+  },
+  "order": [
+    "product-quickview-drawer"
+  ]
+}

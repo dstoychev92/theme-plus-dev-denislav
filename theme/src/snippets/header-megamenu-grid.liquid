@@ -1,0 +1,54 @@
+{% doc %}
+  - Renders megamenu column grid
+
+  Without s.custom_col_span the column count follows the child count up to five, then six
+  children use three columns and more use four.
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {string} content
+  @param {object} [s] - settings object
+  @param {section} [section]
+  @param {string} [style] - inline styles
+{% enddoc %}
+
+<div
+  class="
+    [--column-width:minmax(0,1fr)]
+    grid grid-cols-[repeat(var(--columns,4),minmax(0,1fr))] items-start gap-layout w-full
+    {% if s.custom_col_span %}
+      [--columns:--cols-tablet]
+      lg:[--columns:--cols-desktop]
+    {% else %}
+      children-[1]:[--columns:1]
+      children-[2]:[--columns:2]
+      children-[3]:[--columns:3]
+      children-[4]:[--columns:4]
+      children-[5]:[--columns:5]
+      children-[6]:[--columns:3]
+      children-[7]:[--columns:4]
+      children-[8]:[--columns:4]
+      children-[>8]:[--columns:4]
+    {% endif %}
+
+    entrance-container
+    animate-delay-[calc(var(--header-menu-flyout-enter-duration)/2)]
+    *:auto-set-stagger-order
+    *:entrance-item
+    {{ class }}
+  "
+  style="
+    {% if s.custom_col_span %}
+      --cols-desktop: {{ s.columns_lg }};
+      --cols-tablet: {{ s.columns_md }};
+    {% endif %}
+    --entrance-animation-stagger: 50ms;
+    --entrance-animation-duration: 1000ms;
+
+    --tile-min-aspect-ratio: {{ section.settings.collection_images_aspect_ratio }};
+    {{ style }}
+  "
+  {{ attributes }}
+>
+  {{ content }}
+</div>

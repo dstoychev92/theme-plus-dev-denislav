@@ -1,0 +1,41 @@
+[
+  {
+    "type": "range",
+    "id": "columns_lg",
+    "min": 2,
+    "max": 5,
+    "step": 1,
+    "label": "Desktop",
+    "default": 4
+  },
+  {
+    "type": "range",
+    "id": "columns_md",
+    "min": 2,
+    "max": 5,
+    "step": 1,
+    "label": "Tablet",
+    "default": 3
+  },
+  {
+    "type": "select",
+    "id": "columns_sm",
+    "label": "Mobile",
+    "default": "",
+    "options": [
+      {"value": "", "label": "Default"},
+      {"value": "custom", "label": "⋯"}
+    ],
+    "info": "Default uses [Visible cards](/editor?context=theme&category=Cards) in global settings"
+  },
+  {
+    "type": "range",
+    "id": "columns_sm_custom",
+    "min": 1,
+    "max": 3.6,
+    "step": 0.1,
+    "label": "Visible cards",
+    "default": 1.6,
+    "visible_if": "{{ section.settings.columns_sm == 'custom' }}"
+  }
+]

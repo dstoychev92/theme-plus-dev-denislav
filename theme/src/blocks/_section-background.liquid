@@ -1,0 +1,87 @@
+{% doc %}
+  - Renders section background layer holding background blocks
+
+  Private, only offered by section-pro-banner. Reads the height settings from section.settings.
+{% enddoc %}
+
+{% assign target_device = block.settings.target_device %}
+
+{% capture blocks %}
+  {% content_for "blocks" %}
+{% endcapture %}
+
+{% capture class %}
+  {% render 'props-class-target-device', target_device: target_device %}
+{% endcapture %}
+
+{% capture background %}
+  {% render 'core-background',
+    content: blocks,
+    s: block.settings,
+    attributes: block.shopify_attributes,
+    set_height: section.settings.set_height,
+    height: section.settings.height,
+    custom_height_type: section.settings.custom_height_type,
+    custom_height_percentage: section.settings.custom_height_percentage,
+    custom_height_px: section.settings.custom_height_px,
+    set_height_mobile: section.settings.set_height_mobile,
+    height_mobile: section.settings.height_mobile,
+    custom_height_type_mobile: section.settings.custom_height_type_mobile,
+    custom_height_percentage_mobile: section.settings.custom_height_percentage_mobile,
+    custom_height_px_mobile: section.settings.custom_height_px_mobile
+  %}
+{% endcapture %}
+
+{% render 'core-section-background',
+  content: background,
+  s: section.settings,
+  class: class,
+  attributes: block.shopify_attributes
+%}
+
+{% schema %}
+{
+  "name": "Background layer",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Overlay"
+    },
+    [% json 'schema/overlay-settings.jsonc' %]
+    {
+      "type": "header",
+      "content": "Parallax"
+    },
+    [% json 'schema/parallax-settings.jsonc', default_parallax: 14, context: 'block.settings.' %]
+    {
+      "type": "header",
+      "content": "Limit by screen size",
+      "info": "Optional: use a different background for mobile and desktop"
+    },
+    [% json 'schema/target-device-setting.jsonc', default_value: 'both' %]
+  ],
+  "blocks": [
+    {
+      "type": "_background-pattern-text"
+    },
+    {
+      "type": "_background-collage-image"
+    },
+    {
+      "type": "_background-image"
+    },
+    {
+      "type": "_background-split"
+    },
+    {
+      "type": "_background-marquee"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Background layer"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,256 @@
+<!-- [autocomment] -->
+
+{% doc %}
+  - Renders framed container with width, padding, border, radius, and color scheme
+
+  Rounding applies only with a border or a background. A transparent background keeps an
+  explicit set_rounding for an inner surface. Padding applies with a color scheme, a border, or
+  enable_padding.
+
+  @param {string} [attributes]
+  @param {block} [block]
+  @param {string} [border_color] - CSS color, defaults to s.border_color, then 'transparent'
+  @param {string} [border_sides] - props-style-border sides, defaults to s.border_sides, then 'all'
+  @param {number} [border_width] - border width in pixels, defaults to s.border_width, then 0
+  @param {string} content
+  @param {string} [content_align] - 'left', 'center', or 'right' when set_layout is on, defaults to s.content_align
+  @param {string} [default_radius_var] - CSS variable name for the radius when set_rounding is off and the frame has a border or background
+  @param {boolean} [enable_padding] - defaults to s.set_padding, then false
+  @param {boolean} [enable_width_fluid] - applies width_fluid_limit below the desktop breakpoint, defaults to s.enable_width_fluid
+  @param {boolean} [full_height] - fills the height of its parent, defaults to s.full_height, then false
+  @param {string} [gap] - unused, props-style-gap reads s
+  @param {number} [gap_custom] - unused
+  @param {string} [href] - link URL when set_link is on, defaults to s.href
+  @param {string} [id] - '-frame' is appended, defaults to id_prefix, then block.id, then section.id
+  @param {string} [id_prefix]
+  @param {string} [justification_column] - justify-content value when full_height is on, defaults to s.justification_column
+  @param {number} [limit_width] - unused
+  @param {number} [max_width] - unused
+  @param {number} [min_width] - unused
+  @param {boolean} [new_window] - opens href in a new tab, defaults to s.open_in_new_window
+  @param {string} [padding] - truthy value applies props-style-padding from s, defaults to s.padding
+  @param {number} [padding_custom] - unused
+  @param {string} [rounding_radius] - radius step, defaults to s.rounding_radius, then 'none'
+  @param {number} [rounding_radius_custom] - radius in pixels when rounding_radius is 'custom', defaults to s.rounding_radius_custom, then 0
+  @param {object} [s] - settings object
+  @param {section} [section]
+  @param {boolean} [set_border] - draws the border, defaults to s.set_border, then false
+  @param {boolean} [set_color_scheme] - applies the color scheme, defaults to s.set_color_scheme, then true
+  @param {boolean} [set_gap] - applies props-style-gap from s, defaults to s.set_gap, then false
+  @param {boolean} [set_layout] - applies content_align, defaults to s.set_layout, then false
+  @param {boolean} [set_link] - wraps the frame in a link, defaults to s.set_link, then false
+  @param {boolean} [set_rounding] - rounds the corners, defaults to s.set_rounding, then false
+  @param {boolean} [set_width] - applies the width settings, defaults to s.set_width, then false
+  @param {number} [width_fluid_limit] - fluid width limit in percent, defaults to s.width_fluid_limit
+  @param {number} [width_percent] - width as a percentage when width_unit is 'percent', defaults to s.width_percent
+  @param {number} [width_px] - width in pixels when width_unit is 'pixel', defaults to s.width_px
+  @param {string} [width_unit] - 'pixel' or 'percent', defaults to s.width_unit
+{% enddoc %}
+{% liquid
+  # Rounding
+  assign set_rounding = set_rounding | default: s.set_rounding | default: false
+  assign rounding_radius = rounding_radius | default: s.rounding_radius | default: 'none'
+  assign rounding_radius_custom = rounding_radius_custom | default: s.rounding_radius_custom | default: 0
+
+  assign set_link = set_link | default: s.set_link, allow_false: true | default: false
+
+  if set_link
+    assign href = href | default: s.href
+    assign new_window = new_window | default: s.open_in_new_window | default: null
+  endif
+
+  # Border
+  assign set_border = set_border | default: s.set_border | default: false
+  if set_border
+    assign border_color = border_color | default: s.border_color | default: 'transparent'
+    assign border_width = border_width | default: s.border_width | default: 0
+    assign border_sides = border_sides | default: s.border_sides | default: 'all'
+  endif
+
+  # Inner padding is toggled on by any true value from background, border, or it's own toggle
+  assign set_color_scheme = set_color_scheme | default: s.set_color_scheme | default: true, allow_false: true
+  assign enable_padding = enable_padding | default: s.set_padding | default: false
+  if set_color_scheme or set_border or enable_padding
+    assign padding = padding | default: s.padding
+    assign padding_custom = padding_custom | default: s.padding_custom
+  endif
+
+  assign set_layout = set_layout | default: s.set_layout | default: false
+  if set_layout
+    assign content_align = content_align | default: s.content_align
+    assign content_align_flex = content_align | replace: 'left', 'start' | replace: 'right', 'end'
+  endif
+
+  assign set_gap = set_gap | default: s.set_gap | default: false
+  if set_gap
+    assign gap = gap | default: s.gap
+    assign gap_custom = gap_custom | default: s.gap_custom
+  endif
+
+  assign full_height = full_height | default: s.full_height | default: false
+  if full_height
+    assign justification_column = justification_column | default: s.justification_column
+  endif
+
+  assign limit_width = limit_width | default: s.limit_width
+  assign max_width = max_width | default: s.max_width
+  assign min_width = min_width | default: s.min_width
+
+  assign set_width = set_width | default: s.set_width | default: false
+  if set_width
+    assign width_unit = width_unit | default: s.width_unit
+    assign width_px = width_px | default: s.width_px
+    assign width_percent = width_percent | default: s.width_percent
+    assign enable_width_fluid = enable_width_fluid | default: s.enable_width_fluid
+    assign width_fluid_limit = width_fluid_limit | default: s.width_fluid_limit
+  endif
+
+  # `has_surface` — intrinsic visual surface: border or non-transparent background.
+  # Drives default rounding and overflow.
+  assign has_surface = false
+  if set_border
+    assign has_surface = true
+  elsif set_color_scheme and s.background != 'transparent'
+    assign has_surface = true
+  endif
+
+  # `hosts_surface` — escape hatch for transparent frames that wrap an inner
+  # surface (full-bleed image, etc.). Merchant opts in explicitly via
+  # color scheme + transparent bg + set_rounding=true.
+  assign hosts_surface = false
+  if set_rounding and set_color_scheme and s.background == 'transparent'
+    assign hosts_surface = true
+  endif
+
+  if set_rounding and has_surface == false and hosts_surface == false
+    assign set_rounding = false
+  endif
+
+  # Default radius requires intrinsic surface. The escape hatch needs explicit set_rounding=true.
+  assign has_default_radius = false
+  if default_radius_var != blank and set_rounding == false and has_surface
+    assign has_default_radius = true
+  endif
+
+  assign apply_overflow = false
+  if has_default_radius
+    assign apply_overflow = true
+  elsif set_rounding
+    assign apply_overflow = true
+  endif
+
+  if id == blank
+    assign id = id_prefix | default: block.id | default: section.id
+  endif
+  assign id = id | append: '-frame'
+%}
+
+<frame-group
+  id="{{ id }}"
+  style="
+    {% render 'props-style-background', s: s %}
+
+    {% comment %} Custom width {% endcomment %}
+    {% if set_width %}
+      {% if width_unit == 'pixel' %}
+        --layout-width-default: {{ width_px }}px;
+        {% if enable_width_fluid %}
+          {% # Ensure smooth transition between breakpoint %}
+          --layout-width-mobile: min(var(--layout-width-default), {{ width_fluid_limit }}%);
+        {% endif %}
+      {% endif %}
+
+      {% if width_unit == 'percent' %}
+        --layout-width-default: {{ width_percent }}%;
+        {% if enable_width_fluid %}
+          {% # Mobile handoff is trickier in the single column case, without this it often jumps directly to 768px at 768px %}
+          {% assign fluid_limit_mobile = width_fluid_limit | divided_by: 100.0 | times: [= screen_sm =] %}
+          --mobile-handoff-pixels: min({{ width_fluid_limit }}%, {{ fluid_limit_mobile }}px);
+          --layout-width-mobile: max(var(--layout-width-default), var(--mobile-handoff-pixels));
+
+          {% # Tablet: smooth handoff by averaging the desktop and mobile percents %}
+          --layout-width-tablet: {{ width_percent | plus: width_fluid_limit | divided_by: 2 | round }}%;
+        {% endif %}
+      {% endif %}
+    {% endif %}
+
+    {% comment %} Full height for background fill and space-between {% endcomment %}
+    {% if full_height %}
+      height: 100%;
+    {% endif %}
+
+    {% if padding %}
+      {% render 'props-style-padding', s: s %}
+    {% endif %}
+
+    {% if set_border %}
+      {% render 'props-style-border', border_width: border_width, border_color: border_color, border_sides: border_sides %}
+    {% endif %}
+
+    {% if has_default_radius %}
+      border-radius: var({{ default_radius_var }});
+    {% elsif set_rounding %}
+      {% render 'props-style-radius', rounding_radius: rounding_radius, rounding_radius_custom: rounding_radius_custom %}
+    {% endif %}
+  "
+  class="
+    relative block
+    {% if set_width %}
+      w-layout cq-width
+    {% endif %}
+    {% render 'props-class-background', s: s %}
+
+    {% if set_link and href != blank %}!cursor-pointer{% endif %}
+    {% if apply_overflow %}overflow-hidden{% endif %}
+  "
+  {% if set_link and href != blank %}
+    x-link-area data-interactive
+  {% endif %}
+  {{ attributes }}
+>
+  <div
+    class="
+      flex w-full flex-col items-content-align text-content-align gap-layout relative z-10
+      {% comment %} Allow clicking "through" frame to whatever is behind it while still allowing clicking on nested links, buttons, etc IN the frame {% endcomment %}
+      pointer-events-passthrough
+      *:auto-set-stagger-order
+    "
+    style="
+      {% if set_layout %}
+        --content-align: {{ content_align_flex }};
+        {% # Carry --list-align since this inline style bypasses the text-align classes that set it %}
+        {% case content_align_flex %}
+          {% when 'center' %}
+            --list-align: auto;
+          {% when 'end' %}
+            --list-align: auto 0;
+          {% else %}
+            --list-align: 0 auto;
+        {% endcase %}
+      {% endif %}
+
+      {% if set_gap %}
+        {% render 'props-style-gap', s: s %}
+      {% endif %}
+
+      {% if full_height %}
+        height: 100%;
+        justify-content: {{ justification_column }};
+      {% endif %}
+    "
+  >
+    {{ content }}
+  </div>
+
+  {% if set_link and href != blank %}
+    <a
+      x-link-area:anchor
+      aria-labelledby="{{ id }}"
+      href="{{ href }}"
+      class="z-0 absolute inset-0"
+      {% if new_window %}
+        target="_blank"
+      {% endif %}
+    ></a>
+  {% endif %}
+</frame-group>

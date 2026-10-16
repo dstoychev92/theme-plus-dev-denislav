@@ -1,0 +1,42 @@
+{% doc %}
+  - Renders custom card content below the media
+
+  Static child of _card-custom, placed with id 'details', holding other blocks. Renders nothing
+  when empty.
+{% enddoc %}
+
+{% capture blocks %}
+  {% content_for 'blocks' %}
+{% endcapture %}
+
+{% if blocks != blank %}
+  <div
+    {{ block.shopify_attributes }}
+    class="flex flex-col gap-y-r2 text-content-align items-content-align vars-content-align-{{ block.settings.content_align | default: 'start' }} entrance-container"
+  >
+    {{ blocks }}
+  </div>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Below image",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text_alignment",
+      "id": "content_align",
+      "label": "Alignment",
+      "default": "left"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "@theme"
+    },
+    {
+      "type": "@app"
+    }
+  ]
+}
+{% endschema %}

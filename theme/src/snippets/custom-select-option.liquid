@@ -1,0 +1,85 @@
+{% doc %}
+  - Renders one option of custom-select
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {boolean} [disabled]
+  @param {string} [display_value] - button content when selected, in place of label and accessories
+  @param {string} [end_accessory] - content after the label, hidden in the button
+  @param {string} label
+  @param {boolean} [selected]
+  @param {string} [start_accessory] - content before the label
+  @param [value]
+{% enddoc %}
+<li
+  class="
+    group/option
+    {% render 'props-class-type-preset', default_type_preset: 'p', type_resize: 'md' %}
+    flex-row-center flex-nowrap justify-between gap-x-r4
+    cursor-pointer
+    p-r4 px-r5
+
+    {% comment %} Focus state {% endcomment %}
+    focus-visible:outline-secondary focus-visible:outline-1 focus-visible:outline-offset-[-2px]
+
+    {% comment %} Disabled State {% endcomment %}
+    aria-disabled:opacity-50
+
+    {% comment %} Selected State {% endcomment %}
+    aria-selected:shadow-[inset_0_0_0_1px_oklch(var(--content-oklch)/0.4)]
+    transition-colors duration-200
+
+    {% comment %} Hover State {% endcomment %}
+    hover:bg-content/10
+
+    text-stain
+    rounded-[--popup-inner-radius]
+
+    {{ class }}
+  "
+  x-select:option
+  value="{{ value | escape_once }}"
+  key="{{ value | escape_once }}"
+
+  {% if selected %}
+    aria-selected="true"
+  {% endif %}
+  {% if disabled %}
+    aria-disabled="true"
+  {% endif %}
+  role="option"
+
+  {{ attributes }}
+>
+  {% comment %} Content that will be displayed in the button when the select is closed if this option is selected {% endcomment %}
+  {% if display_value %}
+    <span class="contents [[x-select\:option]_&]:hidden">
+      {{ display_value }}
+    </span>
+  {% endif %}
+
+  {% comment %} Content that will be displayed in the select menu option {% endcomment %}
+  {% if display_value %}
+    <div class="contents [[x-select\:display]_&]:hidden">
+  {% endif %}
+
+  {% if start_accessory %}
+    <span class="flex-none">
+      {{ start_accessory }}
+    </span>
+  {% endif %}
+
+  <span class="flex-1 truncate">
+    {{ label }}
+  </span>
+
+  {% if end_accessory %}
+    <span class="[[data-select-display]_&]:hidden">
+      {{ end_accessory }}
+    </span>
+  {% endif %}
+
+  {% if display_value %}
+    </div>
+  {% endif %}
+</li>

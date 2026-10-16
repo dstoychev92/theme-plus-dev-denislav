@@ -1,0 +1,208 @@
+{% doc %}
+  Render the subscription options for a product in the product form
+
+  @param {object} product - The product to display the subscription options for
+{% enddoc %}
+
+{% liquid
+  assign product = closest.product
+
+  if product == blank and request.visual_preview_mode
+    assign product = collections.all.products.first
+  endif
+%}
+
+{%- if product.selling_plan_groups.size > 0 -%}
+  [% render 'props/assign-product-form-id' %]
+
+  {% liquid
+    assign current_variant = product.selected_or_first_available_variant
+    assign onetime_id = product_form_id | append: '-' | append: 'onetime'
+    assign onetime_checked = false
+    assign history = section.settings.enable_history
+
+    # Control whether clicking on radio buttons will cause a new entry in the history or replace the current entry
+    if history
+      assign history_mode = 'replace'
+    else
+      assign history_mode = 'none'
+    endif
+
+    # Select current selling plan if it's specified in the URL
+    assign selected_selling_plan = product.selected_selling_plan
+    if product.requires_selling_plan
+      # Fallback to the first available selling plan
+      assign selected_selling_plan = product.selected_or_first_available_selling_plan_allocation.selling_plan | default: product.selling_plan_groups[0].selling_plans[0]
+    endif
+
+    if selected_selling_plan
+      assign selected_selling_plan_group_id = selected_selling_plan.group_id
+      assign selected_selling_plan_id = selected_selling_plan.id
+    else
+      # Select one-time by default if it exists
+      assign onetime_checked = true
+    endif
+  %}
+
+  {% capture content %}
+    <div
+      key="{{ selected_selling_plan_id }}"
+      class="
+        {% render 'props-class-type-preset', s: block.settings %}
+        [--control-font-size:--font-size-calc]
+        flex flex-col gap-y-r3
+      "
+    >
+      <fieldset
+        class="border border-line-bold divide-y divide-line-bold rounded-sm"
+        :class="{ 'opacity-50 pointer-events-none': $sectionApi.state === 'loading' }"
+        aria-label="{{ 'product.subscription' | t }}"
+      >
+        {% comment %} Group - One-time {% endcomment %}
+        {% unless product.requires_selling_plan %}
+          {%- capture variant_url_without_selling_plan -%}
+            {%- render 'product-url',
+              product: product,
+              variant: current_variant,
+              selling_plan: false
+            -%}
+          {%- endcapture -%}
+
+          {% capture onetime_attributes %}
+            data-navigate-url="{{ variant_url_without_selling_plan | strip }}"
+            @change="$sectionApi.navigate($el.dataset.navigateUrl, '{{ history_mode }}')"
+          {% endcapture %}
+
+          <div class="p-r5">
+            {% capture onetime_label %}
+              {{ 'product.one_time' | t }}
+            {% endcapture %}
+            {% render 'field-radio',
+              name: 'selling_plan_group',
+              value: '',
+              form: product_form_id,
+              id: onetime_id,
+              label: onetime_label,
+              checked: onetime_checked,
+              input_attributes: onetime_attributes,
+              class: 'relative',
+              label_class: 'hit-area-r4 before:z-10'
+            %}
+          </div>
+        {% endunless %}
+
+        {% comment %} Group - Selling plans {% endcomment %}
+        {% for selling_plan_group in product.selling_plan_groups %}
+          {% assign selling_plan_group_id = product_form_id | append: '-' | append: selling_plan_group.id %}
+          {% assign preselected = false %}
+
+          {% if selling_plan_group.selling_plan_selected %}
+            {% assign preselected = true %}
+          {% elsif product.requires_selling_plan and selected_selling_plan_group_id == selling_plan_group.id %}
+            {% assign preselected = true %}
+          {% endif %}
+
+          {%- capture variant_url_with_selling_plan -%}
+            {%- render 'product-url',
+              product: product,
+              variant: current_variant,
+              selling_plan: selling_plan_group.selling_plans[0]
+            -%}
+          {%- endcapture -%}
+
+          {% capture selling_plan_group_attributes %}
+            data-navigate-url="{{ variant_url_with_selling_plan | strip }}"
+            @change="$sectionApi.navigate($el.dataset.navigateUrl, '{{ history_mode }}')"
+          {% endcapture %}
+
+          <div class="flex flex-col gap-y-r5 p-r5">
+            {% if selling_plan_group.selling_plans.size > 1 %}
+              {% capture selling_plan_group_label %}
+                {{ selling_plan_group.name }}
+              {% endcapture %}
+
+              {% render 'field-radio',
+                form: product_form_id,
+                id: selling_plan_group_id,
+                name: 'selling_plan_group',
+                value: selling_plan_group.id,
+                label: selling_plan_group_label,
+                checked: preselected,
+                input_attributes: selling_plan_group_attributes,
+                class: 'relative peer',
+                label_class: 'hit-area-r4 before:z-10'
+              %}
+
+              {% comment %} Selling Plans {% endcomment %}
+              <div class="hidden peer-has-[:checked]:flex flex-col gap-y-r5 ps-r7">
+                {% for plan in selling_plan_group.selling_plans %}
+                  {% render 'product-selling-plan-option',
+                    product: product,
+                    plan: plan,
+                    product_form_id: product_form_id,
+                    history_mode: history_mode,
+                    s: block.settings
+                  %}
+                {% endfor %}
+              </div>
+            {% else %}
+              {% render 'product-selling-plan-option',
+                product: product,
+                plan: selling_plan_group.selling_plans[0],
+                product_form_id: product_form_id,
+                history_mode: history_mode,
+                s: block.settings
+              %}
+            {% endif %}
+          </div>
+          {% if selected_selling_plan.description != blank and selected_selling_plan_group_id == selling_plan_group.id %}
+            {% capture selected_selling_plan_description %}
+              <div class="px-r5 py-r4 bg-content-mix-5 text-muted rounded-sm type-resize-sm">{{ selected_selling_plan.description }}</div>
+            {% endcapture %}
+          {% endif %}
+        {% endfor %}
+      </fieldset>
+
+      {{ selected_selling_plan_description }}
+    </div>
+  {% endcapture %}
+{%- endif -%}
+
+{% render 'product-block',
+  s: block.settings,
+  content: content,
+  attributes: block.shopify_attributes,
+  class: 'w-full'
+%}
+
+{% schema %}
+{
+  "name": "Form subscription",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Subscriptions",
+      "info": "Learn more about [subscriptions](https://help.shopify.com/en/manual/products/subscriptions)"
+    },
+    [% json 'schema/type-preset.jsonc', default_preset: 'p', label: 'Text style' %]
+    [% json 'schema/type-custom.jsonc', resize: true %]
+    {
+      "type": "header",
+      "content": "Discounts"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_discount_badge",
+      "label": "Show discount badge",
+      "default": true
+    }
+  ],
+  "presets": [
+    {
+      "name": "Form subscription",
+      "category": "Add to cart"
+    }
+  ]
+}
+{% endschema %}

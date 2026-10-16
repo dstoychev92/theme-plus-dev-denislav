@@ -1,0 +1,147 @@
+[
+  {
+    "type": "color_scheme",
+    "id": "color_scheme",
+    "label": "Color scheme"
+  },
+  [% unless transparent_header == false %]
+    {
+      "type": "header",
+      "content": "Transparent header",
+      "info": "Applies when the header has transparency enabled, and this section is first.",
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_transparent",
+      "label": "Enable transparent header",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "transparent_style",
+      "label": "Transparent style",
+      "default": "auto",
+      "info": "Note: Product details will be pushed down by the header height.",
+      "options": [
+        {"value": "auto", "label": "Auto"},
+        {"value": "light", "label": "Light"},
+        {"value": "dark", "label": "Dark"}
+      ],
+      "visible_if": "{{ section.settings.enable_transparent == true }}"
+    },
+  [% endunless %]
+  {
+    "type": "header",
+    "content": "Desktop layout"
+  },
+  {
+    "type": "checkbox",
+    "id": "contain_section",
+    "label": "Contain section",
+    "default": true
+  },
+  {
+    "type": "select",
+    "id": "section_width",
+    "label": "Width",
+    "visible_if": "{{ section.settings.contain_section }}",
+    "default": "page",
+    "options": [
+      {"value": "full", "label": "Full"},
+      {"value": "page", "label": "Page"}
+    ]
+  },
+  {
+    "type": "range",
+    "id": "pt_desktop",
+    "label": "Spacing top",
+    "min": 0,
+    "max": 200,
+    "step": 2,
+    "unit": "px",
+    [% unless transparent_header == false %]
+      "visible_if": "{{ section.settings.enable_transparent == false }}",
+    [% endunless %]
+    "default": 40
+  },
+  {
+    "type": "range",
+    "id": "pb_desktop",
+    "label": "Spacing bottom",
+    "min": 0,
+    "max": 200,
+    "step": 2,
+    "unit": "px",
+    "default": 40
+  },
+  {
+    "type": "header",
+    "content": "Desktop columns"
+  },
+  {
+    "type": "select",
+    "id": "media_col_order",
+    "label": "Media placement",
+    "default": "first",
+    "options": [
+      {"value": "first", "label": "First"},
+      {"value": "second", "label": "Second"}
+    ]
+  },
+  {
+    "type": "select",
+    "id": "media_col_width",
+    "label": "Media width",
+    "default": "even",
+    "options": [
+      {"value": "slim", "label": "Slim"},
+      {"value": "even", "label": "Even"},
+      {"value": "wide", "label": "Wide"},
+      {"value": "fill", "label": "Fill"}
+    ]
+  },
+  {
+    "type": "range",
+    "id": "details_width",
+    "label": "Details width",
+    "unit": "px",
+    "min": 450,
+    "max": 1000,
+    "step": 50,
+    "default": 450,
+    "visible_if": "{{ section.settings.media_col_width == 'fill' }}"
+  },
+  {
+    "type": "header",
+    "content": "Mobile layout"
+  },
+  {
+    "type": "range",
+    "id": "pt_mobile",
+    "label": "Spacing top",
+    "min": 0,
+    "max": 200,
+    "step": 2,
+    "unit": "px",
+    "default": 16
+  },
+  {
+    "type": "range",
+    "id": "pb_mobile",
+    "label": "Spacing bottom",
+    "min": 0,
+    "max": 200,
+    "step": 2,
+    "unit": "px",
+    "default": 40
+  },
+  [% json 'schema/product-breadcrumbs-settings.jsonc' %]
+  /* Hidden setting that allows background images to correctly set their sizes/srcset values depending on the number of columns in the section */
+  {
+    "type": "number",
+    "id": "img_columns_lg",
+    "label": "Image columns",
+    "default": 2,
+    "visible_if": "{{ false }}"
+  }
+]

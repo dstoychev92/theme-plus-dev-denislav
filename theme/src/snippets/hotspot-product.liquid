@@ -1,0 +1,20 @@
+{% doc %}
+  - Renders hotspot tooltip holding a small product card
+
+  An empty product renders a placeholder card.
+
+  @param {string} [attributes]
+  @param {product} [product]
+  @param {object} [s] - settings object
+{% enddoc %}
+
+{% liquid
+  if product == blank
+    assign placeholder = true
+  endif
+%}
+{% capture popover_content %}
+  {% render 'card-product', product: product, size: 'sm', button: true, placeholder: placeholder, class: '[--card-sm-border-color:transparent]' %}
+{% endcapture %}
+
+{% render 'hotspot-tooltip', content: popover_content, s: s, attributes: attributes %}

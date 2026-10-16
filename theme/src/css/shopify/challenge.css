@@ -1,0 +1,19 @@
+/* Challenge page */
+.shopify-challenge__container {
+  @apply px-root-buffer py-r13 md:py-r14 lg:py-r15;
+}
+
+.shopify-challenge__message,
+.shopify-challenge__errors,
+.shopify-challenge__container .g-recaptcha {
+  @apply mb-r8;
+}
+
+.shopify-challenge__button {
+  @apply vars-btn-primary vars-btn-md vars-btn-fill btn hover:btn;
+}
+
+/* Hide invisible Captcha HTML that appears when submitting the Login form, causing CLS */
+[data-size='invisible'] {
+  @apply hidden;
+}

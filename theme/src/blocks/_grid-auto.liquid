@@ -1,0 +1,28 @@
+{% doc %}
+  - Renders auto grid holding other blocks
+{% enddoc %}
+
+[%- capture additional_blocks -%]
+  { "type": "@theme" },
+  { "type": "@app" },
+  { "type": "_grid-auto-item" },
+  { "type": "_card-product" },
+  { "type": "_card-collection" },
+  [% json 'schema/blocks-extended.jsonc', no_marquee: true %]
+  [% json 'schema/blocks-card-list.jsonc' %]
+[%- endcapture -%]
+
+[%- capture additional_presets -%]
+  [%- assign image_block = '{ "type": "theme-image", "settings": { "image_size_mode": "full", "height": "full" } }' -%]
+  {
+    "name": "Grid auto",
+    "category": "Pro",
+    "blocks": [
+      [= image_block =],
+      [= image_block =],
+      [= image_block =]
+    ]
+  }
+[%- endcapture -%]
+
+[% render 'groups/grid-auto', additional_blocks: additional_blocks, additional_presets: additional_presets %]

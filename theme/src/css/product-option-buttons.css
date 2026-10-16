@@ -1,0 +1,21 @@
+/* Bundled here since Shopify serves stylesheet-tag CSS per page and a Section API region update drops the inline copy */
+
+.product-option-button[data-pending='true'] {
+  animation: product-option-button-pending 1s ease-in-out infinite alternate;
+}
+
+@keyframes product-option-button-pending {
+  from {
+    background-color: var(--stain);
+  }
+
+  to {
+    background-color: color-mix(in srgb, var(--stain) 65%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-option-button[data-pending='true'] {
+    animation: none;
+  }
+}

@@ -1,0 +1,74 @@
+@layer base {
+  :root {
+    /* Default settings alignment on the x and y axis
+     * Align controls the x axis, as in "text-align"
+     * Gravity controls the y axis, as in "stick to the floor" or "stick to the ceiling"
+     * Both use start | center | end as values
+    */
+    --content-align: start;
+    --content-gravity: center;
+    --inline-block-gravity: baseline;
+
+    --offset-percent-x: 0%;
+    --offset-percent-y: 0%;
+    --offset-pixels-x: 0px;
+    --offset-pixels-y: 0px;
+
+    /* Default flow settings */
+    --flex-direction: row;
+    --flex-across: 1;
+    --flex-down: 0;
+  }
+}
+
+@layer components {
+  /* Used to set horizontal and vertical spacers */
+
+  .vars-row {
+    --flex-across: 1;
+    --flex-down: 0;
+  }
+  .vars-col {
+    --flex-across: 0;
+    --flex-down: 1;
+  }
+
+  /* Alignment of the content within the box, whether it's text align or flex align */
+
+  .vars-content-align-start,
+  .vars-content-align-left {
+    --content-align: start;
+  }
+
+  .vars-content-align-center {
+    --content-align: center;
+  }
+
+  .vars-content-align-end,
+  .vars-content-align-right {
+    --content-align: end;
+  }
+
+  /* Ad-hoc helpers for content variables */
+  /* content-align */
+  .items-content-align {
+    align-items: var(--content-align);
+  }
+
+  .justify-self-content-align {
+    justify-self: var(--content-align);
+  }
+
+  .justify-content-align {
+    justify-content: var(--content-align);
+  }
+
+  .justify-items-content-align {
+    justify-items: var(--content-align);
+  }
+
+  /* content-gravity */
+  .items-content-gravity {
+    align-items: var(--content-gravity);
+  }
+}

@@ -1,0 +1,40 @@
+[
+  {
+    "type": "checkbox",
+    "id": "set_free_shipping_message",
+    "label": "Show free shipping message",
+    "default": [= default_set_free_shipping_message | default: false =]
+  },
+  {
+    "type": "text",
+    "id": "free_shipping_limit",
+    "label": "Minimum spend for free shipping",
+    "default": "100",
+    "info": "Enter a round number in your store currency without symbols or letters. Analog automatically converts it for buyers using another currency. [Learn more](https://groupthought.com/link/analog/v1/docs/free-shipping)",
+    "visible_if": "{{ section.settings.set_free_shipping_message == true }}"
+  },
+  {
+    "type": "checkbox",
+    "id": "enable_shipping_limit_conversion",
+    "label": "Convert metafield limit",
+    "info": "Turn on only when this market's metafield uses your store currency. Analog converts it for the buyer. Select a market from the editor menu before changing this setting. [Learn more](https://groupthought.com/link/analog/v1/docs/free-shipping)",
+    "default": false,
+    "visible_if": "{{ section.settings.set_free_shipping_message == true and settings.metafield_free_shipping_limit != blank }}"
+  },
+  {
+    "type": "inline_richtext",
+    "id": "free_shipping_progress_message",
+    "label": "Progress message",
+    "info": "Use ||amount|| to display progress towards free shipping",
+    "default": "You are ||amount|| away from free shipping.",
+    "visible_if": "{{ section.settings.set_free_shipping_message == true }}"
+  },
+  {
+    "type": "inline_richtext",
+    "id": "free_shipping_success_message",
+    "label": "Success message",
+    "info": "Shown when threshold is met",
+    "default": "Congratulations! Your order qualifies for free shipping",
+    "visible_if": "{{ section.settings.set_free_shipping_message == true }}"
+  }
+]

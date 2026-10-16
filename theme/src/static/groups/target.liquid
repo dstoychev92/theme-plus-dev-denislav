@@ -1,0 +1,45 @@
+{% assign target_device = block.settings.target_device | default: 'both' %}
+
+{% capture content %}
+  {% content_for "blocks" %}
+{% endcapture %}
+
+{% capture class %}
+  {% render 'props-class-target-device', target_device: target_device %}
+{% endcapture %}
+<div
+  class="contents {{ class | strip }}"
+  {% if content == blank %}
+    hidden
+  {% endif %}
+  {{ block.shopify_attributes }}
+>
+  {{ content }}
+</div>
+
+{% schema %}
+{
+  "name": "Target device",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Limit by screen size",
+      "info": "Use this block to create a different layout on mobile."
+    },
+    [% json 'schema/target-device-setting.jsonc', default_value: 'desktop' %]
+  ],
+  "blocks": [
+    {
+      "type": "@app"
+    },
+    [= additional_blocks =]
+  ],
+  "presets": [
+    {
+      "name": "Target device",
+       "category": "Utility"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,39 @@
+{
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "extends": [
+    "prettier"
+  ],
+  "plugins": [
+    "no-only-tests"
+  ],
+  "env": {
+    "browser": true
+  },
+  "rules": {
+    "no-only-tests/no-only-tests": [
+      "error"
+    ]
+  },
+  "globals": {
+    "document": true,
+    "window": true,
+    "location": true,
+    "confirm": true,
+    "DocumentTouch": true,
+    "console": true,
+    "setTimeout": true,
+    "clearTimeout": true,
+    "Shopify": true,
+    "QRCode": true,
+    "URL": true,
+    "XMLHttpRequest": true,
+    "__dirname": true,
+    "process": true,
+    "module": true,
+    "theme": true
+  }
+}

@@ -1,0 +1,203 @@
+{% doc %}
+  - Renders text badge
+{% enddoc %}
+
+{% liquid
+  assign appearance = block.settings.appearance | default: 'fill'
+  assign color = block.settings.color | default: 'content'
+  assign color_custom = block.settings.color_custom
+  assign text_color = block.settings.text_color
+  assign is_custom = false
+  if appearance == 'custom'
+    assign is_custom = true
+  endif
+
+  if is_custom or color == 'custom'
+    assign stain_class = ''
+  else
+    assign stain_class = 'vars-stain-' | append: color
+  endif
+%}
+
+{% capture padding_style %}
+  {%- case block.settings.size -%}
+    {%- when 'sm' -%}
+      --badge-px: var(--r3);
+      --badge-py: var(--r1);
+    {%- when 'md' -%}
+      --badge-px: var(--r4);
+      --badge-py: var(--r2);
+    {%- when 'lg' -%}
+      --badge-px: var(--r5);
+      --badge-py: var(--r3);
+    {%- when 'custom' -%}
+      --badge-px: {{ block.settings.size_custom }}px;
+      --badge-py: {{ block.settings.size_custom | divided_by: 3 }}px;
+  {%- endcase -%}
+{% endcapture %}
+
+{% if block.settings.set_rounding %}
+  {% capture rounding_class %}
+    {%- case block.settings.rounding_style -%}
+      {%- when 'none' -%}vars-element-rounding-none
+      {%- when 'sm' -%}vars-element-rounding-sm
+      {%- when 'md' -%}vars-element-rounding-md
+      {%- when 'pill' -%}vars-element-rounding-pill
+    {%- endcase -%}
+  {% endcapture %}
+{% endif %}
+
+<div {{ block.shopify_attributes }} class="entrance-item entrance-standard">
+  <span
+    class="
+      inline-richtext whitespace-nowrap inline-block
+      {% unless is_custom %}vars-badge-{{ appearance }}{% endunless %}
+      {{ stain_class }}
+      badge-appearance
+      {% if block.settings.enable_text_shadow %}[text-shadow:_0_1px_0_rgb(0_0_0_/_8%)]{% endif %}
+      {{ rounding_class }}
+    "
+    style="
+      padding: var(--badge-py) var(--badge-px);
+      {%- if is_custom -%}
+        --badge-bg-color: {{ block.settings.custom_bg_color }};
+        --badge-text-color: {{ block.settings.custom_text_color }};
+        {%- if block.settings.set_border -%}
+          --badge-border-width: 1px;
+          --badge-border-color: {{ block.settings.custom_border_color }};
+        {%- else -%}
+          --badge-border-width: 0px;
+          --badge-border-color: transparent;
+        {%- endif -%}
+      {%- elsif color == 'custom' and color_custom != blank -%}
+        --stain: {{ color_custom }};
+        {%- assign brightness = color_custom | color_brightness -%}
+        --stain-contrast: {% if brightness > 128 %}#000000{% else %}#ffffff{% endif %};
+        {%- if appearance == 'fill' and text_color != blank -%}
+          --badge-text-color: {{ text_color }};
+        {%- endif -%}
+      {%- endif -%}
+      {%- if block.settings.background_blur and appearance != 'fill' -%}
+        --badge-blur: 6px;
+      {%- endif -%}
+      {{ padding_style }}
+    "
+  >
+    {% render 'core-text-preset', s: block.settings %}
+  </span>
+</div>
+
+{% schema %}
+{
+  "name": "Badge",
+  "tag": null,
+  "settings": [
+    {
+      "type": "inline_richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "New"
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    [% json 'schema/badge-appearance-setting.jsonc' %]
+    [% json 'schema/color-dropdown.jsonc', custom: true, conditional: "block.settings.appearance != 'custom'" %]
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#FFFFFF",
+      "visible_if": "{{ block.settings.appearance == 'fill' and block.settings.color == 'custom' }}"
+    },
+    {
+      "type": "color",
+      "id": "custom_bg_color",
+      "label": "Background color",
+      "default": "#f4a482",
+      "alpha": true,
+      "visible_if": "{{ block.settings.appearance == 'custom' }}"
+    },
+    {
+      "type": "color",
+      "id": "custom_text_color",
+      "label": "Text color",
+      "default": "#1a1a1a",
+      "visible_if": "{{ block.settings.appearance == 'custom' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_border",
+      "label": "Set border",
+      "default": false,
+      "visible_if": "{{ block.settings.appearance == 'custom' }}"
+    },
+    {
+      "type": "color",
+      "id": "custom_border_color",
+      "label": "Border color",
+      "default": "#1a1a1a",
+      "alpha": true,
+      "visible_if": "{{ block.settings.appearance == 'custom' and block.settings.set_border }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "background_blur",
+      "label": "Blur background",
+      "default": false,
+      "visible_if": "{{ block.settings.appearance != 'fill' }}"
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    [% json 'schema/type-preset.jsonc', default_preset: 'p', label: 'Text style' %]
+    [% json 'schema/type-custom.jsonc', resize: true, default_font: 'subheading', default_size: 2, default_uppercase: true %]
+    {
+      "type": "checkbox",
+      "id": "enable_text_shadow",
+      "label": "Text shadow",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Size"
+    },
+    {
+      "type": "select",
+      "id": "size",
+      "label": "Size",
+      "default": "md",
+      "options": [
+        {"value": "sm", "label": "S"},
+        {"value": "md", "label": "M"},
+        {"value": "lg", "label": "L"},
+        {"value": "custom", "label": "⋯"}
+      ]
+    },
+    {
+      "type": "range",
+      "id": "size_custom",
+      "label": "Custom size",
+      "default": 10,
+      "min": 0,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "visible_if": "{{ block.settings.size == 'custom' }}"
+    },
+    {
+      "type": "header",
+      "content": "Rounding"
+    },
+    [% json 'schema/rounding-element.jsonc' %]
+  ],
+  "presets": [
+    {
+      "name": "Badge",
+      "category": "Basic"
+    }
+  ]
+}
+{% endschema %}

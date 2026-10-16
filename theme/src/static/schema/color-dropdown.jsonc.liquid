@@ -1,0 +1,100 @@
+[% if id_prefix %]
+  [% assign _id_prefix = id_prefix | append: '_' %]
+[% endif %]
+[% if id_suffix %]
+  [% assign _id_suffix = id_suffix | prepend: '_' %]
+[% endif %]
+[% assign context = context | default: 'block.settings.' %]
+[% if gradient_fill_only == true %]
+  [% capture _gradient_appearance_clause %] and [= context =]appearance[= _id_suffix =] == 'fill'[% endcapture %]
+[% endif %]
+[
+  [% if optional == true %]
+    {
+      "type": "checkbox",
+      "id": "[= _id_prefix =]set_color[= _id_suffix =]",
+      "label": "Set color",
+      [% if conditional %]
+      "visible_if": "{{ [= conditional =] }}",
+      [% endif %]
+      "default": false
+    },
+  [% endif %]
+  {
+    "type": "select",
+    "id": "[= _id_prefix =]color[= _id_suffix =]",
+    "label": "[= label | default: 'Color' =]",
+    "default": "[= default_color | default: 'content' =]",
+    [% if optional == true %]
+    "visible_if": "{{ [= context =][= _id_prefix =]set_color[= _id_suffix =] == true [% if conditional %] and [= conditional =] [% endif %] }}",
+    [% elsif conditional %]
+    "visible_if": "{{ [= conditional =] }}",
+    [% endif %]
+    "options": [
+      {"value": "content", "label": "Text default"},
+      [% if muted == true %]
+        {"value": "muted", "label": "Text muted"},
+      [% endif %]
+      {"value": "primary", "label": "Primary accent"},
+      {"value": "secondary", "label": "Link accent"},
+      {"value": "sale", "label": "Sale"},
+      [% if overlay_colors == true %]
+        {"value": "canvas", "label": "Background default"},
+        {"value": "black", "label": "Black"},
+        {"value": "white", "label": "White"},
+      [% endif %]
+      [% if custom == true %]
+        {"value": "custom", "label": "Custom"}[% if custom_gradient == true %],[% endif %]
+      [% endif %]
+      [% if custom_gradient == true %]
+        {"value": "custom_gradient", "label": "Custom gradient"}
+      [% endif %]
+    ]
+  },
+  [% if custom == true %]
+    {
+      "type": "color",
+      "id": "[= _id_prefix =]color_custom[= _id_suffix =]",
+      "alpha": true,
+      "default": "#000000",
+      [% if optional == true %]
+      "visible_if": "{{ [= context =][= _id_prefix =]color[= _id_suffix =] == 'custom' and [= context =][= _id_prefix =]set_color[= _id_suffix =] == true [% if conditional %] and [= conditional =] [% endif %] }}",
+      [% elsif conditional %]
+      "visible_if": "{{ [= context =][= _id_prefix =]color[= _id_suffix =] == 'custom' and [= conditional =] }}",
+      [% else %]
+      "visible_if": "{{ [= context =][= _id_prefix =]color[= _id_suffix =] == 'custom' }}",
+      [% endif %]
+      "label": "[= label_custom | default: 'Custom color' =]"
+    }[% if custom_gradient == true %],[% endif %]
+  [% endif %]
+  [% if custom_gradient == true %]
+    {
+      "type": "color",
+      "id": "[= _id_prefix =]custom_gradient_from[= _id_suffix =]",
+      "alpha": true,
+      "default": "#009C9C",
+      [% if optional == true %]
+      "visible_if": "{{ [= context =][= _id_prefix =]color[= _id_suffix =] == 'custom_gradient' and [= context =][= _id_prefix =]set_color[= _id_suffix =] == true [% if conditional %] and [= conditional =] [% endif %][= _gradient_appearance_clause =] }}",
+      [% elsif conditional %]
+      "visible_if": "{{ [= context =][= _id_prefix =]color[= _id_suffix =] == 'custom_gradient' and [= conditional =][= _gradient_appearance_clause =] }}",
+      [% else %]
+      "visible_if": "{{ [= context =][= _id_prefix =]color[= _id_suffix =] == 'custom_gradient'[= _gradient_appearance_clause =] }}",
+      [% endif %]
+      "label": "Gradient color 1"
+    },
+    {
+      "type": "color",
+      "id": "[= _id_prefix =]custom_gradient_to[= _id_suffix =]",
+      "alpha": true,
+      "default": "#6600D9",
+      [% if optional == true %]
+      "visible_if": "{{ [= context =][= _id_prefix =]color[= _id_suffix =] == 'custom_gradient' and [= context =][= _id_prefix =]set_color[= _id_suffix =] == true [% if conditional %] and [= conditional =] [% endif %][= _gradient_appearance_clause =] }}",
+      [% elsif conditional %]
+      "visible_if": "{{ [= context =][= _id_prefix =]color[= _id_suffix =] == 'custom_gradient' and [= conditional =][= _gradient_appearance_clause =] }}",
+      [% else %]
+      "visible_if": "{{ [= context =][= _id_prefix =]color[= _id_suffix =] == 'custom_gradient'[= _gradient_appearance_clause =] }}",
+      [% endif %]
+      "label": "Gradient color 2"
+    }
+  [% endif %]
+]

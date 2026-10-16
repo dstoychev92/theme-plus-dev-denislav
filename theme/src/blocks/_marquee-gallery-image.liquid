@@ -1,0 +1,37 @@
+{% doc %}
+  - Prints gallery image, link, and new-tab flag between g4lleryx markers
+
+  Sits inside _marquee-gallery, which splices the output into its own sized cell. _callout-group uses the same marker pattern. Grep g4lleryx to find every related marker.
+{% enddoc %}
+
+g4lleryx574r7xm3d14
+{%- render 'core-image', image: block.settings.image, width: 400, placeholder: 'logo' -%}
+g4lleryx3ndxm3d14
+
+g4lleryx574r7xhr3f
+{%- if block.settings.href != blank -%}{{- block.settings.href -}}{%- endif -%}
+g4lleryx3ndxhr3f
+
+g4lleryx574r7xn3wt48
+{%- if block.settings.open_in_new_window -%}1{%- endif -%}
+g4lleryx3ndxn3wt48
+
+{% schema %}
+{
+  "name": "Gallery image",
+  "tag": null,
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    [% json 'schema/link-settings.jsonc', label: false %]
+  ],
+  "presets": [
+    {
+      "name": "Gallery image"
+    }
+  ]
+}
+{% endschema %}

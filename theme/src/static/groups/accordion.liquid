@@ -1,0 +1,183 @@
+{% liquid
+  assign expanded = block.settings.expand
+  assign button_style = settings.accordion_button_style
+%}
+
+{% capture blocks %}
+  {% content_for 'blocks' %}
+{% endcapture %}
+
+{% capture class %}
+  group/accordion w-full no-children-entrance
+  {{ block_class }}
+{% endcapture %}
+
+{% comment %} Show counter when enabled {% endcomment %}
+{% capture button_text_class %}
+  group-[[data-has-counter]]/accordions:before:[content:counter(accordion-group)_'.']
+{% endcapture %}
+{% assign button_text_style = 'counter-increment: accordion-group' %}
+
+<div
+  {% if section.settings.enable_ensemble %}
+    x-disclosure
+    x-slideshow:slide
+  {% else %}
+    {% if expanded %}
+      x-disclosure.expand
+    {% else %}
+      x-disclosure
+    {% endif %}
+  {% endif %}
+
+  :data-accordion="$disclosure.isInGroup ? $disclosure.groupIndex : null"
+  :data-state="$disclosure.isExpanded ? 'open' : 'closed'"
+  class="{{ class }}"
+
+  {% if request.design_mode %}
+    @shopify:block:select="$disclosure.expand()"
+  {% endif %}
+
+  role="group"
+
+  {% comment %} block.id keeps these unique when a section holds more than one accordion group, since groupIndex restarts at 0 per group {% endcomment %}
+  :id="$disclosure.isInGroup ? `{{section.id}}-{{block.id}}-element-${$disclosure.groupIndex}` : null"
+  {{ block.shopify_attributes }}
+>
+  <button
+    class="
+      keyboard-focus:outline-offset-[-2px]
+      flex items-center justify-between gap-x-r6 min-h-row-lg w-full py-r8
+      text-start text-content whitespace-normal transition-opacity duration-200
+      group-[[data-muted-title]]/accordions:aria-[expanded=false]:opacity-50
+    "
+    x-disclosure:button
+    :data-state="$disclosure.isExpanded ? 'open' : 'closed'"
+    :id="$disclosure.isInGroup ? `{{section.id}}-{{block.id}}-element-${$disclosure.groupIndex}-label` : `{{block.id}}-disclosure-button`"
+  >
+    {% render 'core-text-preset',
+      s: block.settings,
+      text: block.settings.title,
+      class: button_text_class,
+      style: button_text_style
+    %}
+
+    {% capture icon_class %}
+      shrink-0
+      group-[&:not([data-has-icon])]/accordions:hidden
+    {% endcapture %}
+
+    {% capture chevron_icon_class %}
+      transition-transform {% if expanded %}-rotate-180{% endif %}
+      {{ icon_class }}
+    {% endcapture %}
+
+    {% capture chevron_icon_attributes %}
+      :class="{ '-rotate-180': $disclosure.isExpanded }"
+    {% endcapture %}
+
+    {% if button_style == 'chevron' %}
+      {% render 'core-icon',
+        icon: 'stroke-chevron-down',
+        size: 'sm',
+        attributes: chevron_icon_attributes,
+        class: chevron_icon_class
+      %}
+    {% elsif button_style == 'plus-minus' %}
+      {% render 'core-icon',
+        icon: 'stroke-bare-plus',
+        class: icon_class,
+        attributes: 'x-show="!$disclosure.isExpanded"'
+      %}
+      {% render 'core-icon',
+        icon: 'stroke-bare-minus',
+        class: icon_class,
+        attributes: 'x-show="$disclosure.isExpanded" x-cloak'
+      %}
+    {% endif %}
+  </button>
+  <div
+    x-collapse.duration.400ms
+    class="
+      !ease-in-out w-full nojs:!block
+
+      {% if section.settings.enable_ensemble %}
+        prealpine:[:not(:first-of-type)>&]:!hidden
+      {% else %}
+        {% unless expanded %}
+          prealpine:hidden
+        {% endunless %}
+      {% endif %}
+    "
+    x-disclosure:panel
+    :data-state="$disclosure.isExpanded ? 'open' : 'closed'"
+    :id="$disclosure.isInGroup ? `{{section.id}}-{{block.id}}-element-${$disclosure.groupIndex}-panel` : `{{block.id}}-disclosure-panel`"
+  >
+    {% if blocks != blank %}
+      <div class="pb-r8 vars-content-align-start text-content-align items-content-align flex flex-col gap-layout">
+        {{ blocks }}
+      </div>
+    {% endif %}
+  </div>
+  <div aria-hidden="true" class="relative w-full h-px overflow-hidden">
+    {% if section.settings.enable_ensemble and section.settings.autoplay %}
+      <span class="absolute inset-0 bg-line-subtle"></span>
+      <span
+        class="
+          absolute inset-0 block bg-line
+          {% comment %} Hide timer indicator element when disabled on "accordion group" level {% endcomment %}
+          group-[&:not([data-enable-timer-indicator])]/accordions:hidden
+        "
+        data-slideshow-progress="scale-x"
+        :data-current="$slideshow.currentSlideIndex == $disclosure.groupIndex ? 'true' : 'false'"
+      ></span>
+    {% else %}
+      <span class="block size-full bg-line-subtle"></span>
+    {% endif %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Accordion item",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "How can we help?"
+    },
+
+    {
+      "type": "checkbox",
+      "id": "expand",
+      "label": "Expand initially",
+      "default": false,
+      "visible_if": "{{ section.settings.enable_ensemble != true }}"
+    },
+
+    [% json 'schema/type-preset.jsonc', default_preset: 'accordion', label: 'Text style' %]
+    [% json 'schema/type-custom.jsonc', resize: true %]
+  ],
+  "blocks": [
+    {
+      "type": "@app"
+    },
+    [= additional_blocks =]
+  ],
+  "presets": [
+    {
+      "name": "Accordion item",
+      "blocks": [
+        {
+          "type": "theme-richtext",
+          "settings": {
+            "text": "<p>Use this accordion to share simple text or unleash your creativity with buttons, images, and layout blocks. Experiment with custom designs to make your content stand out and engage your customers</p>"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

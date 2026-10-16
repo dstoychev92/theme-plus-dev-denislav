@@ -1,0 +1,213 @@
+{% capture wrapper_class %}
+  @container/results-container
+  flex flex-col h-full
+{% endcapture %}
+
+{% capture heading_class %}
+  flex-row-center min-h-row-sm
+  text-r3 text-muted
+{% endcapture %}
+
+{% capture item_class %}
+  flex-row-center
+{% endcapture %}
+
+{% capture item_link_class %}
+  flex flex-row-center min-h-row-lg w-full
+{% endcapture %}
+
+{% capture result_group_list_class %}
+  flex flex-col
+{% endcapture %}
+
+{% if predictive_search.performed %}
+  {%- liquid
+    assign max_results = 20
+    assign search_resources = predictive_search.resources
+    assign product_results = search_resources.products
+    assign query_results = search_resources.queries
+    assign page_results = search_resources.pages
+    assign article_results = search_resources.articles
+    assign collection_results = search_resources.collections
+
+    assign all_results_size = product_results.size | plus: page_results.size | plus: article_results.size | plus: collection_results.size
+    assign showing_results_size = all_results_size | at_most: max_results
+    assign rendered_results_count = 0
+  -%}
+
+  {% if all_results_size > 0 %}
+    <span
+      class="sr-only"
+      role="status"
+      aria-live="polite"
+    >
+      {{
+        'search.accessibility.results'
+        | t: count: showing_results_size, total: all_results_size, terms: predictive_search.terms
+      }}
+    </span>
+
+    <div class="{{ wrapper_class }}">
+      <ul
+        aria-label="{{ 'search.predictive_results_label' | t }}"
+        class="flex flex-col gap-y-r5"
+        x-predictive-search:options
+      >
+        {%- if query_results.size > 0 -%}
+          <li role="presentation">
+            <ul class="{{ result_group_list_class }}" aria-label="{{ 'search.accessibility.searches' | t}}">
+              {%- for query_result in query_results -%}
+                {% if rendered_results_count < max_results %}
+                  {% assign rendered_results_count = rendered_results_count | plus: 1 %}
+                  <li
+                    role="presentation"
+                    class="{{ item_class }}"
+                  >
+                    {% capture title %}
+                      <span class="[&>mark]:bg-transparent [&>mark]:font-bold [&>mark]:text-content">
+                        {{ query_result.styled_text }}
+                      </span>
+                    {% endcapture %}
+
+                    {% assign query_result_url = query_result.url %}
+                    {% if settings.search_products_only %}
+                      {% assign query_result_url = query_result_url | append: '&type=product' %}
+                    {% endif %}
+                    <a class="{{ item_link_class }}" href="{{ query_result_url }}" x-predictive-search:option>
+                      {% render 'card-layout-xs', icon: 'fill-magnify', title: title, url: false %}
+                    </a>
+                  </li>
+                {%- endif -%}
+              {%- endfor -%}
+            </ul>
+          </li>
+        {%- endif -%}
+        {%- if product_results.size > 0 -%}
+          <li role="presentation">
+            <p class="{{ heading_class }}">{{ 'search.accessibility.products' | t }}</p>
+            <ul class="{{ result_group_list_class }}" aria-label="{{ 'search.accessibility.products' | t }}">
+              {%- for product_result in product_results -%}
+                {% if rendered_results_count < max_results %}
+                  {% assign rendered_results_count = rendered_results_count | plus: 1 %}
+                  <li
+                    role="presentation"
+                    class="{{ item_class }}"
+                  >
+                    <a class="{{ item_link_class }}" href="{{ product_result.url }}" x-predictive-search:option>
+                      {% render 'card-product',
+                        size: 'xs',
+                        product: product_result,
+                        url: false,
+                        view_context: 'search'
+                      %}
+                    </a>
+                  </li>
+                {%- endif -%}
+              {%- endfor -%}
+            </ul>
+          </li>
+        {%- endif -%}
+        {%- if page_results.size > 0 -%}
+          <li role="presentation">
+            <p class="{{ heading_class }}">{{ 'search.accessibility.pages' | t }}</p>
+            <ul class="{{ result_group_list_class }}" aria-label="{{ 'search.accessibility.pages' | t }}">
+              {%- for page_result in page_results -%}
+                {% if rendered_results_count < max_results %}
+                  {% assign rendered_results_count = rendered_results_count | plus: 1 %}
+                  <li
+                    role="presentation"
+                    class="{{ item_class }}"
+                  >
+                    <a class="{{ item_link_class }}" href="{{ page_result.url }}" x-predictive-search:option>
+                      {% render 'card-generic', size: 'xs', resource: page_result, url: false %}
+                    </a>
+                  </li>
+                {%- endif -%}
+              {%- endfor -%}
+            </ul>
+          </li>
+        {%- endif -%}
+        {%- if article_results.size > 0 -%}
+          <li role="presentation">
+            <p class="{{ heading_class }}">{{ 'search.accessibility.articles' | t }}</p>
+            <ul class="{{ result_group_list_class }}" aria-label="{{ 'search.accessibility.articles' | t }}">
+              {%- for article_result in article_results -%}
+                {% if rendered_results_count < max_results %}
+                  {% assign rendered_results_count = rendered_results_count | plus: 1 %}
+                  <li
+                    role="presentation"
+                    class="{{ item_class }}"
+                  >
+                    <a class="{{ item_link_class }}" href="{{ article_result.url }}" x-predictive-search:option>
+                      {% render 'card-article', size: 'xs', article: article_result, url: false %}
+                    </a>
+                  </li>
+                {%- endif -%}
+              {%- endfor -%}
+            </ul>
+          </li>
+        {%- endif -%}
+
+        {%- if collection_results.size > 0 -%}
+          <li role="presentation">
+            <p class="{{ heading_class }}">{{ 'search.accessibility.collections' | t }}</p>
+            <ul class="{{ result_group_list_class }}" aria-label="{{ 'search.accessibility.collections' | t }}">
+              {%- for collection_result in collection_results -%}
+                {% if rendered_results_count < max_results %}
+                  {% assign rendered_results_count = rendered_results_count | plus: 1 %}
+                  <li
+                    role="presentation"
+                    class="{{ item_class }}"
+                  >
+                    <a class="{{ item_link_class }}" href="{{ collection_result.url }}" x-predictive-search:option>
+                      {% render 'card-collection', size: 'xs', collection: collection_result, url: false %}
+                    </a>
+                  </li>
+                {%- endif -%}
+              {%- endfor -%}
+            </ul>
+          </li>
+        {%- endif -%}
+      </ul>
+    </div>
+  {% else %}
+    <span
+      class="sr-only"
+      role="status"
+      aria-live="polite"
+    >
+      {{- 'search.no_results_for_html' | t: term: predictive_search.terms -}}
+    </span>
+
+    <div class="flex flex-col {{ wrapper_class }}">
+      {%- capture no_results_text -%}
+        {%- capture terms -%}
+          <span class="text-content italic ml-[2px] truncate">{{- predictive_search.terms | strip -}}</span>
+        {%- endcapture -%}
+        {{- 'search.no_results_for_html' | t: term: terms -}}
+      {%- endcapture -%}
+      <div
+        class="shrink-0 flex items-center h-row-lg text-r3 text-muted whitespace-nowrap"
+        {% # Text rides a data attribute since the shopper's own search term lands in it and may hold a quote %}
+        data-no-results="{{- no_results_text | escape_once | strip_newlines -}}"
+        x-html="$predictiveSearch.state == 'success' ? $el.dataset.noResults : ''"
+      ></div>
+      {% render 'predictive-search-suggestions',
+        wrapper_class: wrapper_class,
+        heading_class: heading_class,
+        item_class: item_class,
+        item_link_class: item_link_class,
+        result_group_list_class: result_group_list_class
+      %}
+    </div>
+  {% endif %}
+{% endif %}
+
+{% schema %}
+{
+  "name": "Predictive search results",
+  "class": "section-predictive-search-results",
+  "settings": [],
+  "blocks": []
+}
+{% endschema %}

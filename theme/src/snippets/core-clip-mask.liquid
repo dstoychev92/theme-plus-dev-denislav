@@ -1,0 +1,58 @@
+{% doc %}
+  - Renders content inside clipping shape
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {string} content
+  @param {boolean} [crop_image] - applies the shape, defaults to s.crop_image
+  @param {object} [s] - settings object
+  @param {string} [shape] - shape name such as 'circle' or 'blob-1', defaults to s.shape
+  @param {string} [style] - inline styles
+{% enddoc %}
+
+{% liquid
+  assign shape = shape | default: s.shape
+  assign crop_image = crop_image | default: s.crop_image
+
+  capture collage_shape_class
+    if crop_image
+      case shape
+        when 'rounded'
+          echo 'shape-rounded-rect'
+        when 'keyhole'
+          echo 'shape-keyhole'
+        when 'circle'
+          echo 'rounded-full overflow-hidden'
+        when 'sunburst'
+          echo 'shape-sunburst'
+        when 'hexagon'
+          echo 'shape-hexagon'
+        when 'octagon'
+          echo 'shape-octagon'
+        when 'parallelogram'
+          echo 'shape-parallelogram'
+        when 'blob-1'
+          echo 'shape-blob-1'
+        when 'blob-2'
+          echo 'shape-blob-2'
+        when 'blob-3'
+          echo 'shape-blob-3'
+        when 'blob-4'
+          echo 'shape-blob-4'
+        when 'stamp-sharp'
+          echo 'shape-stamp-sharp'
+        when 'stamp-rounded'
+          echo 'shape-stamp-rounded'
+        when 'ticket'
+          echo 'shape-ticket-stub'
+      endcase
+    endif
+  endcapture
+%}
+<span
+  class="{{ collage_shape_class }} {{ class }}"
+  style="{{ style }}"
+  {{ attributes }}
+>
+  {{ content }}
+</span>

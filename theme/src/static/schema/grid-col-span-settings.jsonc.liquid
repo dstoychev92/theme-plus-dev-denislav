@@ -1,0 +1,40 @@
+
+[
+  {
+    "type": "header",
+    "content": "Columns"
+  },
+  {
+    "type": "checkbox",
+    "id": "custom_col_span",
+    "label": "Set column span",
+    "default": false
+  },
+  {
+    "type": "range",
+    "id": "col_span_lg",
+    "label": "Desktop",
+    "min": 1,
+    "max": 4,
+    "default": 2,
+    "visible_if": "{{ block.settings.custom_col_span == true }}"
+  },
+  {
+    "type": "range",
+    "id": "col_span_md",
+    "label": "Tablet",
+    "min": 1,
+    "max": 4,
+    "default": 2,
+    "visible_if": "{{ block.settings.custom_col_span == true }}"
+  },
+  {
+    "type": "range",
+    "id": "col_span_sm",
+    "label": "Mobile",
+    "min": 1,
+    "max": 4,
+    "default": 1,
+    "visible_if": "{{ block.settings.custom_col_span == true and section.settings.layout_mobile == 'grid' }}"
+  }
+]

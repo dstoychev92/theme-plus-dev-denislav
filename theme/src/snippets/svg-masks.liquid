@@ -1,0 +1,112 @@
+{% doc %}
+  - Renders SVG masks and clip paths for the mask-fill-*, mask-mark-*, clip-fill-*, and swatch-* references
+
+  Safari needs the mask rects at width="100%" height="100%".
+{% enddoc %}
+
+<svg width='0' height='0' style='position: absolute;' aria-hidden='true'>
+  <!-- Safari requires masks to be width="100%" height="100%" not width="1" height="1" -->
+  <defs>
+    <!-- filled decoration shapes (used as mask-fill-* CSS classes) -->
+    <mask id="mask-fill-diamond" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox">
+      <rect width="100%" height="100%" fill="black" />
+      <polygon points="0.5,0 1,0.5 0.5,1 0,0.5" fill="white" />
+    </mask>
+    <mask id="mask-fill-circle" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox">
+      <rect width="100%" height="100%" fill="black" />
+      <circle cx="0.5" cy="0.5" r="0.5" fill="white" />
+    </mask>
+    <mask id="mask-fill-triangle" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox">
+      <rect width="100%" height="100%" fill="black" />
+      <polygon points="0.5,0 1,1 0,1" fill="white" />
+    </mask>
+    <mask id="mask-fill-square" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox">
+      <rect width="100%" height="100%" fill="black" />
+      <rect x="0" y="0" width="1" height="1" fill="white" />
+    </mask>
+    <mask id="mask-fill-dot" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox">
+      <rect width="100%" height="100%" fill="black" />
+      <circle cx="0.5" cy="0.5" r="0.2" fill="white" />
+    </mask>
+    <mask id="mask-fill-plus" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox">
+      <rect width="100%" height="100%" fill="black" />
+      <rect x="0.425" y="0" width="0.15" height="1" fill="white" />
+      <rect x="0" y="0.425" width="1" height="0.15" fill="white" />
+    </mask>
+    <mask id="mask-fill-sparkle" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox">
+      <rect width="100%" height="100%" fill="black" />
+      <path d="M0.5,0 C0.55,0.4 0.6,0.45 1,0.5 C0.6,0.55 0.55,0.6 0.5,1 C0.45,0.6 0.4,0.55 0,0.5 C0.4,0.45 0.45,0.4 0.5,0 Z" fill="white" />
+    </mask>
+
+    <!--
+      Clip paths matching each fill-* shape, used by core-decoration's outline branch
+      to clip a doubled stroke to the inside-only half. userSpaceOnUse means geometry
+      is in the referencing SVG's user coords (always viewBox 0 0 1 1 for decorations).
+    -->
+    <clipPath id="clip-fill-circle" clipPathUnits="userSpaceOnUse">
+      <circle cx="0.5" cy="0.5" r="0.5"/>
+    </clipPath>
+    <clipPath id="clip-fill-square" clipPathUnits="userSpaceOnUse">
+      <rect x="0" y="0" width="1" height="1"/>
+    </clipPath>
+    <clipPath id="clip-fill-triangle" clipPathUnits="userSpaceOnUse">
+      <polygon points="0.5,0 1,1 0,1"/>
+    </clipPath>
+    <clipPath id="clip-fill-diamond" clipPathUnits="userSpaceOnUse">
+      <polygon points="0.5,0 1,0.5 0.5,1 0,0.5"/>
+    </clipPath>
+    <clipPath id="clip-fill-dot" clipPathUnits="userSpaceOnUse">
+      <circle cx="0.5" cy="0.5" r="0.2"/>
+    </clipPath>
+    <clipPath id="clip-fill-plus" clipPathUnits="userSpaceOnUse">
+      <polygon points="0.425,0 0.575,0 0.575,0.425 1,0.425 1,0.575 0.575,0.575 0.575,1 0.425,1 0.425,0.575 0,0.575 0,0.425 0.425,0.425"/>
+    </clipPath>
+    <clipPath id="clip-fill-sparkle" clipPathUnits="userSpaceOnUse">
+      <path d="M0.5,0 C0.55,0.4 0.6,0.45 1,0.5 C0.6,0.55 0.55,0.6 0.5,1 C0.45,0.6 0.4,0.55 0,0.5 C0.4,0.45 0.45,0.4 0.5,0 Z"/>
+    </clipPath>
+
+    <!-- stroke-based mark accents (used as mask-mark-* CSS classes) -->
+    <mask id="mask-mark-cross" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox">
+      <rect width="100%" height="100%" fill="black" />
+      <g stroke="white" stroke-width="0.15" stroke-linecap="round">
+        <line x1="0.15" y1="0.15" x2="0.85" y2="0.85" />
+        <line x1="0.85" y1="0.15" x2="0.15" y2="0.85" />
+      </g>
+    </mask>
+    <mask id="mask-mark-asterisk" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox">
+      <rect width="100%" height="100%" fill="black" />
+      <g stroke="white" stroke-width="0.15" stroke-linecap="round">
+        <line x1="0.5" y1="0.075" x2="0.5" y2="0.925" />
+        <line x1="0.868" y1="0.288" x2="0.132" y2="0.712" />
+        <line x1="0.132" y1="0.288" x2="0.868" y2="0.712" />
+      </g>
+    </mask>
+
+    <!-- swatch masks: shape × selected × available -->
+    <!-- circle -->
+    <mask id="swatch-circle" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox">
+      <circle cx="0.5" cy="0.5" r="0.5" fill="white" />
+    </mask>
+    <mask id="swatch-circle-outer-ring" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox">
+      <circle cx="0.5" cy="0.5" r="0.5" fill="white" />
+      <circle cx="0.5" cy="0.5" r="0.4265" fill="black" />
+    </mask>
+    <mask id="swatch-circle-unavailable" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox">
+      <circle cx="0.5" cy="0.5" r="0.5" fill="white" />
+      <line x1="1" y1="0" x2="0" y2="1" stroke="black" stroke-width="0.053" />
+    </mask>
+
+    <!-- square -->
+    <mask id="swatch-square" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox">
+      <rect x="0" y="0" width="1" height="1" fill="white" />
+    </mask>
+    <mask id="swatch-square-outer-ring" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox">
+      <rect x="0" y="0" width="1" height="1" fill="white" />
+      <rect x="0.0735" y="0.0735" width="0.853" height="0.853" fill="black" />
+    </mask>
+    <mask id="swatch-square-unavailable" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox">
+      <rect x="0" y="0" width="1" height="1" fill="white" />
+      <line x1="1" y1="0" x2="0" y2="1" stroke="black" stroke-width="0.053" />
+    </mask>
+  </defs>
+</svg>

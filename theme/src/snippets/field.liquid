@@ -1,0 +1,304 @@
+{% doc %}
+  - Renders floating label, icons, outline, and messages around a form control
+
+  The control itself comes in through input. The field-* snippets wrap it for you. A blank
+  label sets hide_label.
+
+  @param {string} [button] - button after the input, replaces end_accessory
+  @param {string} [class] - The classes
+  @param {string} [end_accessory] - content after the input
+  @param {string} [end_icon] - icon name after the input
+  @param {string} [error_message] - error text shown below, with id plus '-error' as its id
+  @param {string} [error_message_attributes] - attributes for the error message
+  @param {boolean} [hide_label] - keeps the label for screen readers only
+  @param {string} [icon] - icon name before the input, unless start_icon is set
+  @param {string} [id] - element id the label points at
+  @param {string} input - rendered form control
+  @param {string} [label]
+  @param {string} [label_class] - classes for the label
+  @param {string} [placeholder_class] - classes for the floating label
+  @param {string} [size] - 'xs', 'sm', 'md', 'lg' or 'xl', defaults to 'md'
+  @param {string} [start_accessory] - content before the input
+  @param {string} [start_icon] - icon name before the input
+  @param {string} [style] - inline styles
+  @param {string} [success_message] - message shown after a successful post
+  @param {string} [wrapper_attributes] - attributes for the field wrapper
+{% enddoc %}
+
+{% liquid
+  assign size = size | default: 'md'
+  assign start_icon = start_icon | default: icon | default: false
+
+  if label == '' or label == null
+    assign hide_label = true
+  endif
+
+  if error_message != '' and error_message != null
+    assign has_error_message = true
+  endif
+
+  if success_message != '' and success_message != null
+    assign has_success_message = true
+  endif
+
+  case size
+    when 'xs'
+      assign size_class = 'vars-control-xs'
+    when 'sm'
+      assign size_class = 'vars-control-sm'
+    when 'md'
+      assign size_class = 'vars-control-md'
+    when 'lg'
+      assign size_class = 'vars-control-lg'
+    when 'xl'
+      assign size_class = 'vars-control-xl'
+  endcase
+%}
+
+{% capture accessory_class %}
+  flex-row-center
+  py-[calc(var(--control-padding)/2)] overflow-clip flex-none h-full
+{% endcapture %}
+
+{% capture icon_class %}
+  size-control-icon
+{% endcapture %}
+
+{% comment %} Set --icon-width since core-icon's w-icon width wins over the size-control-icon width and leaves a non-square icon box {% endcomment %}
+{% if start_icon %}
+  {% capture start_accessory %}
+    {% capture start_icon_class %}
+      {{ icon_class }}
+      ms-[max(calc(var(--control-padding)/2),var(--r4))]
+    {% endcapture %}
+    {% render 'core-icon', icon: start_icon, class: start_icon_class, width: 'var(--control-icon-size)' %}
+  {% endcapture %}
+{% endif %}
+
+{% if end_icon %}
+  {% capture end_accessory %}
+    {% capture end_icon_class %}
+      {{ icon_class }}
+      me-[max(calc(var(--control-padding)/2),var(--r4))]
+    {% endcapture %}
+    {% render 'core-icon', icon: end_icon, class: end_icon_class, width: 'var(--control-icon-size)' %}
+  {% endcapture %}
+{% endif %}
+
+{% if button %}
+  {% capture end_accessory %}
+    <div class="
+      justify-end
+      py-[max(calc(var(--control-padding)/2),theme(space.r3))]
+      pe-[max(calc(var(--control-padding)/2),theme(space.r3))]
+      {{ accessory_class }}
+    ">
+      {{ button }}
+    </div>
+  {% endcapture %}
+{% endif %}
+
+<div
+  class="
+    group/field flex flex-col gap-y-r1 vars-field text-size-input text-start
+    vars-scheme-error-if-invalid
+    {{ size_class }}
+    {{ class }}
+  "
+  style="{{ style }}"
+  {{ wrapper_attributes }}
+  role="group"
+>
+  <div class="relative">
+    {% if label %}
+      {% comment %} Label appearing at top of input {% endcomment %}
+      <label
+        for="{{ id }}"
+        class="
+          {% comment %} Label typography {% endcomment %}
+          text-content font-family-accent
+          text-[length:--label-shrunken-text-size]
+          overflow-hidden
+
+          {% comment %} Label positioning / layout {% endcomment %}
+          absolute z-20
+          start-[--label-padding-s] end-[calc(var(--input-padding-e)*2)] top-0
+          ps-[--label-padding-s] pe-[--label-padding-e]
+          pointer-events-none
+
+          {% comment %} Label animation {% endcomment %}
+          transition-[transform,opacity]
+          duration-[--label-animation-duration]
+          origin-left
+
+          {% comment %} Label positioning {% endcomment %}
+          {% if hide_label %}
+            opacity-0
+          {% else %}
+            opacity-[calc(var(--field-active)*100)]
+            delay-[calc(var(--field-active)*var(--label-animation-duration)/3)]
+            -translate-y-[max(calc(var(--field-active)*50%),25%)]
+          {% endif %}
+
+          {{ label_class }}
+        "
+      >
+        <span class="block truncate">
+          {{ label }}
+        </span>
+      </label>
+    {% endif %}
+
+    <div class="flex-row-center justify-between relative">
+      {% if start_accessory %}
+        {{ start_accessory }}
+      {% endif %}
+      {% comment %} Input wrapper. min-w-0 lets a constrained container win over the in-flow label copy, so the label truncates instead of overflowing the border {% endcomment %}
+      <div class="flex-1 min-w-0 relative max-w-full h-full">
+        {% if label %}
+          {% comment %} In-flow label copy so a long label widens the field, since the visible labels are absolute and add no width. It must wrap with breaks allowed anywhere, because any minimum width it creates lets the field overflow a tight container {% endcomment %}
+          <span aria-hidden="true" class="invisible block h-0 overflow-hidden">
+            <span class="block [overflow-wrap:anywhere] ps-[--input-padding-s] pe-[--input-padding-e] {{ placeholder_class }}">
+              {{- label -}}
+            </span>
+          </span>
+        {% endif %}
+
+        {% comment %} Label which appears while input is inactive (looks like a placeholder) {% endcomment %}
+        <span
+          aria-hidden="true"
+          class="
+            absolute start-0 end-0 top-0 bottom-auto
+            flex items-center
+            ps-[--input-padding-s] pe-[--input-padding-e]
+            py-[--input-padding-y]
+            text-[color:var(--input-placeholder-text-color)]
+            whitespace-nowrap pointer-events-none
+
+            {% comment %} Only show this label when the other label is hidden {% endcomment %}
+            duration-[--label-animation-duration]
+            opacity-[calc(var(--field-inactive)*100)]
+
+            group-has-[select]/field:hidden
+
+            {{ placeholder_class }}
+          "
+        >
+          <span class="truncate">{{ label }}</span>
+        </span>
+
+        {{ input }}
+      </div>
+      {% if end_accessory %}
+        {{ end_accessory }}
+      {% endif %}
+
+      {% comment %} Outline for our 'outline' style fields that can have a gap in it for the field label {% endcomment %}
+      <fieldset
+        class="
+          absolute inset-0
+          transition-colors
+          pointer-events-none
+
+          ps-[--fieldset-padding-s]
+          pe-[--fieldset-padding-e]
+          text-start
+          rtl:text-end
+
+          rounded-[--field-radius]
+          border-[length:--field-border-width] border-[--field-border-color]
+        "
+        {% comment %} We don't actually want this fieldset to appear in the ARIA tree; it's purely decorative {% endcomment %}
+        aria-hidden="true"
+        role="presentation"
+      >
+        {% comment %} Legend element's sole purpose is to provide a notch in the outline for the actual label element to fit into {% endcomment %}
+        <legend
+          class="
+            font-family-accent text-[length:--label-shrunken-text-size]
+            overflow-hidden line-clamp-1
+
+            {% comment %} Legend text should never be visible {% endcomment %}
+            opacity-0 h-0
+
+            {% if hide_label %}
+              w-0
+            {% else %}
+              w-auto
+
+              {% comment %} Max width of legend is 100% when input is active to add notch in the outline, and 0% when input inactive to remove notch {% endcomment %}
+              max-w-[calc(var(--field-active)*100%)]
+              ps-[calc(var(--field-active)*var(--label-padding-s))]
+              pe-[calc(var(--field-active)*var(--label-padding-e))]
+            {% endif %}
+          "
+        >
+          {{ label }}
+        </legend>
+      </fieldset>
+
+      {% comment %} Outline appearing around field when user is navigated to the input by keyboard {% endcomment %}
+      <fieldset
+        class="
+          absolute -inset-[--focus-outline-outset]
+          transition-opacity opacity-0
+          keyboard-active:group-has-[:focus-visible]/field:opacity-100
+          border-[length:--focus-outline-width] border-[--field-keyboard-focus-border-color]
+          rounded-[calc(var(--field-radius)+var(--focus-outline-outset))]
+          ps-[calc(var(--fieldset-padding-s)+var(--focus-outline-outset)-var(--focus-outline-width)/2)]
+          pe-[calc(var(--fieldset-padding-e)+var(--focus-outline-outset)-var(--focus-outline-width)/2)]
+
+          pointer-events-none
+          text-start
+          rtl:text-end
+        "
+        {% comment %} We don't actually want this fieldset to appear in the ARIA tree; it's purely decorative {% endcomment %}
+        aria-hidden="true"
+        role="presentation"
+      >
+        {% comment %} Legend element's sole purpose is to provide the gap in the outline for the actual label element to fit into {% endcomment %}
+        <legend
+          class="
+            font-family-accent text-[length:--label-shrunken-text-size]
+            overflow-hidden line-clamp-1
+
+            {% comment %} Legend text should never be visible {% endcomment %}
+            opacity-0 h-0
+
+            {% if hide_label %}
+              w-0
+            {% else %}
+              w-auto
+              max-w-[calc(var(--field-active)*100%)]
+              ps-[calc(var(--field-active)*var(--label-padding-s))]
+              pe-[calc(var(--field-active)*var(--label-padding-e))]
+            {% endif %}
+          "
+        >
+          {{ label }}
+        </legend>
+      </fieldset>
+    </div>
+  </div>
+
+  {% comment %} Error message below field {% endcomment %}
+  {% if has_error_message %}
+    <p
+      class="vars-scheme-error mt-r2 text-start text-r2 text-content"
+      {% if id != '' %}
+        {% comment %} Used for aria-errormessage on the input {% endcomment %}
+        id="{{ id }}-error"
+      {% endif %}
+      {{ error_message_attributes }}
+    >
+      {{ error_message }}
+    </p>
+  {% endif %}
+
+  {% comment %} Success message below field {% endcomment %}
+  {% if has_success_message %}
+    <p class="vars-scheme-success mt-r2 text-start text-r2 text-content">
+      {{ success_message }}
+    </p>
+  {% endif %}
+</div>

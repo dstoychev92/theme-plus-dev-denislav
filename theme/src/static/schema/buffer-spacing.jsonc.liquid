@@ -1,0 +1,48 @@
+[
+  {
+    "type": "header",
+    "content": "Spacing"
+  },
+  {
+    "type": "checkbox",
+    "id": "set_spacing",
+    "label": "Set spacing",
+    "default": false
+  },
+  {
+    "type": "select",
+    "id": "spacing_control_level",
+    "label": "Controls",
+    "default": "basic",
+    "visible_if": "{{ block.settings.set_spacing }}",
+    "options": [
+      {"value": "basic", "label": "Basic"},
+      {"value": "pro", "label": "Pro"}
+    ]
+  },
+
+  [% json 'schema/padding-settings.jsonc', padding_label: 'Padding vertical', padding_custom_label: 'Custom', id_suffix: 'y', default_padding: 'lg', conditional: "block.settings.set_spacing and block.settings.spacing_control_level == 'basic'" %]
+  [% json 'schema/padding-settings.jsonc', padding_label: 'Padding across', padding_custom_label: 'Custom', id_suffix: 'x', default_padding: 'lg', conditional: "block.settings.set_spacing and block.settings.spacing_control_level == 'basic'" %]
+
+  {
+    "type": "paragraph",
+    "content": "Desktop",
+    "visible_if": "{{ block.settings.set_spacing and block.settings.spacing_control_level == 'pro' }}",
+  },
+
+  [% json 'schema/buffer-slider.jsonc', buffer_label: 'Padding top', id_suffix: 'lg_top', conditional: "block.settings.set_spacing and block.settings.spacing_control_level == 'pro'" %]
+  [% json 'schema/buffer-slider.jsonc', buffer_label: 'Padding left', id_suffix: 'lg_left', conditional: "block.settings.set_spacing and block.settings.spacing_control_level == 'pro'" %]
+  [% json 'schema/buffer-slider.jsonc', buffer_label: 'Padding right', id_suffix: 'lg_right', conditional: "block.settings.set_spacing and block.settings.spacing_control_level == 'pro'" %]
+  [% json 'schema/buffer-slider.jsonc', buffer_label: 'Padding bottom', id_suffix: 'lg_bottom', conditional: "block.settings.set_spacing and block.settings.spacing_control_level == 'pro'" %]
+
+  {
+    "type": "paragraph",
+    "content": "Mobile",
+    "visible_if": "{{ block.settings.set_spacing and block.settings.spacing_control_level == 'pro' }}",
+  },
+  [% json 'schema/buffer-slider.jsonc', buffer_label: 'Padding top', id_suffix: 'sm_top', conditional: "block.settings.set_spacing and block.settings.spacing_control_level == 'pro'" %]
+  [% json 'schema/buffer-slider.jsonc', buffer_label: 'Padding left', id_suffix: 'sm_left', conditional: "block.settings.set_spacing and block.settings.spacing_control_level == 'pro'" %]
+  [% json 'schema/buffer-slider.jsonc', buffer_label: 'Padding right', id_suffix: 'sm_right', conditional: "block.settings.set_spacing and block.settings.spacing_control_level == 'pro'" %]
+  [% json 'schema/buffer-slider.jsonc', buffer_label: 'Padding bottom', id_suffix: 'sm_bottom', conditional: "block.settings.set_spacing and block.settings.spacing_control_level == 'pro'" %]
+
+]

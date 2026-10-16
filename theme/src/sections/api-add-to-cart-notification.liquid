@@ -1,0 +1,141 @@
+{% liquid
+  assign is_cart_page = false
+  if routes.cart_url == request.path
+    assign is_cart_page = true
+  endif
+
+  # How long the notification should be visible for before automatically dismissing
+  assign notification_duration_in_ms = 5000
+%}
+
+{% capture disclosures %}
+  {% render 'cart-line-item-disclosures', product: product %}
+{% endcapture %}
+{% assign disclosures = disclosures | strip %}
+
+{% capture content %}
+  <div class="group">
+    {% comment %} Content {% endcomment %}
+    <div class="flex flex-col gap-r5 p-r6">
+      <div class="flex-row-center justify-between gap-r6">
+        <p class="font-family-subheading text-r5">{{ 'product.added_to_cart' | t }}</p>
+
+        <button
+          class="relative hit-area-r4"
+          aria-label="{{ 'other.accessibility.close' | t }}"
+          @click.stop.prevent="$notification.dismiss()"
+        >
+          {% render 'core-icon', icon: 'stroke-bare-x', size: 'md' %}
+        </button>
+      </div>
+
+      {% comment %} Product {% endcomment %}
+      {% render 'cart-line-item-product', product: product, preload_image: true %}
+
+      {% if disclosures != blank %}
+        <div class="flex flex-col items-start gap-y-r2">
+          {{ disclosures }}
+        </div>
+      {% endif %}
+    </div>
+
+    {% comment %} Buttons {% endcomment %}
+    {% assign button_class = 'flex-1' %}
+    <div class="flex-row-center justify-between gap-x-r4 border-t border-line-subtle p-r6">
+      {% assign checkout_label = 'cart.check_out_button' | t %}
+      {% comment %} Without an explicit id this renders as id="cart", colliding with the cart page and drawer forms {% endcomment %}
+      {% form 'cart', cart, id: 'cart-notification-checkout', class: 'contents' %}
+        {% render 'core-button',
+          label: checkout_label,
+          type: 'submit',
+          name: 'checkout',
+          appearance: 'stroke',
+          color: 'content',
+          sizing: 'lg',
+          type_preset: 'btn',
+          class: button_class
+        %}
+      {% endform %}
+
+      {% capture view_cart_button_attributes %}
+        {% if settings.cart_button_action == 'show_drawer' and is_cart_page == false %}
+          role="button"
+          @click.stop.prevent="
+            $notification.dismiss();
+            await $waitForAnimations({ subtree: true })
+            $dispatch('theme:cart-drawer:open')
+          "
+        {% else %}
+          @click="$notification.dismiss();"
+        {% endif %}
+      {% endcapture %}
+      {% assign view_cart_label = 'cart.view_cart' | t %}
+      {% render 'core-button',
+        label: view_cart_label,
+        type: 'a',
+        href: '/cart',
+        appearance: 'fill',
+        color: 'content',
+        sizing: 'lg',
+        type_preset: 'btn',
+        class: button_class,
+        attributes: view_cart_button_attributes
+      %}
+    </div>
+  </div>
+{% endcapture %}
+
+<div
+  {% comment %} role=alert stays assertive since this toast can close before a polite announcement runs {% endcomment %}
+  role="alert"
+  class="
+    cart-notification-position fixed start-0 end-0 md:start-auto md:end-[--layout-buffer-x] z-60
+    bg-canvas text-content rounded-sm border border-line-subtle shadow
+    origin-top-right rtl:origin-top-left transition-[transform,opacity]
+  "
+  :class="
+    {
+      'md:!start-[--float-x] md:!end-auto': window.headerCartButton && $float.isPositioned,
+    }
+  "
+  {% comment %} The header offset comes from the page store. Writing it on body would recompute every element's style on each header change. {% endcomment %}
+  :style="{ '--header-bottom': ($store.page?.headerBottom ?? 0) + 'px' }"
+  style="width: min(400px, var(--section-width-page));"
+  x-id="['notification']"
+  :aria-describedby="$id('notification')"
+  :data-dismissed="!$notification.visible"
+
+  x-float.css.bottom-end.update="window.headerCartButton"
+
+  {% comment %}
+    noautofocus keeps current focus when the toast opens.
+    Tab enters the trap since the toast is last in the document.
+    noreturn lets x-notification restore focus after keyboard dismissal.
+  {% endcomment %}
+  x-trap.noautofocus.noreturn="$notification.visible"
+  @click.outside="$notification.dismiss()"
+  :id="$id('notification')"
+
+  x-notification.duration.{{ notification_duration_in_ms }}ms
+  x-effect="$store?.drawer?.isOpen && $notification.dismiss()"
+  @keydown.escape.prevent.stop.window="$notification.dismiss()"
+  @theme:cart-notification:show.window="$notification.dismiss()"
+  x-transition:enter="cart-notification-enter"
+  x-transition:enter-start="start"
+  x-transition:enter-end="end"
+  x-transition:leave="cart-notification-leave"
+  x-transition:leave-start="start"
+  x-transition:leave-end="end"
+  x-init="
+    $nextTick(() => {
+      $popover.open()
+    })
+  "
+>
+  {{ content }}
+</div>
+
+{% comment %}
+  Styles for this section live in src/css/cart-notification.css. Shopify serves stylesheet-tag CSS per
+  page, and this section only renders through the Section API, so the theme bundle must carry these rules.
+{% endcomment %}

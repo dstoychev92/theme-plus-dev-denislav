@@ -1,0 +1,129 @@
+{% doc %}
+  - Renders the product media column
+
+  @param {string} [class_static] - classes that stay on the element in every layout
+{% enddoc %}
+
+[% capture additional_settings %]
+  {
+    "type": "header",
+    "content": "Desktop"
+  },
+  {
+    "type": "select",
+    "id": "layout_desktop",
+    "label": "Style",
+    "default": "showcase",
+    "options": [
+      {"value": "showcase", "label": "Showcase"},
+      {"value": "stack", "label": "Stack"}
+    ]
+  },
+  [% json 'schema/aspect-ratio-settings.jsonc', id_suffix: 'desktop' %]
+  {
+    "type": "select",
+    "id": "stack_style",
+    "label": "Stack style",
+    "default": "columns",
+    "visible_if": "{{ block.settings.layout_desktop == 'stack' }}",
+    "options": [
+      {"value": "single", "label": "Simple"},
+      {"value": "columns", "label": "Grid"},
+      {"value": "mosaic", "label": "Mosaic"}
+    ]
+  },
+  {
+    "type": "select",
+    "id": "carousel_indicator_photo_position",
+    "label": "Indicator photo position",
+    "default": "below",
+    "visible_if": "{{ block.settings.layout_desktop == 'showcase' }}",
+    "options": [
+      {"value": "beside", "label": "Beside"},
+      {"value": "below", "label": "Below"}
+    ]
+  },
+  {
+    "type": "select",
+    "id": "carousel_indicator_photo_position_beside_alignment",
+    "label": "Indicator photo alignment",
+    "default": "top",
+    "visible_if": "{{ block.settings.layout_desktop == 'showcase' and block.settings.carousel_indicator_photo_position == 'beside' }}",
+    "options": [
+      {"value": "top", "label": "Top"},
+      {"value": "bottom", "label": "Bottom"}
+    ]
+  },
+  {
+    "type": "range",
+    "id": "carousel_indicator_photo_size",
+    "label": "Indicator photo size",
+    "visible_if": "{{ block.settings.layout_desktop == 'showcase' }}",
+    "unit": "px",
+    "min": 20,
+    "max": 200,
+    "step": 10,
+    "default": 50
+  },
+  {
+    "type": "range",
+    "id": "carousel_media_spacing",
+    "label": "Image spacing",
+    "visible_if": "{{ block.settings.layout_desktop == 'showcase' }}",
+    "unit": "px",
+    "min": 0,
+    "max": 10,
+    "step": 1,
+    "default": 3
+  },
+  {
+    "type": "range",
+    "id": "stack_media_spacing",
+    "label": "Image spacing",
+    "visible_if": "{{ block.settings.layout_desktop == 'stack' }}",
+    "unit": "px",
+    "min": 0,
+    "max": 50,
+    "step": 1,
+    "default": 5
+  },
+  {
+    "type": "checkbox",
+    "id": "set_media_rounding",
+    "label": "Set rounding",
+    "default": false,
+    "visible_if": "{{ section.settings.contain_section }}"
+  },
+  {
+    "type": "select",
+    "id": "media_rounding",
+    "label": "Media rounding",
+    "default": "sm",
+    "visible_if": "{{ section.settings.contain_section and block.settings.set_media_rounding }}",
+    "options": [
+      {"value": "none", "label": "0"},
+      {"value": "sm", "label": "S"},
+      {"value": "md", "label": "M"},
+      {"value": "lg", "label": "L"}
+    ]
+  },
+  {
+    "type": "paragraph",
+    "content": "Desktop images have no rounding when 'Contain section' is disabled in section settings.",
+    "visible_if": "{{ section.settings.contain_section == false }}"
+  },
+  {
+    "type": "checkbox",
+    "id": "enable_scroll_to_variant_image",
+    "label": "Enable scroll to variant image",
+    "info": "Automatically scrolls to the selected variant image after changing variants.",
+    "default": false,
+    "visible_if": "{{ block.settings.layout_desktop == 'stack' }}"
+  },
+  {
+    "type": "header",
+    "content": "Mobile"
+  },
+[% endcapture %]
+
+[% render 'groups/product-media', additional_settings: additional_settings, quickview_context: false %]

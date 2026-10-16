@@ -1,0 +1,86 @@
+{% doc %}
+  - Renders scrolling marquee row
+
+  @param {string} [attributes]
+  @param {string} [block_alignment] - 'top', 'middle', or 'bottom', defaults to s.block_alignment then 'left'
+  @param {string} [class] - The classes
+  @param {string} content
+  @param {string} [gap] - gap step, defaults to s.gap then 'lg'
+  @param {number} [gap_custom] - gap in pixels when gap is 'custom', defaults to s.gap_custom then 0
+  @param {object} [s] - settings object
+  @param {number} [speed] - -10 to 10 on a curve, negative reverses direction, defaults to s.speed then 2
+  @param {string} [style] - inline styles
+{% enddoc %}
+
+{% liquid
+  assign block_alignment = block_alignment | default: s.block_alignment | default: 'left'
+  assign speed = speed | default: s.speed | default: 2
+  assign gap = gap | default: s.gap | default: 'lg'
+  assign gap_custom = gap_custom | default: s.gap_custom | default: 0
+
+  # Speed (px/s) curve indexed by |speed|. Non-linear: the low end is compressed so
+  # settings 1-4 give finer control over slow scrolling (e.g. image galleries),
+  # while 5-10 stay close to the prior linear x15 scale. Sign re-applied below.
+  assign speed_curve = '0,8,20,36,55,75,90,105,120,135,150' | split: ','
+  assign speed_magnitude = speed | abs | at_most: 10
+  assign speed_px = speed_curve[speed_magnitude] | times: 1
+  if speed < 0
+    assign speed_px = 0 | minus: speed_px
+  endif
+%}
+
+{% capture content_class %}
+  marquee-row
+  vars-placement-grid-{{ block_alignment }}-left
+  will-change-transform
+  flex flex-row justify-start [align-items:--placement-content-vertical] shrink-0 transition-opacity duration-500 opacity-0
+  {% comment %} Gap between each block, and then gap after the source element to allow for the target element to be positioned correctly {% endcomment %}
+  gap-x-[--layout-gutter] pr-[--layout-gutter]
+  {% comment %} Initial container width should be the max width of the content so that the width can be measured and the elements can be cloned to fit screen {% endcomment %}
+  w-max
+{% endcapture %}
+
+<div
+  data-lazy-alpine
+  data-lazy-alpine-module="@theme/marquee"
+  x-data
+  x-marquee.speed.{{- speed_px -}}.fill
+  class="
+    flex-row-center overflow-hidden
+    pt-[--marquee-pt,4px] pb-[--marquee-pb,4px]
+    {% render 'props-class-type-preset', s: s %}
+    {{ class }}
+  "
+  style="
+    {% if gap %}
+      {% render 'props-style-gap', gap: gap, gap_custom: gap_custom, apply: false %}
+    {% endif %}
+    {{ style }}
+  "
+  {{ attributes }}
+>
+  <div
+    x-marquee:source
+    class="{{ content_class }}"
+    :class="$marquee.isReady ? 'opacity-100' : 'opacity-0'"
+  >
+    {{ content }}
+  </div>
+
+  <div
+    x-marquee:target
+    class="{{ content_class }}"
+    :class="$marquee.isReady ? 'opacity-100' : 'opacity-0'"
+    {% comment %} Dont want to expose repeated content to screen readers {% endcomment %}
+    aria-hidden="true"
+  ></div>
+
+  {% comment %}
+    Visual-preview thumbnails (theme picker / theme store) render the
+    marquee broken or empty because the marquee JS doesn't run there. A 1px
+    placeholder gives the preview a non-zero size to clip against.
+  {% endcomment %}
+  {% if request.visual_preview_mode %}
+    <div style="width: 1px; height: 1px;"></div>
+  {% endif %}
+</div>

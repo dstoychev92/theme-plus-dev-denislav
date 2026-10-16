@@ -1,0 +1,41 @@
+{% doc %}
+  - Renders newsletter signup form
+{% enddoc %}
+
+{% assign form_id = 'form-newsletter-' | append: block.id %}
+
+{% capture class %}
+  w-full max-w-[420px]
+
+  {% comment %} Disable entrance animations in visual preview mode to prevent "No preview available" error {% endcomment %}
+  {% unless request.visual_preview_mode %}
+    entrance-item entrance-standard
+  {% endunless %}
+{% endcapture %}
+
+{% render 'newsletter-form',
+  s: block.settings,
+  id: form_id,
+  attributes: block.shopify_attributes,
+  class: class
+%}
+
+{% schema %}
+{
+  "name": "Newsletter signup form",
+  "tag": null,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Subscribers are added to your [customer admin](/admin/customers) and marked as 'subscribed'."
+    },
+    [% json 'schema/form-newsletter-setting.jsonc', enable_newsletter: false, default_appearance: 'box', default_success_message: 'Thank you for joining our mailing list' %]
+  ],
+  "presets": [
+    {
+      "name": "Newsletter signup form",
+      "category": "Content"
+    }
+  ]
+}
+{% endschema %}

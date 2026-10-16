@@ -1,0 +1,68 @@
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Cypress #
+######################
+cypress/videos
+cypress/screenshots
+cypress/downloads/downloads.json
+mochawesome-report/
+
+# Ideas and notes #
+######################
+/.idea
+todo.md
+
+# Theme build #
+######################
+# Add your personal stores for dev
+config.dev.yml
+# Ignore files for upload to Shopify
+.shopifyignore
+.lighthouseci
+*.sass-cache*
+node_modules
+deploy.log
+upload
+icons-compressed
+*.zip
+dist
+tmp
+pnpm-debug.log*
+# Ignore rollup filesize stats
+stats/
+
+# Custom #
+#####################
+shopify.theme.toml
+.yalc
+yalc.lock
+.npmrc
+tmp
+.rollup.cache
+tsconfig.tsbuildinfo
+.shopify
+bin/shopify/ignore/
+bin/shopify/credentials.js
+.env
+# GitBook API token — paste your secret into this file; never commit it.
+docs/.gitbook/api.env
+/.claude/settings.local.json
+/.claude/worktrees/
+# Runtime files for Claude's parallel worktree-per-session dev server (worktree-dev-server.sh).
+# Regenerated on each run; never commit them.
+# Dev server URLs: localhost preview, hosted preview, admin theme editor.
+/.worktree-dev.url
+# Dev server process info (port + PIDs); used to shut it down on session end.
+/.worktree-dev.pid
+# gulp watch / shopify theme dev output, for debugging startup.
+/.worktree-dev.log
+playwright/.cache/
+playwright/.artifacts/

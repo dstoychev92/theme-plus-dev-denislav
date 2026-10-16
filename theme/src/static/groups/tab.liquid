@@ -1,0 +1,89 @@
+
+{% if block.settings.title != blank %}
+  {% liquid
+    assign set_gap = block.settings.set_gap
+    assign gap = block.settings.gap
+    assign gap_custom = block.settings.gap_custom
+
+    if block_index == blank
+      assign block_index = section.blocks | find_index: 'id', block.id
+    endif
+  %}
+
+  {% capture class %}
+    {% if set_gap %}
+      gap-y-layout
+    {% else %}
+      gap-y-r8
+    {% endif %}
+  {% endcapture %}
+
+  {% capture attributes %}
+    {% if set_gap %}
+      style="{% render 'props-style-gap', gap: gap, gap_custom: gap_custom, apply: false %}"
+    {% endif %}
+    {{ block.shopify_attributes }}
+  {% endcapture %}
+
+  {% if block_index != blank %}
+    {% capture tab_style %}
+      --stagger-order: {{ block_index }};
+    {% endcapture %}
+  {% endif %}
+
+  <div
+    class="flex flex-col text-content text-content-align items-content-align transition duration-400 no-children-entrance {{ class }}"
+    role="tabpanel"
+    x-tabs:tabpanel
+    :data-state="$tab.isSelected ? 'active' : 'inactive'"
+    :data-tab-index="$tab.index"
+    {% if request.design_mode %}
+      @shopify:block:select="$tab.select()"
+    {% endif %}
+    {{ attributes }}
+  >
+    {% comment %} This tab is cloned into the tab list element using javascript {% endcomment %}
+    <template data-tab-template>
+      {% render 'core-tab',
+        type: 'button',
+        label: block.settings.title,
+        class: tab_button_class,
+        style: tab_style
+      %}
+    </template>
+
+    {% content_for 'blocks' %}
+  </div>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Tab",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "Tab"
+    },
+    {
+      "type": "header",
+      "content": "Gap"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_gap",
+      "label": "Set gap",
+      "default": false
+    },
+    [% json 'schema/grid-gap-setting.jsonc', default_gap: 'md', conditional: 'block.settings.set_gap' %]
+  ],
+  "blocks": [
+    [= additional_blocks =]
+  ],
+  "presets": [
+    [= additional_presets =]
+  ]
+}
+{% endschema %}

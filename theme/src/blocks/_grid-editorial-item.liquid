@@ -1,0 +1,196 @@
+{% doc %}
+  - Renders editorial grid item holding other blocks
+
+  @param {string} [block_class] - classes for this block instance
+  @param {string} [block_style] - inline styles for this block instance
+{% enddoc %}
+
+[% capture additional_blocks %]
+  { "type": "@theme" },
+  [% json 'schema/blocks-extended.jsonc' %]
+  [% json 'schema/blocks-card-single.jsonc' %]
+  {
+    "type": "@app"
+  }
+[% endcapture %]
+
+[%- capture additional_presets -%]
+  [%- assign image_block = '{ "type": "theme-image", "settings": { "image_size_mode": "full", "height": "full" } }' -%]
+  {
+    "name": "Grid item",
+    "blocks": [ [= image_block =] ]
+  },
+
+  {
+    "name": "← D: 8/12  T: 8/12  M: 8/12",
+    "category": "Item: two-thirds, left, row 1",
+    "settings": { "col_end": 8, "visual_preview_pro": true },
+    "blocks": [ [= image_block =] ]
+  },
+  {
+    "name": "← D: 8/12  T: 8/12  M: 12/12",
+    "category": "Item: two-thirds, left, row 1",
+    "settings": { "col_end": 8, "set_grid_mobile": true, "visual_preview_pro": true },
+    "blocks": [ [= image_block =] ]
+  },
+  {
+    "name": "← D: 8/12  T: 12/12  M: 12/12",
+    "category": "Item: two-thirds, left, row 1",
+    "settings": { "col_end": 8, "set_grid_tablet": true, "set_grid_mobile": true, "visual_preview_pro": true },
+    "blocks": [ [= image_block =] ]
+  },
+
+  {
+    "name": "→ D: 8/12  T: 8/12  M: 8/12",
+    "category": "Item: two-thirds, right, row 1",
+    "settings": { "col_start": 5, "visual_preview_pro": true },
+    "blocks": [ [= image_block =] ]
+  },
+  {
+    "name": "→ D: 8/12  T: 8/12  M: 12/12",
+    "category": "Item: two-thirds, right, row 1",
+    "settings": { "col_start": 5, "set_grid_mobile": true, "visual_preview_pro": true },
+    "blocks": [ [= image_block =] ]
+  },
+  {
+    "name": "→ D: 8/12  T: 12/12  M: 12/12",
+    "category": "Item: two-thirds, right, row 1",
+    "settings": { "col_start": 5, "set_grid_tablet": true, "set_grid_mobile": true, "visual_preview_pro": true },
+    "blocks": [ [= image_block =] ]
+  },
+
+  {
+    "name": "← D: 6/12  T: 6/12  M: 6/12",
+    "category": "Item: half, left, row 1",
+    "settings": { "col_end": 6, "visual_preview_pro": true },
+    "blocks": [ [= image_block =] ]
+  },
+  {
+    "name": "← D: 6/12  T: 6/12  M: 12/12",
+    "category": "Item: half, left, row 1",
+    "settings": { "col_end": 6, "set_grid_mobile": true, "visual_preview_pro": true },
+    "blocks": [ [= image_block =] ]
+  },
+  {
+    "name": "← D: 6/12  T: 12/12  M: 12/12",
+    "category": "Item: half, left, row 1",
+    "settings": { "col_end": 6, "set_grid_tablet": true, "set_grid_mobile": true, "visual_preview_pro": true },
+    "blocks": [ [= image_block =] ]
+  },
+
+  {
+    "name": "→ D: 6/12  T: 6/12  M: 6/12",
+    "category": "Item: half, right, row 1",
+    "settings": { "col_start": 7, "visual_preview_pro": true },
+    "blocks": [ [= image_block =] ]
+  },
+  {
+    "name": "→ D: 6/12  T: 6/12  M: 12/12",
+    "category": "Item: half, right, row 1",
+    "settings": { "col_start": 7, "set_grid_mobile": true, "visual_preview_pro": true },
+    "blocks": [ [= image_block =] ]
+  },
+  {
+    "name": "→ D: 6/12  T: 12/12  M: 12/12",
+    "category": "Item: half, right, row 1",
+    "settings": { "col_start": 7, "set_grid_tablet": true, "set_grid_mobile": true, "visual_preview_pro": true },
+    "blocks": [ [= image_block =] ]
+  },
+
+  {
+    "name": "← D: 4/12  T: 4/12  M: 4/12",
+    "category": "Item: third, left, row 1",
+    "settings": { "col_end": 4, "visual_preview_pro": true },
+    "blocks": [ [= image_block =] ]
+  },
+  {
+    "name": "← D: 4/12  T: 4/12  M: 12/12",
+    "category": "Item: third, left, row 1",
+    "settings": { "col_end": 4, "set_grid_mobile": true, "visual_preview_pro": true },
+    "blocks": [ [= image_block =] ]
+  },
+  {
+    "name": "← D: 4/12  T: 12/12  M: 12/12",
+    "category": "Item: third, left, row 1",
+    "settings": { "col_end": 4, "set_grid_tablet": true, "set_grid_mobile": true, "visual_preview_pro": true },
+    "blocks": [ [= image_block =] ]
+  },
+
+  {
+    "name": "→ D: 4/12  T: 4/12  M: 4/12",
+    "category": "Item: third, right, row 1",
+    "settings": { "col_start": 9, "visual_preview_pro": true },
+    "blocks": [ [= image_block =] ]
+  },
+  {
+    "name": "→ D: 4/12  T: 4/12  M: 12/12",
+    "category": "Item: third, right, row 1",
+    "settings": { "col_start": 9, "set_grid_mobile": true, "visual_preview_pro": true },
+    "blocks": [ [= image_block =] ]
+  },
+  {
+    "name": "→ D: 4/12  T: 12/12  M: 12/12",
+    "category": "Item: third, right, row 1",
+    "settings": { "col_start": 9, "set_grid_tablet": true, "set_grid_mobile": true, "visual_preview_pro": true },
+    "blocks": [ [= image_block =] ]
+  },
+
+  {
+    "name": "← D: 3/12  T: 3/12  M: 3/12",
+    "category": "Item: quarter, left, row 1",
+    "settings": { "col_end": 3, "visual_preview_pro": true },
+    "blocks": [ [= image_block =] ]
+  },
+  {
+    "name": "← D: 3/12  T: 3/12  M: 12/12",
+    "category": "Item: quarter, left, row 1",
+    "settings": { "col_end": 3, "set_grid_mobile": true, "visual_preview_pro": true },
+    "blocks": [ [= image_block =] ]
+  },
+  {
+    "name": "← D: 3/12  T: 12/12  M: 12/12",
+    "category": "Item: quarter, left, row 1",
+    "settings": { "col_end": 3, "set_grid_tablet": true, "set_grid_mobile": true, "visual_preview_pro": true },
+    "blocks": [ [= image_block =] ]
+  },
+
+  {
+    "name": "→ D: 3/12  T: 3/12  M: 3/12",
+    "category": "Item: quarter, right, row 1",
+    "settings": { "col_start": 10, "visual_preview_pro": true },
+    "blocks": [ [= image_block =] ]
+  },
+  {
+    "name": "→ D: 3/12  T: 3/12  M: 12/12",
+    "category": "Item: quarter, right, row 1",
+    "settings": { "col_start": 10, "set_grid_mobile": true, "visual_preview_pro": true },
+    "blocks": [ [= image_block =] ]
+  },
+  {
+    "name": "→ D: 3/12  T: 12/12  M: 12/12",
+    "category": "Item: quarter, right, row 1",
+    "settings": { "col_start": 10, "set_grid_tablet": true, "set_grid_mobile": true, "visual_preview_pro": true },
+    "blocks": [ [= image_block =] ]
+  },
+
+  {
+    "name": "D: 6/12 × 2 rows",
+    "category": "Feature: tall",
+    "settings": { "col_end": 6, "set_row_span": true, "row_span": 2, "visual_preview_pro": true },
+    "blocks": [ [= image_block =] ]
+  },
+  {
+    "name": "D: 6/12 × 3 rows",
+    "category": "Feature: tall",
+    "settings": { "col_end": 6, "set_row_span": true, "row_span": 3, "visual_preview_pro": true },
+    "blocks": [ [= image_block =] ]
+  },
+  {
+    "name": "D: 6/12 × 2 rows, M: 12/12",
+    "category": "Feature: tall",
+    "settings": { "col_end": 6, "set_row_span": true, "row_span": 2, "set_grid_mobile": true, "visual_preview_pro": true },
+    "blocks": [ [= image_block =] ]
+  }
+[%- endcapture -%]
+
+[% render 'groups/grid-editorial-item', additional_blocks: additional_blocks, additional_presets: additional_presets %]

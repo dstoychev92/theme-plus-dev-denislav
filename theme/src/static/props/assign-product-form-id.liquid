@@ -1,0 +1,10 @@
+{% comment %}
+  This assumes that products are unique within the current section
+  Several blocks (add buttons, quantity, subscription) each compute this id on
+  their own and rely on getting the same value, since their inputs join the
+  form through the form="" attribute. That is why the id can only use shared
+  context: one product form per product per section. A second "Form buttons"
+  block for the same product in one section duplicates the form id and leaves
+  quantity/subscription inputs ambiguously bound — unsupported.
+{% endcomment %}
+{% assign product_form_id = 'product-form-' | append: product.handle | append: '-' | append: section.id %}

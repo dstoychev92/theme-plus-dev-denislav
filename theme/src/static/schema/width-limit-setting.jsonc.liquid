@@ -1,0 +1,19 @@
+[
+  {
+    "type": "checkbox",
+    "id": "limit_width",
+    "label": "Limit width",
+    "default": false
+  },
+  {
+    "type": "range",
+    "id": "max_width",
+    "label": "Limit",
+    "unit": "px",
+    "min": 100,
+    "max": 1100,
+    "step": 10,
+    "default": [= default_max_width | default: 500 =],
+    "visible_if": "{{ [= context | default: 'block.settings.' =]limit_width == true }}"
+  }
+]

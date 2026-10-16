@@ -1,0 +1,18 @@
+{% doc %}
+  - Renders horizontal scrolling row holding other blocks
+{% enddoc %}
+
+[%- capture additional_presets -%]
+  {
+    "name": "Row",
+    "category": "Layout",
+    "blocks": [
+    ]
+  }
+[%- endcapture -%]
+
+[%- capture additional_blocks -%]
+  { "type": "@theme" },
+  { "type": "_callout" },
+[%- endcapture -%]
+[% render 'groups/row', additional_blocks: additional_blocks, additional_presets: additional_presets %]

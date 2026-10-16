@@ -1,0 +1,45 @@
+{% doc %}
+  - Renders placeholder product cards
+
+  Renders nothing unless settings.placeholder_mode or request.design_mode is set.
+
+  @param {string} [appearance]
+  @param {number} [aspect_ratio]
+  @param {string} [attributes]
+  @param {string} [block_attributes] - attributes placed before attributes on each card
+  @param {number} [limit] - defaults to 10
+{% enddoc %}
+
+{% liquid
+  assign limit = limit | default: 10
+  assign enable_placeholder_product = false
+
+  if settings.placeholder_mode or request.design_mode
+    assign enable_placeholder_product = true
+  endif
+%}
+
+{% if enable_placeholder_product %}
+  {% for i in (1..limit) %}
+    {% if forloop.first %}
+      {% capture attributes %}
+        {{ block_attributes }}
+        {{ attributes }}
+      {% endcapture %}
+    {% endif %}
+
+    {% capture placeholder_index %}
+      {% cycle 1, 2, 3, 4, 5, 6 %}
+    {% endcapture %}
+
+    {% render 'card-product',
+      size: 'lg',
+      placeholder: true,
+      placeholder_image_index: placeholder_index,
+      aspect_ratio: aspect_ratio,
+      product: null,
+      attributes: attributes,
+      appearance: appearance
+    %}
+  {% endfor %}
+{% endif %}

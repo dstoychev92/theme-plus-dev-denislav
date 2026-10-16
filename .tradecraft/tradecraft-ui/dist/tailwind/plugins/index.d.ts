@@ -1,0 +1,13 @@
+import animationsPlugin from './animations';
+import backfaceVisibilityPlugin from './backface-visibility';
+import colSpanPlugin from './colSpan';
+import containPlugin from './contain';
+import dialogPlugin from './dialog';
+import rangePlugin from './range';
+import maskImagePlugin from './mask-image';
+import staggerPlugin from './stagger';
+import typePlugin from './type';
+import clipPathPlugin from './clip-path';
+import javascriptPlugin from './javascript';
+import numberInputResetPlugin from './number-input-reset';
+export { animationsPlugin, backfaceVisibilityPlugin, colSpanPlugin, containPlugin, dialogPlugin, rangePlugin, maskImagePlugin, staggerPlugin, typePlugin, clipPathPlugin, javascriptPlugin, numberInputResetPlugin, };

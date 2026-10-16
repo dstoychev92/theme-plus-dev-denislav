@@ -1,0 +1,12 @@
+{
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "shopify.theme-check-vscode",
+    "dbaeumer.vscode-eslint",
+    "bradlc.vscode-tailwindcss",
+    "pcbowers.alpine-intellisense",
+    "ms-vscode.vscode-typescript-next",
+    "tamasfe.even-better-toml",
+    "anthropic.claude-code"
+  ]
+}

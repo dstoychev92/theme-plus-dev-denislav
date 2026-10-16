@@ -1,0 +1,104 @@
+{% doc %}
+  - Renders pair column with before and after image comparison
+
+  Private, only offered by section-pair. Reads section.settings.height_mode to pick the block height or the section height.
+{% enddoc %}
+
+{% capture attributes %}
+  data-test-id="pair-before-after"
+  {{ block.shopify_attributes }}
+{% endcapture %}
+
+{% liquid
+  # Pass the active height since core-background-image falls back to s.height, and a stored
+  # 'image' would act as a minimum height in section mode. A content-height section keeps the
+  # block height and the element's own sizing, since the images are the content that sizes it
+  if section.settings.height_mode == 'column'
+    assign height = block.settings.height
+  elsif section.settings.height != 'content'
+    assign height = section.settings.height
+    assign set_height = false
+  endif
+%}
+
+{% capture content %}
+  {% render 'before-after', s: block.settings, height: height, set_height: set_height, attributes: attributes %}
+{% endcapture %}
+
+{% capture class %}
+  overflow-hidden pair-media
+{% endcapture %}
+
+{% render 'pair-column',
+  content: content,
+  s: block.settings,
+  class: class,
+  attributes: attributes,
+  is_media_block: true
+%}
+
+{% schema %}
+{
+  "name": "Compare images",
+  "tag": null,
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "before_image",
+      "label": "Before image"
+    },
+    {
+      "type": "image_picker",
+      "id": "after_image",
+      "label": "After image"
+    },
+    {
+      "type": "select",
+      "id": "orientation",
+      "label": "Orientation",
+      "default": "horizontal",
+      "options": [
+        {"value": "horizontal", "label": "Horizontal"},
+        {"value": "vertical", "label": "Vertical"}
+      ]
+    },
+    {
+      "type": "color",
+      "id": "handle_color",
+      "label": "Handle color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "range",
+      "id": "start_position",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "label": "Start position",
+      "default": 50
+    },
+    {
+      "type": "header",
+      "content": "Border"
+    },
+    [% json 'schema/border-settings.jsonc' %]
+    {
+      "type": "header",
+      "content": "Rounding"
+    },
+    [% json 'schema/rounding-large.jsonc' %]
+    {
+      "type": "header",
+      "content": "Height"
+    },
+    [% json 'schema/pair-column-height-setting.jsonc', image_height: true, content_height: false, default_height: 'screen-one-half', default_height_mobile: 'image' %]
+  ],
+  "presets": [
+    {
+      "name": "Compare images",
+      "category": "Media"
+    }
+  ]
+}
+{% endschema %}

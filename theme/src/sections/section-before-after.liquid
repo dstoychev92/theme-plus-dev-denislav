@@ -1,0 +1,99 @@
+{% comment %}
+  Section: Before/After
+  Interactive comparison slider between two images. A draggable handle reveals
+  one image over the other, horizontal or vertical.
+
+  Settings: before_image, after_image, orientation (horizontal/vertical),
+  start_position (0-100%, where the handle begins), handle_color.
+
+  No content blocks — this is a pure visual comparison tool. Best for product
+  transformations, renovation reveals, or any A/B image comparison.
+
+  Color scheme defaults to "scheme-opposite".
+{% endcomment %}
+
+{% capture content %}
+  {% render 'before-after', s: section.settings %}
+{% endcapture %}
+
+{% assign class = 'overflow-hidden' %}
+{% capture background %}
+  {% render 'core-section-background', content: content, s: section.settings %}
+{% endcapture %}
+
+{% render 'core-section-wrapper',
+  s: section.settings,
+  contain_controls_rhythm: true,
+  content: background,
+  class: class,
+  photoswipe: false
+%}
+
+{% schema %}
+{
+  "name": "Compare images",
+  "class": "section-before-after",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "before_image",
+      "label": "Before image"
+    },
+    {
+      "type": "image_picker",
+      "id": "after_image",
+      "label": "After image"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "orientation",
+      "label": "Orientation",
+      "default": "horizontal",
+      "options": [
+        {"value": "horizontal", "label": "Horizontal"},
+        {"value": "vertical", "label": "Vertical"}
+      ]
+    },
+    [% json 'schema/height-setting.jsonc', context: 'section.settings.', default_height: 'screen-one-half', height_toggle: false %]
+    [% json 'schema/section-banner-width-settings.jsonc', contain_section_label: 'Contain section' %]
+    [% json 'schema/section-rounding-settings.jsonc' %]
+    [% json 'schema/section-border-settings.jsonc' %]
+    {
+      "type": "header",
+      "content": "Appearance"
+    },
+    [% json 'schema/color-settings-section-banner.jsonc', default_color_scheme: 'scheme-opposite' %]
+    {
+      "type": "color",
+      "id": "handle_color",
+      "label": "Handle color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "range",
+      "id": "start_position",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "label": "Start position",
+      "default": 50
+    },
+    [% json 'schema/section-target-device-settings.jsonc' %]
+  ],
+  "presets": [
+    {
+      "name": "Compare images",
+      "category": "Full width"
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "custom.overlays", "custom.drawers"]
+  }
+}
+{% endschema %}

@@ -1,0 +1,41 @@
+@layer components {
+  /* Variants */
+
+  .vars-link-clean,
+  .vars-link-both {
+    @apply [--link-underline-scale:0] [--link-underline-origin:right];
+    @apply hover:[--link-underline-scale:1] hover:[--link-underline-origin:left];
+    @apply rtl:[--link-underline-origin:left] rtl:hover:[--link-underline-origin:right];
+  }
+
+  .vars-link-line {
+    @apply [--link-underline-scale:1] [--link-underline-origin:left] [--link-underline-off-scale:0] [--link-underline-off-origin:right];
+    @apply hover:[--link-underline-scale:0] hover:[--link-underline-origin:right] hover:[--link-underline-off-scale:1] hover:[--link-underline-off-origin:left];
+    @apply rtl:[--link-underline-origin:right] rtl:[--link-underline-off-origin:left] rtl:hover:[--link-underline-origin:left] rtl:hover:[--link-underline-off-origin:right];
+  }
+
+  /* Sometimes we can't control the markup, this is a simplified version of the above "line" style link that works on links spanning multiple lines */
+  .link-line-all a,
+  .link-line {
+    --link-underline-height: 0.05em;
+    --link-underline-position-y: bottom;
+
+    background-repeat: repeat-x;
+    background-image: linear-gradient(to right, transparent, transparent 50%, currentColor 51%, currentColor);
+    background-size: 220% var(--link-underline-height);
+    background-position-y: var(--link-underline-position-y);
+
+    transition-property: none;
+    transition-duration: 500ms;
+    transition-timing-function: var(--ease-in-out);
+    background-position-x: 100%;
+
+    text-decoration: none;
+
+    &:hover {
+      transition-property: background-position-x, background-size;
+      background-position-x: -100%;
+      background-size: 200% var(--link-underline-height);
+    }
+  }
+}

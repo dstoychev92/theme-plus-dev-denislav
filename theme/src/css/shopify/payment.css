@@ -1,0 +1,41 @@
+/* Payment button styles */
+.shopify-payment-button .shopify-payment-button__button--unbranded {
+  @apply h-auto pt-r4 pb-r4 [font-weight:inherit] !btn hover:!bg-btn hover:!text-btn;
+}
+
+more-payment-options-link {
+  @apply text-r3;
+}
+
+/* Additional Checkout Buttons */
+
+shopify-accelerated-checkout {
+  --shopify-accelerated-checkout-button-block-size: var(--row-lg);
+  --shopify-accelerated-checkout-button-inline-size: var(--row-lg);
+  --shopify-accelerated-checkout-button-border-radius: var(--radius-btn);
+  --shopify-accelerated-checkout-button-box-shadow: none;
+}
+
+shopify-accelerated-checkout-cart {
+  --shopify-accelerated-checkout-inline-alignment: center;
+  --shopify-accelerated-checkout-row-gap: 6px;
+  --shopify-accelerated-checkout-button-block-size: var(--row-lg);
+  --shopify-accelerated-checkout-button-inline-size: var(--row-lg);
+  --shopify-accelerated-checkout-button-border-radius: var(--radius-btn);
+  --shopify-accelerated-checkout-button-box-shadow: none;
+}
+
+.shop-login-button {
+  --shop-pay-button-border-radius: 0;
+  --shop-pay-button-width: 100%;
+}
+
+/* Apple Pay samples its nearest opaque ancestor bg to choose black/white, but assumes rgb/hex. */
+shopify-accelerated-checkout,
+shopify-accelerated-checkout-cart {
+  background: rgb(var(--canvas-fallback));
+}
+/* "Additional checkout buttons" info text that appears when subscription product is in the cart */
+#shopify-buyer-consent {
+  @apply font-family-body text-r1 text-muted !mt-r3;
+}

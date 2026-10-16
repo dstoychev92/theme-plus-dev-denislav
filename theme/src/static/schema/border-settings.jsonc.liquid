@@ -1,0 +1,27 @@
+[
+  {
+    "type": "checkbox",
+    "id": "set_border",
+    "label": "Set border",
+    "default": false
+  },
+  {
+    "type": "range",
+    "id": "border_width",
+    "label": "Thickness",
+    "unit": "px",
+    "min": 0,
+    "max": 10,
+    "step": 1,
+    "default": 1,
+    "visible_if": "{{ block.settings.set_border }}"
+  },
+  {
+    "type": "color",
+    "id": "border_color",
+    "label": "Color",
+    "alpha": true,
+    "default": "[= default_border_color | default: '#000000' =]",
+    "visible_if": "{{ block.settings.set_border }}"
+  }
+]

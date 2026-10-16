@@ -1,0 +1,500 @@
+{% comment %}
+  Section: Pair
+  Two-column layout that places any two block types side by side (banner, video,
+  slideshow, hotspots, card grid, before/after, custom content, etc.).
+
+  Columns can be even, first-wide, or second-wide. On mobile they stack
+  vertically (order can be reversed). When "Link interactive content" is
+  enabled, interactive blocks (slideshows, accordions, hotspots, tabs) stay in
+  sync — changing one advances the other.
+
+  Height can be driven by the section (screen fraction or custom px/%) or by
+  individual column content. A "short column" placement setting controls
+  vertical alignment when columns differ in height.
+
+  Gap: Valid gap values are "sm", "md", "lg", or "custom". There is no "none"
+  option. To remove the gap between columns entirely, set gap to "custom" and
+  gap_custom to 0.
+{% endcomment %}
+
+{% liquid
+  assign column_width = section.settings.column_width
+  assign order_mobile = section.settings.order_mobile
+%}
+
+{% capture style %}
+  --section-content-col-start: section-start;
+  --section-content-col-end: section-end;
+  {% render 'props-style-gap', s: section.settings, apply: false, vars: false %}
+  --pair-gap-x: var(--custom-gutter-x);
+
+  {% if section.settings.contain_section %}
+    --pair-gap-y: var(--layout-buffer-y);
+  {% else %}
+    --pair-gap-y: var(--custom-gutter-y);
+  {% endif %}
+{% endcapture %}
+
+{% capture class %}
+  entrance-container
+  pair-section-grid
+  vars-section-grid-layout-pair
+  {% if section.settings.gap == 'custom' and section.settings.gap_custom == 0 %}
+    pair-section-gapless
+  {% endif %}
+  {% if section.blocks.size > 1 %}
+    {% case column_width %}
+      {% when 'even' %}
+        vars-section-grid-layout-pair-even
+      {% when 'first-wide' %}
+        vars-section-grid-layout-pair-first-wide
+      {% when 'second-wide' %}
+        vars-section-grid-layout-pair-second-wide
+    {% endcase %}
+
+    {% if order_mobile == 'reversed' %}
+      pair-section-mobile-reversed
+    {% endif %}
+  {% endif %}
+{% endcapture %}
+
+{% capture blocks %}
+  {% content_for 'blocks' %}
+{% endcapture %}
+
+{% capture content %}
+  {% if request.visual_preview_mode and section.blocks.size < 2 %}
+    {% if section.blocks.size == 1 %}
+      {{ blocks }}
+      {% render 'pair-column', content: '', background: 'accent', color_scheme: 'scheme-default' %}
+    {% elsif section.blocks.size == 0 %}
+      {% render 'pair-column', content: '', background: 'accent', color_scheme: 'scheme-default' %}
+      {% render 'pair-column', content: '', background: 'accent', color_scheme: 'scheme-default' %}
+    {% endif %}
+  {% elsif request.design_mode and section.blocks.size == 0 %}
+    {% render 'pair-column', content: '', background: 'accent', color_scheme: 'scheme-default' %}
+    {% render 'pair-column', content: '', background: 'accent', color_scheme: 'scheme-default' %}
+  {% else %}
+    {{ blocks }}
+  {% endif %}
+{% endcapture %}
+
+{% capture attributes %}
+  x-data
+  x-sticky-columns
+
+  {% if section.settings.enable_ensemble %}
+    {% if section.settings.autoplay %}
+      x-ensemble.autoplay
+    {% else %}
+      x-ensemble
+    {% endif %}
+  {% endif %}
+
+  {{ section.shopify_attributes }}
+{% endcapture %}
+
+{% render 'core-section-wrapper',
+  s: section.settings,
+  set_rhythm: true,
+  content: content,
+  style: style,
+  class: class,
+  attributes: attributes,
+  content_padding: 'lg'
+%}
+
+{{ 'theme.pair.css' | asset_url | stylesheet_tag }}
+
+{% schema %}
+{
+  "name": "Pair layout",
+  "class": "section-pair",
+  "tag": "section",
+  "max_blocks": 2,
+  "settings": [
+    [% json 'schema/color-settings-section-solid.jsonc' %]
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "checkbox",
+      "id": "contain_section",
+      "label": "Contain section",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Width",
+      "visible_if": "{{ section.settings.contain_section }}",
+      "default": "page",
+      "options": [
+        {"value": "full", "label": "Full"},
+        {"value": "page", "label": "Page"}
+      ]
+    },
+    {
+      "type": "select",
+      "id": "height_mode",
+      "label": "Set height by",
+      "default": "section",
+      "options": [
+        {"value": "section", "label": "Section"},
+        {"value": "column", "label": "Column"},
+      ]
+    },
+    {
+      "type": "select",
+      "id": "height",
+      "label": "Section height",
+      "visible_if": "{{ section.settings.height_mode == 'section' }}",
+      "default": "screen-one-half",
+      "options": [
+        {"value": "content", "label": "Content height"},
+        {"value": "screen", "label": "Full screen height"},
+        {"value": "screen-five-sixths", "label": "Five sixths screen"},
+        {"value": "screen-three-quarters", "label": "Three quarters screen"},
+        {"value": "screen-one-half", "label": "One half screen"},
+        {"value": "screen-one-third", "label": "One third screen"},
+        {"value": "screen-one-quarter", "label": "One quarter screen"},
+        {"value": "custom", "label": "Custom"},
+      ]
+    },
+    {
+      "type": "select",
+      "id": "custom_height_type",
+      "label": "Height type",
+      "default": "percentage",
+      "options": [
+        {"value": "percentage", "label": "%"},
+        {"value": "px", "label": "px"},
+      ],
+      "visible_if": "{{ section.settings.height_mode == 'section' and section.settings.height == 'custom' }}"
+    },
+    {
+      "type": "range",
+      "id": "custom_height_percentage",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "label": "Custom height",
+      "default": 33,
+      "visible_if": "{{ section.settings.height_mode == 'section' and section.settings.height == 'custom' and section.settings.custom_height_type == 'percentage' }}",
+      "info": "Percentage of screen height"
+    },
+    {
+      "type": "range",
+      "id": "custom_height_px",
+      "min": 0,
+      "max": 1000,
+      "step": 50,
+      "unit": "px",
+      "label": "Custom height",
+      "default": 350,
+      "visible_if": "{{ section.settings.height_mode == 'section' and section.settings.height == 'custom' and section.settings.custom_height_type == 'px' }}"
+    },
+    {
+      "type": "select",
+      "id": "align_self",
+      "label": "Short column placement",
+      "default": "start",
+      "options": [
+        {"value": "start", "label": "⤒"},
+        {"value": "center", "label": "—"},
+        {"value": "end", "label": "⤓"}
+      ],
+      "visible_if": "{{ section.settings.height_mode == 'column' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_sticky",
+      "label": "Short column sticky",
+      "default": false,
+      "visible_if": "{{ section.settings.height_mode == 'column' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding_top",
+      "label": "Spacing top",
+      "min": 0,
+      "max": 200,
+      "step": 2,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "section_padding_bottom",
+      "label": "Spacing bottom",
+      "min": 0,
+      "max": 200,
+      "step": 2,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "header",
+      "content": "Columns"
+    },
+    {
+      "type": "select",
+      "id": "column_width",
+      "label": "First column width",
+      "default": "even",
+      "options": [
+        {"value": "first-wide", "label": "Wide"},
+        {"value": "even", "label": "Even"},
+        {"value": "second-wide", "label": "Slim"}
+      ]
+    },
+    {
+      "type": "select",
+      "id": "order_mobile",
+      "label": "Mobile order",
+      "default": "normal",
+      "options": [
+        {"value": "normal", "label": "Normal"},
+        {"value": "reversed", "label": "Reversed"},
+      ]
+    },
+    [% json 'schema/grid-gap-setting.jsonc', default_gap: 'lg', context: 'section.settings.' %]
+    {
+      "type": "header",
+      "content": "Interactive content"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_ensemble",
+      "label": "Link interactive content",
+      "default": true,
+      "info": "Slideshows, accordions, hotspots and tabs will be linked so that when one changes, the other changes as well."
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Auto-rotate slides",
+      "default": true,
+      "visible_if": "{{ section.settings.enable_ensemble }}"
+    },
+    {
+      "type":    "range",
+      "id":      "duration",
+      "min":     1,
+      "max":     15,
+      "step":    1,
+      "unit":    "sec",
+      "label":   "Change slides every",
+      "default": 5,
+      "visible_if": "{{ section.settings.autoplay and section.settings.enable_ensemble }}"
+    },
+    {
+      "type": "number",
+      "id": "img_columns_lg",
+      "label": "Image columns",
+      "default": 2,
+      "visible_if": "{{ false }}"
+    },
+    [% json 'schema/section-target-device-settings.jsonc' %]
+  ],
+  "blocks": [
+    {
+      "type": "_pair-banner",
+    },
+    {
+      "type": "_pair-pro-banner",
+    },
+    {
+      "type": "_pair-video",
+    },
+    {
+      "type": "_pair-custom",
+    },
+    {
+      "type": "_pair-slideshow",
+    },
+    {
+      "type": "_pair-hotspots"
+    },
+    {
+      "type": "_pair-card-grid"
+    },
+    {
+      "type": "_pair-card-slider"
+    },
+    {
+      "type": "_pair-card-showcase"
+    },
+    {
+      "type": "_pair-before-after"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Pair layout",
+    },
+    {
+      "name": "Pair hotspots and FAQ",
+      "category": "Try: Show your value",
+      "blocks": [
+        {
+          "type": "_pair-hotspots",
+          "blocks": [
+            [% json 'schema/hotspots-blocks-preset.jsonc' %]
+          ]
+        },
+        {
+          "type": "_pair-custom",
+          "blocks": [
+            {
+              "type": "_accordion-group",
+              "blocks": [
+                [% json 'schema/preset-accordion-blocks.jsonc' %]
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pair hotspots and showcase",
+      "category": "Try: Show your value",
+      "blocks": [
+        {
+          "type": "_pair-hotspots",
+          "settings": {
+            "set_color_scheme": true,
+            "background": "custom",
+            "background_custom": "#eeeeee"
+          },
+          "blocks": [
+            [% json 'schema/hotspots-blocks-preset.jsonc' %]
+          ]
+        },
+        {
+          "type": "_pair-card-showcase",
+          "settings": {
+            "set_color_scheme": true,
+            "framed_card_bg": "tint"
+          },
+          "blocks": [
+            {
+              "type": "_cards-products",
+              "settings": {
+                "source": "collection",
+                "card_limit": 3
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pair slideshow and FAQ",
+      "category": "Try: Show your value",
+      "blocks": [
+        {
+          "type": "_pair-slideshow",
+          "blocks": [
+            {
+              "type": "_pair-slide"
+            },
+            {
+              "type": "_pair-slide"
+            },
+            {
+              "type": "_pair-slide"
+            }
+          ]
+        },
+        {
+          "type": "_pair-custom",
+          "blocks": [
+            {
+              "type": "_accordion-group",
+              "blocks": [
+                [% json 'schema/preset-accordion-blocks.jsonc' %]
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pair text and image",
+      "category": "Try: Tell your story",
+      "settings": {
+        "gap": "custom",
+        "gap_custom": 0
+      },
+      "blocks": [
+        {
+          "type": "_pair-custom",
+          "blocks": [
+            {
+              "type": "theme-text",
+              "settings": {
+                "text": "Image with text"
+              }
+            },
+            {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Every piece is made with care, designed to last, and crafted to fit seamlessly into everyday life.</p>"
+              }
+            }
+          ]
+        },
+        {
+          "type": "_pair-banner",
+          "blocks": [
+            {
+              "type": "theme-button",
+              "settings": {
+                "text": "View products",
+                "href": "shopify://collections/all",
+                "open_in_new_window": false,
+                "appearance": "solid",
+                "sizing": "md",
+                "color": "content"
+              }
+            }
+          ]
+        },
+      ]
+    },
+    {
+      "name": "Pair text and compare images",
+      "category": "Try: Tell your story",
+      "blocks": [
+        {
+          "type": "_pair-custom",
+          "blocks": [
+            {
+              "type": "theme-text",
+              "settings": {
+                "text": "Image with text"
+              }
+            },
+            {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Every piece is made with care, designed to last, and crafted to fit seamlessly into everyday life.</p>"
+              }
+            },
+          ]
+        },
+        {
+          "type": "_pair-before-after",
+          "blocks": []
+        },
+      ]
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "custom.overlays", "custom.drawers"]
+  }
+}
+{% endschema %}

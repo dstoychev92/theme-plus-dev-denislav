@@ -1,0 +1,218 @@
+@layer base {
+  :root {
+    --card-list-min-showcase-width: 300px;
+  }
+}
+
+@layer components {
+  /* -------------------------------- */
+  /* Card list configuration classes  */
+  /* -------------------------------- */
+  /*
+    Grid layouts:
+    * Use grid-template-columns with a fixed number of columns (e.g., repeat(3, 1fr))
+    * grid-auto-flow: row creates new rows automatically as needed
+    * Cards wrap to new rows when columns are filled
+
+    Slider layouts:
+    * Use overflow-x: auto for horizontal scrolling
+    * grid-auto-flow: column creates as many columns as there are cards
+    * grid-auto-columns defines the width of each card column
+    * Cards scroll horizontally without wrapping
+    * Use scroll-padding with full-bleed section layout on mobile
+
+    Showcase layouts:
+    * Similar to sliders but with single full-width cards on desktop
+    * Include before/after pseudo-elements for center alignment at start/end
+    * Currently only implemented for pair sections
+  */
+
+  /* Pair section card lists */
+  /* Mobile */
+  @media not all and (min-width: theme('screens.md')) {
+    .vars-card-list-pair-mobile-grid {
+      --card-list-auto-flow: row;
+      /*
+      * --card-list-columns-mobile takes -card-list-columns-mobile and repeats that number of times, in slider this is usually settings.slider_columns_mobile but here it's 1 2 or 3
+      */
+      --card-list-template-columns: repeat(var(--card-list-columns-mobile, 2), minmax(0, 1fr));
+    }
+    .vars-card-list-pair-mobile-slider {
+      --card-list-overflow-x: auto;
+      --card-list-auto-flow: column;
+      --card-list-auto-columns: calc(
+        (100% - calc(var(--layout-gutter-x) * max((var(--card-list-columns-mobile) - 1), 1))) /
+          var(--card-list-columns-mobile)
+      );
+      --card-list-template-rows: minmax(0, 1fr);
+      --card-list-scroll-padding: var(--root-buffer);
+
+      /* If the card list track has only one child we want card to take up the full width of the track */
+      &:has(card-list-track > :only-child) {
+        --card-list-columns-mobile: 1;
+        --card-list-auto-columns: 100%;
+      }
+    }
+  }
+
+  /* Tablet */
+  @media (min-width: theme('screens.md')) and (max-width: theme('screens.lg')) {
+    .vars-card-list-pair-tablet-grid {
+      --card-list-auto-flow: row;
+      --card-list-template-columns: repeat(var(--card-list-columns-tablet, 3), minmax(0, 1fr));
+    }
+
+    .vars-card-list-pair-tablet-slider {
+      --card-list-overflow-x: auto;
+      --card-list-auto-flow: column;
+      --card-list-auto-columns: calc(
+        (100% - calc(var(--layout-gutter-x) * max((var(--card-list-columns-tablet) - 1), 1))) /
+          var(--card-list-columns-tablet)
+      );
+      --card-list-template-rows: minmax(0, 1fr);
+      --card-list-row-gap: var(--layout-gutter-y);
+      --card-list-snap-align: center;
+    }
+
+    .vars-card-list-pair-tablet-showcase {
+      --card-list-overflow-x: auto;
+      --card-list-auto-flow: column;
+      --card-list-auto-columns: 100%;
+      --card-list-template-rows: minmax(0, 1fr);
+      --card-list-row-gap: var(--layout-gutter-y);
+      --card-list-max-width: max(var(--card-list-showcase-tablet-width), var(--card-list-min-showcase-width));
+    }
+  }
+
+  /* Desktop */
+  @media (min-width: theme('screens.lg')) {
+    .vars-card-list-pair-desktop-grid {
+      --card-list-overflow-x: visible;
+      --card-list-auto-flow: row;
+      --card-list-template-columns: repeat(var(--card-list-columns-desktop, 3), minmax(0, 1fr));
+    }
+
+    .vars-card-list-pair-desktop-slider {
+      --card-list-overflow-x: auto;
+      --card-list-auto-flow: column;
+      --card-list-auto-columns: calc(
+        (100% - calc(var(--layout-gutter-x) * max((var(--card-list-columns-desktop) - 1), 1))) /
+          var(--card-list-columns-desktop)
+      );
+      --card-list-template-rows: minmax(0, 1fr);
+      --card-list-snap-align: center;
+    }
+
+    .vars-card-list-pair-desktop-showcase {
+      --card-list-overflow-x: auto;
+      --card-list-auto-flow: column;
+      --card-list-auto-columns: 100%;
+      --card-list-template-rows: minmax(0, 1fr);
+      --card-list-max-width: max(var(--card-list-showcase-desktop-width), var(--card-list-min-showcase-width));
+    }
+  }
+
+  /* Full width card list sections */
+
+  /* Mobile */
+  @media not all and (min-width: theme('screens.md')) {
+    .vars-card-list-full-width-mobile-card-grid {
+      --card-list-auto-flow: row;
+      --card-list-template-columns: repeat(var(--card-list-columns-mobile, 3), minmax(0, 1fr));
+    }
+    .vars-card-list-full-width-mobile-card-slider {
+      --card-list-overflow-x: auto;
+      --card-list-auto-flow: column;
+      --card-list-auto-columns: calc(
+        (100% - calc(var(--layout-gutter-x) * (var(--card-list-columns-mobile) - 1))) / var(--card-list-columns-mobile)
+      );
+      --card-list-template-rows: minmax(0, 1fr);
+      --card-list-scroll-padding: var(--root-buffer);
+
+      /* If the card list track has only one child we want card to take up the full width of the track */
+      &:has(card-list-track > :only-child) {
+        --card-list-columns-mobile: 1;
+      }
+    }
+  }
+
+  /* Tablet */
+  @media (min-width: theme('screens.md')) and (max-width: theme('screens.lg')) {
+    .vars-card-list-full-width-tablet-card-grid {
+      --card-list-auto-flow: row;
+      --card-list-template-columns: repeat(var(--card-list-columns-tablet, 3), minmax(0, 1fr));
+    }
+    .vars-card-list-full-width-tablet-card-slider {
+      --card-list-overflow-x: auto;
+      --card-list-auto-flow: column;
+      --card-list-auto-columns: calc(
+        (100% - calc(var(--layout-gutter-x) * max((var(--card-list-columns-tablet) - 1), 1))) /
+          var(--card-list-columns-tablet)
+      );
+      --card-list-template-rows: minmax(0, 1fr);
+    }
+  }
+
+  /* Desktop */
+  @media (min-width: theme('screens.lg')) {
+    .vars-card-list-full-width-desktop-card-grid {
+      --card-list-auto-flow: row;
+      --card-list-template-columns: repeat(var(--card-list-columns-desktop, 3), minmax(0, 1fr));
+    }
+
+    .vars-card-list-full-width-desktop-card-slider {
+      --card-list-overflow-x: auto;
+      --card-list-auto-flow: column;
+      --card-list-auto-columns: calc(
+        (100% - calc(var(--layout-gutter-x) * max((var(--card-list-columns-desktop) - 1), 1))) /
+          var(--card-list-columns-desktop)
+      );
+      --card-list-template-rows: minmax(0, 1fr);
+    }
+  }
+
+  /* Mobile */
+  @media not all and (min-width: theme('screens.md')) {
+    .apply-card-list-vars {
+      --overflow-x: var(--card-list-overflow-x-mobile, var(--card-list-overflow-x));
+      --grid-auto-flow: var(--card-list-auto-flow-mobile, var(--card-list-auto-flow));
+      --grid-auto-columns: var(--card-list-auto-columns-mobile, var(--card-list-auto-columns));
+      --grid-auto-rows: var(--card-list-auto-rows-mobile, var(--card-list-auto-rows));
+      --grid-template-rows: var(--card-list-template-rows-mobile, var(--card-list-template-rows));
+      --grid-template-columns: var(--card-list-template-columns-mobile, var(--card-list-template-columns));
+      --scroll-padding: var(--card-list-scroll-padding-mobile, var(--card-list-scroll-padding, 0px));
+      --max-width: var(--card-list-max-width-mobile, var(--card-list-max-width, 100%));
+      --snap-align: var(--card-list-snap-align-mobile, var(--card-list-snap-align, start));
+    }
+  }
+
+  /* Tablet */
+  @media (min-width: theme('screens.md')) and (max-width: theme('screens.lg')) {
+    .apply-card-list-vars {
+      --overflow-x: var(--card-list-overflow-x-tablet, var(--card-list-overflow-x));
+      --grid-auto-flow: var(--card-list-auto-flow-tablet, var(--card-list-auto-flow));
+      --grid-auto-columns: var(--card-list-auto-columns-tablet, var(--card-list-auto-columns));
+      --grid-auto-rows: var(--card-list-auto-rows-tablet, var(--card-list-auto-rows));
+      --grid-template-rows: var(--card-list-template-rows-tablet, var(--card-list-template-rows));
+      --grid-template-columns: var(--card-list-template-columns-tablet, var(--card-list-template-columns));
+      --scroll-padding: var(--card-list-scroll-padding-tablet, var(--card-list-scroll-padding, 0px));
+      --max-width: var(--card-list-max-width-tablet, var(--card-list-max-width, 100%));
+      --snap-align: var(--card-list-snap-align-tablet, var(--card-list-snap-align, start));
+    }
+  }
+
+  /* Desktop */
+  @media (min-width: theme('screens.lg')) {
+    .apply-card-list-vars {
+      --overflow-x: var(--card-list-overflow-x-desktop, var(--card-list-overflow-x));
+      --grid-auto-flow: var(--card-list-auto-flow-desktop, var(--card-list-auto-flow));
+      --grid-auto-columns: var(--card-list-auto-columns-desktop, var(--card-list-auto-columns));
+      --grid-auto-rows: var(--card-list-auto-rows-desktop, var(--card-list-auto-rows));
+      --grid-template-rows: var(--card-list-template-rows-desktop, var(--card-list-template-rows));
+      --grid-template-columns: var(--card-list-template-columns-desktop, var(--card-list-template-columns));
+      --scroll-padding: var(--card-list-scroll-padding-desktop, var(--card-list-scroll-padding, 0px));
+      --max-width: var(--card-list-max-width-desktop, var(--card-list-max-width, 100%));
+      --snap-align: var(--card-list-snap-align-desktop, var(--card-list-snap-align, start));
+    }
+  }
+}

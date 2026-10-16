@@ -1,0 +1,21 @@
+packages:
+  - theme
+  - .tradecraft/*
+  - .tradecraft/vendor/*
+  - packages/*
+
+nodeLinker: hoisted
+
+overrides:
+  alpinejs: 3.15.11
+  prettier: 3.9.6
+  '@types/alpinejs': 3.13.5
+  motion: 12.36.0
+  framer-motion: 12.36.0
+  motion-dom: 12.36.0
+
+linkWorkspacePackages: true
+
+allowBuilds:
+  '@parcel/watcher': true
+  esbuild: true

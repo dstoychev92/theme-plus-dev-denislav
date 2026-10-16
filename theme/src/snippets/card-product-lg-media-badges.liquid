@@ -1,0 +1,105 @@
+{% doc %}
+  - Renders sold-out, sale, metafield, and rating badges on a product card
+
+  @param {string} [class] - The classes
+  @param {product} product
+  @param {variant} [variant] - availability and badge source, defaults to product
+{% enddoc %}
+
+{%- liquid
+  assign target = variant | default: product
+  # Sold-out badge
+  assign sold_out = true
+  if target.available
+    assign sold_out = false
+  endif
+
+  assign sellout_badge = false
+  if sold_out and settings.badge_sellout
+    assign sellout_badge = true
+  endif
+
+  # Custom Metafield badge
+  assign custom_metafield_badge_product = false
+  assign custom_metafield_badge_variant = false
+  if settings.metafield_badge != blank
+    assign badge_metafield_namespace = settings.metafield_badge | split: '.' | first
+    assign badge_metafield_key = settings.metafield_badge | split: '.' | last
+    assign product_badge_metafield = product.metafields[badge_metafield_namespace][badge_metafield_key]
+
+    if product_badge_metafield != blank and product_badge_metafield.type contains 'single_line_text_field'
+      assign custom_metafield_badge_product = true
+      assign custom_metafield_badge_product_content = product_badge_metafield.value
+    endif
+
+    assign variant_badge_metafield = variant.metafields[badge_metafield_namespace][badge_metafield_key]
+
+    # Variant badges
+    if variant_badge_metafield != blank and variant_badge_metafield.type contains 'single_line_text_field'
+      assign custom_metafield_badge_variant = true
+      assign custom_metafield_badge_variant_content = variant_badge_metafield.value
+    endif
+  endif
+-%}
+
+<product-card-badges class="flex flex-wrap gap-r2 {{ class }}">
+  {%- if sellout_badge -%}
+    <div>
+      {% capture sellout_badge_content %}
+        {{ 'product.sold_out' | t }}
+      {% endcapture %}
+      {% render 'card-product-lg-media-badges-style', content: sellout_badge_content %}
+    </div>
+  {%- endif -%}
+
+  {% capture sale_badge_content %}
+    {% render 'card-product-sale-summary', product: product, variant: variant %}
+  {% endcapture %}
+  {% assign sale_badge_content = sale_badge_content | strip %}
+  {% if sale_badge_content != blank %}
+    <div>
+      {%- if settings.set_sale_badge_color -%}
+        {% render 'card-product-lg-media-badges-style',
+          content: sale_badge_content,
+          bg_color: settings.sale_badge_color_bg,
+          text_color: settings.sale_badge_color_text
+        %}
+      {%- else -%}
+        {% render 'card-product-lg-media-badges-style', content: sale_badge_content %}
+      {%- endif -%}
+    </div>
+  {% endif %}
+
+  {%- if custom_metafield_badge_product -%}
+    {%- for badge in custom_metafield_badge_product_content -%}
+      <div>
+        {% capture custom_metafield_badge_product_content %}
+          {{ badge | strip_html | strip }}
+        {% endcapture %}
+        {% render 'card-product-lg-media-badges-style', content: custom_metafield_badge_product_content %}
+      </div>
+    {%- endfor -%}
+  {%- endif -%}
+
+  {%- if custom_metafield_badge_variant -%}
+    {%- for badge in custom_metafield_badge_variant_content -%}
+      <div>
+        {% capture custom_metafield_badge_variant_content %}
+          {{ badge | strip_html | strip }}
+        {% endcapture %}
+        {% render 'card-product-lg-media-badges-style', content: custom_metafield_badge_variant_content %}
+      </div>
+    {%- endfor -%}
+  {%- endif -%}
+
+  {% if settings.card_rating_enable and settings.card_rating_position == 'badge' %}
+    {% if product.metafields.reviews.rating.value != blank %}
+      <div>
+        {% capture star_rating %}
+          {% render 'product-rating', product: product, rating_show_count: settings.card_rating_show_count %}
+        {% endcapture %}
+        {% render 'card-product-lg-media-badges-style', content: star_rating %}
+      </div>
+    {% endif %}
+  {% endif %}
+</product-card-badges>

@@ -1,0 +1,74 @@
+{% doc %}
+  - Renders slider arrow button
+
+  Reads $overflow from an enclosing x-overflow scope.
+
+  @param {string} [attributes]
+  @param {string} [background_style] - 'bare', 'fill', 'stroke' or 'soft', defaults to settings.slider_control_style when set, then 'bare'
+  @param {string} [class] - The classes
+  @param {string} [size] - suffix for vars-btn-*, defaults to 'md'
+  @param {string} [style] - inline styles
+  @param {string} [type] - 'prev' or 'next', prints an error message otherwise
+{% enddoc %}
+
+{% liquid
+  assign size = size | default: 'md'
+  unless background_style
+    if settings.set_slider_control_style
+      assign background_style = settings.slider_control_style
+    else
+      assign background_style = 'bare'
+    endif
+  endunless
+%}
+
+{% capture icon_class %}
+  rtl:rotate-180
+{% endcapture %}
+
+{% if type != blank %}
+  {% if type == 'next' %}
+    {% assign label = 'other.accessibility.next_items' | t %}
+    {% assign icon = 'stroke-chevron-right' %}
+    {% capture attributes %}
+      x-carousel:next
+      :disabled="!$overflow.end"
+      :data-overflow-end-amount="$overflow.end"
+      {{ attributes }}
+    {% endcapture %}
+  {% elsif type == 'prev' %}
+    {% assign label = 'other.accessibility.prev_items' | t %}
+    {% assign icon = 'stroke-chevron-left' %}
+    {% capture attributes %}
+      x-carousel:prev
+      :disabled="!$overflow.start"
+      :data-overflow-start-amount="$overflow.start"
+      {{ attributes }}
+    {% endcapture %}
+  {% endif %}
+
+  <button
+    class="
+      {{ class }} transition hover:opacity-50
+      vars-btn-{{ size }} text-r3 relative
+
+      slider-control vars-btn-content vars-btn-{{ background_style }}
+      flex flex-center rounded-pill
+
+      {% if background_style == 'bare' %}
+        hit-area [--hit-area-top:var(--btn-padding)] [--hit-area-bottom:var(--btn-padding)]
+        first:ps-0 first:[--hit-area-left:var(--btn-padding)]
+        last:pe-0 last:[--hit-area-right:var(--btn-padding)]
+      {% else %}
+        size-btn
+      {% endif %}
+    "
+    aria-label="{{ label }}"
+    style="{{ style }}"
+    {{ attributes }}
+  >
+    {% render 'core-icon', icon: icon, class: icon_class %}
+  </button>
+{% else %}
+  Error: you must pass type: 'next', or type: 'prev' to this snippet
+{% endif %}

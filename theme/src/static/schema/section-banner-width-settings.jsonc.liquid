@@ -1,0 +1,41 @@
+[
+  {
+    "type": "checkbox",
+    "id": "contain_section",
+    "label": "[= contain_section_label | default: 'Contain section' =]",
+    "default": false
+  },
+  {
+    "type": "select",
+    "id": "section_width",
+    "label": "Width",
+    "visible_if": "{{ section.settings.contain_section }}",
+    "default": "full",
+    "options": [
+      {"value": "full", "label": "Full"},
+      {"value": "page", "label": "Page"}
+    ]
+  },
+  {
+    "type": "range",
+    "id": "section_padding_top",
+    "label": "Spacing top",
+    "min": 0,
+    "max": 200,
+    "step": 2,
+    "unit": "px",
+    "default": 40,
+    "visible_if": "{{ section.settings.contain_section }}"
+  },
+  {
+    "type": "range",
+    "id": "section_padding_bottom",
+    "label": "Spacing bottom",
+    "min": 0,
+    "max": 200,
+    "step": 2,
+    "unit": "px",
+    "default": 40,
+    "visible_if": "{{ section.settings.contain_section }}"
+  }
+]

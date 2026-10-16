@@ -1,0 +1,232 @@
+{% doc %}
+  - Renders scrolling marquee holding other blocks
+{% enddoc %}
+
+{%- liquid
+  if block.settings.set_alignment
+    assign effective_alignment = block.settings.block_alignment
+  else
+    assign effective_alignment = 'middle'
+  endif
+-%}
+
+{% capture marquee_class %}
+  overflow-hidden
+  {% comment %} Constrains the root to its parent's width. Without this, `min-width: auto` on the flex item lets the container inflate to source+target intrinsic width — the marquee plugin then reads a stale viewport size and `.fill` under-clones, leaving visible gaps at the wrap. {% endcomment %}
+  w-full min-w-0
+  {% render 'props-class-background', s: block.settings %}
+{% endcapture %}
+
+{% capture marquee_style %}
+  {% comment %} Always emit --custom-gutter-x so text-groups inside the marquee can inherit a consistent gap. The schema's `gap` default ('lg') is used when set_gap is off. {% endcomment %}
+  {% render 'props-style-gap', s: block.settings, apply: false %}
+  {%- if block.settings.set_spacing -%}
+    --marquee-pt: {{ block.settings.padding_top }}px;
+    --marquee-pb: {{ block.settings.padding_bottom }}px;
+  {%- else -%}
+    --marquee-pt: var(--root-space-lg);
+    --marquee-pb: var(--root-space-lg);
+  {%- endif -%}
+  {% render 'props-style-background', s: block.settings %}
+{% endcapture %}
+
+{% capture marquee_content %}
+  {% content_for "blocks" %}
+{% endcapture %}
+
+{% capture attributes %}
+  {% case block.settings.pause_on_hover %}
+    {% when 'anywhere' %}
+      @mouseenter="$marquee.pause()"
+      @mouseleave="$marquee.play()"
+    {% when 'interactive' %}
+      @mouseover="if ($event.target.closest('a, button')) $marquee.pause()"
+      @mouseout="if (!$event.relatedTarget || !$event.relatedTarget.closest('a, button')) $marquee.play()"
+  {% endcase %}
+
+  {% if request.design_mode %}
+    @shopify:block:select="$marquee.pause()"
+    @shopify:block:deselect="$marquee.play()"
+  {% endif %}
+  {{ block.shopify_attributes }}
+{% endcapture %}
+
+{% render 'marquee',
+  s: block.settings,
+  block_alignment: effective_alignment,
+  content: marquee_content,
+  class: marquee_class,
+  style: marquee_style,
+  attributes: attributes
+%}
+
+{% schema %}
+{
+  "name": "Marquee",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Animation"
+    },
+    {
+      "type": "range",
+      "id": "speed",
+      "label": "Speed",
+      "min": -10,
+      "max": 10,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "select",
+      "id": "pause_on_hover",
+      "label": "Pause on hover",
+      "default": "interactive",
+      "info": "Auto: pause when hovering links or buttons",
+      "options": [
+        {"value": "interactive", "label": "Auto"},
+        {"value": "anywhere", "label": "On"},
+        {"value": "off", "label": "Off"}
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_spacing",
+      "label": "Set spacing",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "default": 40,
+      "unit": "px",
+      "visible_if": "{{ block.settings.set_spacing }}"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "default": 40,
+      "unit": "px",
+      "visible_if": "{{ block.settings.set_spacing }}"
+    },
+    {
+      "type": "header",
+      "content": "Alignment"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_alignment",
+      "label": "Set alignment",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "block_alignment",
+      "label": "Block alignment",
+      "info": "Relevant when blocks are different heights",
+      "default": "middle",
+      "options": [
+        {"value": "top", "label": "⤒"},
+        {"value": "middle", "label": "—"},
+        {"value": "bottom", "label": "⤓"}
+      ],
+      "visible_if": "{{ block.settings.set_alignment }}"
+    },
+    {
+      "type": "header",
+      "content": "Gap"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_gap",
+      "label": "Set gap",
+      "default": false
+    },
+    [% json 'schema/grid-gap-setting.jsonc', default_gap: 'lg', conditional: 'block.settings.set_gap', max_gap_custom: 200 %]
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_color_scheme",
+      "label": "Set colors",
+      "default": false
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "visible_if": "{{ block.settings.set_color_scheme }}"
+    },
+    {
+      "type": "select",
+      "id": "background",
+      "label": "Background",
+      "default": "canvas",
+      "options": [
+        {"value": "canvas", "label": "Default"},
+        {"value": "tint", "label": "Tint"},
+        {"value": "transparent", "label": "∅"},
+        {"value": "custom", "label": "⋯"}
+      ],
+      "visible_if": "{{ block.settings.set_color_scheme }}"
+    },
+    {
+      "type": "color",
+      "id": "background_custom",
+      "label": "Background color",
+      "default": "#f7f7f730",
+      "alpha": true,
+      "visible_if": "{{ block.settings.set_color_scheme and block.settings.background == 'custom' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "background_blur",
+      "label": "Blur background",
+      "info": "For best results, use 5% - 90% opacity",
+      "default": false,
+      "visible_if": "{{ block.settings.set_color_scheme and block.settings.background == 'custom' }}"
+    }
+  ],
+  "blocks": [
+    { "type": "theme-group-text" },
+    { "type": "_marquee-gallery" },
+    { "type": "_marquee-frame" }
+  ],
+  "presets": [
+    {
+      "name": "Marquee",
+      "category": "Layout",
+      "settings": {
+      },
+      "blocks": [
+        {
+          "type": "theme-group-text",
+          "settings": {
+            "type_preset": "h1"
+          },
+          "blocks": [
+            { "type": "_inline-text", "settings": { "text": "Best sellers" } },
+            { "type": "_inline-text", "settings": { "text": "Featured collection" } },
+            { "type": "_inline-text", "settings": { "text": "New arrivals" } }
+          ]
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

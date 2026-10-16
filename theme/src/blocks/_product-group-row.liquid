@@ -1,0 +1,32 @@
+{% doc %}
+  - Renders horizontal row holding product blocks
+
+  Children scroll sideways when they overflow.
+{% enddoc %}
+
+[%- capture additional_presets -%]
+  {
+    "name": "Row",
+    "settings": {
+      "gap": "lg"
+    },
+    "blocks": [
+      {
+        "type": "theme-button"
+      },
+      {
+        "type": "theme-link",
+        "settings": {
+          "appearance": "both"
+        }
+      }
+    ]
+  }
+[%- endcapture -%]
+
+[% capture additional_blocks %]
+  [% json 'schema/blocks-theme-node.jsonc' %]
+  [% json 'schema/blocks-product-inline.jsonc' %]
+[% endcapture %]
+
+[% render 'groups/row', additional_blocks: additional_blocks, additional_presets: additional_presets %]

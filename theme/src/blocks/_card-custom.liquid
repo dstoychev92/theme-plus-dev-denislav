@@ -1,0 +1,124 @@
+{% doc %}
+  - Renders custom card with background media and optional link
+
+  Places _card-custom-overlay as 'overlay' and _card-custom-details as 'details' through
+  content_for 'block'. Aspect ratio defaults to settings.card_aspect_ratio.
+{% enddoc %}
+
+{% liquid
+  assign aspect_ratio = settings.card_aspect_ratio
+  if block.settings.set_aspect_ratio
+    assign aspect_ratio = block.settings.aspect_ratio
+  endif
+
+  if block.settings.href != blank
+    assign has_link = true
+    assign url = block.settings.href
+  endif
+-%}
+
+{%- capture sizes -%}
+  {%- render 'image-grid-sizes' -%}
+{%- endcapture -%}
+
+{%- capture widths -%}
+  {%- render 'image-grid-widths' -%}
+{%- endcapture -%}
+
+{% capture card_media %}
+  {% render 'core-background-media',
+    s: block.settings,
+    aspect_ratio: aspect_ratio,
+    sizes: sizes,
+    widths: widths,
+    placeholder: 'image'
+  %}
+{% endcapture %}
+
+{% capture media_overlay %}
+  {% content_for 'block', type: '_card-custom-overlay', id: 'overlay' %}
+{% endcapture %}
+
+{% capture content %}
+  {% content_for 'block', type: '_card-custom-details', id: 'details' %}
+{% endcapture %}
+
+{% if content == blank %}
+  {% assign content = false %}
+{% endif %}
+
+{% if has_link and block.settings.open_in_new_window %}
+  {% assign link_attributes = 'target="_blank"' %}
+{% endif %}
+
+{% render 'card-layout-lg',
+  id: block.id,
+  url: url,
+  link_attributes: link_attributes,
+  media: card_media,
+  media_overlay: media_overlay,
+  content: content,
+  attributes: block.shopify_attributes,
+  aspect_ratio: aspect_ratio
+%}
+
+{% schema %}
+{
+  "name": "Custom card",
+  "tag": null,
+  "settings": [
+    [% json 'schema/media-settings.jsonc', context: 'block.settings.' %]
+    [% json 'schema/aspect-ratio-settings.jsonc' %]
+    {
+      "type": "url",
+      "id": "href",
+      "label": "Link"
+    },
+    {
+      "type": "checkbox",
+      "id": "open_in_new_window",
+      "label": "Open link in new window",
+      "default": false,
+      "visible_if": "{{ block.settings.href != blank }}"
+    },
+  ],
+  "blocks": [
+    { "type": "_card-custom-overlay" },
+    { "type": "_card-custom-details" }
+  ],
+  "presets": [
+    {
+      "name": "Custom card",
+      "category": "Featured card",
+      "blocks": [
+        {
+          "type": "_card-custom-overlay",
+          "static": true,
+          "id": "overlay",
+          "blocks": []
+        },
+        {
+          "type": "_card-custom-details",
+          "static": true,
+          "id": "details",
+          "blocks": [
+            {
+              "type": "theme-text",
+              "settings": {
+                "text": "Made with care",
+                "type_preset": "h6"
+              }
+            },
+            {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Quality you can feel, crafted to last.</p>"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

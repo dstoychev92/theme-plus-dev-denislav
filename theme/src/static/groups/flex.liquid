@@ -1,0 +1,424 @@
+{% liquid
+  assign direction = block.settings.direction
+  assign wrap = block.settings.wrap
+  assign full_width = block.settings.full_width
+
+  if direction == 'row' or direction == 'row-reverse'
+    assign justify = block.settings.justify_row
+    assign align = block.settings.align_row
+  else
+    assign justify = block.settings.justify_column
+    assign align = block.settings.align_column
+  endif
+
+  assign align_content = block.settings.align_content
+
+  assign gap = block.settings.gap
+  assign gap_custom = block.settings.gap_custom
+  case gap
+    when 'sm'
+      assign gap_x_md = 'var(--root-space-sm)'
+      assign gap_y_md = 'var(--raw-space-sm)'
+    when 'md'
+      assign gap_x_md = 'var(--root-space-md)'
+      assign gap_y_md = 'var(--raw-space-md)'
+    when 'lg'
+      assign gap_x_md = 'var(--root-space-lg)'
+      assign gap_y_md = 'var(--raw-space-lg)'
+    when 'custom'
+      assign gap_x_md = 'calc(' | append: gap_custom | append: 'px * var(--r-multiplier))'
+      assign gap_y_md = 'calc(' | append: gap_custom | append: 'px)'
+  endcase
+
+  assign set_breakpoint = block.settings.set_breakpoint
+
+  if set_breakpoint
+    assign breakpoint_value = block.settings.breakpoint | default: 'md'
+    if breakpoint_value == 'lg'
+      assign bp_prefix = 'max-lg'
+    else
+      assign bp_prefix = 'max-md'
+    endif
+
+    assign direction_mobile = block.settings.direction_mobile
+    assign wrap_mobile = block.settings.wrap_mobile
+    assign full_width_mobile = block.settings.full_width_mobile
+
+    if direction_mobile == 'row' or direction_mobile == 'row-reverse'
+      assign justify_mobile = block.settings.justify_row_mobile
+      assign align_mobile = block.settings.align_row_mobile
+    else
+      assign justify_mobile = block.settings.justify_column_mobile
+      assign align_mobile = block.settings.align_column_mobile
+    endif
+    assign align_content_mobile = block.settings.align_content_mobile
+
+    assign gap_m = block.settings.gap_mobile
+    assign gap_custom_m = block.settings.gap_custom_mobile
+    case gap_m
+      when 'sm'
+        assign gap_x_sm = 'var(--root-space-sm)'
+        assign gap_y_sm = 'var(--raw-space-sm)'
+      when 'md'
+        assign gap_x_sm = 'var(--root-space-md)'
+        assign gap_y_sm = 'var(--raw-space-md)'
+      when 'lg'
+        assign gap_x_sm = 'var(--root-space-lg)'
+        assign gap_y_sm = 'var(--raw-space-lg)'
+      when 'custom'
+        assign gap_x_sm = 'calc(' | append: gap_custom_m | append: 'px * var(--r-multiplier))'
+        assign gap_y_sm = 'calc(' | append: gap_custom_m | append: 'px)'
+    endcase
+  endif
+%}
+
+<div
+  class="
+    flex
+    vars-content-align-{{ block.settings.text_alignment }} text-content-align items-content-align
+    {% if full_width %}w-full{% endif %}
+    [--flex-direction:var(--flex-direction-md)]
+    [--flex-wrap:var(--flex-wrap-md)]
+    [--justify-content:var(--justify-content-md)]
+    [--align-items:var(--align-items-md)]
+    [--align-content:var(--align-content-md)]
+    [--layout-gutter-x:var(--layout-gutter-x-md)]
+    [--layout-gutter-y:var(--layout-gutter-y-md)]
+    {% comment %}
+      Both max-md: and max-lg: variants are written literally so Tailwind's
+      static class scan compiles both rules. Liquid picks which set to emit.
+    {% endcomment %}
+    {% if set_breakpoint and bp_prefix == 'max-md' %}
+      max-md:[--flex-direction:var(--flex-direction-sm)]
+      max-md:[--flex-wrap:var(--flex-wrap-sm)]
+      max-md:[--justify-content:var(--justify-content-sm)]
+      max-md:[--align-items:var(--align-items-sm)]
+      max-md:[--align-content:var(--align-content-sm)]
+      max-md:[--layout-gutter-x:var(--layout-gutter-x-sm)]
+      max-md:[--layout-gutter-y:var(--layout-gutter-y-sm)]
+      {% if full_width_mobile and full_width == false %}
+        max-md:w-full
+      {% elsif full_width_mobile == false and full_width %}
+        max-md:w-auto
+      {% endif %}
+    {% elsif set_breakpoint and bp_prefix == 'max-lg' %}
+      max-lg:[--flex-direction:var(--flex-direction-sm)]
+      max-lg:[--flex-wrap:var(--flex-wrap-sm)]
+      max-lg:[--justify-content:var(--justify-content-sm)]
+      max-lg:[--align-items:var(--align-items-sm)]
+      max-lg:[--align-content:var(--align-content-sm)]
+      max-lg:[--layout-gutter-x:var(--layout-gutter-x-sm)]
+      max-lg:[--layout-gutter-y:var(--layout-gutter-y-sm)]
+      {% if full_width_mobile and full_width == false %}
+        max-lg:w-full
+      {% elsif full_width_mobile == false and full_width %}
+        max-lg:w-auto
+      {% endif %}
+    {% endif %}
+
+    {% comment %} Disable entrance animations in visual preview mode to prevent "No preview available" error {% endcomment %}
+    {% unless request.visual_preview_mode %}
+      entrance-item entrance-standard no-children-entrance
+    {% endunless %}
+  "
+  style="
+    --flex-direction-md: {{ direction }};
+    --flex-wrap-md: {{ wrap }};
+    --justify-content-md: {{ justify }};
+    --align-items-md: {{ align }};
+    --align-content-md: {{ align_content }};
+    --layout-gutter-x-md: {{ gap_x_md }};
+    --layout-gutter-y-md: {{ gap_y_md }};
+    {% if set_breakpoint %}
+      --flex-direction-sm: {{ direction_mobile }};
+      --flex-wrap-sm: {{ wrap_mobile }};
+      --justify-content-sm: {{ justify_mobile }};
+      --align-items-sm: {{ align_mobile }};
+      --align-content-sm: {{ align_content_mobile }};
+      --layout-gutter-x-sm: {{ gap_x_sm }};
+      --layout-gutter-y-sm: {{ gap_y_sm }};
+    {% endif %}
+    --layout-gutter: var(--layout-gutter-x);
+    flex-direction: var(--flex-direction);
+    flex-wrap: var(--flex-wrap);
+    justify-content: var(--justify-content);
+    align-items: var(--align-items);
+    align-content: var(--align-content);
+    column-gap: var(--layout-gutter-x);
+    row-gap: var(--layout-gutter-y);
+  "
+  {{ block.shopify_attributes }}
+>
+  {% content_for 'blocks' %}
+</div>
+
+{% schema %}
+{
+  "name": "Flex",
+  "tag": null,
+  "settings": [
+    {
+      "type": "select",
+      "id": "direction",
+      "label": "Direction",
+      "default": "row",
+      "options": [
+        {"value": "row", "label": "→ Row"},
+        {"value": "row-reverse", "label": "← Row reverse"},
+        {"value": "column", "label": "↓ Column"},
+        {"value": "column-reverse", "label": "↑ Column reverse"}
+      ]
+    },
+    {
+      "type": "select",
+      "id": "wrap",
+      "label": "Wrap",
+      "default": "nowrap",
+      "options": [
+        {"value": "nowrap", "label": "— No wrap"},
+        {"value": "wrap", "label": "↓ Wrap"},
+        {"value": "wrap-reverse", "label": "↑ Wrap reverse"}
+      ]
+    },
+    {
+      "type": "select",
+      "id": "justify_row",
+      "label": "Justify",
+      "default": "start",
+      "options": [
+        {"value": "start", "label": "⇤ Start"},
+        {"value": "center", "label": "| Center"},
+        {"value": "end", "label": "⇥ End"},
+        {"value": "space-between", "label": "↔ Between"},
+        {"value": "space-around", "label": "⟷ Around"},
+        {"value": "space-evenly", "label": "⇄ Evenly"}
+      ],
+      "visible_if": "{{ block.settings.direction == 'row' or block.settings.direction == 'row-reverse' }}"
+    },
+    {
+      "type": "select",
+      "id": "justify_column",
+      "label": "Justify",
+      "default": "start",
+      "options": [
+        {"value": "start", "label": "⤒ Top"},
+        {"value": "center", "label": "— Middle"},
+        {"value": "end", "label": "⤓ Bottom"},
+        {"value": "space-between", "label": "↕ Between"},
+        {"value": "space-around", "label": "⟷ Around"},
+        {"value": "space-evenly", "label": "⇅ Evenly"}
+      ],
+      "visible_if": "{{ block.settings.direction == 'column' or block.settings.direction == 'column-reverse' }}"
+    },
+    {
+      "type": "select",
+      "id": "align_row",
+      "label": "Align",
+      "default": "stretch",
+      "options": [
+        {"value": "start", "label": "⤒ Top"},
+        {"value": "center", "label": "— Middle"},
+        {"value": "end", "label": "⤓ Bottom"},
+        {"value": "stretch", "label": "↕ Stretch"},
+        {"value": "baseline", "label": "_ Baseline"}
+      ],
+      "visible_if": "{{ block.settings.direction == 'row' or block.settings.direction == 'row-reverse' }}"
+    },
+    {
+      "type": "select",
+      "id": "align_column",
+      "label": "Align",
+      "default": "stretch",
+      "options": [
+        {"value": "start", "label": "⇤ Left"},
+        {"value": "center", "label": "| Center"},
+        {"value": "end", "label": "⇥ Right"},
+        {"value": "stretch", "label": "↔ Stretch"},
+        {"value": "baseline", "label": "_ Baseline"}
+      ],
+      "visible_if": "{{ block.settings.direction == 'column' or block.settings.direction == 'column-reverse' }}"
+    },
+    {
+      "type": "select",
+      "id": "align_content",
+      "label": "Align lines",
+      "default": "stretch",
+      "options": [
+        {"value": "start", "label": "⤒ Top"},
+        {"value": "center", "label": "— Middle"},
+        {"value": "end", "label": "⤓ Bottom"},
+        {"value": "stretch", "label": "↕ Stretch"},
+        {"value": "space-between", "label": "↕ Between"},
+        {"value": "space-around", "label": "⟷ Around"},
+        {"value": "space-evenly", "label": "⇅ Evenly"}
+      ],
+      "visible_if": "{{ block.settings.wrap != 'nowrap' }}"
+    },
+    [% json 'schema/grid-gap-setting.jsonc', default_gap: 'custom', default_gap_custom: 0, context: 'block.settings.' %]
+    {
+      "type": "text_alignment",
+      "id": "text_alignment",
+      "label": "Alignment",
+      "default": "left"
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "Full width",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Breakpoint"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_breakpoint",
+      "label": "Set breakpoint override",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "breakpoint",
+      "label": "Breakpoint",
+      "default": "md",
+      "options": [
+        {"value": "md", "label": "Mobile"},
+        {"value": "lg", "label": "Tablet"}
+      ],
+      "visible_if": "{{ block.settings.set_breakpoint }}"
+    },
+        {
+      "type": "header",
+      "content": "Mobile flex settings",
+      "info": "Applied to screens 768px and below",
+      "visible_if": "{{ block.settings.set_breakpoint and block.settings.breakpoint == 'md' }}"
+    },
+    {
+      "type": "header",
+      "content": "Tablet flex settings",
+      "info": "Applied to screens 1024px and below",
+      "visible_if": "{{ block.settings.set_breakpoint and block.settings.breakpoint == 'lg' }}"
+    },
+    {
+      "type": "select",
+      "id": "direction_mobile",
+      "label": "Direction",
+      "default": "row",
+      "options": [
+        {"value": "row", "label": "→ Row"},
+        {"value": "row-reverse", "label": "← Row reverse"},
+        {"value": "column", "label": "↓ Column"},
+        {"value": "column-reverse", "label": "↑ Column reverse"}
+      ],
+      "visible_if": "{{ block.settings.set_breakpoint }}"
+    },
+    {
+      "type": "select",
+      "id": "wrap_mobile",
+      "label": "Wrap",
+      "default": "nowrap",
+      "options": [
+        {"value": "nowrap", "label": "— No wrap"},
+        {"value": "wrap", "label": "↓ Wrap"},
+        {"value": "wrap-reverse", "label": "↑ Wrap reverse"}
+      ],
+      "visible_if": "{{ block.settings.set_breakpoint }}"
+    },
+    {
+      "type": "select",
+      "id": "justify_row_mobile",
+      "label": "Justify",
+      "default": "start",
+      "options": [
+        {"value": "start", "label": "⇤ Start"},
+        {"value": "center", "label": "| Center"},
+        {"value": "end", "label": "⇥ End"},
+        {"value": "space-between", "label": "↔ Between"},
+        {"value": "space-around", "label": "⟷ Around"},
+        {"value": "space-evenly", "label": "⇄ Evenly"}
+      ],
+      "visible_if": "{{ block.settings.set_breakpoint and block.settings.direction_mobile == 'row' or block.settings.set_breakpoint and block.settings.direction_mobile == 'row-reverse' }}"
+    },
+    {
+      "type": "select",
+      "id": "justify_column_mobile",
+      "label": "Justify",
+      "default": "start",
+      "options": [
+        {"value": "start", "label": "⤒ Top"},
+        {"value": "center", "label": "— Middle"},
+        {"value": "end", "label": "⤓ Bottom"},
+        {"value": "space-between", "label": "↕ Between"},
+        {"value": "space-around", "label": "⟷ Around"},
+        {"value": "space-evenly", "label": "⇅ Evenly"}
+      ],
+      "visible_if": "{{ block.settings.set_breakpoint and block.settings.direction_mobile == 'column' or block.settings.set_breakpoint and block.settings.direction_mobile == 'column-reverse' }}"
+    },
+    {
+      "type": "select",
+      "id": "align_row_mobile",
+      "label": "Align",
+      "default": "stretch",
+      "options": [
+        {"value": "start", "label": "⤒ Top"},
+        {"value": "center", "label": "— Middle"},
+        {"value": "end", "label": "⤓ Bottom"},
+        {"value": "stretch", "label": "↕ Stretch"},
+        {"value": "baseline", "label": "_ Baseline"}
+      ],
+      "visible_if": "{{ block.settings.set_breakpoint and block.settings.direction_mobile == 'row' or block.settings.set_breakpoint and block.settings.direction_mobile == 'row-reverse' }}"
+    },
+    {
+      "type": "select",
+      "id": "align_column_mobile",
+      "label": "Align",
+      "default": "stretch",
+      "options": [
+        {"value": "start", "label": "⇤ Left"},
+        {"value": "center", "label": "| Center"},
+        {"value": "end", "label": "⇥ Right"},
+        {"value": "stretch", "label": "↔ Stretch"},
+        {"value": "baseline", "label": "_ Baseline"}
+      ],
+      "visible_if": "{{ block.settings.set_breakpoint and block.settings.direction_mobile == 'column' or block.settings.set_breakpoint and block.settings.direction_mobile == 'column-reverse' }}"
+    },
+    {
+      "type": "select",
+      "id": "align_content_mobile",
+      "label": "Align lines",
+      "default": "stretch",
+      "options": [
+        {"value": "start", "label": "⤒ Top"},
+        {"value": "center", "label": "— Middle"},
+        {"value": "end", "label": "⤓ Bottom"},
+        {"value": "stretch", "label": "↕ Stretch"},
+        {"value": "space-between", "label": "↕ Between"},
+        {"value": "space-around", "label": "⟷ Around"},
+        {"value": "space-evenly", "label": "⇅ Evenly"}
+      ],
+      "visible_if": "{{ block.settings.set_breakpoint and block.settings.wrap_mobile != 'nowrap' }}"
+    },
+    [% json 'schema/grid-gap-setting.jsonc', default_gap: 'custom', default_gap_custom: 0, id_suffix: 'mobile', conditional: 'block.settings.set_breakpoint', context: 'block.settings.' %]
+    {
+      "type": "checkbox",
+      "id": "full_width_mobile",
+      "label": "Full width",
+      "default": false,
+      "visible_if": "{{ block.settings.set_breakpoint }}"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "@app"
+    },
+    {
+      "type": "@theme"
+    },
+    [= additional_blocks =]
+  ],
+  "presets": [
+    [= additional_presets =]
+  ]
+}
+{% endschema %}

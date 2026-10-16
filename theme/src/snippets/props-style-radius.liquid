@@ -1,0 +1,36 @@
+{% doc %}
+  - Prints corner radius variable and border-radius rule
+
+  @param {boolean} [apply] - false prints the variable without the border-radius rule
+  @param {string} [rounding_radius] - 'none', 'xs', 'sm', 'md', 'lg' or 'custom', defaults to s.rounding_radius, then 'custom'
+  @param {number} [rounding_radius_custom] - radius in pixels when rounding_radius is 'custom', defaults to s.rounding_radius_custom, then 0
+  @param {object} [s] - settings object
+  @param {boolean} [vars] - false skips the --layout-radius variable
+{% enddoc %}
+
+{%- assign rounding_radius = rounding_radius | default: s.rounding_radius | default: 'custom' -%}
+{%- assign rounding_radius_custom = rounding_radius_custom | default: s.rounding_radius_custom | default: 0 -%}
+{%- if rounding_radius -%}
+  {%- case rounding_radius -%}
+    {%- when 'none' -%}
+      --custom-radius: var(--radius-none);
+    {%- when 'xs' -%}
+      --custom-radius: var(--radius-sm);
+    {%- when 'sm' -%}
+      --custom-radius: var(--radius-sm);
+    {%- when 'md' -%}
+      --custom-radius: var(--radius-md);
+    {%- when 'lg' -%}
+      --custom-radius: var(--radius-lg);
+    {%- when 'custom' -%}
+      --custom-radius:
+      {{- rounding_radius_custom -}}
+      px;
+  {%- endcase -%}
+  {% unless vars == false %}
+    --layout-radius: var(--custom-radius);
+  {% endunless %}
+  {% unless apply == false %}
+    border-radius: var(--custom-radius);
+  {% endunless %}
+{%- endif -%}

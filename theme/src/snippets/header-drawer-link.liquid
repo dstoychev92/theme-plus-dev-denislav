@@ -1,0 +1,68 @@
+{% doc %}
+  - Renders one menu drawer link row
+
+  @param [accessory] - 'button' or 'link' sets accessory_tag, any other truthy value keeps the passed accessory_tag
+  @param {string} [accessory_attributes] - attributes for the accessory
+  @param {string} [accessory_icon] - rendered icon markup for the accessory
+  @param {string} [accessory_tag] - tag for the accessory, overridden when accessory is 'button' or 'link'
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {link} link
+  @param {section} [section]
+  @param {string} [tag] - wrapper tag, defaults to 'div'
+  @param {string} [text_tag] - core-text-preset tag for a '#' link, defaults to 'p'
+{% enddoc %}
+
+{% liquid
+  if accessory == 'button'
+    assign accessory_tag = 'button'
+  elsif accessory == 'link'
+    assign accessory_tag = 'a'
+  endif
+
+  if tag == null
+    assign tag = 'div'
+  endif
+%}
+
+<{{ tag }}
+  class="flex items-center w-full min-h-control text-start px-[--drawer-padding] py-r4 {{ class }}"
+  {{ attributes }}
+>
+  {% capture link_text %}
+    {{ link.title | strip_html }}
+  {% endcapture %}
+  {% capture link_class %}
+    !flex items-center justify-start
+    relative hit-area-s-[--drawer-padding] hit-area-e-r6 hit-area-y-r4 z-20 overflow-visible
+    {% if accessory == blank %}flex-1{% else %}shrink-1{% endif %}
+  {% endcapture %}
+
+  {% if link.url == '#' %}
+    {% render 'core-text-preset',
+      class: link_class,
+      text: link_text,
+      tag: text_tag,
+      settings_suffix: 'main_link',
+      s: section.settings
+    %}
+  {% else %}
+    {% render 'core-link',
+      class: link_class,
+      text: link_text,
+      href: link.url,
+      appearance: 'clean',
+      settings_suffix: 'main_link',
+      s: section.settings
+    %}
+  {% endif %}
+
+  {% if accessory and accessory_tag %}
+    <{{ accessory_tag }}
+      {{ accessory_attributes }}
+      class="flex-1 shrink-0 self-stretch flex items-center justify-end hover:opacity-70 transition-opacity"
+    >
+      {{ accessory_icon }}
+    </{{ accessory_tag }}>
+  {% endif %}
+</{{ tag }}>

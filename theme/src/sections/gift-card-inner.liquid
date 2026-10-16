@@ -1,0 +1,238 @@
+{% liquid
+  assign expired = false
+  assign active = false
+  assign disabled = false
+  assign enabled = gift_card.enabled
+
+  if enabled
+    if gift_card.expired
+      assign expired = true
+    endif
+    if expired == false and gift_card.expires_on
+      assign active = true
+      assign expiry_date = gift_card.expires_on | date: '%d/%m/%y'
+    endif
+  endif
+  if enabled != true
+    assign disabled = true
+  endif
+
+  if expired
+    assign status_text = 'gift_card.page.expired' | t: expiry: expiry_date
+  endif
+  if active
+    assign status_text = 'gift_card.page.active' | t: expiry: expiry_date
+  endif
+  if disabled
+    assign status_text = 'gift_card.page.disabled' | t
+  endif
+
+  assign initial_value = gift_card.initial_value | money
+  assign balance = gift_card.balance | money
+  if settings.show_currency
+    assign initial_value = gift_card.initial_value | money_with_currency
+    assign balance = gift_card.balance | money_with_currency
+  endif
+  assign copy_icon_class = 'text-content-mix-70'
+  assign success_icon_class = copy_icon_class | append: ' text-content'
+%}
+
+{% capture copy_icon_attributes %}
+  x-show="$clipboard.state == 'initial'"
+  transition.opacity
+{% endcapture %}
+{% capture success_icon_attributes %}
+  x-show="$clipboard.state == 'success'"
+  transition.opacity
+  x-cloak
+{% endcapture %}
+{% capture copy_button_content %}
+  {% render 'core-icon', icon: 'fill-copy', class: copy_icon_class, size: 'xl', attributes: copy_icon_attributes %}
+  {% render 'core-icon', icon: 'fill-copy-check', class: success_icon_class, size: 'xl', attributes: success_icon_attributes %}
+{% endcapture %}
+
+{% capture content %}
+  <div class="text-center">
+    <div class="flex flex-row-center justify-center px-r5 pb-[--section-pt]">
+      {% if section.settings.logo != blank %}
+        <a class="flex justify-center" href="{{ shop.url }}">
+            {% render 'core-image', image: section.settings.logo, width: section.settings.logo_max_limit, alt_default: shop.name, preload: true %}
+        </a>
+      {% else %}
+        <a class="type-h2" href="{{ shop.url }}">
+          {{ shop.name | escape_once }}
+        </a>
+      {% endif %}
+    </div>
+    <div class="rounded-sm border border-content-mix-10">
+      <div class="rounded-sm bg-content-mix-5 p-r5">
+        <div class="align-center flex flex-col gap-r8 rounded-xs border border-content-mix-20 bg-canvas">
+
+          {% comment %} Title {% endcomment %}
+          <div class="border-b border-content-mix-20 px-r6 py-r7">
+            <h1 class="type-h2">{{ 'gift_card.page.heading' | t }}</h1>
+            {%- if status_text -%}
+              <p class="py-r5 text-r4 font-bold">{{ status_text }}</p>
+            {%- endif -%}
+          </div>
+
+          {% comment %} Amount {% endcomment %}
+          <div class="mx-r6">
+            <h2 class="type-h2">{{ initial_value }}</h2>
+            {%- if gift_card.balance != gift_card.initial_value -%}
+              <p class="py-r5 text-r4 font-bold">{{ 'gift_card.page.balance_left' | t: balance: balance }}</p>
+            {%- endif -%}
+          </div>
+
+          {% comment %} Bow background image {% endcomment %}
+          <div class="relative mx-r6 rounded-lg overflow-hidden">
+            <img
+              class="w-full"
+              src="{{ 'gift-card/card.jpg' | shopify_asset_url }}"
+              alt="{{ 'gift_card.page.gift_card_image_alt' | t }}"
+              width="440"
+              height="293"
+            >
+
+            {% comment %} Gift code copy text {% endcomment %}
+            <div class="absolute bottom-r6 end-r6 start-r6 flex justify-center">
+              <div class="min-w-0 rounded-xs bg-canvas p-r3">
+                <div
+                  class="flex items-center gap-r4 rounded-xs border border-dashed border-content-mix-20 p-r4"
+                  x-clipboard
+                >
+                  {% assign input_id = section.id | append: 'share-url' %}
+                  {% assign formatted_code = gift_card.code | format_code %}
+                  <label for="{{ input_id }}" class="sr-only">{{ 'gift_card.page.code' | t }}</label>
+                  {% comment %}
+                    A browser sizes a text input from its size attribute, not from its value.
+                    The hidden span sets the width from the code text, and the input fills that box.
+                  {% endcomment %}
+                  <div class="relative min-w-0 text-r6 font-bold">
+                    <span class="invisible select-none whitespace-nowrap" aria-hidden="true">{{ formatted_code }}</span>
+                    <input
+                      id="{{ input_id }}"
+                      type="text"
+                      class="absolute inset-0 w-full min-w-0 truncate bg-transparent"
+                      {% comment %} The code must stay readable to screen readers — aria-hidden here hid the gift card code from them entirely {% endcomment %}
+                      @click="$el.select()"
+                      x-clipboard:target
+                      value="{{ formatted_code }}"
+                      readonly
+                    >
+                  </div>
+
+                  {% assign aria_label = 'gift_card.page.copy_code' | t %}
+                  {% render 'core-button', aria_label: aria_label, content: copy_button_content, color: 'link', appearance: 'bare', class: 'aspect-square [--btn-padding-x:0]', attributes: 'x-clipboard:button' %}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {% comment %} Add to Apple Wallet button {% endcomment %}
+          {%- if gift_card.pass_url -%}
+            <div class="flex justify-center gap-r8">
+              <a href="{{ gift_card.pass_url }}">
+                <img
+                  src="{{ 'gift-card/add-to-apple-wallet.svg' | shopify_asset_url }}"
+                  width="150"
+                  height="50"
+                  alt="{{ 'gift_card.page.add_to_apple_wallet_image_alt' | t }}"
+                  loading="lazy"
+                >
+              </a>
+            </div>
+          {%- endif -%}
+
+          {% comment %} QR code {% endcomment %}
+          <div class="flex justify-center">
+            <div class="rounded-xs border border-content-mix-20 bg-canvas p-r5">
+              <div
+                class="w-[120px] aspect-square"
+                {% # An apostrophe in the translation ends the JS string %}
+                data-qr-image-alt="{{ 'gift_card.page.qr_image_alt' | t | escape_once }}"
+                x-data="
+                  {
+                    identifier: '{{ gift_card.qr_identifier }}',
+                    imageAlt: $el.dataset.qrImageAlt,
+                    size: 120,
+                    init() {
+                      new QRCode($el, {
+                        text: this.identifier,
+                        width: this.size,
+                        height: this.size,
+                        imageAltText: this.imageAlt
+                      });
+                    }
+                  }
+                "
+              ></div>
+            </div>
+          </div>
+
+
+          <div class="flex w-full gap-r8 border-t border-content-mix-20 p-r5">
+            {%- assign label = 'gift_card.page.start_shopping' | t -%}
+            {% render 'core-button',
+              tag: 'a',
+              href: routes.root_url,
+              label: label,
+              color: 'primary',
+              appearance: 'fill',
+              sizing: 'md',
+              class: 'w-full sm:basis-1/2 sm:grow sm:shrink'
+            %}
+
+            {%- assign label = 'gift_card.page.print' | t -%}
+            {% render 'core-button',
+              label: label,
+              color: 'content',
+              appearance: 'bare',
+              sizing: 'md',
+              class: 'hidden sm:block sm:basis-1/2 sm:grow sm:shrink',
+              attributes: 'onclick="window.print()"'
+            %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endcapture %}
+
+{% render 'core-section',
+  s: section.settings,
+  content: content,
+  inner_class: 'justify-center',
+  photoswipe: false
+%}
+
+{% schema %}
+{
+  "name": "Gift card",
+  "class": "section-gift-card-inner",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Logo image"
+    },
+    {
+      "type": "range",
+      "id": "logo_max_limit",
+      "min": 5,
+      "max": 495,
+      "step": 5,
+      "unit": "px",
+      "label": "Logo width",
+      "default": 120
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    [% json 'schema/section-content-width-setting.jsonc', default_width: 'custom', default_width_custom: 30 %]
+    [% json 'schema/section-padding-settings.jsonc' %]
+    [% json 'schema/color-settings-section-solid.jsonc' %]
+  ]
+}
+{% endschema %}

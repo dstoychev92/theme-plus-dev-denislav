@@ -1,0 +1,465 @@
+{% doc %}
+  - Renders callout grid holding _callout-icon, _callout-number, and _callout blocks
+
+  Splits each _callout-icon and _callout-number child on the c4ll0u7x text markers the child
+  prints, then renders the parts through core-callout with this block's settings. A _callout
+  child prints no markers and renders as is. Search c4ll0u7x to find every marker.
+{% enddoc %}
+
+{%- liquid
+  # Media width (px value for icon children)
+  assign media_px = 32
+  case block.settings.media_width
+    when 'xs'
+      assign media_px = 12
+    when 'sm'
+      assign media_px = 20
+    when 'md'
+      assign media_px = 32
+    when 'lg'
+      assign media_px = 50
+    when 'custom'
+      assign media_px = block.settings.media_width_custom
+  endcase
+
+  assign icon_width = 'calc(' | append: media_px | append: 'px * var(--r-multiplier))'
+-%}
+
+{%- comment -%} ── Number type class (pre-computed, shared across all number children) ── {%- endcomment -%}
+{%- capture number_type_class -%}
+  {%- render 'props-class-type-preset', s: block.settings, settings_suffix: 'number' -%}
+{%- endcapture -%}
+
+{%- comment -%} Callout color, gated by set_color_scheme in the schema and color_enabled in core-callout {%- endcomment -%}
+{%- capture callout_color_style -%}
+  {%- if block.settings.set_color_scheme and block.settings.set_color_callout and block.settings.color_callout == 'custom' -%}
+    --color-custom-text: {{ block.settings.color_custom_callout }};
+  {%- endif -%}
+{%- endcapture -%}
+
+{%- capture callout_color_class -%}
+  {%- if block.settings.set_color_scheme and block.settings.set_color_callout -%}
+    text-{{ block.settings.color_callout | default: 'content' }}
+  {%- endif -%}
+{%- endcapture -%}
+
+{%- comment -%} ── Grid gap ── {%- endcomment -%}
+{%- capture grid_style -%}
+  {%- render 'props-style-gap', gap: block.settings.gap_grid, gap_custom: block.settings.gap_custom_grid -%}
+{%- endcapture -%}
+
+{%- liquid
+  assign set_border = block.settings.set_border
+  assign set_color_scheme = block.settings.set_color_scheme
+  assign set_rounding = block.settings.set_rounding | default: false
+
+  assign allow_rounding = false
+  if set_border
+    assign allow_rounding = true
+  elsif set_color_scheme and block.settings.background != 'transparent'
+    assign allow_rounding = true
+  endif
+-%}
+
+{%- comment -%} ── Frame styles (applied to each item) ── {%- endcomment -%}
+{%- capture frame_style -%}
+  {%- if set_color_scheme or set_border or block.settings.set_padding -%}
+    {%- render 'props-style-padding', s: block.settings -%}
+  {%- endif -%}
+  {%- if set_color_scheme -%}
+    {%- render 'props-style-background', s: block.settings -%}
+  {%- endif -%}
+  {%- if set_border -%}
+    {%- render 'props-style-border', s: block.settings -%}
+  {%- endif -%}
+  {%- if set_rounding and allow_rounding -%}
+    {%- render 'props-style-radius', s: block.settings -%}
+  {%- elsif allow_rounding -%}
+    border-radius: var(--radius-card);
+  {%- endif -%}
+{%- endcapture -%}
+
+{%- capture frame_class -%}
+  {%- if set_color_scheme -%}
+    {%- render 'props-class-background', s: block.settings -%}
+  {%- endif -%}
+  {%- if set_border -%}
+    border-solid
+  {%- endif -%}
+  {%- if allow_rounding -%}
+    overflow-hidden
+  {%- endif -%}
+{%- endcapture -%}
+
+{%- comment -%}
+  Iterate children, split markers, render via core-callout
+
+  Markers look like that on purpose. If it was english it could be accidentailly translated or added to output.
+  It's leetspeak. Stop pretending you didn't know. Search `c4ll0u7x` to find every related marker across the system.
+{%- endcomment -%}
+{%- capture items -%}
+  {%- for child in block.blocks -%}
+    {%- capture content -%}{%- render child -%}{%- endcapture -%}
+
+    {%- if content contains 'c4ll0u7x573r7xm3d14' -%}
+      {%- comment -%} Marker-based child (_callout-icon, _callout-number) {%- endcomment -%}
+      {%- assign child_media = content | split: 'c4ll0u7x573r7xm3d14' | last | split: 'c4ll0u7x3ndxm3d14' | first -%}
+      {%- assign child_title = content | split: 'c4ll0u7x573r7x71713' | last | split: 'c4ll0u7x3ndx71713' | first -%}
+      {%- assign child_body = content | split: 'c4ll0u7x573r7xb0dy' | last | split: 'c4ll0u7x3ndxb0dy' | first -%}
+
+
+      {%- comment -%} Detect child type from marker {%- endcomment -%}
+      {%- assign is_number_child = false -%}
+      {%- if content contains 'c4ll0u7x7yp3xnumb3r' -%}
+        {%- assign is_number_child = true -%}
+      {%- endif -%}
+
+      {%- comment -%} Wrap media with icon sizing or number type class {%- endcomment -%}
+      {%- capture wrapped_media -%}
+        {%- if child_media != blank -%}
+          {%- if is_number_child -%}
+            <div class="{{ number_type_class }}">
+              {{- child_media -}}
+            </div>
+          {%- else -%}
+            <div style="--icon-width: {{ icon_width }};">
+              {{- child_media -}}
+            </div>
+          {%- endif -%}
+        {%- endif -%}
+      {%- endcapture -%}
+
+      {%- comment -%} Determine media type for core-callout {%- endcomment -%}
+      {%- assign child_media_type = 'icon' -%}
+      {%- if is_number_child -%}
+        {%- assign child_media_type = 'number' -%}
+      {%- endif -%}
+
+      <div class="min-w-0 {{ frame_class }}" style="{{ frame_style }}">
+        {%- render 'core-callout',
+          media: wrapped_media,
+          title_text: child_title,
+          body_text: child_body,
+          media_type: child_media_type,
+          media_px: media_px,
+          callout_color_class: callout_color_class,
+          callout_color_style: callout_color_style,
+          color_enabled: block.settings.set_color_scheme,
+          s: block.settings,
+          attributes: child.shopify_attributes
+        -%}
+      </div>
+    {%- else -%}
+      {%- comment -%} Escape hatch: no markers, render as-is (e.g. _callout) {%- endcomment -%}
+      {%- if frame_class != blank or frame_style != blank -%}
+        <div class="min-w-0 {{ frame_class }}" style="{{ frame_style }}">
+          {{- content -}}
+        </div>
+      {%- else -%}
+        {{- content -}}
+      {%- endif -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endcapture -%}
+
+{%- comment -%} ── Outer grid ── {%- endcomment -%}
+<div
+  class="
+    w-full grid gap-layout
+    [--card-grid-cols:--card-grid-cols-sm]
+    md:[--card-grid-cols:--card-grid-cols-md]
+    lg:[--card-grid-cols:--card-grid-cols-lg]
+    grid-cols-[repeat(var(--card-grid-cols),minmax(0,1fr))]
+    entrance-container *:auto-set-stagger-order
+  "
+  style="
+    --card-grid-cols-sm: {{ block.settings.columns_sm | default: 1 }};
+    --card-grid-cols-md: {{ block.settings.columns_md | default: 2 }};
+    --card-grid-cols-lg: {{ block.settings.columns_lg | default: 3 }};
+    {{ grid_style }}
+  "
+  {{ block.shopify_attributes }}
+>
+  {{- items -}}
+</div>
+
+{% schema %}
+{
+  "name": "Callout group",
+  "tag": null,
+  "settings": [
+    {
+      "type": "range",
+      "id": "columns_lg",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "label": "Desktop columns",
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "columns_md",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "label": "Tablet columns",
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "columns_sm",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "label": "Mobile columns",
+      "default": 1
+    },
+    [% json 'schema/grid-gap-setting.jsonc', id_suffix: 'grid', default_gap: 'md', gap_label: 'Card gap' %]
+
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "default": "stacked",
+      "options": [
+        {"value": "stacked", "label": "⬒ Callout on top", "group": "Stacked"},
+        {"value": "between", "label": "☰ Callout between title and text", "group": "Stacked"},
+        {"value": "below", "label": "⬓ Callout on bottom", "group": "Stacked"},
+        {"value": "inline", "label": "⤵ Callout next to title", "group": "Inline"},
+        {"value": "all_inline", "label": "⟿ Everything on one line", "group": "Inline"},
+        {"value": "side_left", "label": "◧ Callout on left", "group": "Side by side"},
+        {"value": "side_right", "label": "◨ Callout on right", "group": "Side by side"}
+      ]
+    },
+    {
+      "type": "text_alignment",
+      "id": "content_align",
+      "label": "Alignment",
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "vertical_align",
+      "label": "Vertical alignment",
+      "default": "center",
+      "options": [
+        {"value": "start", "label": "⤒"},
+        {"value": "center", "label": "—"},
+        {"value": "end", "label": "⤓"}
+      ],
+      "visible_if": "{{ block.settings.layout == 'side_left' or block.settings.layout == 'side_right' or block.settings.layout == 'inline' or block.settings.layout == 'all_inline' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_gap",
+      "label": "Set gap",
+      "default": false
+    },
+    [% json 'schema/grid-gap-setting.jsonc', default_gap: 'sm', conditional: 'block.settings.set_gap' %]
+    [% json 'schema/grid-gap-setting.jsonc', id_suffix: 'x', default_gap: 'sm', gap_label: 'Horizontal gap', gap_custom_label: 'Custom horizontal gap', conditional: "block.settings.layout == 'side_left' or block.settings.layout == 'side_right' or block.settings.layout == 'inline' or block.settings.layout == 'all_inline'" %]
+
+    {
+      "type": "header",
+      "content": "Icon size"
+    },
+    {
+      "type": "select",
+      "id": "media_width",
+      "label": "Size",
+      "default": "sm",
+      "options": [
+        {"value": "xs", "label": "XS"},
+        {"value": "sm", "label": "S"},
+        {"value": "md", "label": "M"},
+        {"value": "lg", "label": "L"},
+        {"value": "custom", "label": "⋯"}
+      ]
+    },
+    {
+      "type": "range",
+      "id": "media_width_custom",
+      "label": "Custom size",
+      "unit": "px",
+      "min": 16,
+      "max": 400,
+      "step": 4,
+      "default": 80,
+      "visible_if": "{{ block.settings.media_width == 'custom' }}"
+    },
+
+    {
+      "type": "header",
+      "content": "Number style"
+    },
+    [% json 'schema/type-preset.jsonc', id_suffix: 'number', default_preset: 'section', label: 'Style' %]
+    [% json 'schema/type-custom.jsonc', id_suffix: 'number', resize: true, resize_label: 'Size', default_resize: 'lg', default_font: 'heading', default_size: '8' %]
+
+    {
+      "type": "header",
+      "content": "Title style"
+    },
+    [% json 'schema/type-preset.jsonc', default_preset: 'h6' %]
+    [% json 'schema/type-custom.jsonc', resize: true, default_font: 'heading', default_size: '6' %]
+
+    {
+      "type": "header",
+      "content": "Text"
+    },
+    [% json 'schema/type-preset.jsonc', id_suffix: 'body', default_preset: 'p' %]
+    [% json 'schema/type-custom.jsonc', id_suffix: 'body', resize: true, default_resize: 'xs', default_font: 'body', default_size: '4' %]
+
+    {
+      "type": "header",
+      "content": "Color"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_color_scheme",
+      "label": "Set colors",
+      "default": false
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "visible_if": "{{ block.settings.set_color_scheme }}"
+    },
+    {
+      "type": "select",
+      "id": "background",
+      "label": "Background",
+      "default": "canvas",
+      "options": [
+        {"value": "canvas", "label": "Default"},
+        {"value": "tint", "label": "Tint"},
+        {"value": "transparent", "label": "∅"},
+        {"value": "custom", "label": "⋯"}
+      ],
+      "visible_if": "{{ block.settings.set_color_scheme }}"
+    },
+    {
+      "type": "color",
+      "id": "background_custom",
+      "label": "Background color",
+      "default": "#f7f7f730",
+      "alpha": true,
+      "visible_if": "{{ block.settings.set_color_scheme and block.settings.background == 'custom' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "background_blur",
+      "label": "Blur background",
+      "info": "For best results, use 5% - 90% opacity",
+      "default": false,
+      "visible_if": "{{ block.settings.set_color_scheme and block.settings.background == 'custom' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_color_callout",
+      "label": "Set callout color",
+      "default": false,
+      "visible_if": "{{ block.settings.set_color_scheme }}"
+    },
+    [% json 'schema/color-dropdown.jsonc', custom: true, muted: true, id_suffix: 'callout', conditional: 'block.settings.set_color_scheme and block.settings.set_color_callout' %]
+    {
+      "type": "checkbox",
+      "id": "set_color",
+      "label": "Set title color",
+      "default": false,
+      "visible_if": "{{ block.settings.set_color_scheme }}"
+    },
+    [% json 'schema/color-dropdown.jsonc', custom: true, muted: true, conditional: 'block.settings.set_color_scheme and block.settings.set_color' %]
+    {
+      "type": "checkbox",
+      "id": "set_color_body",
+      "label": "Set text color",
+      "default": false,
+      "visible_if": "{{ block.settings.set_color_scheme }}"
+    },
+    [% json 'schema/color-dropdown.jsonc', custom: true, muted: true, id_suffix: 'body', default_color: 'muted', conditional: 'block.settings.set_color_scheme and block.settings.set_color_body' %]
+
+    {
+      "type": "header",
+      "content": "Frame"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_padding",
+      "label": "Set padding",
+      "default": false,
+      "visible_if": "{{ block.settings.set_color_scheme == false and block.settings.set_border == false }}"
+    },
+    [% json 'schema/padding-settings.jsonc', default_padding: 'md', conditional: 'block.settings.set_color_scheme or block.settings.set_border or block.settings.set_padding' %]
+    {
+      "type": "header",
+      "content": "Border"
+    },
+    [% json 'schema/border-settings.jsonc', default_border_color: '#E1E1E17C' %]
+    {
+      "type": "header",
+      "content": "Rounding",
+      "visible_if": "{{ block.settings.set_border or block.settings.set_color_scheme }}"
+    },
+    [% json 'schema/rounding-large.jsonc', conditional: "block.settings.set_border or block.settings.set_color_scheme" %]
+  ],
+  "blocks": [
+    {
+      "type": "_callout-icon"
+    },
+    {
+      "type": "_callout-number"
+    },
+    {
+      "type": "_callout"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Callout group",
+      "category": "Content",
+      "settings": {
+        "set_color_scheme": true,
+        "background": "custom",
+        "background_custom": "#f7f7f780",
+        "background_blur": true,
+        "set_padding": true,
+        "padding": "md",
+        "set_border": true,
+        "border_width": 1,
+        "border_color": "#ffffff80"
+      },
+      "blocks": [
+        {
+          "type": "_callout-icon",
+          "settings": {
+            "icon_list_art": "fill-art-objects-diamond",
+            "title": "Quality",
+            "body": "<p>Describe what sets your products apart, from materials to the details you care about.</p>"
+          }
+        },
+        {
+          "type": "_callout-icon",
+          "settings": {
+            "icon_list_art": "fill-art-nature-recycled",
+            "title": "Responsibility",
+            "body": "<p>Share the commitments behind how your products are made and packaged.</p>"
+          }
+        },
+        {
+          "type": "_callout-icon",
+          "settings": {
+            "icon_list_art": "fill-art-people-heart",
+            "title": "Community",
+            "body": "<p>Tell customers how you connect with them, or the community your brand supports.</p>"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

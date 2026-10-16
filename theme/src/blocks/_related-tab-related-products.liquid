@@ -1,0 +1,122 @@
+{% doc %}
+  - Renders related products tab
+
+  Private, only offered by the related section. Fetches recommendations for the global product and falls back to the fallback collection. The tab hides while it has no cards.
+{% enddoc %}
+
+{% liquid
+  assign limit = block.settings.card_limit
+  assign fallback_products = block.settings.fallback_collection.products
+  assign has_loaded = false
+
+  if recommendations.performed
+    assign has_loaded = true
+  endif
+
+  if recommendations.performed and recommendations.products_count > 0 and recommendations.intent == 'related'
+    assign related_products = recommendations.products
+  endif
+
+  assign default_title = 'product.related' | t
+  assign title = block.settings.title | default: default_title
+%}
+
+{%- capture image_widths -%}
+  {%- render 'image-grid-widths' -%}
+{%- endcapture -%}
+{%- capture image_sizes -%}
+  {%- render 'image-grid-sizes' -%}
+{%- endcapture -%}
+
+{% capture tab_button_attributes %}
+  {{ block.shopify_attributes }}
+  x-show="!$sectionRelated.isTabEmpty($tab.index)"
+  x-effect="if ($tab.isSelected && $sectionRelated.isTabEmpty($tab.index)) $nextTick(() => $tabs.select($sectionRelated.nextVisibleTabIndex($tab.index)))"
+  {% if request.design_mode %}
+    @shopify:block:select="$tab.select()"
+  {% endif %}
+{% endcapture %}
+
+{% capture attributes %}
+  id="{{ section.id }}-related-products"
+  x-section-api="{{ section.id }}-related-products"
+  data-render-region="related-products"
+  {% # core-section-wrapper hides the section while a descendant carries data-hide-section %}
+  :data-hide-section="$sectionRelated.visibleTabCount === 0"
+  {% unless request.visual_preview_mode or has_loaded %}
+    x-section-related:related-products-tab.limit.{{ limit }}="{{ product.id }}"
+  {% endunless %}
+{% endcapture %}
+
+{% capture list_items %}
+  {% if has_loaded %}
+    {% if related_products.size > 0 %}
+      {% for related_product in related_products limit: limit %}
+        {% if related_product.metafields.seo.hidden != true %}
+          {% render 'card-product', size: 'lg', product: related_product, attributes: 'x-carousel:item', view_context: 'recommendation', image_widths: image_widths, image_sizes: image_sizes %}
+        {% endif %}
+      {% endfor %}
+    {% else %}
+      {% for product in fallback_products limit: limit %}
+        {% render 'card-product', size: 'lg', product: product, attributes: 'x-carousel:item', view_context: 'recommendation', image_widths: image_widths, image_sizes: image_sizes %}
+      {% endfor %}
+    {% endif %}
+  {% else %}
+    {% for i in (1..limit) %}
+      {% render 'card-layout-lg', loader: true %}
+    {% endfor %}
+  {% endif %}
+{%- endcapture -%}
+
+{% render 'core-tab-card-list',
+  list_items: list_items,
+  s: section.settings,
+  title: title,
+  attributes: attributes,
+  tab_button_attributes: tab_button_attributes
+%}
+
+{% schema %}
+{
+  "name": "Related products",
+  "tag": null,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Use the [Search & Discovery](https://apps.shopify.com/search-and-discovery) app from Shopify to customize the list of related products. [Learn more](https://help.shopify.com/en/manual/online-store/search-and-discovery/product-recommendations)"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Tab title",
+      "default": "Related",
+      "info": "Tab title hides when there is only one tab to display"
+    },
+    {
+      "type": "range",
+      "id": "card_limit",
+      "min": 1,
+      "max": 20,
+      "step": 1,
+      "label": "Card limit",
+      "default": 6
+    },
+    {
+      "type": "collection",
+      "id": "fallback_collection",
+      "label": "Fallback collection",
+      "info": "If no related products are found, this collection will be used to generate recommendations."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Related products",
+      "category": "Additional product info",
+      "settings": {
+        "fallback_collection": "frontpage"
+      },
+      "blocks": []
+    }
+  ]
+}
+{% endschema %}

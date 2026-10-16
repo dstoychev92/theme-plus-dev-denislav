@@ -1,0 +1,37 @@
+{% capture content %}
+  {%- for block in section.blocks -%}
+    {% render block %}
+  {%- endfor -%}
+{% endcapture %}
+
+{% render 'core-section', s: section.settings, content: content %}
+
+{% schema %}
+{
+  "name": "Apps",
+  "class": "section-apps",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Appearance"
+    },
+    [% json 'schema/color-settings-section-solid.jsonc' %]
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    [% json 'schema/section-content-width-setting.jsonc' %]
+    [% json 'schema/section-padding-settings.jsonc' %]
+  ],
+  "blocks": [
+    {
+      "type": "@app"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Apps"
+    }
+  ]
+}
+{% endschema %}

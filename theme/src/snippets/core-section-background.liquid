@@ -1,0 +1,65 @@
+<!-- [autocomment] -->
+
+{% doc %}
+  - Renders section background layer with border and radius
+
+  s defaults to section.settings. Border and rounding apply only when s.contain_section is on.
+
+  @param {string} [attributes]
+  @param {string} [border_color] - CSS color, defaults to s.border_color, then '#ffffff00'
+  @param {number} [border_width] - border width in pixels, defaults to s.border_width, then 0
+  @param {string} [class] - The classes
+  @param {string} content
+  @param {string} [rounding_radius] - radius step, defaults to s.rounding_radius, then 'none'
+  @param {number} [rounding_radius_custom] - radius in pixels when rounding_radius is 'custom', defaults to s.rounding_radius_custom, then 0
+  @param {object} [s] - settings object
+  @param {section} [section]
+  @param {boolean} [set_border] - draws the border, defaults to s.set_border, then false
+  @param {boolean} [set_rounding] - rounds the corners, defaults to s.set_rounding, then false
+  @param {string} [style] - inline styles
+{% enddoc %}
+{% liquid
+  assign s = s | default: section.settings
+
+  if s.contain_section
+    # Rounding
+    assign set_rounding = set_rounding | default: s.set_rounding, allow_false: true | default: false
+    assign rounding_radius = rounding_radius | default: s.rounding_radius | default: 'none'
+    assign rounding_radius_custom = rounding_radius_custom | default: s.rounding_radius_custom | default: 0
+
+    # Border
+    assign set_border = set_border | default: s.set_border, allow_false: true | default: false
+    assign border_width = border_width | default: s.border_width | default: 0
+    assign border_color = border_color | default: s.border_color | default: '#ffffff00'
+  endif
+%}
+
+<section-background
+  class="
+    z-0 w-full grid-stack reverse-z-stack col-section-bg row-section-bg {{ class }}
+    {% if set_rounding %}
+      overflow-clip
+    {% else %}
+      {% comment %}
+        There's a bug on iOS where background elements with weird aspect-ratio, like 1.775,
+        will cause the page's horizontal scroll to unlock, causing the page to wobble left and right when scrolling up and down.
+        Applying overflow-hidden or equivalent (overflow-clip) fixes the issue.
+      {% endcomment %}
+      overflow-hidden
+    {% endif %}
+  "
+  style="
+    {{ style }}
+    {% if set_border %}
+      {% render 'props-style-border', border_width: border_width, border_color: border_color %}
+    {% endif %}
+    {% if set_rounding %}
+      {% render 'props-style-radius', rounding_radius: rounding_radius, rounding_radius_custom: rounding_radius_custom %}
+    {% elsif s.contain_section %}
+      border-radius: var(--radius-banner-default);
+    {% endif %}
+  "
+  {{ attributes }}
+>
+  {{ content }}
+</section-background>

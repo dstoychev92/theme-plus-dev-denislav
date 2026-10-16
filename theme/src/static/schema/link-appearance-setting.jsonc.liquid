@@ -1,0 +1,15 @@
+{
+  "type": "select",
+  "id": "[= id | default: 'appearance' =]",
+  "label": "[= label | default: 'Style' =]",
+  "default": "[= default_appearance | default: 'clean' =]",
+  [% if conditional %]
+    "visible_if": "{{ [= conditional =] }}",
+  [% endif %]
+  "options": [
+    {"value": "clean", "label": "Clean"},
+    {"value": "line", "label": "Line"},
+    {"value": "icon", "label": "Arrow"},
+    {"value": "both", "label": "Both"}
+  ]
+}

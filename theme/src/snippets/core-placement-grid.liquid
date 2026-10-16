@@ -1,0 +1,92 @@
+{% doc %}
+  - Renders placement grid for content over background media
+
+  @param {string} [attributes]
+  @param {block} [block]
+  @param {string} [class] - The classes
+  @param {string} [content]
+  @param {string} [content_attributes] - attributes for placement-content
+  @param {string} [controls] - rendered slideshow controls
+  @param {string} [controls_alignment] - vars-placement-controls-horizontal-* suffix, ignored when vertical_placement is 'bottom' or 'full', defaults to s.controls_alignment
+  @param {string} [horizontal_placement] - defaults to s.horizontal_placement
+  @param {string} [id] - defaults to id_prefix with '-content'
+  @param {string} [id_prefix] - defaults to block.id, then section.id
+  @param [padding] - padding step, or false for none, defaults to s.padding
+  @param {number} [padding_custom] - padding in pixels when padding is 'custom', defaults to s.padding_custom
+  @param {object} [s] - settings object
+  @param {section} [section]
+  @param {string} [style] - inline styles
+  @param {string} [vertical_placement] - 'top', 'middle', 'bottom', or 'full', defaults to s.vertical_placement
+{% enddoc %}
+{%- liquid
+  assign vertical_placement = vertical_placement | default: s.vertical_placement, allow_false: true
+  assign horizontal_placement = horizontal_placement | default: s.horizontal_placement, allow_false: true
+  assign padding = padding | default: s.padding, allow_false: true
+  assign padding_custom = padding_custom | default: s.padding_custom, allow_false: true
+
+  # If vertical placement is 'bottom' or 'full' the placement of the controls automatic to ensure they dont overlap the content
+  if vertical_placement != 'bottom' and vertical_placement != 'full'
+    assign controls_alignment = controls_alignment | default: s.controls_alignment, allow_false: true
+  endif
+
+  if id == blank
+    assign id_prefix = id | default: id_prefix | default: block.id | default: section.id
+    assign id = id_prefix | append: '-content'
+  endif
+-%}
+
+{% if content != blank or controls != blank %}
+  {% capture content %}
+    {% if content != blank %}
+      <placement-content
+        class="
+          placement-content-flex text-content text-content-align gap-layout min-w-0
+          {% if controls != blank %}
+            area-[content]
+          {% else %}
+            {% comment %} Take the whole area {% endcomment %}
+            area-[1/1/-1/-1]
+          {% endif %}
+
+          {% if horizontal_placement %}
+            vars-content-align-{{ horizontal_placement }}
+          {% endif %}
+          *:auto-set-stagger-order
+        "
+        id="{{ id }}"
+        data-test-id="content-layout"
+        {{ content_attributes }}
+      >
+        {{ content }}
+      </placement-content>
+    {% endif %}
+
+    {% if controls != blank %}
+      <div
+        class="
+          placement-controls-flex gap-r4 area-[controls]
+          group-[[data-hide-controls]]/slideshow:hidden
+          {% # Add top margin to all children rather than using grip gap so that there is no extra gap at the bottom of the grid when controls don't exist or are hidden  %}
+          {% # Hopefully replace with something like https://github.com/w3c/csswg-drafts/issues/5813 when it's implemented %}
+          *:mt-lg
+        "
+        data-controls
+      >
+        {{ controls }}
+      </div>
+    {% endif %}
+  {% endcapture %}
+{% endif %}
+
+{% render 'core-placement-grid-wrapper',
+  class: class,
+  style: style,
+  attributes: attributes,
+  content: content,
+  s: s,
+  horizontal_placement: horizontal_placement,
+  vertical_placement: vertical_placement,
+  controls_alignment: controls_alignment,
+  padding: padding,
+  padding_custom: padding_custom
+%}

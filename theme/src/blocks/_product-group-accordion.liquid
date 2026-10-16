@@ -1,0 +1,14 @@
+{% doc %}
+  - Renders accordion holding product blocks
+
+  @param {string} [block_class] - classes for this block instance
+{% enddoc %}
+
+[% capture additional_blocks %]
+  [% json 'schema/blocks-theme-node.jsonc' %]
+  [% json 'schema/blocks-product-form.jsonc' %]
+  [% json 'schema/blocks-product-layout.jsonc' %]
+  [% json 'schema/blocks-product-extended.jsonc', no_accordions: true %]
+[% endcapture %]
+
+[% render 'groups/accordion', additional_blocks: additional_blocks %]

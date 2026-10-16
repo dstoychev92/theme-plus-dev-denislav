@@ -1,0 +1,41 @@
+{% doc %}
+  - Renders top-level links of a menu as a list
+
+  Sits inside _footer-column. Nested menu items do not render.
+{% enddoc %}
+
+{% assign linklist = linklists[block.settings.linklist] %}
+{% if linklist != blank and linklist.links.size > 0 %}
+  <ul class="flex flex-col gap-r4" {{ block.shopify_attributes }}>
+    {% for link in linklist.links %}
+      <li>
+        {% render 'core-link', href: link.url, text: link.title, appearance: 'clean', s: block.settings %}
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Footer links",
+  "tag": null,
+  "settings": [
+    {
+      "type": "link_list",
+      "id": "linklist",
+      "label": "Link list",
+      "default": "main-menu",
+      "info": "This menu won't show dropdown items"
+    },
+    [% json 'schema/type-preset.jsonc', default_preset: 'p', label: 'Typography' %]
+    [% json 'schema/type-custom.jsonc', resize: true, resize_label: 'Size' %]
+    [% json 'schema/color-dropdown.jsonc', muted: true %]
+  ],
+  "presets": [
+    {
+      "name": "Footer links",
+      "blocks": []
+    }
+  ]
+}
+{% endschema %}

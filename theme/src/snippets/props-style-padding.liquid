@@ -1,0 +1,36 @@
+{% doc %}
+  - Prints padding variables and padding rule
+
+  Prints CSS declarations, so render it inside a style attribute.
+
+  @param {boolean} [apply] - false prints the variables without the padding rule
+  @param {string} [custom_var] - variable holding the value, defaults to '--custom-buffer'
+  @param {string} [padding] - 'sm', 'md', 'lg' or 'custom', defaults to s.padding, then 'custom'
+  @param {number} [padding_custom] - padding in pixels when padding is 'custom', defaults to s.padding_custom, then 0
+  @param {object} [s] - settings object
+  @param {boolean} [vars] - false skips the --layout-buffer-* variables
+{% enddoc %}
+
+{%- assign padding = padding | default: s.padding | default: 'custom' -%}
+{%- assign custom_var = custom_var | default: '--custom-buffer' -%}
+{%- assign padding_custom = padding_custom | default: s.padding_custom | default: 0 -%}
+{%- if padding -%}
+  {%- case padding -%}
+    {%- when 'sm' -%}
+      {{ custom_var }}: var(--root-space-sm);
+    {%- when 'md' -%}
+      {{ custom_var }}: var(--root-space-md);
+    {%- when 'lg' -%}
+      {{ custom_var }}: var(--root-space-lg);
+    {%- when 'custom' -%}
+      {{ custom_var }}: calc({{- padding_custom -}}px * var(--r-multiplier));
+  {%- endcase -%}
+  {% unless vars == false %}
+    --layout-buffer: var({{ custom_var }});
+    --layout-buffer-x: var({{ custom_var }});
+    --layout-buffer-y: var({{ custom_var }});
+  {% endunless %}
+  {% unless apply == false %}
+    padding: var({{ custom_var }});
+  {% endunless %}
+{%- endif -%}

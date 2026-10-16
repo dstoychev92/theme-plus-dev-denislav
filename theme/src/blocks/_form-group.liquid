@@ -1,0 +1,24 @@
+{% doc %}
+  - Renders row of form field blocks
+
+  Sits inside _form-contact.
+{% enddoc %}
+
+[%- capture additional_presets -%]
+  {
+    "name": "Row",
+    "settings": {
+      "gap": "sm",
+      "full_width": true,
+      "set_stack": true,
+      "stack_breakpoint_px": 760
+    },
+    "blocks": [
+    ]
+  }
+[%- endcapture -%]
+
+[%- capture additional_blocks -%]
+  [% json 'schema/blocks-form-node.jsonc' %]
+[%- endcapture -%]
+[% render 'groups/row', additional_blocks: additional_blocks, additional_presets: additional_presets %]

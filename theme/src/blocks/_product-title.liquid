@@ -1,0 +1,98 @@
+{% doc %}
+  - Renders product title heading
+
+  Reads closest.product. The title links to the product page unless section.settings.enable_history marks the main product section.
+{% enddoc %}
+
+{% liquid
+  assign product = closest.product
+
+  assign enable_placeholder = false
+  if settings.placeholder_mode or request.design_mode or request.visual_preview_mode
+    assign enable_placeholder = true
+  endif
+
+  if product == blank and enable_placeholder
+    assign title = 'product.placeholder.product_title' | t
+  else
+    assign title = product.title
+  endif
+
+  # Link the title to the product page when it's not the main product section.
+  assign is_product_section = false
+  if section.settings.enable_history
+    assign is_product_section = true
+  endif
+  assign link_tag = 'a'
+  if is_product_section
+    assign link_tag = 'span'
+  endif
+
+  assign heading_tag = 'h1'
+  if settings.show_tag_settings and block.settings.set_heading_tag
+    assign heading_tag = block.settings.heading_tag | default: 'h1'
+  endif
+%}
+
+{% capture style %}
+  {% if block.settings.set_color and block.settings.color == 'custom' %}
+    --color-custom-text: {{ block.settings.color_custom }};
+  {% endif %}
+{% endcapture %}
+
+{% capture class %}
+  {% if block.settings.set_color %}
+    text-{{ block.settings.color | default: 'content' }}
+  {% else %}
+    text-default
+  {% endif %}
+  inline-richtext block
+{% endcapture %}
+
+{% capture content %}
+  <{{ heading_tag }} aria-live="polite">
+    <{{ link_tag }}
+      {% if is_product_section == false %}
+        href="{{ product.selected_or_first_available_variant.url | default: product.url }}"
+      {% endif %}
+      class="{{ class }}"
+      style="{{ style }}"
+    >
+      {% render 'core-text-preset',
+        tag: 'span',
+        text: title,
+        s: block.settings
+      %}
+    </{{ link_tag }}>
+  </{{ heading_tag }}>
+{% endcapture %}
+
+{% render 'product-block',
+  tag: 'header',
+  content: content,
+  attributes: block.shopify_attributes,
+  s: block.settings
+%}
+
+{% schema %}
+{
+  "name": "Product title",
+  "tag": null,
+  "settings": [
+    [% json 'schema/type-preset.jsonc', default_preset: 'h3' %]
+    [% json 'schema/type-custom.jsonc', resize: true, default_font: 'heading', default_size: '9' %]
+    {
+      "type": "header",
+      "content": "Color"
+    },
+    [% json 'schema/color-dropdown.jsonc', optional: true, custom: true, muted: true %]
+    [% json 'schema/seo-settings.jsonc', default_tag: 'h1' %]
+  ],
+  "presets": [
+    {
+      "name": "Product title",
+      "category": "Additional product info"
+    }
+  ]
+}
+{% endschema %}

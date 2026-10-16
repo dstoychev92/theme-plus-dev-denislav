@@ -1,0 +1,54 @@
+{% comment %}
+  Section: Custom liquid
+  Section-level insertion point for merchant HTML/Liquid and certain app embeds.
+  Same settings surface as the "Custom liquid" block (theme-liquid-code), scoped
+  to section settings. Raw output skips the core-section wrapper entirely so the
+  code lands unwrapped in the page flow.
+{% endcomment %}
+
+{% if section.settings.output == 'wrapped' %}
+  {% capture content %}
+    <div
+      class="w-full"
+      {% if section.settings.prevent_dynamic_updates %}
+        data-morph-update="none"
+      {% endif %}
+    >
+      {{ section.settings.code }}
+    </div>
+  {% endcapture %}
+  {% render 'core-section', s: section.settings, content: content %}
+{% else %}
+  {{ section.settings.code }}
+{% endif %}
+
+{% schema %}
+{
+  "name": "Custom liquid",
+  "class": "section-custom-liquid",
+  "tag": "section",
+  "settings": [
+    [% json 'schema/liquid-code-settings.jsonc', context: 'section.settings.', entity: 'section' %]
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    [% json 'schema/section-content-width-setting.jsonc' %]
+    [% json 'schema/section-padding-settings.jsonc' %]
+    {
+      "type": "header",
+      "content": "Appearance"
+    },
+    [% json 'schema/color-settings-section-solid.jsonc' %]
+  ],
+  "presets": [
+    {
+      "name": "Custom liquid",
+      "category": "Utility"
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "custom.overlays", "custom.drawers"]
+  }
+}
+{% endschema %}

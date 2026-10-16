@@ -1,0 +1,25 @@
+{% doc %}
+  - Renders custom Liquid code
+{% enddoc %}
+
+{% render 'liquid-code-block',
+  block: block,
+  class: 'entrance-item entrance-standard',
+  attributes: block.shopify_attributes
+%}
+
+{% schema %}
+{
+  "name": "Custom liquid",
+  "tag": null,
+  "settings": [
+    [% json 'schema/liquid-code-settings.jsonc' %]
+  ],
+  "presets": [
+    {
+      "name": "Custom liquid",
+      "category": "Utility"
+    }
+  ]
+}
+{% endschema %}

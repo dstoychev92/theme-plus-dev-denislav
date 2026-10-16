@@ -1,0 +1,13 @@
+{
+  "name": "@groupthought/tradecraft-tools",
+  "version": "0.2.0",
+  "description": "Tradecraft's agent skills. Projects get them from the release repo after sign-in.",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "type": "module",
+  "files": [
+    "skills"
+  ],
+  "engines": {
+    "node": ">=22.12"
+  }
+}

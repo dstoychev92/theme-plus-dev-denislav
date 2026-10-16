@@ -1,0 +1,30 @@
+[% assign context = context | default: 'section.settings.' %]
+[
+  {
+    "type": "color_scheme",
+    "id": "color_scheme",
+    "label": "Color scheme",
+    [% if default_color_scheme %]
+      "default": "[= default_color_scheme | default: 'scheme-default' =]"
+    [% endif %]
+  },
+  {
+    "type": "select",
+    "id": "background",
+    "label": "Background",
+    "default": "[= default_background | default: 'canvas' =]",
+    "options": [
+      {"value": "canvas", "label": "Default"},
+      {"value": "tint", "label": "Tint"},
+      {"value": "custom", "label": "⋯"}
+    ]
+  },
+  {
+    "type": "color",
+    "id": "background_color",
+    "label": "Background color",
+    "default": "#f2f2f2",
+    "alpha": false,
+    "visible_if": "{{ [= context =]background == 'custom' }}"
+  }
+]

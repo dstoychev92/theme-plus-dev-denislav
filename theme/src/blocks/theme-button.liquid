@@ -1,0 +1,96 @@
+{% doc %}
+  - Renders button link
+{% enddoc %}
+
+{% capture attributes %}
+  {{ block.shopify_attributes }}
+{% endcapture %}
+
+{% capture class %}
+  {% comment %} Disable entrance animations in visual preview mode to prevent "No preview available" error {% endcomment %}
+  {% unless request.visual_preview_mode %}
+    entrance-item entrance-standard
+  {% endunless %}
+{% endcapture %}
+
+{% render 'core-button', s: block.settings, tag: 'a', attributes: attributes, class: class %}
+
+{% schema %}
+{
+  "name": "Button",
+  "tag": null,
+  "settings": [
+    [% json 'schema/link-settings.jsonc', default_text_content: "Button Text" %]
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    [% json 'schema/button-appearance-setting.jsonc' %]
+
+    [% json 'schema/color-dropdown.jsonc', overlay_colors: true, custom: true, custom_gradient: true, gradient_fill_only: true %]
+    [% json 'schema/button-custom-color-settings.jsonc' %]
+
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    [% json 'schema/type-preset.jsonc', default_preset: 'btn', label: 'Text style', conditional_heading: 'Text style' %]
+    [% json 'schema/type-custom.jsonc', resize: true %]
+    {
+      "type": "header",
+      "content": "Rounding"
+    },
+    [% json 'schema/rounding-element.jsonc' %]
+    {
+      "type": "header",
+      "content": "Size"
+    },
+    [% json 'schema/size-setting.jsonc', size_label: 'Height', default_size: 'lg' %]
+    {
+      "type": "checkbox",
+      "id": "set_width",
+      "label": "Set width",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "width_unit",
+      "label": "Unit",
+      "default": "percent",
+      "options": [
+        {"value": "percent", "label": "Percent"},
+        {"value": "pixel", "label": "Pixel"}
+      ],
+      "visible_if": "{{ block.settings.set_width == true }}"
+    },
+    {
+      "type": "range",
+      "id": "width_px",
+      "label": "Width",
+      "unit": "px",
+      "min": 100,
+      "max": 500,
+      "step": 5,
+      "default": 200,
+      "visible_if": "{{ block.settings.set_width == true and block.settings.width_unit == 'pixel' }}"
+    },
+    {
+      "type": "range",
+      "id": "width_percent",
+      "label": "Width",
+      "unit": "%",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 100,
+      "visible_if": "{{ block.settings.set_width == true and block.settings.width_unit == 'percent' }}"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Button",
+      "category": "Basic"
+    }
+  ]
+}
+{% endschema %}

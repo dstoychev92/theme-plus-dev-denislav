@@ -1,0 +1,88 @@
+{% doc %}
+  - Renders one slide of a pair slideshow
+
+  Sits inside _pair-slideshow. Hides its controls when the viewport carries data-hide-controls.
+{% enddoc %}
+
+{% liquid
+  assign total_slides = false
+
+  capture blocks
+    content_for 'blocks'
+  endcapture
+%}
+
+{% render 'pair-slide',
+  s: block.settings,
+  attributes: block.shopify_attributes,
+  content: blocks,
+  total_slides: total_slides
+%}
+
+{% schema %}
+{
+  "name": "Image slide",
+  "tag": null,
+  "settings": [
+    [% json 'schema/media-settings.jsonc' %]
+    {
+      "type": "header",
+      "content": "Overlay"
+    },
+    [% json 'schema/overlay-settings.jsonc' %]
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    [% json 'schema/vertical-placement-setting.jsonc' %]
+    [% json 'schema/horizontal-placement-setting.jsonc' %]
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    [% json 'schema/color-settings-image.jsonc' %]
+  ],
+  "blocks": [
+    {
+      "type": "@theme"
+    },
+    {
+      "type": "@app"
+    },
+    [% json 'schema/blocks-extended.jsonc' %]
+  ],
+  "presets": [
+    {
+      "name": "Image slide",
+      "settings": {
+        "vertical_placement": "full",
+        "horizontal_placement": "center"
+      },
+      "blocks": []
+    },
+    {
+      "name": "Slide",
+      "settings": {
+        "vertical_placement": "full",
+        "horizontal_placement": "center"
+      },
+      "blocks": [
+        {
+          "type": "theme-text",
+          "settings": {
+            "text": "Introducing",
+            "type_preset": "h5"
+          }
+        },
+        {
+          "type": "theme-text",
+          "settings": {
+            "text": "The new collection",
+            "type_preset": "h5"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

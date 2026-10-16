@@ -1,0 +1,121 @@
+{% doc %}
+  - Renders pair column with image or video banner and overlaid blocks
+
+  Private, only offered by section-pair. Reads section.settings.height_mode to pick the block height or the section height. The 'image' height turns parallax off.
+{% enddoc %}
+
+{% liquid
+  # Can't do parallax if height is set to image
+  if section.settings.height_mode == 'column' and block.settings.height == 'image'
+    assign parallax = false
+  endif
+
+  # Pass the active height since the media snippets fall back to s.height, and a stored 'image' would act as a minimum height in section mode
+  if section.settings.height_mode == 'column'
+    assign height = block.settings.height
+  else
+    assign height = section.settings.height
+  endif
+
+  # Ratio for the 'image' height band, carried by the column
+  if block.settings.media_type == 'video'
+    assign aspect_media = block.settings.video_bg
+  else
+    assign aspect_media = block.settings.image
+  endif
+  assign media_aspect_ratio = aspect_media.aspect_ratio | default: 1.7
+%}
+
+{% capture attributes %}
+  {{ block.shopify_attributes }}
+{% endcapture %}
+
+{% capture content_blocks %}
+  {% content_for 'blocks' %}
+{% endcapture %}
+
+{% capture image_banner %}
+  {% render 'core-banner',
+    id: block.id,
+    s: block.settings,
+    text: content_blocks,
+    padding: false,
+    parallax: parallax,
+    height: height,
+    set_height: false,
+    set_height_mobile: true,
+    content_class: 'pair-padding entrance-container'
+  %}
+{% endcapture %}
+
+{% render 'pair-column',
+  s: block.settings,
+  content: image_banner,
+  attributes: attributes,
+  class: 'pair-media',
+  aspect_ratio: media_aspect_ratio,
+  is_media_block: true
+%}
+
+{% schema %}
+{
+  "name": "Banner",
+  "tag": null,
+  "settings": [
+    [% json 'schema/media-settings.jsonc' %]
+    {
+      "type": "header",
+      "content": "Overlay"
+    },
+    [% json 'schema/overlay-settings.jsonc' %]
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    [% json 'schema/vertical-placement-setting.jsonc' %]
+    [% json 'schema/horizontal-placement-setting.jsonc' %]
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    [% json 'schema/color-settings-image.jsonc' %]
+    {
+      "type": "header",
+      "content": "Border"
+    },
+    [% json 'schema/border-settings.jsonc' %]
+    {
+      "type": "header",
+      "content": "Rounding"
+    },
+    [% json 'schema/rounding-large.jsonc' %]
+
+    {
+      "type": "header",
+      "content": "Parallax"
+    },
+    [% json 'schema/parallax-settings.jsonc', default_parallax: 14, context: 'block.settings.' %]
+    {
+      "type": "header",
+      "content": "Height"
+    },
+    [% json 'schema/pair-column-height-setting.jsonc', image_height: true, content_height: false, default_height: 'screen-one-half', disable_image_mobile: 'image' %]
+  ],
+  "blocks": [
+    {
+      "type": "@theme"
+    },
+    {
+      "type": "@app"
+    },
+    [% json 'schema/blocks-extended.jsonc' %]
+  ],
+  "presets": [
+    {
+      "name": "Banner",
+      "category": "Media",
+      "blocks": []
+    }
+  ]
+}
+{% endschema %}

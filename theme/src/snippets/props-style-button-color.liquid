@@ -1,0 +1,48 @@
+{% doc %}
+  - Prints stain, gradient, and text color variables for a button
+
+  @param {string} [appearance] - 'fill' by default
+  @param {string} [color] - prints only for 'custom' or 'custom_gradient', defaults to 'primary'
+  @param {string} [color_custom] - CSS color
+  @param {string} [custom_gradient_from] - gradient start color
+  @param {string} [custom_gradient_to] - gradient end color
+  @param {object} [s] - settings object
+  @param {string} [text_color] - text color, for the 'fill' appearance with a custom color
+{% enddoc %}
+
+{% liquid
+  assign color = color | default: s.color, allow_false: true | default: 'primary', allow_false: true
+  assign color_custom = color_custom | default: s.color_custom
+  assign text_color = text_color | default: s.text_color
+  assign custom_gradient_from = custom_gradient_from | default: s.custom_gradient_from
+  assign custom_gradient_to = custom_gradient_to | default: s.custom_gradient_to
+  assign appearance = appearance | default: s.appearance, allow_false: true | default: 'fill', allow_false: true
+%}
+
+{% if appearance == 'fill' and text_color %}
+  {% if color == 'custom' or color == 'custom_gradient' %}
+    --btn-text-color: {{ text_color }};
+    --btn-text-hover-color: {{ text_color }};
+  {% endif %}
+{% endif %}
+
+{% if color == 'custom' and color_custom != blank %}
+  --stain: {{ color_custom }};
+  {% assign custom_brightness = color_custom | color_brightness %}
+  --stain-contrast: {% if custom_brightness > 128 %}#000000{% else %}#ffffff{% endif %};
+{% endif %}
+
+{% comment %}
+  custom_gradient uses --stain as the flat fallback for non-OKLCH browsers and
+  non-fill appearances; fill layers gradient vars above it when supported.
+{% endcomment %}
+{% if color == 'custom_gradient' and custom_gradient_from != blank %}
+  --stain: {{ custom_gradient_from }};
+  {% assign custom_brightness = custom_gradient_from | color_brightness %}
+  --stain-contrast: {% if custom_brightness > 128 %}#000000{% else %}#ffffff{% endif %};
+{% endif %}
+
+{% if color == 'custom_gradient' and appearance == 'fill' %}
+  {% if custom_gradient_from != blank %}--btn-gradient-base-from: {{ custom_gradient_from }};{% endif %}
+  {% if custom_gradient_to != blank %}--btn-gradient-base-to: {{ custom_gradient_to }};{% endif %}
+{% endif %}

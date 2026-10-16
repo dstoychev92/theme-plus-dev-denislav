@@ -1,0 +1,22 @@
+{% doc %}
+  - Renders one-time, daily, or weekly countdown in the header toolbar
+
+  Private, only offered by header-toolbar.
+{% enddoc %}
+
+{% render 'countdown', s: block.settings, class: 'self-center', attributes: block.shopify_attributes %}
+
+{% schema %}
+{
+  "name": "Countdown",
+  "tag": null,
+  "settings": [
+    [% json 'schema/countdown-settings.jsonc', hides_block: true, text_size: false %]
+  ],
+  "presets": [
+    {
+      "name": "Countdown"
+    }
+  ]
+}
+{% endschema %}

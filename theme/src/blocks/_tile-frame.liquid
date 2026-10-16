@@ -1,0 +1,52 @@
+{% doc %}
+  - Renders framed tile holding cards and other blocks
+
+  The radius falls back to --radius-card.
+{% enddoc %}
+
+[% capture additional_blocks %]
+{ "type": "@theme" },
+[% json 'schema/blocks-extended.jsonc' %]
+{ "type": "_card-product" },
+{ "type": "_card-collection" },
+{ "type": "_card-custom" },
+{ "type": "_tile-frame" },
+{ "type": "_tile-image" }
+
+[% endcapture %]
+
+[% capture replace_presets %]
+"presets": [
+  {
+    "name": "Frame tile",
+    "category": "Featured card",
+    "settings": {
+      "set_layout": true,
+      "content_align": "left",
+      "set_gap": true,
+      "gap": "custom",
+      "gap_custom": 0,
+      "full_height": true,
+      "justification_column": "end",
+      "set_color_scheme": true,
+      "background": "tint",
+      "padding": "md",
+    },
+    "blocks": [
+      {
+        "type": "theme-text",
+        "settings": {
+          "text": "<strong>Frame tile</strong>",
+          "type_preset": "p",
+          "type_resize": "md",
+          "type_font": "accent",
+          "type_size": 2,
+          "type_uppercase": true,
+        }
+      }
+    ]
+  }
+]
+[% endcapture %]
+
+[% render 'groups/frame', additional_blocks: additional_blocks, width: false, replace_presets: replace_presets, default_radius_var: '--radius-card' %]

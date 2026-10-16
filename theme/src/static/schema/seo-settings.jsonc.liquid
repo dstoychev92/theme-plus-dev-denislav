@@ -1,0 +1,34 @@
+[% assign context = context | default: 'block.settings.' %]
+[
+  [% unless hide_header == true %]
+  {
+    "type": "header",
+    "content": "Tag",
+    "visible_if": "{{ settings.show_tag_settings == true }}"
+  },
+  [% endunless %]
+  {
+    "type": "checkbox",
+    "id": "set_heading_tag",
+    "label": "Set HTML tag",
+    "visible_if": "{{ settings.show_tag_settings == true }}",
+    "default": false
+  },
+  {
+    "type": "select",
+    "id": "heading_tag",
+    "label": "HTML tag",
+    "info": "Override the style preset with a specific HTML tag",
+    "default": "[= default_tag | default: 'h2' =]",
+    "visible_if": "{{ settings.show_tag_settings == true and [= context =]set_heading_tag == true }}",
+    "options": [
+      {"value": "p", "label": "p"},
+      {"value": "h1", "label": "h1"},
+      {"value": "h2", "label": "h2"},
+      {"value": "h3", "label": "h3"},
+      {"value": "h4", "label": "h4"},
+      {"value": "h5", "label": "h5"},
+      {"value": "h6", "label": "h6"}
+    ]
+  }
+]

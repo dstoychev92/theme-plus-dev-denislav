@@ -1,0 +1,8 @@
+@layer components {
+  .slider-control {
+    background-color: var(--btn-bg-color, transparent);
+    color: var(--btn-text-color, inherit);
+    box-shadow: 0 0 0 var(--btn-border-width, 0px) inset var(--btn-border-color, transparent);
+    backdrop-filter: blur(var(--btn-blur, 0));
+  }
+}

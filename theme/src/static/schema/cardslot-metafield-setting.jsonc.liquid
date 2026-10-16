@@ -1,0 +1,15 @@
+[% assign positions = 'above,beside,below' | split: ',' %]
+[% assign position_labels = 'Above,Beside,Below' | split: ',' %]
+[
+  [% for position in positions %]
+    [% assign position_index = forloop.index0 %]
+    [% assign position_label = position_labels[position_index] %]
+    {
+      "type": "text",
+      "id": "metafield_cardslot_[= type =]_[= position =]",
+      "label": "[= position_label =] [= type =]",
+      "placeholder": "theme.content_[= position =]_card_[= type =]",
+      "visible_if": "{{ settings.enable_metafield_cardslot_[= type =] }}"
+    }[% unless forloop.last %],[% endunless %]
+  [% endfor %]
+]

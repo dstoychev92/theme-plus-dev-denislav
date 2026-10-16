@@ -1,0 +1,58 @@
+{% doc %}
+  - Renders slide dots with autoplay progress ring on the current slide
+
+  Reads $slideshow from an enclosing x-slideshow scope.
+
+  @param {string} [attributes]
+{% enddoc %}
+
+<ol
+  class="flex items-center justify-center gap-r2"
+  aria-label="{{ 'collection.accessibility.product_card.slideshow_indicator' | t }}"
+  {{ attributes }}
+>
+  <template x-for="index in Array($slideshow.totalSlides).fill(null).map((_, i) => i)">
+    <li
+      class="block"
+      :aria-current="index == $slideshow.currentSlideIndex"
+      {% # A backtick or a ${ in the translation breaks the template literal %}
+      data-index-separator="{{ 'product.gallery.index_indicator_separator' | t | escape_once }}"
+      :aria-label="`${index + 1} ${$el.dataset.indexSeparator} ${$slideshow.totalSlides}`"
+    >
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        class="block overflow-visible"
+      >
+        {% # Dot — dim on inactive slides, solid on the active one %}
+        <circle
+          cx="8" cy="8" r="2.25"
+          class="fill-white transition-opacity duration-200"
+          :class="index == $slideshow.currentSlideIndex ? 'opacity-100' : 'opacity-40'"
+        />
+
+        {% # Progress ring — only on the active slide; the bright arc sweeps as the slide plays %}
+        <g
+          class="transition-opacity duration-200"
+          :class="index == $slideshow.currentSlideIndex ? 'opacity-100' : 'opacity-0'"
+        >
+          {% # Faint full-circle track so the ring always reads, even at zero progress %}
+          <circle cx="8" cy="8" r="6" stroke-width="1.5" class="stroke-white opacity-25" />
+          {% # Use the circle's actual circumference so CSS dash animation units match SVG user units %}
+          <circle
+            cx="8" cy="8" r="6" stroke-width="1.5" stroke-linecap="round"
+            stroke-dasharray="37.7"
+            transform="rotate(-90 8 8)"
+            class="stroke-white"
+            stroke-dashoffset="37.7"
+            data-slideshow-progress="stroke"
+            :data-current="index == $slideshow.currentSlideIndex ? 'true' : 'false'"
+          />
+        </g>
+      </svg>
+    </li>
+  </template>
+</ol>

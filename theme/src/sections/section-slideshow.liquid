@@ -1,0 +1,359 @@
+{% comment %}
+  Section: Slideshow
+  Multi-slide carousel with auto-rotate, custom cursor navigation, and multiple
+  pagination styles (counter, dots, lines).
+
+  Each _slide block is a self-contained hero with its own background media and
+  content blocks. All slides share the same section height and width settings.
+
+  Autoplay defaults to on with an 8-second duration (range 4-15s). Pagination
+  controls can be positioned left/center/right and styled as fill/stroke/soft/bare.
+
+  Color scheme defaults to "scheme-opposite" for text readability over imagery.
+  Supports transparent header integration for top-of-page placement.
+{% endcomment %}
+
+{% liquid
+  assign autoplay = section.settings.autoplay
+  assign duration = section.settings.duration | times: 1000
+%}
+
+{% # Skip in the editor since the custom cursor and its click navigation are off there %}
+{% unless request.design_mode %}
+  <script type="module">
+    import Alpine from 'alpinejs';
+
+    {% comment %} Bind all interactive elements inside the slideshow as custom cursor snap points. Stop propagation so slide doesn't navigate by being clicked {% endcomment %}
+    document.addEventListener('alpine:initialized', () => {
+      document.querySelectorAll('#shopify-section-{{ section.id }} :is(a,button,input,textarea,[data-interactive])').forEach((child) => {
+        Alpine.bind(child, {
+          {% # Hide next/prev arrows when hovering interactive elements %}
+          'data-hide-custom-cursor': '',
+          {% # Prevent clicks from bubbling up to the slideshow and triggering a slide change %}
+          '@click.stop': ''
+        })
+      })
+    });
+  </script>
+{% endunless %}
+
+{% if section.blocks.size > 1 %}
+  {% comment %} Enable custom-cursor when more than 1 slide {% endcomment %}
+  {% # Skip the custom cursor in the editor since a click must select the slide, not change it %}
+  {% unless request.design_mode %}
+    {% capture custom_cursor_attributes %}
+      data-lazy-alpine
+      data-lazy-alpine-module="@theme/custom-cursor"
+      x-custom-cursor
+      x-data="{ width: null }"
+      x-resize="width = $width"
+      @click="
+        {% comment %} On desktop intercept click events on the left hand or right hand side of the screen to pause and scroll to the next or previous slide {% endcomment %}
+        if ($media.matches.touch) return
+        if (!$customCursor.targetPosition || !width) return
+        $slideshow.pause();
+        if ($customCursor.targetPosition?.x > width / 2) {
+          document.dir == 'rtl' ? $slideshow.prev() : $slideshow.next();
+        } else {
+          document.dir == 'rtl' ? $slideshow.next() : $slideshow.prev();
+        }
+      "
+    {% endcapture %}
+
+    {%- capture custom_cursor -%}
+      {% comment %} Cursor arrow {% endcomment %}
+      <svg
+        x-cloak
+        x-custom-cursor:element
+        class="
+          [--cursor-size:52px] fixed top-0 left-0 size-[--cursor-size]
+          overflow-visible pointer-events-none cursor-pointer touch:hidden motion-reduce:hidden
+          transition-opacity group-has-[[data-edge]]/section:opacity-0
+        "
+        viewBox="0 0 52 52"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <g
+          class="
+            transition origin-center duration-300 scale-100 rotate-0
+            translate-x-[--cursor-offset]
+          "
+          :class="{
+            '!scale-0 !opacity-0': $customCursor.isSnapped || $customCursor.isHidden,
+            '[--cursor-offset:6px] !rotate-180': $customCursor.targetPosition?.x < width / 2
+          }"
+        >
+          <path d="M24 32L29.5 26.5L24 21" stroke="white" stroke-width="1.5" />
+        </g>
+      </svg>
+      {% comment %} Cursor blur background circle {% endcomment %}
+      <div
+        x-cloak
+        x-custom-cursor:element.mass.20
+        class="
+          size-fit fixed top-0 left-0 overflow-visible pointer-events-none cursor-pointer motion-reduce:hidden
+          transition-opacity group-has-[[data-edge]]/section:opacity-0
+        "
+      >
+        <div
+          :class="{
+            '!scale-0 !opacity-0': $customCursor.isSnapped || $customCursor.isHidden,
+            '[--cursor-offset:6px]': $customCursor.targetPosition?.x < width / 2
+          }"
+          class="
+            [--cursor-size:42px]
+            size-[--cursor-size]
+            translate-x-[--cursor-offset]
+            touch:hidden
+            rounded-full frosted-glass border-highlight
+            transition origin-center duration-300 scale-100 rotate-0
+          "
+        >
+        </div>
+      </div>
+    {%- endcapture -%}
+  {% endunless %}
+
+  {% capture slideshow_attributes %}
+    x-slideshow-mobile-swipe
+  {% endcapture %}
+{% endif %}
+
+{% capture attributes %}
+  {% if autoplay %}
+    x-section-slideshow.duration.{{ duration }}ms.autoplay
+  {% else %}
+    x-section-slideshow.duration.{{ duration }}ms
+  {% endif %}
+  x-slideshow:viewport
+  :data-current-slide="$slideshow.currentSlideIndex"
+  data-autoplay="{{ autoplay }}"
+  {% if request.design_mode %}
+    {% if autoplay %}
+      @shopify:block:select="$slideshow.pause()"
+      @shopify:block:deselect="$slideshow.play()"
+    {% endif %}
+  {% endif %}
+  role="region"
+  aria-label="{{ 'homepage.slideshow.label' | t }}"
+  {{ slideshow_attributes }}
+  {{ custom_cursor_attributes }}
+{% endcapture %}
+
+{% capture content %}
+  {{ custom_cursor }}
+
+  {% content_for 'blocks' %}
+  {% if section.settings.height == 'screen' %}
+    {% render 'scroll-button', attributes: 'data-hide-custom-cursor' %}
+  {% endif %}
+{% endcapture %}
+
+{% capture class %}
+  relative entrance-container
+  {% comment %} Prevent browser from interfering with the horizontal panning because we are handling it ourselves with x-slideshow-mobile-swipe {% endcomment %}
+  touch-pan-y
+{% endcapture %}
+
+{% render 'core-section-wrapper',
+  tag: 'slideshow',
+  s: section.settings,
+  content: content,
+  contain_controls_rhythm: true,
+  contain_disables_transparent_header: true,
+  contain_controls_background: true,
+  class: class,
+  attributes: attributes
+%}
+
+{% schema %}
+{
+  "name": "Slideshow",
+  "class": "section-slideshow",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Auto-rotate slides",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "duration",
+      "min": 4,
+      "max": 15,
+      "step": 1,
+      "unit": "sec",
+      "label": "Change slides every",
+      "default": 8,
+      "visible_if": "{{ section.settings.autoplay }}"
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    [% json 'schema/height-setting.jsonc', context: 'section.settings.', default_height: 'screen-one-third', image_height: false, height_toggle: false %]
+    [% json 'schema/section-banner-width-settings.jsonc', contain_section_label: 'Contain section' %]
+    [% json 'schema/section-rounding-settings.jsonc' %]
+    [% json 'schema/section-border-settings.jsonc' %]
+    {
+      "type": "header",
+      "content": "Content layout"
+    },
+    [% json 'schema/section-conditional-content-width-setting.jsonc', default_width: "page" %]
+    [% json 'schema/vertical-placement-setting.jsonc' %]
+    [% json 'schema/horizontal-placement-setting.jsonc', default_horizontal_placement: 'left' %]
+    [% json 'schema/padding-settings.jsonc', context: 'section.settings.', id_prefix: 'content' %]
+    {
+      "type": "header",
+      "content": "Appearance"
+    },
+    [% json 'schema/color-settings-section-banner.jsonc', default_color_scheme: 'scheme-opposite' %]
+    [% json 'schema/transparent-header-settings.jsonc' %]
+    {
+      "type": "header",
+      "content": "Navigation"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_controls",
+      "label": "Show pagination",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show arrows",
+      "default": true,
+      "visible_if": "{{ section.settings.show_controls }}"
+    },
+    {
+      "type": "text_alignment",
+      "id": "controls_alignment",
+      "label": "Controls alignment",
+      "default": "left",
+      "visible_if": "{{ section.settings.show_controls and section.settings.vertical_placement != 'bottom' and section.settings.vertical_placement != 'full' }}"
+    },
+    {
+      "type": "paragraph",
+      "content": "Controls will be aligned automatically if vertical placement is 'bottom' or 'full'",
+      "visible_if": "{{ section.settings.show_controls and section.settings.vertical_placement == 'bottom' or section.settings.vertical_placement == 'full' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_pagination_style",
+      "label": "Set pagination style",
+      "default": true,
+      "visible_if": "{{ section.settings.show_controls }}"
+    },
+    {
+      "type": "select",
+      "id": "pagination_style",
+      "label": "Indicator style",
+      "default": "counter",
+      "options": [
+        {"value": "counter", "label": "Counter"},
+        {"value": "dots", "label": "Dots"},
+        {"value": "lines", "label": "Lines"}
+      ],
+      "visible_if": "{{ section.settings.show_controls and section.settings.set_pagination_style }}"
+    },
+    {
+      "type": "select",
+      "id": "overlay_controls_style",
+      "label": "Button style",
+      "default": "soft",
+      "options": [
+        {"value": "fill", "label": "Fill"},
+        {"value": "stroke", "label": "Stroke"},
+        {"value": "soft", "label": "Soft"},
+        {"value": "bare", "label": "∅"}
+      ],
+      "visible_if": "{{ section.settings.show_controls and section.settings.set_pagination_style }}"
+    },
+    [% json 'schema/section-target-device-settings.jsonc' %]
+  ],
+  "blocks": [
+    {
+      "type": "_slide"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Slideshow",
+      "category": "Core",
+      "settings": {
+        "vertical_placement": "bottom",
+        "horizontal_placement": "left"
+      },
+      "blocks": [
+        {
+          "type": "_slide",
+          "blocks": [
+            {
+              "type": "theme-text",
+              "settings": {
+                "text": "New arrivals",
+                "type_preset": "h2"
+              }
+            },
+            {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Fresh styles, just landed. Shop the pieces you'll reach for.</p>",
+                "limit_width": true,
+                "max_width": 500
+              }
+            }
+          ]
+        },
+        {
+          "type": "_slide",
+          "blocks": [
+            {
+              "type": "theme-text",
+              "settings": {
+                "text": "Best sellers",
+                "type_preset": "h2"
+              }
+            },
+            {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Loved by our community. Restocked by popular demand.</p>",
+                "limit_width": true,
+                "max_width": 500
+              }
+            }
+          ]
+        },
+        {
+          "type": "_slide",
+          "blocks": [
+            {
+              "type": "theme-text",
+              "settings": {
+                "text": "Shipping & returns",
+                "type_preset": "h2"
+              }
+            },
+            {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Summarise your shipping and returns policies, or link to them.</p>",
+                "limit_width": true,
+                "max_width": 500
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "custom.overlays", "custom.drawers"]
+  }
+}
+{% endschema %}

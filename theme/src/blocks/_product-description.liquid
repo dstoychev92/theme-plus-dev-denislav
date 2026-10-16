@@ -1,0 +1,162 @@
+{% doc %}
+  - Renders product description with optional read more limit
+
+  Reads closest.product.
+{% enddoc %}
+
+{% liquid
+  assign product = closest.product
+
+  assign enable_placeholder = false
+  if settings.placeholder_mode or request.design_mode or request.visual_preview_mode
+    assign enable_placeholder = true
+  endif
+
+  if product == blank and enable_placeholder
+    assign description = 'product.placeholder.product_description' | t
+  else
+    assign description = product.description | strip
+  endif
+
+  assign limit_width = block.settings.limit_width
+  assign max_width = block.settings.max_width
+%}
+
+{% capture style %}
+  {% if limit_width %}
+    {% render 'props-style-max-width', max_width: max_width %}
+  {% endif %}
+
+  {% if block.settings.set_color and block.settings.color == 'custom' %}
+    --color-custom-text: {{ block.settings.color_custom }};
+  {% endif %}
+{% endcapture %}
+
+{% capture class %}
+  {% if block.settings.set_color %}
+    text-{{ block.settings.color | default: 'content' }}
+  {% else %}
+    text-default
+  {% endif %}
+{% endcapture %}
+
+{% if description.size > 0 %}
+  {% capture description_class %}
+    prose type-resize-all-{{ block.settings.richtext_size }}
+  {% endcapture %}
+
+  {% capture content %}
+    {% if block.settings.enable_truncate %}
+      {% comment %} Truncated description needs a wrapping container with specific classes in order to work {% endcomment %}
+      {% assign truncated_description_class = description_class %}
+      {% assign description_class = 'overflow-clip ease-in-out will-change-[height]' %}
+      {% capture description_attributes %}
+        x-overflow
+        x-read-more
+      {% endcapture %}
+
+      {% capture description_html %}
+        {% comment %}
+          Preview is the line-clamped visible copy. Content is a full copy marked
+          hidden=until-found while collapsed so find-in-page / text fragments can reveal it.
+        {% endcomment %}
+        <div
+          x-read-more:preview
+          class="line-clamp-[--truncate-lines] {{ truncated_description_class }}"
+          style="--truncate-lines: {{ block.settings.truncate_lines }}"
+        >
+          {{ description }}
+
+          {% comment %} Used to detect whether the description is visually truncated {% endcomment %}
+          <div class="w-full h-px" x-overflow:detector aria-hidden="true"></div>
+        </div>
+
+        <div x-read-more:content class="{{ truncated_description_class }}" hidden="until-found">
+          {{ description }}
+        </div>
+
+        {% assign read_more = 'product.read_more' | t %}
+        {% capture read_more_attributes %}
+          x-read-more:button
+          :class="
+            {
+              'opacity-100': $overflow.detector && !$readMore.isExpanded,
+              'invisible opacity-0': !$overflow.detector || $readMore.isExpanded
+            }
+          "
+          aria-label="{{ 'other.accessibility.read_more' | t: title: product.title }}"
+        {% endcapture %}
+        {% render 'core-link',
+          text: read_more,
+          tag: 'button',
+          type_preset: 'p',
+          type_resize: block.settings.richtext_size,
+          appearance: 'line',
+          class: 'mt-r5 invisible opacity-0 transition-opacity duration-100',
+          attributes: read_more_attributes
+        %}
+      {% endcapture %}
+    {% else %}
+      {% capture description_html %}
+        {{ description }}
+      {% endcapture %}
+    {% endif %}
+
+    <div class="{{ description_class }}" {{ description_attributes }}>
+      {{ description_html }}
+    </div>
+  {% endcapture %}
+{% endif %}
+
+{% render 'product-block',
+  s: block.settings,
+  content: content,
+  class: class,
+  style: style,
+  attributes: block.shopify_attributes
+%}
+
+{% schema %}
+{
+  "name": "Product description",
+  "tag": null,
+  "settings": [
+
+    [% json 'schema/type-richtext-resize-all-setting.jsonc', default: 'md' %]
+    [% json 'schema/width-limit-setting.jsonc' %]
+    {
+      "type": "header",
+      "content": "Color"
+    },
+    [% json 'schema/color-dropdown.jsonc', optional: true, custom: true, muted: true %]
+    {
+      "type": "header",
+      "content": "Limit lines",
+      "info": "Truncate the product description and show a link to 'read more'"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_truncate",
+      "label": "Enable read more limit",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "truncate_lines",
+      "min": 1,
+      "max": 20,
+      "step": 1,
+      "label": "Line limit",
+      "default": 5,
+      "visible_if": "{{ block.settings.enable_truncate }}"
+    },
+
+  ],
+  "presets": [
+    {
+      "name": "Product description",
+      "category": "Additional product info"
+    }
+  ]
+}
+{% endschema %}

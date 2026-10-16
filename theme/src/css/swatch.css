@@ -1,0 +1,142 @@
+/* Bundled here since Shopify serves stylesheet-tag CSS per page and a Section API region update drops the inline copy */
+
+.swatch :is(.swatch-content, .swatch-selection-ring) {
+  mask-repeat: no-repeat;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+}
+
+.swatch .swatch-selection-ring {
+  opacity: 0;
+  transition: opacity 100ms ease-out;
+}
+
+.swatch[data-selected='true'] .swatch-selection-ring {
+  opacity: 1;
+}
+
+.swatch[data-shape='circle'] .swatch-selection-ring {
+  mask-image: url(#swatch-circle-outer-ring);
+  -webkit-mask-image: url(#swatch-circle-outer-ring);
+}
+
+.swatch[data-shape='square'] .swatch-selection-ring {
+  mask-image: url(#swatch-square-outer-ring);
+  -webkit-mask-image: url(#swatch-square-outer-ring);
+}
+
+.swatch .swatch-content {
+  transition: clip-path 300ms var(--ease-in-out);
+}
+
+/*
+  Safari drops one device pixel at the top or left of the SVG when the swatch
+  box sits at a sub-pixel position. A circle clip-path on the box makes Safari
+  paint the SVG at its exact position. A rectangular clip-path does not.
+*/
+.swatch[data-shape='circle'] {
+  clip-path: circle(50%);
+}
+
+.swatch[data-shape='circle'] .swatch-content {
+  clip-path: circle(50% at center);
+  mask-image: url(#swatch-circle);
+  -webkit-mask-image: url(#swatch-circle);
+}
+
+.swatch[data-shape='circle'][data-selected='true'] .swatch-content {
+  clip-path: circle(37.35% at center);
+}
+
+.swatch[data-shape='circle'][data-available='false'] .swatch-content {
+  mask-image: url(#swatch-circle-unavailable);
+  -webkit-mask-image: url(#swatch-circle-unavailable);
+}
+
+.swatch[data-shape='square'] .swatch-content {
+  clip-path: inset(0);
+  mask-image: url(#swatch-square);
+  -webkit-mask-image: url(#swatch-square);
+}
+
+.swatch[data-shape='square'][data-selected='true'] .swatch-content {
+  clip-path: inset(12.65%);
+}
+
+.swatch[data-shape='square'][data-available='false'] .swatch-content {
+  mask-image: url(#swatch-square-unavailable);
+  -webkit-mask-image: url(#swatch-square-unavailable);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .swatch :is(.swatch-content, .swatch-selection-ring) {
+    transition-duration: 0.01ms;
+  }
+}
+
+.swatch .swatch-pending-ring {
+  display: none;
+  filter: var(--swatch-pending-filter, none);
+  pointer-events: none;
+}
+
+.swatch {
+  --swatch-active-brightness: 1;
+  filter: brightness(var(--swatch-base-brightness, 1)) brightness(var(--swatch-active-brightness));
+}
+
+.swatch[data-swatch-active='true'],
+[data-swatch-control][data-swatch-active='true'] .swatch,
+[data-swatch-control]:is(:hover, :active, :focus-within) .swatch {
+  --swatch-active-brightness: 0.75;
+}
+
+.swatch[data-selected='true'][data-pending='true'] .swatch-pending-ring {
+  display: block;
+  opacity: 0;
+  animation: swatchPendingRingIn 150ms ease-out 600ms forwards;
+}
+
+.swatch [data-swatch-pending-track] {
+  opacity: 0.18;
+}
+
+.swatch [data-swatch-pending-trail] {
+  stroke-linecap: round;
+  stroke-dasharray: 10 90;
+}
+
+.swatch [data-swatch-pending-trail] {
+  --swatch-pending-offset: 0px;
+}
+
+.swatch[data-selected='true'][data-pending='true'] [data-swatch-pending-trail] {
+  animation: swatchPendingSpin 800ms linear 600ms infinite;
+}
+
+@keyframes swatchPendingRingIn {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes swatchPendingSpin {
+  from {
+    stroke-dashoffset: var(--swatch-pending-offset);
+  }
+  to {
+    stroke-dashoffset: calc(var(--swatch-pending-offset) - 100px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .swatch[data-selected='true'][data-pending='true'] .swatch-pending-ring,
+  .swatch[data-selected='true'][data-pending='true'] [data-swatch-pending-trail] {
+    animation: none;
+  }
+
+  .swatch[data-selected='true'][data-pending='true'] .swatch-pending-ring {
+    opacity: 1;
+  }
+}

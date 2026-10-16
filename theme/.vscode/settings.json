@@ -1,0 +1,79 @@
+{
+  // Localize autoformat to file type to prevent save-file hangups
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  // Link to local typescript to speed up autoformat on save
+  "typescript.tsdk": "node_modules/typescript/lib",
+  // Training wheels on while we learn alpine and tailwind
+  "editor.quickSuggestions": {
+    "strings": "on"
+  },
+  "editor.detectIndentation": false,
+  "files.associations": {
+    "*.liquid": "liquid",
+    "*.css.liquid": "liquid",
+    "*json.liquid": "json",
+    "*jsonc.liquid": "jsonc",
+    "*.css": "tailwindcss"
+  },
+  "workbench.editorAssociations": {
+    "*.svg": "default"
+  },
+  "[liquid]": {
+    "editor.defaultFormatter": "Shopify.theme-check-vscode",
+    "editor.formatOnSave": true
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": false
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "editor.trimAutoWhitespace": true,
+  "files.trimTrailingWhitespace": true,
+  "alpine-intellisense.settings.languageScopes": [
+    "html",
+    "liquid"
+  ],
+  "tailwindCSS.includeLanguages": {
+    "liquid": "html"
+  },
+  "tailwindCSS.experimental.classRegex": [
+    // Match liquid snippet params that contain the word class e.g. class: 'rounded-btn w-full', my_class: 'rounded-btn w-full', etc.
+    [
+      "\\w*class\\w*:\\s*'([^']*)'"
+    ],
+    [
+      "\\w*class\\w*:\\s*\"([^\"]*)\""
+    ],
+
+    // Match liquid capture tags that contain the word class e.g. {% capture button_class %} w-full {% endcapture %}
+    [
+      "{%-?\\s*capture\\s\\w*class\\w*\\s*-?%}([\\s\\S]*?){%-?\\s*endcapture\\s*-?%}"
+    ],
+
+    // Match liquid assign tags that contain the word class e.g. class: 'rounded-btn w-full', my_class: 'rounded-btn w-full', etc.
+    [
+      "{%-?\\sassign\\s*\\w*class\\w*\\s*=\\s*'([^']*)'"
+    ],
+    [
+      "{%-?\\sassign\\s*\\w*class\\w*\\s*=\\s*\"([^\"]*)\""
+    ]
+  ],
+  "prettier.requireConfig": true,
+  "prettier.configPath": ".prettierrc.js"
+}

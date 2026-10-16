@@ -1,0 +1,50 @@
+{% doc %}
+  - Renders document head
+
+  @param {string} [page_description] - meta description, defaults to Shopify's page_description
+  @param {string} [page_title] - title text, defaults to Shopify's page_title
+{% enddoc %}
+
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+
+<!-- ======================= Analog Theme V1.0.0 ========================= -->
+
+<!-- Title and description -->
+{%- if settings.favicon != blank -%}
+  <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 32, height: 32 }}">
+{%- else -%}
+  {% # theme-check-disable RemoteAsset %}
+  <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+  {% # theme-check-enable RemoteAsset %}
+{%- endif -%}
+
+<title>
+  {%- if page_title != blank -%}
+    {{ page_title }}
+    {%- if current_tags %} &ndash; tagged "{{ current_tags | join: ', ' }}"{% endif -%}
+    {%- if current_page != 1 %} &ndash; Page {{ current_page }}{% endif -%}
+    {%- unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless -%}
+  {% else %}
+    {{ shop.name }}
+  {% endif -%}
+</title>
+
+{% if page_description %}
+  <meta name="description" content="{{ page_description | escape_once }}">
+{% endif %}
+
+{% render 'head-social-meta' %}
+{% render 'head-type' %}
+{% render 'head-color' %}
+{% render 'head-layout' %}
+{% render 'head-scripts' %}
+
+<!-- Theme CSS -->
+{{ 'theme.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  In order to use your custom css file at assets/custom.css uncomment the line below.
+  {{ 'custom.css' | asset_url | stylesheet_tag }}
+{%- endcomment -%}

@@ -1,0 +1,137 @@
+{% doc %}
+  - Renders variant option swatches for a large product card
+
+  @param {string} destination_url - href of the more swatches link
+  @param {string} [image_sizes]
+  @param {string} [image_widths]
+  @param {object} [option_media_entries] - configured option-media metaobjects for the product
+  @param {product} product
+  @param {boolean} [selection_is_explicit] - true for a selected variant or Section API response
+  @param {product_option} swatch_option
+{% enddoc %}
+
+{% liquid
+  assign swatch_limit = settings.card_swatch_limit | default: 5
+  assign visible_values = null | sort
+  assign selected_value_is_visible = false
+
+  for value in swatch_option.values limit: swatch_limit
+    assign visible_value = value | sort
+    assign visible_values = visible_values | concat: visible_value
+    if selection_is_explicit and value.selected
+      assign selected_value_is_visible = true
+    endif
+  endfor
+
+  if selection_is_explicit and swatch_option.selected_value != blank and selected_value_is_visible == false
+    assign visible_values = null | sort
+    assign swatch_limit_before_selected = swatch_limit | minus: 1
+    for value in swatch_option.values limit: swatch_limit_before_selected
+      assign visible_value = value | sort
+      assign visible_values = visible_values | concat: visible_value
+    endfor
+    assign selected_value = swatch_option.selected_value | sort
+    assign visible_values = visible_values | concat: selected_value
+  endif
+
+  assign selection_constrains_availability = false
+  for availability_option in product.options_with_values
+    if availability_option.position != swatch_option.position and availability_option.selected_value != blank
+      assign selection_constrains_availability = true
+    endif
+  endfor
+
+  assign total_selections = swatch_option.values.size
+  assign selected_selection_id = null
+  if selection_is_explicit and swatch_option.selected_value != blank
+    assign selected_selection_id = swatch_option.selected_value.id
+  endif
+
+  assign selection_links = ''
+  # hit-area-x-r2 fills half the gap on each side without overlap
+  assign selection_class = 'group/swatch-link relative hit-area-x-r2'
+%}
+
+{% for value in visible_values %}
+  {% liquid
+    assign selected = false
+    if selection_is_explicit and value.selected
+      assign selected = true
+    endif
+
+    assign available = true
+    if swatch_option.position == 1 and value.available == false
+      unless selection_constrains_availability
+        assign available = false
+      endunless
+    endif
+
+    capture option_url
+      if selected and product.selected_variant == blank
+        render 'product-url', product: product, variant: false, selling_plan: false
+      elsif value.variant == null and value.product_url != null
+        render 'product-url', product: product, base_url: value.product_url, option_position: swatch_option.position, value_id: value.id, selling_plan: false
+      else
+        render 'product-url', product: product, variant: value.variant, option_position: swatch_option.position, value_id: value.id, selling_plan: false
+      endif
+    endcapture
+    assign option_url = option_url | strip
+    assign option_focus_key = 'option-' | append: value.id
+
+    assign option_image = null
+    if option_media_entries
+      for metaobject_item in option_media_entries
+        assign value_is_found = metaobject_item[settings.metafield_product_option_media_swatch].value | where: 'label', value.name | first
+        if value_is_found
+          for option_media_item in metaobject_item[settings.metafield_product_option_media_list].value
+            assign option_image = option_media_item.preview_image | default: option_media_item
+            break
+          endfor
+          break
+        endif
+      endfor
+    endif
+
+    if option_image == null
+      assign option_media = value.variant.featured_media | default: product.featured_media
+      assign option_image = option_media.preview_image
+    endif
+  %}
+
+  {% capture selection_links %}
+    {{ selection_links }}
+    {% capture option_attributes %}
+      data-product-card-selection
+      data-preload-url="{{ option_url }}"
+      {% render 'card-product-lg-preload-image-attributes',
+        image: option_image,
+        image_sizes: image_sizes,
+        image_widths: image_widths
+      %}
+      data-swatch-control
+      :data-swatch-active="$asyncLink.state === 'pending'"
+      x-section-api:link.nopush
+    {% endcapture %}
+    {% capture option_label %}{{ value.name }}{% if available == false %} - {{ 'product.unavailable' | t }}{% endif %}{% endcapture %}
+    {% render 'product-option-value-swatch',
+      value: value,
+      url: option_url,
+      available: available,
+      selected: selected,
+      selection_id: value.id,
+      focus_key: option_focus_key,
+      label: option_label,
+      class: selection_class,
+      custom_size: settings.card_swatch_custom_size,
+      attributes: option_attributes
+    %}
+  {% endcapture %}
+{% endfor %}
+
+{% render 'card-product-lg-selections',
+  destination_url: destination_url,
+  selection_links: selection_links,
+  selected_selection_id: selected_selection_id,
+  swatch_limit: swatch_limit,
+  total_selections: total_selections
+%}

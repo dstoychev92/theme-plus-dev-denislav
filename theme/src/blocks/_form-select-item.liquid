@@ -1,0 +1,38 @@
+{% doc %}
+  - Renders one option in contact form select
+
+  Private, only offered by _form-select. The option value is the label handle.
+{% enddoc %}
+
+{% liquid
+  assign label = block.settings.label
+  assign label_handle = label | handleize
+%}
+
+{% render 'custom-select-option',
+  label: label,
+  value: label_handle,
+  disabled: block.settings.disabled,
+  attributes: block.shopify_attributes
+%}
+
+{% schema %}
+{
+  "name": "Select item",
+  "tag": null,
+  "settings": [
+    [% json 'schema/form-input-setting.jsonc', default: "Select item", size: false %]
+    {
+      "type": "checkbox",
+      "id": "disabled",
+      "label": "Disabled",
+      "default": false
+    }
+  ],
+  "presets": [
+    {
+      "name": "Select item"
+    }
+  ]
+}
+{% endschema %}

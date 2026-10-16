@@ -1,0 +1,23 @@
+# Ensure that the user has authenticated to GitHub Packages before package installation begins
+if ! npm whoami --registry=https://npm.pkg.github.com >/dev/null 2>&1; then
+  echo ""
+  echo "\033[0;31mAuthentication to GitHub Packages failed.\033[0m"
+  echo ""
+  echo "Either you have not setup a GitHub token or the current token is invalid or expired"
+  echo ""
+  echo "To set up a new GitHub token, follow these steps:"
+  echo "1. Visit https://github.com/settings/tokens/new"
+  echo "2. Enter a descriptive name e.g. `Read Private Packages`"
+  echo "3. Enter a reasonable expiration date (90 days is recommended)"
+  echo "4. Ensure only the necessary scopes are set (e.g., 'read:packages, write:packages')"
+  echo "5. Save token then copy it"
+  echo "6. Create a new .npmrc file (or edit the existing one) to include the following:"
+  echo ""
+  echo "# Authentication for access to private GitHub Packages"
+  echo "@groupthought:registry=https://npm.pkg.github.com"
+  echo "//npm.pkg.github.com/:_authToken=YOUR_TOKEN"
+  echo ""
+  echo "(Replace YOUR_TOKEN with your actual token.)"
+  echo ""
+  exit 1
+fi

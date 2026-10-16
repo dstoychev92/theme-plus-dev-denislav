@@ -1,0 +1,194 @@
+@layer base {
+  :root {
+    /*************/
+    /* Constants */
+    /*************/
+
+    /*  Responsive scale, matching r1-15 values. Least aggressive tuned for inner spacing values. Used in most places. */
+    --r-multiplier-desktop: 1;
+    --r-multiplier-mobile: 0.62;
+    --r-multiplier-tablet: 0.83;
+    --r-multiplier: var(--r-multiplier-mobile);
+    @apply md:[--r-multiplier:var(--r-multiplier-tablet)];
+    @apply lg:[--r-multiplier:var(--r-multiplier-desktop)];
+
+    /* Buffer scaling more aggressive, so content can get closer to the edges of a mobile screen */
+    --b-multiplier-desktop: 1;
+    --b-multiplier-mobile: 0.315;
+    --b-multiplier-tablet: 0.554;
+    --b-multiplier: var(--b-multiplier-mobile);
+    @apply md:[--b-multiplier:var(--b-multiplier-tablet)];
+    @apply lg:[--b-multiplier:var(--b-multiplier-desktop)];
+
+    /* Non-responsive row system for interactive elements like buttons, forms, and accordions - often called "controls". */
+    /* Those elements don't scale down on mobile because your fingers don't scale down on mobile  */
+    --row-xs: 24px;
+    --row-sm: 32px;
+    --row-md: 40px;
+    --row-lg: 50px;
+    --row-xl: 60px;
+
+    /***************************/
+    /* Theme setting variables
+     * the --space layer is where values are saved
+     * the --layout layer is where values are written/read for inner context
+     * the --root maintains initial values that will be modified by inner context
+     * the --raw layer is only used a setting will become multiple root or inner values
+     * The "buffer" might be margin or padding but it's the visual space outside an elements visual boundary
+     * The "gutter" is often implemented as css gap and that is consistent rhythmic space between a group of elements
+    /***************************/
+
+    --page-width: var(--root-page-width);
+
+    /* Generic spacing values controlled by theme settings */
+    --root-space-sm: calc(var(--raw-space-sm) * var(--r-multiplier));
+    --root-space-md: calc(var(--raw-space-md) * var(--r-multiplier));
+    --root-space-lg: calc(var(--raw-space-lg) * var(--r-multiplier));
+
+    --root-gutter: calc(var(--raw-gutter) * var(--r-multiplier));
+    --root-gutter-card: calc(var(--raw-gutter-card) * var(--r-multiplier));
+
+    /* Default grid settings */
+    --layout-gutter: var(--root-gutter);
+    --layout-gutter-x: var(--root-gutter);
+    --layout-gutter-y: var(--raw-gutter);
+
+    --layout-gutter-card: var(--root-gutter-card);
+    --layout-gutter-card-x: var(--root-gutter-card);
+    --layout-gutter-card-y: var(--raw-gutter);
+
+    /* Natural gap between inline items when no explicit gap is set (roughly the width of an nbsp). */
+    --root-nbsp: 0.25em;
+
+    /* Page buffer is the margin around the page, and it scales more agressively than other spacing values */
+    --root-buffer: calc(var(--raw-page-buffer) * var(--b-multiplier));
+    --root-buffer-y: calc(var(--raw-page-buffer) * var(--r-multiplier));
+
+    --layout-buffer: var(--root-buffer);
+    --layout-buffer-x: var(--root-buffer);
+    --layout-buffer-y: var(--root-buffer-y);
+
+    /* Used by cards to inset text from edge of the card */
+    --card-text-buffer: max(var(--root-gutter-card), var(--text-buffer));
+
+    /* Minimum space between text elements */
+    --text-buffer: 10px;
+  }
+}
+
+@layer components {
+  .vars-layout-gutter-reset {
+    --layout-gutter: var(--root-gutter);
+    --layout-gutter-x: var(--root-gutter);
+    --layout-gutter-y: var(--root-gutter);
+  }
+  .vars-layout-gutter-card-reset {
+    --layout-gutter: var(--root-gutter-card);
+    --layout-gutter-x: var(--root-gutter-card);
+    --layout-gutter-y: var(--root-gutter);
+  }
+  .vars-layout-gutter-card {
+    --layout-gutter: var(--layout-gutter-card);
+    --layout-gutter-x: var(--layout-gutter-card-x);
+    --layout-gutter-y: var(--layout-gutter-card-y);
+  }
+  .vars-layout-like-mobile {
+    --layout-buffer: calc(var(--raw-page-buffer) * var(--b-multiplier-mobile));
+    --layout-buffer-x: calc(var(--raw-page-buffer) * var(--b-multiplier-mobile));
+    --layout-buffer-y: calc(var(--raw-page-buffer) * var(--r-multiplier-mobile));
+    --layout-gutter: calc(var(--raw-gutter) * var(--r-multiplier-mobile));
+    --layout-gutter-x: calc(var(--raw-gutter) * var(--r-multiplier-mobile));
+    --layout-gutter-y: calc(var(--raw-gutter) * var(--r-multiplier-mobile));
+  }
+
+  .w-layout {
+    --default-width: var(--layout-width-default, auto);
+    --layout-width: var(--layout-width-mobile, var(--default-width));
+    @apply md:[--layout-width:var(--layout-width-tablet,var(--default-width))];
+    @apply lg:[--layout-width:var(--layout-width-desktop,var(--default-width))];
+    width: min(var(--layout-width), 100%);
+  }
+
+  /* Named inline-size container for width-dependent components.
+     Use this instead of Tailwind's `@container/layout` so container
+     containment can be disabled in unsafe sizing contexts.
+
+     `container-type: inline-size` prevents children from contributing to
+     the element's intrinsic width. That is only safe when the element is
+     extrinsically sized: `w-full`, `size-full`, `w-layout`, stretched by a
+     grid track, etc.
+
+     If an ancestor can shrink-wrap its contents or otherwise resolve to zero
+     when children stop contributing intrinsic width, add
+     `cq-width-unsafe` to that ancestor. Descendant `cq-width`
+     elements will then fall back to normal sizing and query the next safe
+     `width` container above them. */
+  .cq-width {
+    container-name: width;
+    container-type: inline-size;
+  }
+
+  .cq-width-unsafe .cq-width {
+    container-name: none;
+    container-type: normal;
+  }
+
+  /* Row is flex-nowrap and meant to overflow: Frame children should honor
+    declared width literally, no cap at 100% of row. Width in px just works.
+
+    Marquee rows (`.marquee-row`) overflow the same way; the cap also breaks
+    the plugin's init-time source measurement and produces runaway clones. */
+  row-group > .w-layout,
+  .marquee-row > .w-layout {
+    width: var(--layout-width);
+    flex-shrink: 0;
+  }
+
+  /* Frames without `set_width` shrink-wrap their content. A marquee inside
+    such a frame inflates the frame to its source's max-content; the plugin
+    then reads that as the viewport and clones runaway. Force the frame to
+    fill its parent so the marquee has a finite viewport to measure. */
+  frame-group:not(.w-layout):has(.marquee-row) {
+    width: 100%;
+  }
+
+  /* Marquee owns the inter-item gap for any text-group inside it.
+     `set_gap: true` text-groups set --custom-gutter-x locally and win
+     through the cascade; `set_gap: false` ones inherit the marquee's. */
+  .marquee-row:has(.text-group) .text-group > *:not(:last-child) {
+    margin-inline-end: var(--custom-gutter-x);
+  }
+
+  /* Last child trails an nbsp — like the natural whitespace after the last
+     word of an inline phrase. The gap between text-groups (or at the
+     source→target seam) reads as `nbsp + gutter`, slightly larger than the
+     inter-item gap, so the grouping stays visible. Also clamps the trailing
+     margin inline.liquid puts on every child of `set_gap: true` text-groups
+     — without this, their gap stacks with the marquee pr → 2× at the wrap. */
+  .marquee-row:has(.text-group) .text-group > *:last-child {
+    margin-inline-end: var(--root-nbsp);
+  }
+
+  /* Row's unified wrapper. Every Row gets one — it does three jobs:
+       1. Stretches to parent inline-size (align-self: stretch) — without
+          this the track collapses to content width inside align-items:center
+          sections and the CQ fires at every breakpoint.
+       2. Clips overflow (position/mask hosting) so row-group's internal
+          overflow-x: auto does the actual scrolling, not the parent.
+       3. Positions content-width row-groups via justify-content, inheriting
+          --content-align from the section. When row-group is w-full, this
+          is a no-op (single full-width child fills either way).
+     The container-query context for stack_breakpoint_px lives on an
+     ancestor (named row-context, see below) — not on row-track itself. A
+     self-referential container collapsed to zero whenever the parent had
+     no explicit width (since inline-size containment forbids intrinsic
+     sizing from contents). */
+  row-track {
+    display: flex;
+    flex-direction: row;
+    align-self: stretch;
+    justify-content: var(--content-align, flex-start);
+    position: relative;
+    overflow: hidden;
+  }
+}

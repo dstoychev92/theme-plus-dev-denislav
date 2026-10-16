@@ -1,0 +1,332 @@
+{% doc %}
+  - Renders collection toolbar, filter sidebar, filter drawer, and results content
+
+  Filters stay off when the section has no filter menu and the collection has no filters.
+
+  @param {number} [all_products_count] - number of products before filtering
+  @param {string} [class] - The classes
+  @param collection - collection or search object
+  @param {number} [columns_lg] - column count, defaults to section.settings.columns_lg
+  @param {number} [columns_md] - column count, defaults to section.settings.columns_md
+  @param {number} [columns_sm] - column count, defaults to section.settings.columns_sm
+  @param {string} content
+  @param {boolean} [enable_filters] - renders the filters, defaults to section.settings.enable_filters, then true
+  @param {boolean} [enable_layout_buttons] - renders the column selects, defaults to section.settings.enable_layout_buttons, then true
+  @param {boolean} [enable_sorting] - renders the sort select, defaults to section.settings.enable_sorting, then true
+  @param {string} [filter_mode] - 'sidebar' or 'drawer', defaults to section.settings.filter_mode, then 'sidebar'
+  @param {string} [filter_url] - filter form action URL, defaults to collection.url
+  @param {object} [filters] - defaults to collection.filters
+  @param {string} [form] - ID of the form the filter inputs belong to
+  @param {number} [limit] - unused
+  @param {object} [paginate]
+  @param {number} [products_count] - number of products matching the filters
+  @param {string} [q] - search query carried through the form
+  @param {section} [section]
+  @param {boolean} [show_products_count] - renders the product count, defaults to section.settings.show_products_count, then true
+  @param {boolean} [sidebar_open] - sidebar starts open, defaults to section.settings.filter_sidebar_open_by_default, then true
+{% enddoc %}
+
+{%- liquid
+  assign columns_sm = columns_sm | default: section.settings.columns_sm
+  assign columns_md = columns_md | default: section.settings.columns_md
+  assign columns_lg = columns_lg | default: section.settings.columns_lg
+
+  assign collection_form_id = 'collection-form'
+  assign filter_url = filter_url | default: collection.url
+  assign filters = filters | default: collection.filters
+
+  assign filter_mode = filter_mode | default: section.settings.filter_mode | default: 'sidebar'
+  assign sidebar_open = sidebar_open | default: section.settings.filter_sidebar_open_by_default | default: true, allow_false: true
+  assign enable_filters = enable_filters | default: section.settings.enable_filters | default: true, allow_false: true
+  assign enable_sorting = enable_sorting | default: section.settings.enable_sorting | default: true, allow_false: true
+  assign enable_layout_buttons = enable_layout_buttons | default: section.settings.enable_layout_buttons | default: true, allow_false: true
+  assign show_products_count = show_products_count | default: section.settings.show_products_count | default: true, allow_false: true
+
+  assign limit = limit | default: section.settings.limit
+
+  assign active_filters = null | sort
+  assign active_filter_values_count = 0
+
+  assign show_sidebar = false
+  if filter_mode == 'sidebar' and sidebar_open
+    assign show_sidebar = true
+  endif
+
+  # Disable filters if there's nothing to show
+  if section.settings.filter_menu == null or section.settings.filter_menu.count == 0
+    if filters.size == 0
+      assign enable_filters = false
+    elsif filters.size == 1 and filters.first.type == 'price_range' and filters.first.range_max == 0
+      # There is a bug where price filter shows even when search results are only articles
+      assign enable_filters = false
+    endif
+  endif
+
+  # Filters
+  if enable_filters
+    for filter in filters
+      assign is_active = false
+
+      case filter.type
+        when 'price_range'
+          if filter.max_value.value < filter.range_max or filter.min_value.value > 0
+            assign is_active = true
+          endif
+        else
+          if filter.active_values.size > 0
+            assign is_active = true
+          endif
+      endcase
+
+      if is_active
+        assign new_active_filters = filter | sort
+        assign active_filters = active_filters | concat: new_active_filters
+        assign new_active_filter_values_count = filter.active_values.size | at_least: 1
+        assign active_filter_values_count = active_filter_values_count | plus: new_active_filter_values_count
+      endif
+    endfor
+  endif
+
+  if enable_filters or enable_sorting or enable_layout_buttons
+    assign render_collection_toolbar = true
+  endif
+%}
+
+<div
+  x-ref="collectionLayout"
+  class="
+    gap-y-min-buffer-safe max-w-full
+    grid col-section-content
+
+    supports-subgrid:col-[fullbleed-start/fullbleed-end]
+    supports-subgrid:grid-cols-subgrid
+
+    {% if render_collection_toolbar %}
+      grid-rows-[minmax(0,var(--row-lg)),minmax(0,1fr)]
+    {% else %}
+      grid-rows-1
+    {% endif %}
+
+    {{ class }}
+  "
+  {% comment %} Read back after each morph so the standard event carries post-filter values {% endcomment %}
+  data-results-count="{% if request.page_type == 'search' %}{{ search.results_count }}{% else %}{{ collection.products_count }}{% endif %}"
+  {% if request.page_type == 'search' %}
+    data-search-query="{{ search.terms | escape }}"
+  {% endif %}
+  {% if request.page_type == 'collection' %}
+    x-view-event
+    data-view-event-payload="{{ collection | standard_event_data: 'view' | escape }}"
+  {% endif %}
+  @theme:section:navigate.window="
+    if ($event.detail.sectionId != '{{ section.id }}') return
+    await $yieldToMain()
+    $scrollIntoView($refs.collectionLayout)
+    {% if request.page_type == 'search' %}
+      $standardEvents.searchUpdate({ query: $el.dataset.searchQuery ?? '', totalCount: Number($el.dataset.resultsCount) || 0 })
+    {% else %}
+      $standardEvents.collectionUpdate({ collectionId: '{{ collection.id }}', handle: '{{ collection.handle }}', productsCount: Number($el.dataset.resultsCount) || 0 })
+    {% endif %}
+  "
+  x-data="
+    {
+      columns: {
+        mobile: {{ columns_sm }},
+        tablet: {{ columns_md }},
+        desktop: {{ columns_lg }}
+      },
+
+      {% if enable_filters and show_sidebar %}
+        showFilterSidebar: true,
+        showFilterDrawer: false
+      {% else %}
+        showFilterSidebar: false,
+        showFilterDrawer: false
+      {% endif %}
+    }
+  "
+  style="
+    --card-grid-cols-sm: {{ columns_sm }};
+    --card-grid-cols-md: {{ columns_md }};
+    --card-grid-cols-lg: {{ columns_lg }};
+  "
+  :style="
+    {
+      '--card-grid-cols-sm': columns.mobile,
+      '--card-grid-cols-md': columns.tablet,
+      '--card-grid-cols-lg': columns.desktop
+    }
+  "
+>
+  {% comment %} Collection toolbar {% endcomment %}
+  {%- if render_collection_toolbar -%}
+    {% render 'collection-toolbar',
+      collection: collection,
+      form_id: collection_form_id,
+      products_count: products_count,
+      all_products_count: all_products_count,
+      enable_filters: enable_filters,
+      enable_sorting: enable_sorting,
+      enable_layout_buttons: enable_layout_buttons,
+      class: '
+        supports-subgrid:col-start-fullbleed supports-subgrid:col-end-fullbleed
+        supports-subgrid:md:col-start-section-content supports-subgrid:md:col-end-section-content
+      '
+    %}
+  {%- endif -%}
+
+  <div
+    x-sticky-columns
+    class="
+      flex flex-col md:flex-row
+
+      {% if section.settings.mobile_dense_card_grid %}
+        max-md:supports-subgrid:col-[fullbleed-start/fullbleed-end]
+      {% else %}
+        max-md:supports-subgrid:col-[content-start/content-end]
+      {% endif %}
+
+      supports-subgrid:md:col-start-section-content supports-subgrid:md:col-end-section-content
+
+      [--sidebar-width:0px]
+      [--sidebar-width-md:240px]
+      [--sidebar-width-lg:320px]
+      {% comment %} Gutter can become buffer in drawer layouts {% endcomment %}
+      [--sidebar-gap:var(--layout-gutter-x)]
+      md:[--sidebar-width:var(--sidebar-width-md)]
+      lg:[--sidebar-width:var(--sidebar-width-lg)]
+
+      [--sidebar-outer-duration:200ms]
+      [--sidebar-inner-duration:300ms]
+    "
+  >
+    {% comment %} Sidebar {% endcomment %}
+    <aside
+      data-render-region="collection-sidebar"
+      id="{{ section.id }}-filter-sidebar"
+      aria-label="{{ 'collection.filters.filters' | t }}"
+      key="filter-sidebar"
+      data-lazy-alpine-on="immediate"
+      data-lazy-alpine="desktop"
+      class="
+        w-[--sidebar-width] hidden md:flex md:flex-col md:self-start md:shrink-0 nojs:md:!flex
+        transition-[width] duration-[--sidebar-outer-duration]
+        [--sidebar-sticky-padding:--r6]
+        [--sticky-column-padding:var(--sidebar-sticky-padding)]
+        sticky-column
+      "
+      x-disclosure="
+        {
+          get isExpanded() {
+            return showFilterSidebar
+          },
+          set isExpanded(value) {
+            showFilterSidebar = value
+          }
+        }
+      "
+      x-disclosure:panel
+      x-transition:enter-start="!w-0"
+      x-transition:enter-end="!w-[--sidebar-width]"
+      x-transition:leave-start="!w-[--sidebar-width] delay-[--sidebar-inner-duration]"
+      x-transition:leave-end="!w-0"
+      x-sticky-columns:column
+
+      {% if enable_filters == false or show_sidebar == false %}
+        x-cloak
+      {% endif %}
+    >
+      <div
+        class="
+          pe-[--sidebar-gap]
+          w-[--sidebar-width] h-fit
+          pb-[--sidebar-sticky-padding]
+        "
+        x-show="$disclosure.isExpanded"
+        x-transition:enter="duration-[var(--sidebar-inner-duration),calc(var(--sidebar-outer-duration)/2)] delay-[calc(var(--sidebar-outer-duration)/2)]"
+        x-transition:enter-start="translate-y-1/5 opacity-0"
+        x-transition:enter-end="translate-y-0 opacity-100"
+        x-transition:leave="duration-[var(--sidebar-inner-duration),calc(var(--sidebar-outer-duration)/2)] delay-0"
+        x-transition:leave-start="translate-y-0 opacity-100"
+        x-transition:leave-end="translate-y-1/5 opacity-0"
+
+        {% if filter_mode == 'sidebar' and sidebar_open == false %}
+          x-cloak
+        {% endif %}
+      >
+        {% comment %} Filters {% endcomment %}
+        {% render 'collection-filters',
+          filter_url: filter_url,
+          id: collection_form_id,
+          filters: filters,
+          form: form,
+          q: q
+        %}
+      </div>
+    </aside>
+
+    {% if enable_filters %}
+      <div
+        data-render-region="collection-filter-drawer"
+        key="filter-drawer"
+        {% comment %}
+          In sidebar mode this drawer is the mobile half of the pair — its button is
+          md:hidden, so a desktop shopper can never open it. Start immediately on mobile,
+          where the drawer has to be ready for the first tap on Filters.
+        {% endcomment %}
+        {% if filter_mode == 'sidebar' %}
+          data-lazy-alpine="mobile"
+          data-lazy-alpine-on="immediate"
+        {% endif %}
+        x-scroll-lock="$dialog.isOpen"
+        x-dialog.modal="
+          {
+            get isOpen() {
+              return showFilterDrawer
+            },
+            set isOpen(value) {
+              showFilterDrawer = value
+            }
+          }
+        "
+      >
+        {% render 'filter-drawer',
+          filter_url: filter_url,
+          collection_form_id: collection_form_id,
+          filters: filters,
+          form: form,
+          q: q
+        %}
+      </div>
+    {% endif %}
+
+    {% comment %} Content {% endcomment %}
+    <div
+      data-render-region="collection-results"
+      data-render-mode="replace"
+      x-sticky-columns:column
+      class="flex grow flex-col gap md:self-start"
+      key="content"
+      :class="
+        {
+          'opacity-50 transition-opacity duration-400 pointer-events-none': $sectionApi.state == 'loading'
+        }
+      "
+    >
+      {{ content }}
+
+      {% if paginate.pages > 1 %}
+        {% if section.settings.mobile_dense_card_grid %}
+          {% assign pagination_class = 'max-md:px-root-buffer' %}
+        {% endif %}
+        {% render 'pagination', paginate: paginate, class: pagination_class %}
+      {% endif %}
+
+      <template x-if="$sectionApi.state == 'loading'">
+        <span class="sr-only" role="status" aria-live="polite">
+          {{ 'other.loading' | t }}
+        </span>
+      </template>
+    </div>
+  </div>
+</div>

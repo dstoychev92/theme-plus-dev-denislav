@@ -1,0 +1,26 @@
+{% doc %}
+  - Renders add-to-cart notification
+
+  Loads its own markup through the section rendering API, and stays quiet while the cart drawer
+  is open.
+{% enddoc %}
+
+<div
+  x-section-api="api-add-to-cart-notification"
+  x-effect="
+    if ($store?.drawer?.isOpen && $sectionApi.state == 'loading') {
+      $sectionApi.controller.abort();
+    }
+  "
+  @theme:cart-notification:show.window="
+    if ($store?.drawer?.isOpen) return;
+
+    await $sectionApi.update({
+      baseUrl: $event.detail.url,
+      htmlMode: 'replace',
+      cachePolicy: 'network-only',
+      abortPending: true
+    })
+  "
+  data-morph-update="children"
+></div>

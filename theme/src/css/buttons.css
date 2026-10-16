@@ -1,0 +1,374 @@
+@layer base {
+  :root {
+    --btn-border-width: 1px;
+    --btn-transition-enter-duration: 0.3s;
+    --btn-transition-exit-duration: 0.3s;
+    --btn-bg-highlight-opacity: 0.1;
+    --btn-text-highlight-opacity: 0.35;
+  }
+
+  /* Register custom properties as animatable so gradient positions can transition smoothly */
+  @supports (background: radial-gradient(ellipse 100% 100% at 0% 0%, transparent)) {
+    @property --gradient-x {
+      syntax: '<percentage>';
+      inherits: true;
+      initial-value: 0%;
+    }
+
+    @property --gradient-y {
+      syntax: '<percentage>';
+      inherits: true;
+      initial-value: 0%;
+    }
+  }
+
+  /* Register gradient color stops as animatable for smooth button gradient transitions */
+  @supports (color: oklch(from white l c h)) {
+    @property --btn-gradient-from {
+      syntax: '<color>';
+      inherits: true;
+      initial-value: oklch(0% 0 0);
+    }
+
+    @property --btn-gradient-to {
+      syntax: '<color>';
+      inherits: true;
+      initial-value: oklch(0% 0 0);
+    }
+
+    @property --btn-gradient-x {
+      syntax: '<percentage>';
+      inherits: true;
+      initial-value: 50%;
+    }
+
+    @property --btn-gradient-y {
+      syntax: '<percentage>';
+      inherits: true;
+      initial-value: 50%;
+    }
+  }
+}
+
+@layer utilities {
+  /* Color Variables */
+
+  .vars-btn-primary {
+    @apply vars-stain-primary;
+  }
+
+  .vars-btn-secondary {
+    @apply vars-stain-secondary;
+  }
+
+  .vars-btn-white {
+    @apply vars-stain-white;
+
+    &.vars-btn-fill {
+      --btn-text-hover-color: var(--primary);
+    }
+  }
+
+  .vars-btn-black {
+    @apply vars-stain-black;
+  }
+
+  /* Note: canvas and content button vars may be overridden by the color scheme */
+  .vars-btn-canvas {
+    @apply vars-stain-canvas;
+  }
+
+  .vars-btn-content {
+    @apply vars-stain-content;
+  }
+
+  .vars-btn-muted {
+    @apply vars-stain-muted;
+  }
+
+  .vars-btn-sale {
+    @apply vars-stain-sale;
+  }
+
+  /* Size Variables */
+
+  .vars-btn-xs {
+    --btn-height: var(--row-xs);
+    --btn-padding: var(--r4);
+  }
+  @media (min-width: 768px) {
+    .vars-btn-xs {
+      --btn-padding: var(--r3);
+    }
+  }
+  .vars-btn-sm {
+    --btn-height: var(--row-sm);
+    --btn-padding: var(--r4);
+  }
+  @media (min-width: 768px) {
+    .vars-btn-sm {
+      --btn-padding: var(--r3);
+    }
+  }
+  .vars-btn-md {
+    --btn-height: var(--row-md);
+    --btn-padding: var(--r5);
+  }
+  @media (min-width: 768px) {
+    .vars-btn-md {
+      --btn-padding: var(--r4);
+    }
+  }
+  .vars-btn-lg {
+    --btn-height: var(--row-lg);
+    --btn-padding: var(--r6);
+  }
+  @media (min-width: 768px) {
+    .vars-btn-lg {
+      --btn-padding: var(--r7);
+    }
+  }
+  .vars-btn-xl {
+    --btn-height: var(--row-xl);
+    --btn-padding: var(--r6);
+  }
+  @media (min-width: 768px) {
+    .vars-btn-xl {
+      --btn-padding: var(--r9);
+    }
+  }
+  .vars-btn-auto {
+    --btn-height: var(--control-height);
+    --btn-padding: var(--control-padding);
+    --font-size: var(--control-font-size);
+  }
+
+  /* Set button height while keeping consistent padding */
+  .vars-btn-height-xs {
+    --btn-height: var(--row-xs);
+    --btn-padding: var(--r4);
+  }
+  .vars-btn-height-sm {
+    --btn-height: var(--row-sm);
+    --btn-padding: var(--r4);
+  }
+  .vars-btn-height-md {
+    --btn-height: var(--row-md);
+    --btn-padding: var(--r4);
+  }
+  .vars-btn-height-lg {
+    --btn-height: var(--row-lg);
+    --btn-padding: var(--r4);
+  }
+  .vars-btn-height-xl {
+    --btn-height: var(--row-xl);
+    --btn-padding: var(--r4);
+  }
+
+  /* Variant Variables */
+
+  .vars-btn-fill {
+    --btn-bg-color: var(--stain);
+    --btn-text-color: var(--stain-contrast);
+    --btn-border-color: var(--btn-bg-color);
+    --btn-border-hover-color: var(--btn-border-color);
+    --btn-blur: 0;
+    --btn-text-highlight-opacity: 0.3;
+    --btn-text-hover-color: var(--btn-text-color);
+    --btn-bg-hover-color: var(--btn-bg-color);
+    --btn-hover-blur: 0;
+
+    @supports (color: oklch(from white l c h)) {
+      --btn-bg-hover-color: oklch(from var(--btn-bg-color) max(0.2, calc(l + 0.04)) c h);
+    }
+  }
+  .vars-btn-stroke {
+    --btn-bg-color: oklch(var(--stain-oklch) / var(--btn-stroke-bg-opacity, 0%));
+    --btn-text-color: var(--stain);
+    --btn-border-width: var(--btn-stroke-border-width, 1px);
+    --btn-border-color: oklch(var(--stain-oklch) / var(--btn-stroke-border-opacity, 100%));
+    --btn-border-hover-color: var(--btn-border-color);
+    --btn-bg-hover-color: oklch(var(--stain-oklch) / calc(var(--btn-stroke-bg-opacity, 0%) + 8%));
+    --btn-text-hover-color: color-mix(in srgb, var(--stain) 98%, transparent);
+    --btn-blur: var(--btn-stroke-blur, 0px);
+    --btn-hover-blur: var(--btn-stroke-blur, 0px);
+
+    @supports (color: oklch(from white l c h)) {
+      --btn-bg-color: oklch(from var(--stain) l c h / var(--btn-stroke-bg-opacity, 0%));
+      --btn-border-color: oklch(from var(--stain) l c h / var(--btn-stroke-border-opacity, 100%));
+      --btn-bg-hover-color: oklch(from var(--stain) l c h / calc(var(--btn-stroke-bg-opacity, 0%) + 8%));
+    }
+  }
+
+  .vars-btn-soft {
+    --btn-bg-color: oklch(var(--stain-oklch) / var(--btn-soft-bg-opacity, 5%));
+    --btn-text-color: var(--stain);
+    --btn-border-width: var(--btn-soft-border-width, 0px);
+    --btn-border-color: oklch(var(--stain-oklch) / var(--btn-soft-border-opacity, 0%));
+    --btn-blur: var(--btn-soft-blur, 6px);
+    --btn-bg-hover-color: oklch(var(--stain-oklch) / calc(var(--btn-soft-bg-opacity, 5%) + 5%));
+
+    @supports (color: oklch(from white l c h)) {
+      --btn-bg-color: oklch(from var(--stain) l c h / var(--btn-soft-bg-opacity, 5%));
+      --btn-border-color: oklch(from var(--stain) l c h / var(--btn-soft-border-opacity, 0%));
+      --btn-bg-hover-color: oklch(from var(--stain) l c h / calc(var(--btn-soft-bg-opacity, 5%) + 5%));
+    }
+  }
+
+  .vars-btn-bare {
+    --btn-bg-color: transparent;
+    --btn-text-color: var(--stain);
+    --btn-border-color: transparent;
+    --btn-blur: 0;
+    --btn-bg-hover-color: oklch(var(--stain-oklch) / 5%);
+    --btn-text-hover-color: var(--stain);
+    --btn-border-hover-color: transparent;
+
+    @supports (color: oklch(from white l c h)) {
+      --btn-bg-hover-color: oklch(from var(--stain) l c h / 5%);
+    }
+  }
+
+  .vars-btn-blur {
+    --btn-bg-color: oklch(from var(--stain-contrast) l c h / 0.5);
+    --btn-text-color: var(--stain);
+    --btn-border-color: transparent;
+    --btn-blur: 6px;
+  }
+
+  .vars-btn-none {
+    --btn-bg-color: transparent;
+    --btn-text-color: var(--stain);
+    --btn-border-color: transparent;
+    --btn-blur: 0;
+  }
+
+  /* Badge appearance variants — reuse the global button-style tokens
+     (--btn-stroke-* / --btn-soft-*) so badges share the merchant's button
+     styling instead of needing a parallel settings group. */
+
+  .vars-badge-fill {
+    --badge-bg-color: var(--stain);
+    --badge-text-color: var(--stain-contrast);
+    --badge-border-color: transparent;
+    --badge-border-width: 0px;
+    --badge-blur: 0;
+  }
+
+  .vars-badge-stroke {
+    --badge-bg-color: oklch(var(--stain-oklch) / var(--btn-stroke-bg-opacity, 0%));
+    --badge-text-color: var(--stain);
+    --badge-border-width: var(--btn-stroke-border-width, 1px);
+    --badge-border-color: oklch(var(--stain-oklch) / var(--btn-stroke-border-opacity, 100%));
+    --badge-blur: var(--btn-stroke-blur, 0px);
+
+    @supports (color: oklch(from white l c h)) {
+      --badge-bg-color: oklch(from var(--stain) l c h / var(--btn-stroke-bg-opacity, 0%));
+      --badge-border-color: oklch(from var(--stain) l c h / var(--btn-stroke-border-opacity, 100%));
+    }
+  }
+
+  .vars-badge-soft {
+    --badge-bg-color: oklch(var(--stain-oklch) / var(--btn-soft-bg-opacity, 15%));
+    --badge-text-color: var(--stain);
+    --badge-border-width: var(--btn-soft-border-width, 0px);
+    --badge-border-color: oklch(var(--stain-oklch) / var(--btn-soft-border-opacity, 0%));
+    --badge-blur: var(--btn-soft-blur, 0px);
+
+    @supports (color: oklch(from white l c h)) {
+      --badge-bg-color: oklch(from var(--stain) l c h / var(--btn-soft-bg-opacity, 15%));
+      --badge-border-color: oklch(from var(--stain) l c h / var(--btn-soft-border-opacity, 0%));
+    }
+  }
+}
+
+@layer components {
+  /* Apply button layout variables to an element */
+  .btn-layout {
+    padding-inline: var(--btn-padding-x, calc(var(--btn-padding) * 2));
+    min-height: var(--btn-height);
+    column-gap: var(--btn-gap, var(--r4));
+  }
+
+  /* Apply button appearance variables to an element */
+  .btn-appearance {
+    --cursor-highlight-bg-opacity: var(--btn-bg-highlight-opacity);
+    --cursor-highlight-text-opacity: var(--btn-text-highlight-opacity);
+
+    border-radius: var(--radius-btn, var(--radius-md));
+    box-shadow: 0 0 0 var(--btn-border-width) inset var(--btn-border-color);
+    backdrop-filter: blur(var(--btn-blur));
+    background-color: var(--btn-bg-color);
+    color: var(--btn-text-color);
+
+    transition-property: color, background-color, box-shadow, backdrop-filter;
+    transition-duration: var(--btn-transition-exit-duration);
+    will-change: color, background-color, box-shadow, backdrop-filter;
+    position: relative;
+    overflow: clip;
+
+    &:hover {
+      background-color: var(--btn-bg-hover-color, var(--btn-bg-color));
+      color: var(--btn-text-hover-color, var(--btn-text-color));
+      backdrop-filter: blur(var(--btn-hover-blur, var(--btn-blur)));
+      box-shadow: 0 0 0 var(--btn-border-width) inset var(--btn-border-hover-color, var(--btn-border-color));
+      transition-duration: var(--btn-transition-enter-duration);
+    }
+
+    &:focus {
+      background-color: var(--btn-bg-focus-color, var(--btn-bg-hover-color, var(--btn-bg-color)));
+      color: var(--btn-text-focus-color, var(--btn-text-hover-color, var(--btn-text-color)));
+      backdrop-filter: blur(var(--btn-focus-blur, var(--btn-hover-blur, var(--btn-blur))));
+      box-shadow: 0 0 0 var(--btn-border-width) inset
+        var(--btn-border-focus-color, var(--btn-border-hover-color, var(--btn-border-color)));
+      transition-duration: var(--btn-transition-enter-duration);
+    }
+
+    &:disabled,
+    &:has([disabled]) {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  /* Gradient background for buttons — OKLCH radial gradient with mouse-follow
+   *
+   * Ellipse size: controls gradient softness. Larger = more subtle blend, smaller = tighter spotlight.
+   *   Width (110%) and height (340%) use a ~1:3 ratio to compensate for button aspect ratio,
+   *   making the gradient appear circular rather than horizontally stretched.
+   *
+   * Position (--btn-gradient-x/y): set by the x-gradient-follow directive (spring physics).
+   *   Fallback (-10%, -10%) is the resting position — off the top-left corner so the button
+   *   appears as mostly color-2 at rest. On hover the blob springs toward the cursor,
+   *   on leave it drifts back to this home position.
+   *
+   * Color stops: color-1 (from) at center of ellipse, color-2 (to) at edges.
+   */
+  @supports (color: oklch(from white l c h)) {
+    .btn-gradient {
+      --btn-gradient-from: var(--btn-gradient-base-from);
+      --btn-gradient-to: var(--btn-gradient-base-to);
+      --btn-border-width: 0px;
+
+      background: radial-gradient(
+        ellipse 110% 340% at var(--btn-gradient-x, -10%) var(--btn-gradient-y, -10%) in oklch,
+        var(--btn-gradient-from),
+        var(--btn-gradient-to)
+      );
+    }
+  }
+
+  /* Apply button appearance and layout variables to a button element */
+  .btn {
+    @apply btn-appearance btn-layout;
+  }
+
+  /* Apply badge appearance variables to a badge element */
+  .badge-appearance {
+    border-radius: var(--radius-element-default);
+    box-shadow: 0 0 0 var(--badge-border-width, 0px) inset var(--badge-border-color, transparent);
+    backdrop-filter: blur(var(--badge-blur, 0));
+    background-color: var(--badge-bg-color);
+    color: var(--badge-text-color);
+  }
+}

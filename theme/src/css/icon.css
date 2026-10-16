@@ -1,0 +1,109 @@
+@layer base {
+  :root {
+    --icon-size: 1em;
+
+    /* Stroke weight tiers — sections can override to change the weight scale */
+    --icon-stroke-weight-light: 1;
+    --icon-stroke-weight-regular: 1.5;
+    --icon-stroke-weight-bold: 2;
+    --icon-stroke-weight: var(--icon-stroke-weight-regular);
+
+    --icon-em-xs: 0.6em;
+    --icon-em-sm: 0.8em;
+    --icon-em-md: 1em;
+    --icon-em-lg: 1.4em;
+    --icon-em-xl: 1.6em;
+  }
+}
+
+@layer components {
+  /*  Sizes */
+
+  .vars-icon-size-xs {
+    --icon-size: var(--icon-em-xs);
+  }
+
+  .vars-icon-size-sm {
+    --icon-size: var(--icon-em-sm);
+  }
+
+  .vars-icon-size-md {
+    --icon-size: var(--icon-em-md);
+  }
+
+  .vars-icon-size-lg {
+    --icon-size: var(--icon-em-lg);
+  }
+
+  .vars-icon-size-xl {
+    --icon-size: var(--icon-em-xl);
+  }
+
+  /* Stroke weight modifiers — set the requested grade, container queries may boost it */
+
+  .vars-icon-grade-light {
+    --icon-stroke-grade-requested: var(--icon-stroke-weight-light);
+  }
+
+  .vars-icon-grade-regular {
+    --icon-stroke-grade-requested: var(--icon-stroke-weight-regular);
+  }
+
+  .vars-icon-grade-bold {
+    --icon-stroke-grade-requested: var(--icon-stroke-weight-bold);
+  }
+}
+
+/* Specificity cascade: width > grade > weight */
+.icon-stroke {
+  fill: none;
+  stroke: currentColor;
+  overflow: visible;
+  stroke-width: var(
+    --icon-stroke-width,
+    var(--icon-stroke-grade, var(--icon-stroke-grade-requested, var(--icon-stroke-weight)))
+  );
+  vector-effect: non-scaling-stroke;
+}
+.icon-fill {
+  fill: currentColor;
+  stroke: none;
+}
+
+/* Art icon second color — default to opacity with optional override */
+.art-icon-shade {
+  opacity: 0.5;
+}
+.icon-shade-custom .art-icon-shade {
+  fill: var(--icon-color-shade);
+  opacity: 1;
+}
+
+@container (max-width: 32px) {
+  .icon-stroke-complexity-high,
+  .icon-stroke-complexity-medium,
+  .icon-stroke-complexity-low {
+    --icon-stroke-grade: max(var(--icon-stroke-grade-requested, var(--icon-stroke-weight)), 1.2);
+  }
+}
+
+@container (max-width: 22px) {
+  .icon-stroke-complexity-high,
+  .icon-stroke-complexity-medium,
+  .icon-stroke-complexity-low {
+    --icon-stroke-grade: max(var(--icon-stroke-grade-requested, var(--icon-stroke-weight)), 1.5);
+  }
+}
+
+@container (max-width: 16px) {
+  .icon-stroke-complexity-medium,
+  .icon-stroke-complexity-low {
+    --icon-stroke-grade: max(var(--icon-stroke-grade-requested, var(--icon-stroke-weight)), 2);
+  }
+}
+
+@container (max-width: 13px) {
+  .icon-stroke-complexity-low {
+    --icon-stroke-grade: max(var(--icon-stroke-grade-requested, var(--icon-stroke-weight)), 3);
+  }
+}

@@ -1,0 +1,60 @@
+{% doc %}
+  - Renders contact form radio group holding _form-radio blocks
+
+  Sits inside _form-contact. Posts as contact[<block id>], and each _form-radio reads that id
+  off the front of its own id.
+{% enddoc %}
+
+<div
+  class="flex flex-col w-full vars-control-{{ block.settings.sizing }}"
+  style="{% render 'props-style-gap', s: block.settings %}"
+  x-data="{ radioGroupName: 'contact[{{ block.id }}]' }"
+  {{ block.shopify_attributes }}
+>
+  {% content_for 'blocks' %}
+</div>
+
+{% schema %}
+{
+  "name": "Radio group",
+  "tag": null,
+  "settings": [
+    {
+      "type": "select",
+      "id": "sizing",
+      "label": "Size",
+      "default": "md",
+      "options": [
+        {"value": "sm", "label": "S"},
+        {"value": "md", "label": "M"},
+        {"value": "lg", "label": "L"}
+      ]
+    },
+    [% json 'schema/grid-gap-setting.jsonc', default_gap: 'sm' %]
+  ],
+  "blocks": [
+    {
+      "type": "_form-radio"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Radio group",
+      "blocks": [
+        {
+          "type": "_form-radio",
+          "settings": {
+            "label": "Radio item 1"
+          }
+        },
+        {
+          "type": "_form-radio",
+          "settings": {
+            "label": "Radio item 2"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

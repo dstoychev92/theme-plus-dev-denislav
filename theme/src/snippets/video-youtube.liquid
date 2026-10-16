@@ -1,0 +1,69 @@
+{% doc %}
+  - Renders YouTube player or Shopify placeholder
+
+  @param {number} [aspect_ratio] - CSS ratio, defaults to 16 / 9
+  @param {string} [attributes]
+  @param {boolean} [autoplay]
+  @param {string} [class] - The classes
+  @param {boolean} [lazy] - waits for loadPlayer()
+  @param {boolean} [loop]
+  @param {string} [on_init] - Alpine expression for x-init
+  @param {string} [on_load_video] - Alpine expression for theme:youtube:loaded
+  @param [placeholder] - Shopify placeholder name, or false for none, defaults to 'image'
+  @param {string} [style] - inline styles for the placeholder only
+  @param {string} [video_id] - YouTube video ID, not the URL
+{% enddoc %}
+
+{% liquid
+  assign placeholder = placeholder | default: 'image', allow_false: true
+  assign autoplay = autoplay | default: false
+  assign loop = loop | default: false
+  assign aspect_ratio = aspect_ratio | default: '16 / 9'
+
+  if autoplay
+    assign autoplay_modifier = '.autoplay'
+  endif
+
+  if loop
+    assign loop_modifier = '.loop'
+  endif
+%}
+
+{% if video_id != blank %}
+  <div
+    class="aspect-[--aspect-ratio] {{ class }}"
+    style="--aspect-ratio: {{ aspect_ratio }};"
+
+    data-lazy-alpine
+    data-lazy-alpine-module="@theme/youtube-video"
+
+    {% if lazy %}
+      x-youtube-video.lazy{{ autoplay_modifier }}{{ loop_modifier }}="{{ video_id }}"
+    {% else %}
+      x-youtube-video{{ autoplay_modifier }}{{ loop_modifier }}="{{ video_id }}"
+    {% endif %}
+
+    {% if on_init %}
+      x-init="{{ on_init }}"
+    {% endif %}
+
+    {% if on_load_video %}
+      x-on:theme:youtube:loaded="{{ on_load_video }}"
+    {% endif %}
+    {{ attributes }}
+  >
+    <div
+      class="size-full"
+      data-youtube-player
+      enablejsapi="true"
+    ></div>
+  </div>
+{% elsif placeholder %}
+  {% assign class = class | append: ' h-auto max-w-full' %}
+  {% render 'image-placeholder',
+    placeholder: placeholder,
+    class: class,
+    style: style,
+    attributes: attributes
+  %}
+{% endif %}

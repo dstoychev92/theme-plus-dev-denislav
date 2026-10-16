@@ -1,0 +1,87 @@
+{% doc %}
+  - Renders tooltip around trigger
+
+  @param {string} [class] - The classes
+  @param {string} content
+  @param {string} [float_options] - float options for the panel
+  @param {string} [max_width] - CSS max-width, defaults to '300px'
+  @param {number} [offset] - gap from trigger in pixels, defaults to 5
+  @param {string} [position] - float placement, defaults to 'bottom'
+  @param {boolean} [show_arrow] - renders pointer arrow, defaults to true
+  @param {string} [size] - 'sm' or 'lg', defaults to 'sm'
+  @param {string} [style] - inline styles
+  @param {string} [tooltip_class] - classes for the panel
+  @param {string} [tooltip_options] - x-popup expression, a boolean or { isOpen }
+  @param {string} trigger - rendered trigger
+{% enddoc %}
+
+{%- liquid
+  assign size = size | default: 'sm'
+  assign position = position | default: 'bottom'
+  assign offset = offset | default: 5
+
+  assign max_width = max_width | default: '300px'
+
+  if show_arrow == blank
+    assign show_arrow = true
+  endif
+
+  capture tooltip_class
+    case size
+      when 'lg'
+        echo 'px-r6 py-r4 text-r4'
+      when 'sm'
+        echo 'px-r4 py-r3 text-r1'
+    endcase
+
+    if tooltip_class
+      echo ' ' | append: tooltip_class
+    endif
+  endcapture
+-%}
+
+<div
+  x-tooltip="{{ tooltip_options }}"
+  class="contents {{ class }}"
+  style="{{ style }}"
+>
+  {% comment %} Trigger {% endcomment %}
+  <div x-tooltip:trigger>{{ trigger }}</div>
+
+  {% comment %} Content {% endcomment %}
+  <div
+    class="
+      fixed pointer-events-none z-30 rounded-sm bg-[--tooltip-bg-color] text-content
+      shadow ring-1 ring-[color:var(--tooltip-border-color)]
+      w-max
+      {{ tooltip_class }}
+    "
+    style="
+      max-width: {{ max_width }};
+      --tooltip-bg-color: var(--canvas);
+      --tooltip-border-color: var(--content-alpha-5);
+    "
+    x-tooltip:panel.fixed.{{- position -}}.offset.{{- offset -}}px.flip.shift.update.pad.5px="{{ float_options }}"
+    :data-open="$popup.isOpen"
+    x-transition:enter="animate-in animate-duration-[--popover-enter-duration] slide-in-from-top-[5px]"
+    x-transition:leave="animate-out animate-duration-[--popover-exit-duration] slide-out-to-top-[5px]"
+    x-cloak
+  >
+    {% comment %} Arrow {% endcomment %}
+    {% if show_arrow %}
+      <div
+        x-tooltip:arrow
+        class="
+          h-r6 w-r6 overflow-hidden
+          before:absolute
+          before:left-1/2 before:top-r5
+          before:h-r5 before:w-r5 before:-translate-x-1/2 before:rotate-45 before:skew-x-3
+          before:skew-y-3 before:bg-[--tooltip-bg-color] before:shadow before:ring-1
+          before:ring-[color:var(--tooltip-border-color)]
+        "
+      ></div>
+    {% endif %}
+
+    {{ content }}
+  </div>
+</div>

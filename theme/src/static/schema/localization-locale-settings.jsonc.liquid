@@ -1,0 +1,37 @@
+[% assign context = context | default: 'section.settings.' %]
+[% assign conditional = context | append: 'show_language' | append: " == true" %]
+
+[
+  {
+    "type": "header",
+    "content": "Language selector",
+    "info": "To add a language, go to your [language settings](/admin/settings/languages).",
+    "visible_if": "{{ [= conditional =] }}"
+  },
+  {
+    "type": "header",
+    "content": "Language selector",
+    "visible_if": "{{ [= conditional | replace: '== true', '!= true' =] }}"
+  },
+  {
+    "type": "checkbox",
+    "id": "show_language",
+    "label": "Show language selector",
+    [% if show_language_default == null %]
+      "default": true
+    [% else %]
+      "default": [= show_language_default =]
+    [% endif %]
+  },
+  {
+    "type": "select",
+    "id": "language_style",
+    "label": "Style",
+    "default": "[= language_style_default | default: 'long' =]",
+    "options": [
+      {"value": "long", "label": "Long"},
+      {"value": "short", "label": "Short"}
+    ],
+    "visible_if": "{{ [= conditional =] }}"
+  }
+]

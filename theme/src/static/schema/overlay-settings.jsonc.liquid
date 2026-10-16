@@ -1,0 +1,26 @@
+[% if id_suffix %]
+ [% assign _id_suffix = id_suffix | prepend: '_' %]
+[% endif %]
+[
+  {
+    "type": "range",
+    "id": "overlay_opacity[= _id_suffix =]",
+    "label": "[= overlay_label | default: 'Opacity' =]",
+    "min": 0,
+    "max": 100,
+    "step": 1,
+    [% if conditional %]
+    "visible_if": "{{ [= conditional =] }}",
+    [% endif %]
+    "default": [= default_overlay_opacity | default: 8 =]
+  },
+  {
+    "type": "color",
+    "id": "overlay_color[= _id_suffix =]",
+    "label": "[= color_label | default: 'Color' =]",
+    [% if conditional %]
+    "visible_if": "{{ [= conditional =] }}",
+    [% endif %]
+    "default": "[= default_overlay_color | default: '#000000' =]"
+  }
+]

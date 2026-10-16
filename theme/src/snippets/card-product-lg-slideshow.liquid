@@ -1,0 +1,202 @@
+{% doc %}
+  - Renders product card media as a slideshow that plays on hover
+
+  Filtered collections swap featured_media to the matching variant, whose position is nil, so
+  the initial media moves to the front of the list. Reads $productCard, so render it inside
+  x-product-card.
+
+  @param {string} [class] - The classes
+  @param {boolean} [has_option_media_list] - product_media is an option media list, kept in its own order
+  @param {string} [image_sizes] - sizes hint for the image
+  @param {string} [image_widths] - widths for the image srcset
+  @param {string} [initial_image_fetchpriority] - fetch priority for the first image
+  @param {string} [initial_image_loading] - loading attribute for the first image
+  @param {media} [initial_media] - media shown before any hover, defaults to product.featured_media
+  @param {number} media_size - how many media to show
+  @param {product} product
+  @param {object} [product_media] - media to show, defaults to product.media
+{% enddoc %}
+
+{% liquid
+  assign product_media = product_media | default: product.media
+  assign initial_media = initial_media | default: product.featured_media
+
+  if has_option_media_list
+    assign media_list = product_media
+  else
+    # In filtered collections featured_media swaps to the matching variant's media, whose position is
+    # nil — so order the media list with the initial media first instead of indexing by position
+    assign other_media = product_media | reject: 'id', initial_media.id
+    assign media_list = initial_media | concat: other_media
+  endif
+
+  assign slide_duration = settings.product_card_slideshow_slide_duration | times: 1000 | round
+
+  capture media_key
+    for media in media_list limit: media_size
+      echo media.id | append: '-'
+    endfor
+  endcapture
+%}
+
+<div
+  key="product-card-slideshow-{{ product.id }}-{{ media_key }}"
+  class="group {{ class }}"
+  data-test-id="product-card-slideshow"
+  style="--slideshow-duration: {{ slide_duration }}ms; --slideshow-play-state: paused;"
+
+  {% comment %} Initialization {% endcomment %}
+  x-data="
+    {
+      isIndicatorFocused: false,
+      canRenderSlides: false,
+      slidesReadyPromise: null,
+      activation: 0,
+      prepareSlides(initialImage, slideshow) {
+        if (this.slidesReadyPromise) return this.slidesReadyPromise
+
+        this.slidesReadyPromise = (async () => {
+          try {
+            await initialImage.decode()
+          } catch {}
+
+          // Give the initial image a painted frame before inserting the deferred slides.
+          await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+          this.canRenderSlides = true
+          await new Promise((resolve) => requestAnimationFrame(resolve))
+
+          // Keep slide 0 visible until the first reveal image can paint. The remaining images
+          // start loading at the same time and have the first slide duration to finish.
+          const nextImage = slideshow.querySelectorAll('card-slideshow-slide')[1]?.querySelector('img')
+          if (!nextImage) return false
+          try {
+            await nextImage.decode()
+            return true
+          } catch {
+            return false
+          }
+        })()
+        return this.slidesReadyPromise
+      }
+    }
+  "
+  x-init="
+    $slideshow.currentSlideIndex = 0
+
+    const initialImage = $el.querySelector('img')
+    if ($productCard.canLoadMedia) {
+      prepareSlides(initialImage, $el)
+    }
+    $watch('$productCard.canLoadMedia', (canLoadMedia) => {
+      if (canLoadMedia) {
+        prepareSlides(initialImage, $el)
+      }
+    })
+
+    const syncActiveState = async (isActive) => {
+      const currentActivation = ++activation
+      if (isActive) {
+        const firstRevealIsReady = await prepareSlides(initialImage, $el)
+        if (!firstRevealIsReady || currentActivation !== activation || !($productCard.isHoveringMedia || isIndicatorFocused)) return
+
+        {% comment %} If we're already on the initial slide when the user first hovers or focuses, then move to the next slide right away {% endcomment %}
+        if ($slideshow.currentSlideIndex == 0) {
+          $slideshow.next()
+        }
+        $slideshow.play()
+      } else {
+        {% comment %} When user leaves card altogether reset to the initial slide {% endcomment %}
+        $slideshow.currentSlideIndex = 0
+        $slideshow.pause()
+      }
+    }
+    $watch('$productCard.isHoveringMedia || isIndicatorFocused', syncActiveState)
+    syncActiveState($productCard.isHoveringMedia || isIndicatorFocused)
+  "
+  x-slideshow.duration.{{ slide_duration }}ms
+  x-slideshow:viewport
+>
+  {% comment %} Focusing the indicator plays the slideshow (keyboard equivalent of hover); left/right keydown bubbles to x-slideshow:viewport for manual navigation {% endcomment %}
+  {% comment %} White focus outline: the theme outline color would vanish under mix-blend-difference; white inverts the backdrop the same way the dots do {% endcomment %}
+  <card-slideshow-indicator
+    class="
+      block absolute inset-card-lg-media-padding bottom-auto py-r1
+      opacity-0 motion-safe:-translate-y-full transition duration-[--slideshow-indicator-transition-duration]
+      mix-blend-difference isolate z-30
+      touch:hidden
+      keyboard-focus:outline-white
+    "
+    :class="
+      {
+         'opacity-100 motion-safe:translate-y-0': $productCard.isActive && !$productCard.isHoveringSelections
+      }
+    "
+    tabindex="0"
+    role="group"
+    aria-label="{{ 'collection.accessibility.product_card.slideshow_indicator' | t }}"
+    @focus="isIndicatorFocused = true"
+    @blur="isIndicatorFocused = false"
+  >
+    {% render 'slideshow-indicator' %}
+  </card-slideshow-indicator>
+
+  {% for media in media_list limit: media_size %}
+    {% capture slide_class %}
+      absolute inset-0 z-0 size-full block
+    {% endcapture %}
+    {% capture slide_image_class %}
+      size-full
+    {% endcapture %}
+    <card-slideshow-slide
+      class="{{ slide_class }}"
+      x-slideshow:slide
+      x-transition:enter="duration-[--slide-transition-duration]"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="duration-[--slide-transition-duration] delay-[calc(var(--slide-transition-duration)/4)]"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+      :class="
+        {
+          'z-20': $slideshow.currentSlideIndex === {{ forloop.index0 }},
+        }
+      "
+      {% unless forloop.first %}
+        x-cloak
+      {% endunless %}
+      x-show="$slide.isCurrentSlide"
+      key="{{ media.id }}"
+      role="group"
+    >
+      {% if forloop.first %}
+        {% liquid
+          assign slide_image = media.preview_image | default: media
+        %}
+        {% render 'card-product-lg-image',
+          image: slide_image,
+          product: product,
+          class: slide_image_class,
+          loading: initial_image_loading,
+          fetchpriority: initial_image_fetchpriority,
+          image_widths: image_widths,
+          image_sizes: image_sizes
+        %}
+      {% else %}
+        <template x-if="canRenderSlides">
+          {% liquid
+            assign slide_image = media.preview_image | default: media
+          %}
+          {% render 'card-product-lg-image',
+            image: slide_image,
+            product: product,
+            class: slide_image_class,
+            loading: 'eager',
+            fetchpriority: 'low',
+            image_widths: image_widths,
+            image_sizes: image_sizes
+          %}
+        </template>
+      {% endif %}
+    </card-slideshow-slide>
+  {% endfor %}
+</div>

@@ -1,0 +1,23 @@
+{% doc %}
+  - Prints class limiting an element to some breakpoints
+
+  @param {object} [s] - settings object
+  @param {string} [show_on] - 'all', 'mobile', 'tablet', 'desktop', 'mobile-tablet' or 'tablet-desktop', defaults to s.show_on then 'all'
+{% enddoc %}
+
+{% liquid
+  assign show_on = show_on | default: s.show_on | default: 'all'
+%}
+
+{% case show_on %}
+  {% when 'mobile' %}
+    md:hidden
+  {% when 'tablet' %}
+    max-md:hidden lg:hidden
+  {% when 'desktop' %}
+    max-lg:hidden
+  {% when 'mobile-tablet' %}
+    lg:hidden
+  {% when 'tablet-desktop' %}
+    max-md:hidden
+{% endcase %}

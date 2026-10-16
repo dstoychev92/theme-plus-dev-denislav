@@ -1,0 +1,67 @@
+@layer base {
+  :root {
+    --highlight-initial-position-x: 50%;
+    --highlight-position-y: 50%;
+    --highlight-height: 100%;
+  }
+}
+
+@keyframes highlightWipeIn {
+  0% {
+    background-position: 100% var(--highlight-position-y);
+  }
+  100% {
+    background-position: 0% var(--highlight-position-y);
+  }
+}
+
+@keyframes highlightWipeOut {
+  0% {
+    background-position: 0% var(--highlight-position-y);
+  }
+  100% {
+    background-position: 100% var(--highlight-position-y);
+  }
+}
+
+@layer utilities {
+  .highlight,
+  .highlight-partial,
+  .highlight-underline {
+    background-image: linear-gradient(
+      to right,
+      var(--highlight-color, transparent),
+      var(--highlight-color, transparent) var(--highlight-initial-position-x),
+      transparent var(--highlight-initial-position-x),
+      transparent
+    );
+    background-size: 200% var(--highlight-height);
+    background-position-y: var(--highlight-position-y);
+  }
+
+  .highlight-partial {
+    --highlight-position-y: bottom;
+    --highlight-height: 30%;
+    background-repeat: no-repeat;
+  }
+
+  .highlight-underline {
+    --highlight-position-y: bottom;
+    --highlight-height: 3px;
+    background-repeat: no-repeat;
+  }
+
+  /* Animations */
+
+  .animate-highlight-wipe-in {
+    animation: highlightWipeIn var(--highlight-duration, 1s) var(--ease-in-out) both;
+    animation-fill-mode: both;
+    animation-direction: normal;
+  }
+
+  .animate-highlight-wipe-out {
+    animation: highlightWipeOut var(--highlight-duration, 1s) var(--ease-in-out) both;
+    animation-fill-mode: both;
+    animation-direction: normal;
+  }
+}

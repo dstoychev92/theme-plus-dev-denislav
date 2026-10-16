@@ -1,0 +1,163 @@
+.pswp {
+  &.pswp--ui-visible {
+    @apply backdrop-blur;
+  }
+
+  .pswp__icn-shadow {
+    @apply hidden;
+  }
+
+  .pswp__top-bar {
+    @apply static;
+  }
+
+  .pswp__top-bar,
+  .pswp__preloader {
+    @apply h-auto;
+  }
+
+  .pswp__counter,
+  .pswp__button {
+    @apply opacity-100 m-0 h-auto;
+  }
+
+  /* vars-btn-canvas / vars-btn-fill / vars-btn-lg / vars-btn-md are inlined
+     below instead of @apply'd because this file compiles in its own
+     PostCSS entrypoint (theme.photoswipe.css), which has no @tailwind
+     utilities directive. Importing button.css's @layer utilities block
+     would either error or force the full utility bundle into the
+     lazy-loaded asset. See src/css/button.css for the canonical
+     declarations. */
+  .pswp__button {
+    /* Button styles */
+    @apply disabled:opacity-50 has-[:disabled]:opacity-50
+      items-center justify-center gap-x-r4
+      select-none leading-none
+      rounded-btn min-h-btn px-btn-x
+      bg-btn text-btn border border-btn
+
+      focus-visible:outline-2 focus-visible:outline-secondary
+      transition-[opacity,background-color,border-color,box-shadow]
+
+      vars-stain-canvas
+      type-btn
+
+      whitespace-nowrap;
+
+    --btn-bg-color: var(--stain);
+    --btn-text-color: var(--stain-contrast);
+    --btn-border-color: var(--btn-bg-color);
+    --btn-border-hover-color: var(--btn-border-color);
+    --btn-blur: 0;
+    --btn-text-highlight-opacity: 0.3;
+    --btn-text-hover-color: var(--btn-text-color);
+    --btn-bg-hover-color: var(--btn-bg-color);
+    --btn-hover-blur: 0;
+
+    @supports (color: oklch(from white l c h)) {
+      --btn-bg-hover-color: oklch(from var(--btn-bg-color) max(0.2, calc(l + 0.04)) c h);
+    }
+
+    @apply shadow rounded-full;
+  }
+
+  .pswp__counter {
+    /* Button styles */
+    @apply items-center justify-center
+      select-none leading-none
+      rounded-btn min-h-btn px-btn-x
+      bg-btn text-btn border border-btn
+
+      vars-stain-canvas
+
+      whitespace-nowrap;
+
+    --btn-bg-color: var(--stain);
+    --btn-text-color: var(--stain-contrast);
+    --btn-border-color: var(--btn-bg-color);
+    --btn-border-hover-color: var(--btn-border-color);
+    --btn-blur: 0;
+    --btn-text-highlight-opacity: 0.3;
+    --btn-text-hover-color: var(--btn-text-color);
+    --btn-bg-hover-color: var(--btn-bg-color);
+    --btn-hover-blur: 0;
+
+    @supports (color: oklch(from white l c h)) {
+      --btn-bg-hover-color: oklch(from var(--btn-bg-color) max(0.2, calc(l + 0.04)) c h);
+    }
+
+    @apply shadow rounded-full;
+  }
+
+  .pswp__button:hover,
+  .pswp__button:active,
+  .pswp__button:focus {
+    @apply px-btn-x bg-btn border border-btn transition-all;
+  }
+
+  .pswp__counter,
+  .pswp__button:not(.pswp__button--zoom) {
+    @apply inline-flex;
+  }
+
+  .pswp__button {
+    @apply aspect-square;
+    --btn-height: var(--row-lg);
+    --btn-padding: 0;
+  }
+
+  .pswp__button--close {
+    @apply absolute top-root-buffer left-1/2 -translate-x-1/2;
+  }
+
+  .pswp__counter {
+    @apply absolute left-1/2 bottom-root-buffer -translate-x-1/2;
+
+    --btn-height: var(--row-md);
+    --btn-padding: var(--r5);
+
+    @media (min-width: 768px) {
+      --btn-padding: var(--r4);
+    }
+
+    text-shadow: none;
+  }
+
+  .pswp__button--arrow {
+    @apply w-auto top-root-buffer lg:top-1/2 lg:-translate-y-1/2;
+  }
+
+  .pswp__button--arrow--prev {
+    @apply left-root-buffer lg:left-[calc(var(--root-buffer)*2)];
+    @apply rtl:left-auto rtl:right-root-buffer rtl:lg:right-[calc(var(--root-buffer)*2)] rtl:rotate-180;
+  }
+
+  .pswp__button--arrow--next {
+    @apply right-root-buffer lg:right-[calc(var(--root-buffer)*2)];
+    @apply rtl:right-auto rtl:left-root-buffer rtl:lg:left-[calc(var(--root-buffer)*2)] rtl:rotate-180;
+  }
+
+  .pswp__preloader {
+    @apply aspect-square;
+
+    .pswp__icn {
+      @apply fill-content-mix-50 stroke-content-mix-50;
+    }
+  }
+}
+
+.pswp.pswp--touch {
+  .pswp__button--arrow {
+    @apply visible;
+  }
+}
+
+.pswp.pswp--one-slide {
+  .pswp__button--arrow,
+  .pswp__counter {
+    @apply hidden;
+  }
+}
+.pswp__item video {
+  @apply !static;
+}

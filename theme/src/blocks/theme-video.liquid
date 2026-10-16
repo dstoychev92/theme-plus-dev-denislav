@@ -1,0 +1,174 @@
+{% doc %}
+  - Renders uploaded video, YouTube or Vimeo player, or Shopify placeholder
+{% enddoc %}
+
+{% liquid
+  assign set_rounding = block.settings.set_rounding
+  assign rounding_radius = block.settings.rounding_radius
+  assign rounding_radius_custom = block.settings.rounding_radius_custom
+  assign video_source = block.settings.video_source
+  assign video = block.settings.video
+  assign video_link = block.settings.video_link
+  assign autoplay = block.settings.autoplay
+  assign loop = block.settings.loop
+
+  case block.settings.video_size_mode
+    when 'full'
+      assign video_class = 'size-full'
+    when 'custom'
+      assign class = 'flex justify-content-align'
+      assign video_class = 'w-full max-w-[var(--video-max-width,120px)]'
+  endcase
+
+  if section.index0 == 0
+    assign preload_video = true
+  endif
+
+  if block.settings.set_aspect_ratio
+    assign aspect_ratio = block.settings.aspect_ratio
+  endif
+
+  assign has_video = false
+  if video_source == 'uploaded' and video != blank
+    assign has_video = true
+  elsif video_source == 'external_video' and video_link != blank
+    assign has_video = true
+  endif
+%}
+
+<div
+  {{ block.shopify_attributes }}
+  class="group entrance-item entrance-standard overflow-hidden vars-scheme-dark relative w-full {{ class }}"
+  style="
+    {% if set_rounding %}
+      {% render 'props-style-radius', rounding_radius: rounding_radius, rounding_radius_custom: rounding_radius_custom %}
+    {% else %}
+      border-radius: var(--radius-banner-default);
+    {% endif %}
+    {% if block.settings.video_size_mode == 'custom' %}
+      --video-max-width: {{ block.settings.video_max_limit }}px;
+    {% endif %}
+  "
+>
+  {%- if has_video -%}
+    {% case video_source %}
+      {% when 'uploaded' %}
+        {% render 'core-video',
+          video: video,
+          id: block.id,
+          preload: preload_video,
+          autoplay: autoplay,
+          loop: loop,
+          show_custom_controls: true,
+          controls: true,
+          aspect_ratio: aspect_ratio,
+          class: video_class
+        %}
+
+      {% when 'external_video' %}
+        {% render 'video-external',
+          video_type: video_link.type,
+          video_id: video_link.id,
+          aspect_ratio: aspect_ratio,
+          autoplay: autoplay,
+          class: video_class
+        %}
+    {% endcase %}
+  {%- else -%}
+    {% render 'core-video',
+      video: null,
+      id: block.id,
+      placeholder: 'image',
+      aspect_ratio: aspect_ratio,
+      class: video_class
+    %}
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Video",
+  "tag": null,
+  "settings": [
+    {
+      "type": "select",
+      "id": "video_source",
+      "label": "Type",
+      "default": "uploaded",
+      "options": [
+        {"value": "uploaded", "label": "Uploaded"},
+        {"value": "external_video", "label": "External URL"}
+      ]
+    },
+    {
+      "type": "video",
+      "id": "video",
+      "label": "Video",
+      "visible_if": "{{ block.settings.video_source == 'uploaded' }}"
+    },
+    {
+      "type": "video_url",
+      "id": "video_link",
+      "label": "Video URL",
+      "accept": ["youtube", "vimeo"],
+      "default": "https://www.youtube.com/watch?v=_9VUPq3SxOc",
+      "visible_if": "{{ block.settings.video_source == 'external_video' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Autoplay",
+      "default": false
+    },
+    {
+      "type": "paragraph",
+      "content": "Autoplay videos are muted by default",
+      "visible_if": "{{ block.settings.autoplay == true }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "loop",
+      "label": "Loop",
+      "default": false,
+      "visible_if": "{{ block.settings.video_source == 'uploaded' }}"
+    },
+    {
+      "type": "header",
+      "content": "Size"
+    },
+    {
+      "type": "select",
+      "id": "video_size_mode",
+      "label": "Width",
+      "default": "full",
+      "options": [
+        {"value": "full", "label": "Full"},
+        {"value": "custom", "label": "Custom"}
+      ]
+    },
+    {
+      "type": "range",
+      "id": "video_max_limit",
+      "min": 100,
+      "max": 1000,
+      "step": 10,
+      "unit": "px",
+      "label": "Custom width",
+      "default": 120,
+      "visible_if": "{{ block.settings.video_size_mode == 'custom' }}"
+    },
+    [% json 'schema/aspect-ratio-settings.jsonc' %]
+    {
+      "type": "header",
+      "content": "Rounding"
+    },
+    [% json 'schema/rounding-large.jsonc', default_rounding_radius: 'sm' %]
+  ],
+  "presets": [
+    {
+      "name": "Video",
+      "category": "Basic"
+    }
+  ]
+}
+{% endschema %}

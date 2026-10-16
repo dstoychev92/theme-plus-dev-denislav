@@ -1,0 +1,119 @@
+{% doc %}
+  - Renders image tile with overlaid blocks and optional link
+{% enddoc %}
+
+{% capture content_blocks %}
+  {% content_for 'blocks' %}
+{% endcapture %}
+
+{% render 'tile',
+  id: block.id,
+  s: block.settings,
+  content: content_blocks,
+  attributes: block.shopify_attributes,
+  content_class: 'entrance-container'
+%}
+
+{% schema %}
+{
+  "name": "Image tile",
+  "tag": null,
+  "settings": [
+    [% json 'schema/media-settings.jsonc' %]
+    {
+      "type": "checkbox",
+      "id": "set_aspect_ratio",
+      "label": "Set aspect ratio",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "aspect_ratio",
+      "min": 0.5,
+      "max": 5,
+      "step": 0.1,
+      "unit": ":1",
+      "label": "Aspect ratio",
+      "info": "Width to height",
+      "default": 1,
+      "visible_if": "{{ block.settings.set_aspect_ratio }}"
+    },
+    {
+      "type": "url",
+      "id": "href",
+      "label": "Link"
+    },
+    {
+      "type": "checkbox",
+      "id": "open_in_new_window",
+      "label": "Open link in new window",
+      "default": false,
+      "visible_if": "{{ block.settings.href != blank }}"
+    },
+    {
+      "type": "header",
+      "content": "Overlay"
+    },
+    [% json 'schema/overlay-settings.jsonc' %]
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    [% json 'schema/vertical-placement-setting.jsonc' %]
+    [% json 'schema/horizontal-placement-setting.jsonc' %]
+    [% json 'schema/grid-gap-setting.jsonc', context: 'block.settings.' %]
+    [% json 'schema/padding-settings.jsonc' %]
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    [% json 'schema/color-settings-image.jsonc' %]
+    {
+      "type": "header",
+      "content": "Border"
+    },
+    [% json 'schema/border-settings.jsonc' %]
+    {
+      "type": "header",
+      "content": "Rounding"
+    },
+    [% json 'schema/rounding-large.jsonc' %]
+
+    {
+      "type": "header",
+      "content": "Parallax"
+    },
+    [% json 'schema/parallax-settings.jsonc', default_parallax: 14, context: 'block.settings.' %]
+  ],
+  "blocks": [
+    {
+      "type": "@theme"
+    },
+    {
+      "type": "@app"
+    },
+    [% json 'schema/blocks-extended.jsonc' %]
+  ],
+  "presets": [
+    {
+      "name": "Image tile",
+      "category": "Featured card",
+      "blocks": [
+        {
+          "type": "theme-text",
+          "settings": {
+            "text": "Shop the edit",
+            "type_preset": "h2"
+          }
+        },
+        {
+          "type": "theme-richtext",
+          "settings": {
+            "text": "<p>Introduce the collection or page this tile links to.</p>"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

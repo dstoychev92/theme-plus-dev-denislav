@@ -1,0 +1,90 @@
+<!-- [autocomment] -->
+
+{% doc %}
+  - Renders one pair slideshow slide
+
+  Render it inside an x-slideshow root. A slide nested in a pair block passes total_slides: false,
+  and the pagination fills in on startup.
+
+  @param {string} [attributes]
+  @param {block} [block]
+  @param {number} [block_position] - position of this slide, passed as the initial slide
+  @param {string} [class] - The classes
+  @param {string} content
+  @param {object} [s] - settings object
+  @param {section} [section]
+  @param [total_slides] - slide count for the pagination, false defers it to Alpine, defaults to section.blocks.size
+{% enddoc %}
+{% assign total_slides = total_slides | default: section.blocks.size, allow_false: true %}
+
+{% capture class %}
+  relative z-0 transition !duration-[--slide-transition-duration] will-change-opacity
+  {{ class }}
+{% endcapture %}
+
+{% capture content_attributes %}
+  x-show="$slide.isCurrentSlide"
+  x-transition:leave="!duration-[calc(--slide-transition-duration/2)] transition-opacity"
+  x-transition:leave-start="opacity-100"
+  x-transition:leave-end="opacity-0"
+{% endcapture %}
+
+{% capture placement_class %}
+  pair-padding
+{% endcapture %}
+
+{% capture background_class %}
+  max-md:blur-[calc(var(--slideshow-mobile-swipe-progress,0.0)*10px)] will-change-filter
+{% endcapture %}
+
+{% capture controls %}
+  <div
+    class="flex items-center gap-r6"
+    {% comment %} Disable custom cursor for this element {% endcomment %}
+    data-hide-custom-cursor
+    {% comment %} Prevent changing the slide when clicking on the controls {% endcomment %}
+    @click.prevent.stop
+  >
+    {% # Conditionally rendered based using a data attribute since there's no way to access parent block settings %}
+    {% render 'slideshow-controls', s: s, initial_slide: block_position, total_slides: total_slides %}
+  </div>
+{% endcapture %}
+
+{% capture placement %}
+  {% render 'core-placement-grid', content: content, s: s, class: placement_class, padding: false, controls: controls, content_attributes: content_attributes %}
+{% endcapture %}
+
+{% capture attributes %}
+  {% if request.design_mode %}
+    @shopify:block:select="
+      $slideshow.currentSlideIndex = $slide.slideIndex;
+      {% # Remove the inline display now since the editor measures the slide for its scroll before Alpine applies x-show %}
+      $el.style.removeProperty('display');
+    "
+  {% endif %}
+  role="group"
+  {% # A backtick or a ${ in the translation breaks the template literal %}
+  data-index-separator="{{ 'product.gallery.index_indicator_separator' | t | escape_once }}"
+  :aria-label="`${$slide.slideIndex + 1} ${$el.dataset.indexSeparator} ${$slideshow.totalSlides}`"
+  x-slideshow:slide
+  x-show="$slide.isCurrentSlide"
+  x-transition:enter="!duration-[--slide-transition-duration] transition-opacity"
+  x-transition:enter-start="opacity-0"
+  x-transition:enter-end="opacity-100"
+  x-transition:leave="!duration-[--slide-transition-duration] transition-opacity"
+  x-transition:leave-start="opacity-100"
+  x-transition:leave-end="opacity-0"
+
+  aria-atomic="true"
+  {{ attributes }}
+{% endcapture %}
+
+{% render 'core-banner',
+  id: block.id,
+  s: s,
+  content: placement,
+  attributes: attributes,
+  background_class: background_class,
+  class: class,
+  set_height: false
+%}

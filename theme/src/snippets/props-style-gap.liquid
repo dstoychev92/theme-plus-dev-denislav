@@ -1,0 +1,46 @@
+{% doc %}
+  - Prints gap variables and row-gap and column-gap rules
+
+  Prints CSS declarations, so render it inside a style attribute.
+
+  @param {boolean} [apply] - false prints the variables without the gap rules
+  @param {boolean} [card_vars] - true also prints the --layout-gutter-card-* variables
+  @param {string} [gap] - 'sm', 'md', 'lg' or 'custom', defaults to s.gap, then 'custom'
+  @param {number} [gap_custom] - gap in pixels when gap is 'custom', defaults to s.gap_custom, then 0
+  @param {object} [s] - settings object
+  @param {boolean} [vars] - false skips the --layout-gutter-* variables
+{% enddoc %}
+
+{%- assign gap = gap | default: s.gap | default: 'custom' -%}
+{%- assign gap_custom = gap_custom | default: s.gap_custom | default: 0 -%}
+
+{%- if gap -%}
+  {%- case gap -%}
+    {%- when 'sm' -%}
+      --custom-gutter-x: var(--root-space-sm);
+      --custom-gutter-y: var(--raw-space-sm);
+    {%- when 'md' -%}
+      --custom-gutter-x: var(--root-space-md);
+      --custom-gutter-y: var(--raw-space-md);
+    {%- when 'lg' -%}
+      --custom-gutter-x: var(--root-space-lg);
+      --custom-gutter-y: var(--raw-space-lg);
+    {%- when 'custom' -%}
+      --custom-gutter-x: calc({{- gap_custom -}}px * var(--r-multiplier));
+      --custom-gutter-y: calc({{- gap_custom -}}px);
+  {%- endcase -%}
+  {% unless vars == false %}
+    --layout-gutter: var(--custom-gutter-x);
+    --layout-gutter-x: var(--custom-gutter-x);
+    --layout-gutter-y: var(--custom-gutter-y);
+  {% endunless %}
+  {% if card_vars == true %}
+    --layout-gutter-card: var(--custom-gutter-x);
+    --layout-gutter-card-x: var(--custom-gutter-x);
+    --layout-gutter-card-y: var(--custom-gutter-y);
+  {% endif %}
+  {% unless apply == false %}
+    row-gap: var(--layout-gutter-y);
+    column-gap: var(--layout-gutter-x);
+  {% endunless %}
+{%- endif -%}

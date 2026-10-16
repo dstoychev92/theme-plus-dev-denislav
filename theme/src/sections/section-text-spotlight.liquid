@@ -1,0 +1,337 @@
+{% comment %}
+  Section: Spotlight Text
+  Large animated text with scroll-driven stagger effects. Text words animate in
+  individually as the user scrolls — dramatic for brand statements, editorial
+  intros, or manifesto-style content.
+
+  Accepts _spotlight-text blocks (the animated text) plus theme-decoration,
+  theme-icon, _inline-spacer, and _inline-image for embellishment.
+
+  Scroll animation can trigger on enter, exit, or both. When height is set to
+  "screen", enable_sticky pins the text in the viewport during the scroll
+  animation. Optional background media (image or video) with overlay for
+  cinematic effects.
+
+  Typography uses the preset+custom pattern. Content width constrains how wide
+  the text block can be within the section.
+{% endcomment %}
+
+{% liquid
+  assign height = section.settings.height
+
+  assign enable_sticky = false
+
+  if height == 'screen' and section.settings.enable_sticky
+    assign enable_sticky = true
+  endif
+
+  assign set_background_media = section.settings.set_background_media
+
+  if set_background_media == true
+    assign padding = false
+  endif
+%}
+{% capture text %}
+  <div
+    {% if section.settings.enable_scroll_animation %}
+      data-lazy-alpine
+      data-lazy-alpine-module="@theme/scroll-stagger"
+      x-scroll-stagger="
+        {
+          selector: '[data-scroll-stagger-item]',
+
+          {% comment %} Start each word animation when the previous word is this percentage of the way through its animation {% endcomment %}
+          stagger: 0.1,
+
+          target: $sectionEl.querySelector('section-content'),
+
+          {% if section.settings.height == 'screen' and section.settings.enable_sticky %}
+            scrollOffset: ['25% 100%', '50% 0%'],
+          {% else %}
+            {% comment %}
+            Start the enter stagger animations when the container is 25% visible at the bottom of the
+            viewport and stop when the bottom of the container is 50% of the way through the viewport.
+            Start the leave stagger animations when the top of the container
+            meets the top of the viewport and end when the container is 75% out of view
+            {% endcomment %}
+            scrollOffset: ['25% 100%', '50% 50%', '0% 0%', '75% 0%'],
+          {% endif %}
+        }
+      "
+      {% if section.settings.scroll_animation_mode == 'enter' or section.settings.scroll_animation_mode == 'both' %}
+      x-scroll-stagger:enter="{
+        opacity: [0.1, 1.0]
+      }"
+      {% endif %}
+      {% if section.settings.scroll_animation_mode == 'exit' or section.settings.scroll_animation_mode == 'both' %}
+      x-scroll-stagger:leave="{
+        opacity: [1.0, 0.1]
+      }"
+      {% endif %}
+    {% endif %}
+    class="
+      text-content
+      {% render 'props-class-type-preset', s: section.settings %}
+      {% comment %} Make sure line-height is enough so the full-background highlight won't overlap the text on the previous/next row {% endcomment %}
+      [--leading:1.4]
+
+      overflow-hidden
+      *:auto-stagger-animations-[--entrance-animation-stagger]
+    "
+    style="
+      --entrance-animation-stagger: 150ms;
+    "
+  >
+    {% content_for 'blocks' %}
+  </div>
+{% endcapture %}
+
+{% capture placement_class %}
+  {% if enable_sticky %}
+    {% render 'props-class-custom-height', s: section.settings, mode: 'height' %}
+    sticky top-0
+  {% endif %}
+{% endcapture %}
+
+{% capture placement_style %}
+  {% if enable_sticky %}
+    {% render 'props-style-custom-height', s: section.settings %}
+  {% endif %}
+{% endcapture %}
+
+{% capture placement %}
+  {% render 'core-placement-grid', s: section.settings, content: text, class: placement_class, style: placement_style %}
+{% endcapture %}
+
+{% capture class %}
+  {% if enable_sticky %}
+    h-[200svh]
+  {% else %}
+    {% render 'props-class-custom-height', s: section.settings %}
+  {% endif %}
+{% endcapture %}
+
+{% capture style %}
+  {% if enable_sticky == false %}
+    {% render 'props-style-custom-height', s: section.settings %}
+  {% endif %}
+{% endcapture %}
+
+{% capture blocks %}
+  {% render 'core-section-content', content: placement, s: section.settings %}
+
+  {% if set_background_media == true %}
+    {% capture background_media %}
+      {% render 'core-background-media', s: section.settings %}
+    {% endcapture %}
+
+    {% capture background %}
+      {% render 'core-background', content: background_media, s: section.settings %}
+    {% endcapture %}
+
+    {% render 'core-section-background', content: background, s: section.settings %}
+  {% endif %}
+{% endcapture %}
+
+{% render 'core-section-wrapper',
+  s: section.settings,
+  padding: padding,
+  content: blocks,
+  class: class,
+  style: style,
+  photoswipe: false
+%}
+
+{% schema %}
+{
+  "name": "Spotlight text",
+  "class": "section-text-spotlight",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Text"
+    },
+    [% json 'schema/type-preset.jsonc', default_preset: 'h1', label: 'Style' %]
+    [% json 'schema/type-custom.jsonc', resize: true, default_font: 'heading', default_size: '8', context: 'section.settings.' %]
+    {
+      "type": "text_alignment",
+      "id": "horizontal_placement",
+      "label": "Alignment",
+      "default": "center"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    [% json 'schema/section-content-width-setting.jsonc' %]
+    [% json 'schema/section-padding-settings.jsonc', conditional: 'section.settings.set_background_media == false' %]
+    [% json 'schema/height-setting.jsonc', height_toggle: false, default_height: 'content', content_height: true, image_height: false, context: 'section.settings.' %]
+    [% json 'schema/color-settings-section-solid.jsonc' %]
+    {
+      "type": "checkbox",
+      "id": "enable_sticky",
+      "label": "Enable sticky",
+      "default": false,
+      "visible_if": "{{ section.settings.height == 'screen' }}"
+    },
+    {
+      "type": "header",
+      "content": "Background media"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_background_media",
+      "label": "Set background media",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "media_type",
+      "label": "Type",
+      "options": [
+        {
+          "value": "image",
+          "label": "Image"
+        },
+        {
+          "value": "video",
+          "label": "Video"
+        }
+      ],
+      "default": "image",
+      "visible_if": "{{ section.settings.set_background_media == true }}"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image",
+      "visible_if": "{{ section.settings.set_background_media == true and section.settings.media_type == 'image' }}"
+    },
+    {
+      "type": "video",
+      "id": "video_bg",
+      "label": "Video",
+      "visible_if": "{{ section.settings.set_background_media == true and section.settings.media_type == 'video' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_image_on_mobile",
+      "label": "Show image on mobile",
+      "default": false,
+      "visible_if": "{{ section.settings.set_background_media == true and section.settings.image != blank and section.settings.media_type == 'video' }}"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_mobile",
+      "label": "Image mobile",
+      "visible_if": "{{ section.settings.set_background_media == true and section.settings.image != blank and section.settings.media_type == 'image' or section.settings.show_image_on_mobile == true }}"
+    },
+    [% json 'schema/overlay-settings.jsonc', overlay_label: 'Overlay opacity', color_label: 'Overlay color', conditional: 'section.settings.set_background_media == true' %]
+    {
+      "type": "header",
+      "content": "Animation"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_scroll_animation",
+      "label": "Enable scroll animation",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "scroll_animation_mode",
+      "label": "Animate on",
+      "options": [
+        { "value": "both", "label": "Enter and exit" },
+        { "value": "enter", "label": "Enter" },
+        { "value": "exit", "label": "Exit" }
+      ],
+      "default": "both",
+      "visible_if": "{{ section.settings.enable_scroll_animation == true }}"
+    },
+    {
+      "type": "paragraph",
+      "content": "Text will fade in and out as section enters and leaves the screen. Disable if text is visible when page loads.",
+      "visible_if": "{{ section.settings.enable_scroll_animation == true and section.settings.scroll_animation_mode == 'both' }}"
+    },
+    {
+      "type": "paragraph",
+      "content": "Text will fade in as section enters the screen. Disable if text is visible when page loads.",
+      "visible_if": "{{ section.settings.enable_scroll_animation == true and section.settings.scroll_animation_mode == 'enter' }}"
+    },
+    {
+      "type": "paragraph",
+      "content": "Text will fade out as section leaves the screen. Disable if text is visible when page loads.",
+      "visible_if": "{{ section.settings.enable_scroll_animation == true and section.settings.scroll_animation_mode == 'exit' }}"
+    },
+    [% json 'schema/section-target-device-settings.jsonc' %]
+  ],
+  "blocks": [
+    {
+      "type": "_spotlight-text",
+    },
+    {
+      "type": "theme-decoration",
+    },
+    {
+      "type": "theme-icon",
+    },
+    {
+      "type": "_inline-spacer",
+    },
+    {
+      "type": "_inline-image",
+    }
+  ],
+  "presets": [
+    {
+      "name": "Spotlight text",
+      "category": "Full width",
+      "settings": {
+        "content_width": "custom",
+        "content_width_custom": 65
+      },
+      "blocks": [
+        {
+          "type": "_spotlight-text",
+          "settings": {
+            "text": "<em><strong>Grab</strong></em> your customer's <em><strong>attention</strong></em> with <em><strong>spotlight text</strong></em>"
+          }
+        },
+      ]
+    },
+    {
+      "name": "Spotlight and photos",
+      "category": "Try: Tell your story",
+      "settings": {
+        "content_width": "custom",
+        "content_width_custom": 65
+      },
+      "blocks": [
+        {
+          "type": "_spotlight-text",
+          "settings": {
+            "text": "Designed with <em>intention</em>, made with <em>care</em>."
+          }
+        },
+        {
+          "type": "_inline-image"
+        },
+        {
+          "type": "_spotlight-text",
+          "settings": {
+            "text": "Every piece <em>earns its place</em> in your everyday."
+          }
+        },
+        {
+          "type": "_inline-image"
+        }
+      ]
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "custom.overlays", "custom.drawers"]
+  }
+}
+{% endschema %}

@@ -1,0 +1,17 @@
+{% doc %}
+  - Renders loading spinner
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+{% enddoc %}
+
+[%- # TODO: replace %]
+<svg
+  class="size-r6 animate-spin {{ class }}"
+  xmlns="http://www.w3.org/2000/svg"
+  fill="none"
+  viewBox="0 0 13 12"
+  {{ attributes }}
+>
+  <circle cx="6.5" cy="6" r="5.5" stroke="currentColor" stroke-opacity=".6"/><path stroke="currentColor" stroke-width="0.5" d="M6.5 0a6 6 0 0 1 2.876 11.266l-.472-.865A5.015 5.015 0 0 0 6.5.985V0Z"/>
+</svg>

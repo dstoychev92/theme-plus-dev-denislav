@@ -1,0 +1,83 @@
+{% doc %}
+  - Renders sort select
+
+  Submits $refs.collectionFiltersForm on change. collection-filters sets that ref.
+
+  @param {string} [class] - The classes
+  @param collection - collection or search object whose sort options are listed
+  @param {string} form - ID of the form the select belongs to
+{% enddoc %}
+
+{% liquid
+  assign sort_label = 'collection.sort_by' | t
+  assign initial_sort_value = collection.sort_by | default: collection.default_sort_by
+  assign initial_sort_display = null
+%}
+
+{% capture options %}
+  {% for sort_option in collection.sort_options %}
+    {%  liquid
+      assign selected = false
+      if initial_sort_value == sort_option.value
+        assign selected = true
+      endif
+    %}
+
+    {%- if initial_sort_value == sort_option.value -%}
+      {%- assign initial_sort_display = sort_option.name -%}
+    {%- endif -%}
+    {% capture option_content %}
+      {{ sort_option.name }}
+    {% endcapture %}
+    {% capture option_display_value %}
+      <span aria-hidden="true" class="absolute inset-0 flex flex-center hover-effect-text-highlight h-full pointer-events-none">
+        {{ sort_option.name }}
+      </span>
+      {{ sort_option.name }}
+    {% endcapture %}
+    {% render 'custom-select-option', label:option_content, display_value: option_display_value, value: sort_option.value, selected: selected %}
+  {% endfor %}
+{% endcapture %}
+
+{% capture attributes %}
+  {% comment %} When the custom select value changes, autosubmit the associated form {% endcomment %}
+  @change="if($event.target.getAttribute('value') !== '{{ initial_sort_value }}') $refs.collectionFiltersForm.requestSubmit()"
+{% endcapture %}
+
+{% capture button_attributes %}
+  x-select:button
+{% endcapture %}
+
+{% capture label_attributes %}
+  x-select:display
+{% endcapture %}
+
+{% capture button %}
+  {% render 'core-button',
+    label: initial_sort_display,
+    label_class: 'truncate text-ellipsis flex-1 leading-[1.5]',
+    label_attributes: label_attributes,
+    hide_label_on_mobile: true,
+    start_icon: 'fill-sort',
+    icon_size: 'md',
+    color: 'content',
+    appearance: 'stroke',
+    sizing: 'sm',
+    type_resize: 'sm',
+    attributes: button_attributes
+  %}
+{% endcapture %}
+
+{% render 'custom-select',
+  name: 'sort_by',
+  size: 'sm',
+  label: sort_label,
+  options: options,
+  placement: 'bottom',
+  value: initial_sort_value,
+  button: button,
+  attributes: attributes,
+  form: form,
+  class: class,
+  popup_class: 'md:min-w-fit [--custom-select-popup-radius:var(--radius-btn)]'
+%}

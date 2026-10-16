@@ -1,0 +1,49 @@
+[
+  {
+    "type": "checkbox",
+    "id": "multiple",
+    "label": "Allow multiple items to be expanded at once",
+    [% if conditional_multiple %]
+      "visible_if": "{{ [= conditional_multiple =] }}",
+    [% endif %]
+    "default": true
+  },
+  {
+    "type": "checkbox",
+    "id": "show_top_border",
+    "label": "Show top border",
+    "default": true
+  },
+  {
+    "type": "checkbox",
+    "id": "show_number",
+    "label": "Show number",
+    "default": false,
+    "info": "Show a number before the title"
+  },
+  {
+    "type": "checkbox",
+    "id": "show_open_close_icon",
+    "label": "Show open/close icon",
+    "default": true
+  },
+  {
+    "type": "checkbox",
+    "id": "enable_muted_title",
+    "label": "Enable muted title",
+    "default": true,
+    "info": "Greys out the title when collapsed"
+  },
+  [% if enable_timer_indicator == true %]
+    {
+      "type": "checkbox",
+      "id": "enable_timer_indicator",
+      "label": "Enable timer indicator",
+      "default": true,
+      [% if conditional_timer_indicator %]
+        "visible_if": "{{ [= conditional_timer_indicator =] }}",
+      [% endif %]
+      "info": "Enabling this will animate the line to represent the time elapsed since the accordion was opened."
+    }
+  [% endif %]
+]

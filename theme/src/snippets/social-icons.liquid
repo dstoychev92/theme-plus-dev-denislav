@@ -1,0 +1,130 @@
+{% doc %}
+  - Renders social links from theme settings, Shopify Brand, and up to three custom links
+
+  @param {string} [affix_item] - content after last link
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {number} [custom_width] - icon width in pixels when size is 'custom', defaults to 20
+  @param {string} [gap_class] - gap classes, defaults to 'gap-sm'
+  @param {string} [hit_area_x_class] - horizontal hit-area classes, defaults to 'hit-area-x-r4'
+  @param {string} [hit_area_y_class] - vertical hit-area classes, defaults to 'hit-area-y-r4'
+  @param {string} [size] - 'sm', 'md', 'lg' or 'custom', defaults to 'md'
+  @param {string} [style] - inline styles
+{% enddoc %}
+
+{% liquid
+  assign social_accounts = 'Instagram, Tiktok, YouTube, X, Facebook, Pinterest, Vimeo, Tumblr, Linkedin, Medium, Snapchat,' | split: ', '
+  assign gap_class = gap_class | default: 'gap-sm'
+  assign hit_area_x_class = hit_area_x_class | default: 'hit-area-x-r4'
+  assign hit_area_y_class = hit_area_y_class | default: 'hit-area-y-r4'
+  assign size = size | default: 'md'
+
+  assign icon_width_raw = 20
+  case size
+    when 'sm'
+      assign icon_width_raw = 16
+    when 'md'
+      assign icon_width_raw = 20
+    when 'lg'
+      assign icon_width_raw = 26
+    when 'custom'
+      assign icon_width_raw = custom_width | default: 20
+  endcase
+
+  # Scale like type: hold sizes up to 20px, shrink only the excess on mobile.
+  assign icon_width_css = 'calc(min(' | append: icon_width_raw | append: 'px, 20px) + max(' | append: icon_width_raw | append: 'px - 20px, 0px) * var(--r-multiplier))'
+-%}
+
+{% capture social_icons %}
+  {%- for social in social_accounts -%}
+    {% assign social_handle = social | handleize %}
+    {% assign social_icon = 'fill-social-' | append: social_handle %}
+    {% capture social_link_setting_id %}social_{{ social_handle }}_link{% endcapture %}
+    {% assign social_link = settings[social_link_setting_id] %}
+
+    {% liquid
+      # Fallback to Brand social links - Settings > General > Brand assets(-> Manage)
+      if settings.show_brand_social_links
+        if social_link == blank
+          assign social_link = shop.brand.metafields.social_links[social_handle].value
+
+          # Shopify is still using "twitter" instead of "X"
+          if social_handle == 'x' and social_link == blank
+            assign social_link = shop.brand.metafields.social_links.twitter.value
+          endif
+        endif
+      endif
+    %}
+
+    {% if social_link != blank %}
+      <a
+        class="
+          relative flex flex-center shrink-0
+          {{ hit_area_x_class }}
+          {{ hit_area_y_class }}
+        "
+        href="{{ social_link }}"
+        title="{{ social }}"
+        target="_blank"
+      >
+        {% render 'core-icon', icon: social_icon, width: icon_width_css %}
+        <span class="sr-only">{{ social }}, {{ 'other.accessibility.opens_in_new_tab' | t }}</span>
+      </a>
+    {% endif %}
+  {%- endfor -%}
+{% endcapture %}
+
+{% capture custom_icons %}
+  {%- for custom_social_icon_idx in (1..3) -%}
+    {%- capture set_custom_social_icon_capture %}set_custom_social_icon_{{ custom_social_icon_idx }}{% endcapture -%}
+    {%- assign set_custom_social_icon = settings[set_custom_social_icon_capture] -%}
+
+    {%- if set_custom_social_icon -%}
+      {% capture custom_social_icon_capture %}custom_social_icon_{{ custom_social_icon_idx }}{% endcapture %}
+      {% capture custom_social_link_capture %}custom_social_link_{{ custom_social_icon_idx }}{% endcapture %}
+      {% assign custom_social_icon = settings[custom_social_icon_capture] %}
+      {% assign custom_social_link = settings[custom_social_link_capture] %}
+      {% if custom_social_icon != blank and custom_social_link != blank %}
+        {%- assign custom_social_icon_title = custom_social_icon.alt | default: custom_social_link -%}
+        <a
+          class="
+            relative flex flex-center shrink-0
+            {{ hit_area_x_class }}
+            {{ hit_area_y_class }}
+          "
+          style="width: {{ icon_width_css }};"
+          href="{{ custom_social_link }}"
+          title="{{ custom_social_icon_title }}"
+          target="_blank"
+        >
+          {%- liquid
+            assign image = custom_social_icon
+            assign image_width = icon_width_raw | at_most: image.width
+
+            render 'core-image', image: image, width: image_width, alt_default: custom_social_icon_title
+          -%}
+
+          <span class="sr-only">{{ custom_social_icon_title }}, {{ 'other.accessibility.opens_in_new_tab' | t }}</span>
+        </a>
+      {% endif %}
+    {%- endif -%}
+  {%- endfor -%}
+{% endcapture %}
+
+{% if social_icons != blank or custom_icons != blank or affix_item != blank %}
+  <div
+    style="{{ style | strip }}"
+    class="
+      flex flex-wrap
+      {{ gap_class }}
+      {{ class }}
+    "
+    x-roving-tab
+    x-roving-tab:list
+    {{ attributes }}
+  >
+    {{ social_icons }}
+    {{ custom_icons }}
+    {{ affix_item }}
+  </div>
+{% endif %}

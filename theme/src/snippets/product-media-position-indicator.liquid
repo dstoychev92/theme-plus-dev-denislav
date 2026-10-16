@@ -1,0 +1,55 @@
+{% doc %}
+  - Renders position dots for the mobile gallery scroll list
+
+  Reads $scrollList.centeredIndex and $overflow from the enclosing scopes.
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {object} product_media - one dot per item
+  @param {string} [style] - inline styles
+{% enddoc %}
+
+{% assign product_media_size_count = product_media.size | default: product_media.count %}
+
+<ul
+  class="
+    flex flex-nowrap gap-r4 rounded-sm frosted-glass px-r5 py-r4
+    w-max max-w-[25vw] overflow-hidden edge-mask
+    pointer-events-none
+    {{ class }}
+  "
+  style="{{ style }}"
+  x-data="
+    {
+      get currentSlideIndex() {
+        return $scrollList.centeredIndex
+      }
+    }
+  "
+  :class="
+    {
+      'edge-mask-l-[10px]': $overflow.start,
+      'edge-mask-r-[10px]': $overflow.end
+    }
+  "
+
+  {{ attributes }}
+>
+  {% for media in product_media %}
+    <li
+      aria-label="{{ forloop.index }}/{{ product_media_size_count }}"
+      class="
+        block h-r2 w-r2 rounded-full transition-[background-color] duration-400
+        bg-content/20 [&[aria-current]]:bg-content shrink-0 relative
+      "
+      :aria-current="currentSlideIndex == {{ forloop.index0 }} ?? 'step'"
+      x-data="
+        {
+          get isCurrentSlide() {
+            return currentSlideIndex == {{ forloop.index0 }}
+          }
+        }
+      "
+    ></li>
+  {% endfor %}
+</ul>

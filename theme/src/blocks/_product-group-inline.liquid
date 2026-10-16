@@ -1,0 +1,36 @@
+{% doc %}
+  - Renders text group holding inline blocks
+{% enddoc %}
+
+[%- capture additional_blocks -%]
+  [% json 'schema/blocks-inline.jsonc' %]
+[%- endcapture -%]
+
+[%- capture additional_presets -%]
+  {
+    "name": "Text group",
+    "category": "Layout",
+    "blocks": [
+      {
+        "type": "_inline-text",
+        "settings": {
+          "text": "Primary title",
+          "set_color": false,
+          "color": "content",
+          "color_custom": "#000000"
+        }
+      },
+      {
+        "type": "_inline-text",
+        "settings": {
+          "text": "with secondary text",
+          "set_color": true,
+          "color": "muted",
+          "color_custom": "#777777"
+        }
+      }
+    ]
+  }
+[%- endcapture -%]
+
+[% render 'groups/inline', additional_blocks: additional_blocks, additional_presets: additional_presets %]

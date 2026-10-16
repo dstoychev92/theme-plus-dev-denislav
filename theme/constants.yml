@@ -1,0 +1,70 @@
+# These are static constants that are inserted into our theme files at compile time using tradecraft-build.
+
+#
+# Page widths
+#
+page_min: 1000
+page_max: 2000
+
+#
+# Responsive screen widths
+#
+
+screen_2xl: 1536
+screen_xl: 1280
+screen_lg: 1024
+screen_md: 768
+screen_sm: 640
+
+#
+# Grid approximations for srcset and sizes
+#
+grid_approx_desktop: 30
+grid_approx_tablet: 20
+grid_approx_mobile: 10
+
+#
+# Font sizes
+#
+
+# Analog small
+#                          1    2   3   4    5    6   7   8   9   10  11  12  13  14  15
+font_system_small_desktop: [10, 11, 12, 13, 15, 16.5, 20, 26, 32, 39, 48, 58, 71, 87, 106]
+font_system_small_tablet: [10, 11, 12, 13, 15, 16.5, 20, 25, 29, 34, 40, 47, 56, 65, 77]
+font_system_small_mobile: [10, 11, 12, 13, 15, 16.5, 20, 24, 27, 32, 37, 43, 49, 57, 67]
+
+# Analog medium/default    1   2     3   4     5     6   7   8   9   10  11  12  13  14   15
+font_system_medium_desktop: [10, 11.5, 13, 14.5, 17.5, 22, 26, 32, 39, 48, 58, 71, 87, 106, 129]
+font_system_medium_tablet: [10, 11.5, 12.5, 13.5, 16, 18, 21, 25, 29, 34, 40, 47, 56, 65, 77]
+font_system_medium_mobile: [10, 11.3, 12, 13, 15.5, 17, 20, 24, 27, 32, 37, 43, 49, 57, 67]
+
+# Analog large            1   2   3   4   5  6    7   8   9   10  11  12  13   14   15
+font_system_large_desktop: [10, 12, 15, 18, 22, 27, 32, 40, 48, 59, 72, 88, 107, 130, 159]
+font_system_large_tablet: [10, 12, 14, 16.5, 19.5, 23, 27, 32, 37, 44, 51, 60, 71, 83, 98]
+font_system_large_mobile: [10, 12, 14, 16, 19, 22, 25, 29, 34, 39, 46, 53, 61, 71, 83]
+
+#
+# Spacing
+# desktop * 0.83 ~= tablet & desktop * 0.62 ~= mobile
+#                       1  2  3  4  5   6   7   8   9   10  11  12  13  14   15
+spacing_sizes_desktop: [2, 4, 6, 8, 12, 16, 20, 24, 32, 38, 50, 68, 96, 128, 192]
+spacing_sizes_tablet: [2, 4, 6, 8, 12, 15, 18, 22, 27, 35, 45, 56, 75, 105, 150]
+spacing_sizes_mobile: [2, 4, 6, 8, 10, 12, 14, 16, 20, 24, 32, 42, 60, 80, 120]
+
+#
+# Leading
+#
+leading_block: [1.5, 1.5, 1.4, 1.3, 1.25, 1.15, 1.1, 1, 1, 1, 1, 1, 1, 1, 1]
+leading_prose: [1.625, 1.625, 1.5, 1.5, 1.375, 1.375, 1.375, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25, 1, 1]
+
+#
+# Colors
+#
+mixes: [5, 10, 20, 30, 40, 50]
+mixes_light_mode: [3, 8, 20, 30, 40, 50]
+# Screens struggle with subtle differences betwen dark colors, so we help them out by bumping up the lower half of the mix
+mixes_dark_mode: [23, 24.5, 26.9, 30.3, 45, 50]
+#
+# Other
+#
+

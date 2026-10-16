@@ -1,0 +1,109 @@
+{% comment %}
+  Section: Featured Product
+  Full product display (media gallery + details) embedded on any page. Shows a
+  complete product experience — images, variants, price, add-to-cart — outside
+  the product template.
+
+  Requires a product to be selected via the product picker setting. Uses two
+  static blocks: _product-layout-media (gallery) and _product-layout-details
+  (info, options, buttons) which each have their own nested sub-blocks.
+
+  The product loading logic handles three contexts: section rendering API
+  (variant switching), design mode (editor preview), and normal rendering.
+  Includes schema.org structured data (JSON-LD) for SEO.
+
+  Does not support transparent header (always false).
+{% endcomment %}
+
+{% liquid
+  # This ensures the correct "product" object is being loaded when changing variants:
+  # - when loading via section rendering API: use global "product" object
+  # - when in design mode: get "product" object from section settings
+  # - default (normal section rendering): get "product" object from section settings
+  # section.index is set on a template render and nil on a section rendering request,
+  # so the picker wins on the page and the requested product wins on a variant or sibling change
+  if section.index or product == blank
+    assign product = section.settings.product
+  endif
+%}
+
+{% capture content_media %}
+  {% content_for 'block', type: '_product-layout-media', id: 'media', class_static: 'md:col-[media-start/media-end]', closest.product: product %}
+{% endcapture %}
+{% capture content_details %}
+  {% content_for 'block', type: '_product-layout-details', id: 'details', class_static: 'md:col-[details-start/details-end]', closest.product: product %}
+{% endcapture %}
+
+{% render 'product-section',
+  s: section.settings,
+  content_media: content_media,
+  content_details: content_details,
+  product: product
+%}
+
+{% # Product schema.org markup for Google search results. %}
+<script type="application/ld+json">
+  {{ product | structured_data }}
+</script>
+
+{% schema %}
+{
+  "name": "Featured product",
+  "class": "section-featured-product",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "product",
+      "id": "product",
+      "label": "Product"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_history",
+      "label": "Enable history",
+      "info": "Preserve URL history when navigating between product variants and subscription options",
+      "default": false,
+      "visible_if": "{{ false }}"
+    },
+    [% json 'schema/product-section-settings.jsonc', transparent_header: false %]
+    [% json 'schema/section-target-device-settings.jsonc' %]
+  ],
+  "blocks": [{"type": "_product-layout-media"}, {"type": "_product-layout-details"}],
+  "presets": [
+    {
+      "name": "Featured product",
+      "category": "Full width",
+      "blocks": [
+        {
+          "id": "media",
+          "type": "_product-layout-media",
+          "static": true
+        },
+        {
+          "id": "details",
+          "type": "_product-layout-details",
+          "static": true,
+          "settings": {
+            "gap": "md"
+          },
+          "blocks": [
+            {"type": "_product-title"},
+            {"type": "_product-price"},
+            {"type": "_product-description"},
+            {"type": "_product-pickup"},
+            {"type": "_product-stock-status"},
+            {"type": "_product-option-siblings"},
+            {"type": "_product-option-selectors"},
+            {"type": "_product-subscription"},
+            {"type": "_product-quantity"},
+            {"type": "_product-add-buttons"}
+          ]
+        }
+      ]
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "custom.overlays", "custom.drawers"]
+  }
+}
+{% endschema %}

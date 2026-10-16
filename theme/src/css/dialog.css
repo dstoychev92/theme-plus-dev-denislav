@@ -1,0 +1,63 @@
+/*
+  Dialog always has a border and shadow, but inherits padding and radius from medium cards.
+*/
+
+@layer base {
+  :root {
+    --dialog-radius: 0;
+  }
+}
+
+@layer components {
+  dialog.animate-dialog {
+    @apply animate-ease-[--ease-in-out-sharp];
+
+    &[open]:not([data-closing]) {
+      @apply animate-in animate-delay-[--dialog-enter-delay] animate-duration-[--dialog-enter-duration] max-md:fade-in;
+
+      &.from-bottom {
+        @apply md:slide-in-from-bottom-[50px] md:fade-in origin-bottom;
+      }
+
+      &.from-left {
+        @apply md:slide-in-from-left-[50px] md:fade-in origin-left;
+      }
+
+      &.from-right {
+        @apply md:slide-in-from-right-[50px] md:fade-in origin-right;
+      }
+
+      &.scale {
+        @apply origin-center scale-in-90 fade-in;
+      }
+
+      &::backdrop {
+        @apply animate-in fade-in animate-duration-[--dialog-backdrop-enter-duration];
+      }
+    }
+
+    &[open][data-closing] {
+      @apply animate-out animate-duration-[--dialog-exit-duration] max-md:fade-out;
+
+      &.from-bottom {
+        @apply md:slide-out-to-bottom-[50px] md:fade-out origin-bottom;
+      }
+
+      &.from-left {
+        @apply md:slide-out-to-left-[50px] md:fade-out origin-left;
+      }
+
+      &.from-right {
+        @apply md:slide-out-to-right-[50px] md:fade-out origin-right;
+      }
+
+      &.scale {
+        @apply origin-center scale-out-90 fade-out;
+      }
+
+      &::backdrop {
+        @apply animate-out fade-out max-md:animate-delay-[--dialog-backdrop-exit-delay] animate-duration-[--dialog-backdrop-exit-duration];
+      }
+    }
+  }
+}

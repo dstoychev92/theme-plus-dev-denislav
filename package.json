@@ -1,0 +1,11 @@
+{
+  "name": "theme-plus-dev-denislav",
+  "private": true,
+  "packageManager": "pnpm@12.3.4",
+  "scripts": {
+    "build": "pnpm --filter analog run build --settings-path=../store"
+  },
+  "devDependencies": {
+    "@shopify/cli": "4.6.1"
+  }
+}

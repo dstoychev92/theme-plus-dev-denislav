@@ -1,0 +1,109 @@
+{% doc %}
+  - Renders background image or video, by media_type
+
+  With show_image_on_mobile, attributes go to both the mobile image and the video. The video
+  wrapper gets data-video, or data-video-desktop when show_image_on_mobile is on.
+
+  @param {number} [aspect_ratio] - image aspect ratio, ignored for video
+  @param {number} [aspect_ratio_mobile] - mobile image aspect ratio
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {string} [fetchpriority]
+  @param {string} [height] - 'image' sizes the media from the aspect ratio, any other value fills the parent, defaults to s.height
+  @param {string} [height_mobile] - 'image' sizes the media from the aspect ratio below md, defaults to s.height_mobile
+  @param {string} [id_prefix] - prefix for the media IDs
+  @param {image} [image] - defaults to s.image
+  @param {image} [image_mobile] - image below the md breakpoint, defaults to s.image_mobile
+  @param {string} [loading]
+  @param {string} [media_type] - 'image' or 'video', defaults to s.media_type, then 'image'
+  @param {string} [placeholder] - placeholder_svg_tag name
+  @param {boolean} [preload]
+  @param {object} [s] - settings object
+  @param {boolean} [set_height] - applies height, defaults to s.set_height, then true
+  @param {boolean} [set_height_mobile] - applies height_mobile, defaults to s.set_height_mobile, then true
+  @param {boolean} [show_image_on_mobile] - renders image_mobile below md instead of the video, defaults to s.show_image_on_mobile
+  @param {string} [sizes]
+  @param {video} [video] - defaults to s.video_bg
+  @param {string} [widths]
+{% enddoc %}
+
+{% liquid
+  assign height = height | default: s.height, allow_false: true
+  assign set_height = set_height | default: s.set_height, allow_false: true | default: true, allow_false: true
+  assign height_mobile = height_mobile | default: s.height_mobile, allow_false: true
+  assign set_height_mobile = set_height_mobile | default: s.set_height_mobile, allow_false: true | default: true, allow_false: true
+  assign image = image | default: s.image
+  assign image_mobile = image_mobile | default: s.image_mobile
+  assign media_type = media_type | default: s.media_type | default: 'image'
+  assign show_image_on_mobile = show_image_on_mobile | default: s.show_image_on_mobile
+%}
+
+{% case media_type %}
+  {% when 'image' %}
+    {% render 'core-background-image',
+      s: s,
+      id_prefix: id_prefix,
+      image: image,
+      image_mobile: image_mobile,
+      placeholder: placeholder,
+      aspect_ratio: aspect_ratio,
+      aspect_ratio_mobile: aspect_ratio_mobile,
+      height: height,
+      set_height: set_height,
+      height_mobile: height_mobile,
+      set_height_mobile: set_height_mobile,
+      preload: preload,
+      loading: loading,
+      fetchpriority: fetchpriority,
+      class: class,
+      attributes: attributes,
+      sizes: sizes,
+      widths: widths
+    %}
+
+  {% when 'video' %}
+    {% if show_image_on_mobile == true %}
+      {% assign video_class = class | append: ' max-md:hidden' %}
+      {% assign class = class | append: ' md:hidden' %}
+      {% render 'core-background-image',
+        s: s,
+        id_prefix: id_prefix,
+        image: false,
+        image_mobile: image_mobile,
+        placeholder: placeholder,
+        aspect_ratio_mobile: aspect_ratio_mobile,
+        sizes: sizes,
+        widths: widths,
+        height: height,
+        set_height: set_height,
+        height_mobile: height_mobile,
+        set_height_mobile: set_height_mobile,
+        preload: preload,
+        loading: loading,
+        fetchpriority: fetchpriority,
+        class: class,
+        attributes: attributes
+      %}
+    {% endif %}
+
+    {% liquid
+      if show_image_on_mobile
+        assign video_attributes = attributes | append: ' data-video-desktop'
+      else
+        assign video_attributes = attributes | append: ' data-video'
+      endif
+    %}
+
+    {% render 'core-background-video',
+      id_prefix: id_prefix,
+      s: s,
+      video: video,
+      height: height,
+      set_height: set_height,
+      height_mobile: height_mobile,
+      set_height_mobile: set_height_mobile,
+      preload: preload,
+      class: video_class,
+      attributes: video_attributes
+    %}
+{% endcase %}

@@ -1,0 +1,28 @@
+{% doc %}
+  - Renders PhotoSwipe slide data for one video
+
+  Render it inside an x-photoswipe root, which collects slides from the DOM when it opens, so
+  re-rendering never duplicates one. Renders nothing without both video and video_source.
+
+  @param {number} [id] - id for PhotoSwipe item
+  @param {string} [thumb_el] - CSS selector, inside the x-photoswipe root, for the element the lightbox zooms out of
+  @param {video} [video]
+  @param {string} [video_source] - video source URL
+{% enddoc %}
+
+{% if video != blank and video_source != blank %}
+  <script type="application/json" data-photoswipe-json>
+    {
+      "id": "{{ id }}",
+      "type": "video",
+      "videoSrc": "{{ video_source }}",
+      "msrc": "{{ video.preview_image | image_url }}",
+      "width": {{ video.preview_image.width }},
+      "height": {{ video.preview_image.height }},
+      {% if thumb_el != blank %}
+        "thumbEl": {{ thumb_el | json }},
+      {% endif %}
+      "alt": {{ video.alt | strip_html | strip_newlines | escape_once | json }}
+    }
+  </script>
+{% endif %}

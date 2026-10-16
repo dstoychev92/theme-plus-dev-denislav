@@ -1,0 +1,237 @@
+{% doc %}
+  - Renders megamenu panel for one parent link
+
+  Sits inside header-menu. Matches block.settings.title to a link title in section.settings.linklist. In the editor an unmatched title shows a placeholder panel.
+{% enddoc %}
+
+{% liquid
+  assign title = block.settings.title
+  assign menu_id = title | downcase | strip_html | escape_once | handleize
+
+  assign enable_placeholders = false
+  assign unassigned_megamenu = false
+  assign has_content = false
+
+  if block.blocks.size > 0
+    assign has_content = true
+  endif
+
+  if request.design_mode
+    assign possible_parent_links = section.settings.linklist.links | map: 'title'
+    assign matching_parent_link = null
+
+    # Find the matching parent link by downcasing and escaping the titles of all of them and comparing them to the title of the megamenu
+    for parent_link in possible_parent_links
+      assign parent_menu_id = parent_link | downcase | strip_html | escape_once | handleize
+      if parent_menu_id == menu_id
+        assign matching_parent_link = parent_link
+        break
+      endif
+    endfor
+
+    assign enable_placeholders = true
+
+    # If the megamenu has no title or the matching parent link is blank, it is unassigned and we will show a placeholder
+    if matching_parent_link == null or title == blank
+      assign unassigned_megamenu = true
+    endif
+
+    # An unassigned megamenu gets a placeholder menu id built from its own block id, so it still opens when the
+    # block is selected in the theme editor. The block id keeps the id unique since two unassigned megamenus
+    # sharing one menu id would both open at once and overlap
+    if unassigned_megamenu
+      assign menu_id = 'placeholder-' | append: block.id
+    endif
+  endif
+
+  assign unique_menu_id = section.id | append: '-' | append: menu_id
+
+  assign linklist = section.settings.linklist
+
+  # Find the parent link that matches the megamenu title
+  assign parent_link = null
+  for link in linklist.links
+    assign link_menu_id = link.title | downcase | strip_html | escape_once | handleize
+    if link_menu_id == menu_id
+      assign parent_link = link
+      break
+    endif
+  endfor
+%}
+
+{% capture megamenu_content %}
+  {% capture inner_attributes %}
+    {% if request.design_mode %}
+      @shopify:block:select="
+        $store.headerMenu.open('{{ unique_menu_id }}', null, {focus: true, fromThemeEditor: true})
+      "
+      @shopify:section:select.window="
+        if ($wasSelectedSection && !$isSelectedSection) {
+          $store.headerMenu.close(null, {fromThemeEditor: true})
+        }
+      "
+    {% endif %}
+    {{ block.shopify_attributes }}
+  {% endcapture %}
+
+  {% if unassigned_megamenu and request.design_mode %}
+    <div class="relative">
+      <div class="absolute inset-0 z-50 p-r10 flex flex-col flex-center">
+        <p class="type-p text-r6 text-center max-w-[500px]">
+          {% if title == blank %}
+            {{ 'header.megamenu.placeholder.unassigned_title' | t }}
+          {% else %}
+            {{ 'header.megamenu.placeholder.not_found_title' | t: title: title }}
+          {% endif %}
+        </p>
+        <p class="type-p text-r6 text-center max-w-[500px]">
+          {% assign parent_links_string = possible_parent_links | join: ', ' %}
+          {{ 'header.megamenu.placeholder.parent_links' | t: parent_links: parent_links_string }}
+        </p>
+      </div>
+      {% capture content %}
+        {% render 'placeholder-cards-product', limit: 4, attributes: block.shopify_attributes %}
+      {% endcapture %}
+      {% render 'header-megamenu-grid', s: block.settings, attributes: inner_attributes, content: content, class: 'z-0 opacity-40' %}
+    </div>
+  {% else %}
+    {% capture content %}
+      {% if block.settings.show_section_links == true %}
+        {% liquid
+          assign has_content = true
+
+          if parent_link.links.size == 0 and block.blocks.size == 0
+            assign has_content = false
+          endif
+        %}
+        {% if has_content %}
+          {% render 'header-megamenu-linklist',
+            parent_link: parent_link,
+            attributes: block.shopify_attributes,
+            s: block.settings
+          %}
+        {% endif %}
+      {% endif %}
+
+      {% content_for 'blocks' %}
+    {% endcapture %}
+    {% render 'header-megamenu-grid', s: block.settings, attributes: inner_attributes, content: content %}
+  {% endif %}
+{% endcapture %}
+
+{% if has_content or enable_placeholders %}
+  {%- liquid
+    assign menu_item_label = title | strip_html
+    assign menu_label = 'header.accessibility.menu_item' | t: label: menu_item_label
+  -%}
+  {% comment %} The value lets header-menu-popups skip rendering the default popup this block replaces; the JS override path only checks attribute presence {% endcomment %}
+  {% capture popup_attributes %}
+    data-megamenu="{{ unique_menu_id }}"
+    data-custom-megamenu="{{ unique_menu_id }}"
+  {% endcapture %}
+  {% render 'header-megamenu-content',
+    menu_id: unique_menu_id,
+    menu_label: menu_label,
+    content: megamenu_content,
+    content_width: section.settings.content_width,
+    attributes: popup_attributes
+  %}
+{% endif %}
+
+{% schema %}
+{
+  "name": "Megamenu",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Parent link",
+      "info": "The title of the parent link that will open this megamenu when hovered"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_section_links",
+      "label": "Automatically populate links",
+      "info": "Populated from the child links of the parent link",
+      "default": true,
+    },
+
+    {
+      "type": "header",
+      "content": "Typography",
+      "visible_if": "{{ block.settings.show_section_links == true }}"
+    },
+
+    [% assign conditional = 'block.settings.show_section_links == true' %]
+
+    {
+      "type": "paragraph",
+      "content": "Level 1",
+      "visible_if": "{{ block.settings.show_section_links == true }}"
+    },
+    [% json 'schema/type-preset.jsonc', default_preset: 'btn', id_suffix: 'megamenu_level_1', label: 'Style', select_conditional: conditional %]
+    [% json 'schema/type-custom.jsonc', resize: true, default_resize: 'md', resize_label: 'Size', default_font: 'body', default_size: '5', id_suffix: 'megamenu_level_1', resize_conditional:  "block.settings.show_section_links == true and block.settings.type_preset_megamenu_level_1 != 'custom'", conditional: "block.settings.show_section_links == true and block.settings.type_preset_megamenu_level_1 == 'custom'" %]
+    [% json 'schema/color-dropdown.jsonc', id_suffix: 'megamenu_level_1', default_color: 'muted', muted: true, conditional: conditional %]
+
+        {
+      "type": "paragraph",
+      "content": "Level 2",
+      "visible_if": "{{ block.settings.show_section_links == true }}"
+    },
+    [% json 'schema/type-preset.jsonc', default_preset: 'p', id_suffix: 'megamenu_level_2', label: 'Style', select_conditional: conditional %]
+    [% json 'schema/type-custom.jsonc', resize: true, default_resize: 'md', resize_label: 'Size', default_font: 'body', default_size: '5', id_suffix: 'megamenu_level_2', resize_conditional: "block.settings.show_section_links == true and block.settings.type_preset_megamenu_level_2 != 'custom'", conditional: "block.settings.show_section_links == true and block.settings.type_preset_megamenu_level_2 == 'custom'" %]
+    [% json 'schema/color-dropdown.jsonc', id_suffix: 'megamenu_level_2', default_color: 'content', muted: true, conditional: conditional %]
+
+    {
+      "type": "paragraph",
+      "content": "Level 3",
+      "visible_if": "{{ block.settings.show_section_links == true }}"
+    },
+    [% json 'schema/type-preset.jsonc', default_preset: 'p', id_suffix: 'megamenu_level_3', label: 'Style', select_conditional: conditional %]
+    [% json 'schema/type-custom.jsonc', resize: true, default_resize: 'sm', resize_label: 'Size', default_font: 'body', default_size: '5', id_suffix: 'megamenu_level_3', resize_conditional: "block.settings.show_section_links == true and block.settings.type_preset_megamenu_level_3 != 'custom'", conditional: "block.settings.show_section_links == true and block.settings.type_preset_megamenu_level_3 == 'custom'" %]
+    [% json 'schema/color-dropdown.jsonc', id_suffix: 'megamenu_level_3', default_color: 'content', muted: true, conditional: conditional %]
+
+    {
+      "type": "header",
+      "content": "Columns"
+    },
+    {
+      "type": "checkbox",
+      "id": "custom_col_span",
+      "label": "Set column grid",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "columns_lg",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "label": "Desktop",
+      "default": 4,
+      "visible_if": "{{ block.settings.custom_col_span == true }}"
+    },
+    {
+      "type": "range",
+      "id": "columns_md",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "label": "Tablet",
+      "default": 4,
+      "visible_if": "{{ block.settings.custom_col_span == true }}"
+    },
+  ],
+  "blocks": [
+    {"type": "_megamenu-linklist"},
+    {"type": "_megamenu-column"}
+  ],
+  "presets": [
+    {
+      "name": "Megamenu",
+      "blocks": []
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,207 @@
+{% comment %}
+  Section: Banner
+  The workhorse hero section. Full-width background media (image or video) with
+  text overlay, flexible height, optional parallax, and transparent header
+  support for seamless hero experiences.
+
+  Accepts any theme-* content blocks plus _grid-editorial for layout. Content is
+  positioned via horizontal_placement (left/center/right) and
+  vertical_placement (top/middle/bottom) over the background media.
+
+  Height options: screen fractions (screen, screen-five-sixths, etc.), content-
+  based ("image" uses the image's natural height), or custom px/%. Parallax is
+  disabled when height is set to "image" because the image already defines the
+  section's size.
+
+  Color scheme defaults to "scheme-opposite" (typically dark) so light text
+  reads over imagery. Overlay opacity/color darken the background for
+  readability — values of 8-20 with black work well for most photography.
+{% endcomment %}
+
+{% liquid
+  # Can't do parallax if height is set to content
+  if section.settings.height == 'image'
+    assign parallax = false
+  endif
+%}
+
+{% capture content_blocks %}
+  {% content_for "blocks" %}
+{% endcapture %}
+
+{% capture placement %}
+  {% render 'core-placement-grid', content: content_blocks, s: section.settings %}
+{% endcapture %}
+
+{% capture banner_widths %}
+  {% comment %} Note: do not exceed 6 widths for images that will be preloaded. Shopify will ignore this image for preloading if it has more than 6 srcset items. {% endcomment %}
+  832, 1200, 1600, 1920, 2560, 3840
+{% endcapture %}
+
+{% capture background_media %}
+  {% render 'core-background-media', s: section.settings, widths: banner_widths, sizes: '100vw' %}
+{% endcapture %}
+
+{% capture background %}
+  {% render 'core-background', content: background_media, parallax: parallax, s: section.settings %}
+{% endcapture %}
+
+{% capture content_class %}
+  {% comment %} This allows the content to be offset by the header height for browsers that don't support subgrid {% endcomment %}
+  top-[--banner-content-top-offset]
+{% endcapture %}
+
+{% capture blocks %}
+  {% render 'core-section-content', class: content_class, content: placement, s: section.settings %}
+  {% render 'core-section-background', content: background, s: section.settings %}
+
+  {% if section.settings.height == 'screen' %}
+    {% render 'scroll-button' %}
+  {% endif %}
+{% endcapture %}
+
+{% capture class %}
+  relative entrance-container
+{% endcapture %}
+
+{% render 'core-section-wrapper',
+  s: section.settings,
+  content: blocks,
+  contain_controls_rhythm: true,
+  contain_disables_transparent_header: true,
+  contain_controls_background: true,
+  class: class
+%}
+
+{% schema %}
+{
+  "name": "Banner",
+  "class": "section-banner",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Background media"
+    },
+    [% json 'schema/media-settings.jsonc', context: 'section.settings.', label: 'Type' %]
+    {
+      "type": "paragraph",
+      "content": "Note: Desktop image preloading is disabled when mobile image is set to prevent loading both images on mobile",
+      "visible_if": "{{ section.settings.media_type == 'image' and section.settings.image_mobile != blank }}"
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    [% json 'schema/height-setting.jsonc', context: 'section.settings.', default_height: 'screen-one-third', image_height_label: 'Media height', height_mobile: true %]
+    [% json 'schema/section-banner-width-settings.jsonc', contain_section_label: 'Contain section' %]
+    [% json 'schema/section-rounding-settings.jsonc' %]
+    [% json 'schema/section-border-settings.jsonc' %]
+    {
+      "type": "header",
+      "content": "Content layout"
+    },
+    [% json 'schema/section-conditional-content-width-setting.jsonc', default_width: "page" %]
+    [% json 'schema/vertical-placement-setting.jsonc' %]
+    [% json 'schema/horizontal-placement-setting.jsonc' %]
+    [% json 'schema/padding-settings.jsonc', context: 'section.settings.', id_prefix: 'content' %]
+    {
+      "type": "header",
+      "content": "Appearance"
+    },
+    [% json 'schema/color-settings-section-banner.jsonc', default_color_scheme: 'scheme-opposite' %]
+    [% json 'schema/overlay-settings.jsonc', overlay_label: 'Overlay opacity', color_label: 'Overlay color' %]
+    [% json 'schema/transparent-header-settings.jsonc' %]
+    [% json 'schema/section-target-device-settings.jsonc' %]
+  ],
+  "blocks": [
+    {
+      "type": "@theme"
+    },
+    {
+      "type": "@app"
+    },
+    [% json 'schema/blocks-extended.jsonc' %]
+  ],
+  "presets": [
+    {
+      "name": "Banner",
+      "category": "Core",
+      "blocks": [
+        {
+          "type": "theme-text",
+          "settings": {
+            "text": "Introducing",
+            "type_preset": "h5"
+          }
+        },
+        {
+          "type": "theme-decoration"
+        },
+        {
+          "type": "theme-text",
+          "settings": {
+            "text": "The new collection",
+            "type_preset": "h2"
+          }
+        },
+        {
+          "type": "theme-richtext",
+          "settings": {
+            "text": "<p>Thoughtfully made, honestly sold. Discover pieces worth keeping.</p>"
+          }
+        },
+        {
+          "type": "theme-group-row",
+          "settings": {
+            "gap": "lg"
+          },
+          "blocks": [
+            {
+              "type": "theme-button",
+              "settings": {
+                "text": "View products",
+                "href": "shopify://collections/all"
+              }
+            },
+            {
+              "type": "theme-link",
+              "settings": {
+                "text": "Learn more"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Banner promo",
+      "category": "Try: Promote a deal",
+      "settings": {
+        "contain_section": true,
+        "section_width": "page",
+        "horizontal_placement": "left"
+      },
+      "blocks": [
+        {
+          "type": "theme-text",
+          "settings": {
+            "text": "Announce your latest promotion",
+            "type_preset": "h3"
+          }
+        },
+        {
+          "type": "theme-button",
+          "settings": {
+            "text": "Shop now",
+            "href": "shopify://collections/all"
+          }
+        }
+      ]
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "custom.overlays", "custom.drawers"]
+  }
+}
+{% endschema %}

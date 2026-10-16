@@ -1,0 +1,134 @@
+{% doc %}
+  - Renders 12-column editorial grid holding _grid-editorial-item blocks
+
+  Shows numbered grid lines in the theme editor while the grid or one of its items is selected.
+{% enddoc %}
+
+[%- capture additional_blocks -%]
+  { "type": "_grid-editorial-item" }
+[%- endcapture -%]
+
+[%- capture additional_presets -%]
+  {
+    "name": "Grid editorial",
+    "category": "Pro",
+    "settings": {
+      "set_gap": true,
+      "row_height": "fixed"
+    },
+    "blocks": [
+      {
+        "type": "_grid-editorial-item",
+        "settings": {
+          "col_end": 6,
+          "set_row_span": true,
+          "row_span": 4,
+          "set_grid_mobile": true,
+          "set_row_span_sm": true,
+          "row_span_sm": 6
+        },
+        "blocks": [
+          {
+            "type": "theme-image",
+            "settings": {
+              "image_size_mode": "full",
+              "height": "full"
+            }
+          }
+        ]
+      },
+      {
+        "type": "_grid-editorial-item",
+        "settings": {
+          "col_start": 7,
+          "set_row_span": true,
+          "set_grid_mobile": true,
+          "row_start_sm": 7,
+          "set_row_span_sm": true,
+          "row_span_sm": 6,
+          "set_layout": true,
+          "content_align": "left"
+        },
+        "blocks": [
+          {
+            "type": "theme-group-frame",
+            "name": "Frame",
+            "settings": {
+              "set_width": true,
+              "set_layout": true,
+              "set_gap": true,
+              "gap": "sm",
+              "full_height": true,
+              "set_color_scheme": true,
+              "background": "tint"
+            },
+            "blocks": [
+              {
+                "type": "theme-text",
+                "settings": {
+                  "text": "Pro editorial grid",
+                  "type_preset": "h4"
+                }
+              },
+              {
+                "type": "theme-richtext",
+                "settings": {
+                  "text": "<p>Create complex layouts using a 12 column grid system.</p>"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "_grid-editorial-item",
+        "settings": {
+          "col_start": 7,
+          "col_end": 9,
+          "row_start": 3,
+          "set_row_span": true,
+          "set_grid_mobile": true,
+          "col_end_sm": 6,
+          "row_start_sm": 13,
+          "set_row_span_sm": true,
+          "row_span_sm": 6
+        },
+        "blocks": [
+          {
+            "type": "theme-image",
+            "settings": {
+              "image_size_mode": "full",
+              "height": "full",
+              "aspect_ratio": 1.4
+            }
+          }
+        ]
+      },
+      {
+        "type": "_grid-editorial-item",
+        "settings": {
+          "col_start": 10,
+          "row_start": 3,
+          "set_row_span": true,
+          "set_grid_mobile": true,
+          "col_start_sm": 7,
+          "row_start_sm": 13,
+          "set_row_span_sm": true,
+          "row_span_sm": 6
+        },
+        "blocks": [
+          {
+            "type": "theme-image",
+            "settings": {
+              "image_size_mode": "full",
+              "height": "full",
+              "aspect_ratio": 1.4
+            }
+          }
+        ]
+      }
+    ]
+  }
+[%- endcapture -%]
+
+[% render 'groups/grid-editorial', additional_blocks: additional_blocks, additional_presets: additional_presets %]

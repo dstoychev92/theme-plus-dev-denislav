@@ -1,0 +1,237 @@
+{% comment %}
+    Drawer that loads product content via Section Rendering API when opened. Integrates with global drawer state via
+  $store.drawer and opens via 'theme:quickview:open' event with a product URL.
+
+  Uses x-section-api to dynamically load content when the drawer opens. Content only renders when called via Section
+  Rendering API (section.index != null), with a smart exception for the theme editor which always renders with an example
+  product from collections.all.
+
+  Implements preloading via 'theme:quickview:preload' event with cache-first policy. Shows loading state
+  until $sectionApi.state === 'loaded'.
+
+  Main content only renders if product exists AND section was rendered via API. Falls back to screen reader label while
+  maintaining drawer structure for accessibility.
+{% endcomment %}
+
+{% liquid
+  if request.design_mode
+    # Use a default product in the theme editor if no product is set so that when the section
+    # is selected and the drawer is opened, it will have something to show.
+    assign theme_editor_example_product = collections.all.products.first
+
+    if product == blank
+      assign product = theme_editor_example_product
+    endif
+  endif
+
+  if section.index == null or request.design_mode
+    assign is_rendered_by_api_or_theme_editor = true
+  endif
+
+  assign current_variant = product.selected_or_first_available_variant
+  assign aria_label = 'product.quick_view' | t
+%}
+
+{% capture close_button %}
+  {% capture icons %}
+    {% render 'core-icon', size: 'lg', icon: 'stroke-bare-x', class: 'transition-transform', attributes: 'x-show="!returnToCartDrawer"' %}
+    {% render 'core-icon', size: 'lg', icon: 'stroke-chevron-right', class: 'transition-transform', attributes: 'x-show="returnToCartDrawer"' %}
+  {% endcapture %}
+
+  {% render 'drawer-close-button', content: icons %}
+{% endcapture %}
+
+{% if settings.enable_quickview %}
+  {% capture content %}
+    <div
+      class="
+        relative flex h-full flex-col gap-y-r7
+        md:[--root-buffer:var(--r6)]
+      "
+      x-show="!shouldShowLoading"
+      data-content
+      data-render-region="product-quickview-content"
+    >
+      {% if product.metafields.seo.hidden != true %}
+        <script type="module">
+          import { recordProductView } from '@theme/recent';
+          recordProductView({{ product.id | json }});
+
+          document.addEventListener('theme:sibling:change', ($event) => {
+            if ($event.detail.sectionId === '{{ section.id }}') {
+              recordProductView($event.detail.siblingId);
+            }
+          });
+        </script>
+      {% endif %}
+
+      {% if is_rendered_by_api_or_theme_editor %}
+        {% if product %}
+          <div
+            id="product-quickview-content"
+            class="flex flex-col gap-y-root-buffer"
+            style="padding-top: {{ section.settings.drawer_pt }}px; padding-bottom: {{ section.settings.drawer_pb }}px;"
+            aria-label="{{ product.title }} - {{ current_variant.title }}"
+            {% comment %} Quickview content loads after the drawer opens, so init is the view moment {% endcomment %}
+            x-view-event
+            data-view-event-payload="{{ product | standard_event_data: 'view', context: 'dialog' | escape }}"
+          >
+            {% content_for 'block', type: '_product-layout-media-quickview', id: 'media', closest.product: product %}
+            {% content_for 'block', type: '_product-layout-details-quickview', id: 'details', closest.product: product %}
+          </div>
+        {% else %}
+          {% comment %} Label for screen readers while content is loading {% endcomment %}
+          <p class="sr-only" id="product-quickview-content">{{ 'product.quick_view' | t }}</p>
+        {% endif %}
+      {% endif %}
+    </div>
+    <div
+      class="absolute inset-0 z-20 flex flex-col flex-center bg-canvas"
+      x-cloak
+      x-show="shouldShowLoading"
+    >
+      {% render 'spinner' %}
+    </div>
+  {% endcapture %}
+
+  <div
+    class="relative vars-{{ section.settings.color_scheme.id }}"
+    id="product-quickview-drawer"
+    data-test-id="product-quickview-drawer"
+    x-data="
+      {
+        shouldShowLoading: false,
+        get quickviewUrl() {
+          if ($store.drawer.type === 'quickview') {
+            return $store.drawer.data?.url
+          }
+          return null
+        },
+        get isDrawerOpen() {
+          return $store.drawer.isOpen && $store.drawer.type === 'quickview'
+        },
+        get returnToCartDrawer() {
+          return $store.drawer.data?.returnToCartDrawer
+        },
+        async loadQuickviewContent() {
+          return $sectionApi.update({
+            baseUrl: this.quickviewUrl,
+            cachePolicy: 'cache-first',
+            abortPending: false
+          })
+        },
+        clearQuickviewContent() {
+          const contentEl = $el.querySelector('[data-content]')
+          if (contentEl) contentEl.innerHTML = ''
+        }
+      }
+    "
+    x-init="
+      $watch('isDrawerOpen', async (isOpen, wasOpen) => {
+        if (isOpen && !wasOpen) {
+          clearQuickviewContent()
+          shouldShowLoading = true
+          await loadQuickviewContent()
+          shouldShowLoading = false
+        }
+      })
+      $watch('quickviewUrl', async (url, prevUrl) => {
+        if (isDrawerOpen && url !== null && prevUrl !== null) {
+          clearQuickviewContent()
+          shouldShowLoading = true
+          await loadQuickviewContent()
+          shouldShowLoading = false
+        }
+      })
+    "
+
+    x-dialog.modal="
+      {
+        get isOpen() {
+          return isDrawerOpen
+        },
+        set isOpen(value) {
+          if (value == false) {
+            $dispatch('theme:quickview:close')
+          }
+        }
+      }
+    "
+
+    @theme:quickview:preload.window="
+      $sectionApi.load({
+        baseUrl: $event.detail.url,
+        abortPending: false
+      })
+    "
+
+    data-morph-update="children"
+
+    {% if request.design_mode and theme_editor_example_product != blank %}
+      @shopify:section:select.window="
+        if ($isSelectedSection) {
+          $dispatch('theme:quickview:open', { url: '{{ theme_editor_example_product.url }}' });
+        } else {
+          $dispatch('theme:quickview:close')
+        }
+      "
+    {% endif %}
+  >
+    {% render 'drawer',
+      side: 'right',
+      close_button: close_button,
+      content: content,
+      aria_label: aria_label
+    %}
+  </div>
+
+  {{ 'theme.product.css' | asset_url | stylesheet_tag }}
+{% endif %}
+
+{% schema %}
+{
+  "name": "Product quickview",
+  "class": "section-product-quickview-drawer product-quickview-drawer",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "enable_history",
+      "label": "Enable history",
+      "info": "Preserve URL history when navigating between product variants and subscription options",
+      "default": false,
+      "visible_if": "{{ false }}"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "drawer_pt",
+      "label": "Spacing top",
+      "min": 0,
+      "max": 200,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "drawer_pb",
+      "label": "Spacing bottom",
+      "min": 0,
+      "max": 200,
+      "step": 2,
+      "unit": "px",
+      "default": 40
+    },
+    [% json 'schema/product-breadcrumbs-settings.jsonc', quickview_context: true %]
+  ]
+}
+{% endschema %}

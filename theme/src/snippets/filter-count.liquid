@@ -1,0 +1,24 @@
+{% doc %}
+  - Renders count badge for a filter value
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {number} count
+  @param {string} [style] - inline styles
+{% enddoc %}
+
+<span
+  class="
+    block rounded bg-canvas border border-line-subtle
+    text-r2 text-content
+    whitespace-nowrap
+    px-r2 py-r1 shrink-0
+    {{ class }}
+  "
+  style="{{ style }}"
+  aria-label="({{ 'collection.filters.accessibility.filters_matching_count' | t: count: count }})"
+  role="note"
+  {{ attributes }}
+>
+  {{ count }}
+</span>

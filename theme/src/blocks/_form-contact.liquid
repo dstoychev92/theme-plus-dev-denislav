@@ -1,0 +1,97 @@
+{% doc %}
+  - Renders contact form holding field blocks and submit button
+
+  Child blocks render inside the form tag, where the form object and its server-side errors
+  exist. Errors show only in the core-form-status summary because theme blocks cannot read the
+  form object.
+{% enddoc %}
+
+{% liquid
+  assign form_id = 'form-' | append: block.id
+  assign form_class = 'flex flex-col w-full'
+  assign default_success_message = 'page.contact.post_success' | t
+  assign success_message = block.settings.success_message | default: default_success_message
+%}
+
+{%- capture style -%}
+  {% render 'props-style-gap', s: block.settings %}
+{%- endcapture -%}
+
+{% comment %}
+  The blocks must render inside the form tag — the form object (and with it
+  the fields' server-side errors) only exists there.
+{% endcomment %}
+{% form 'contact', id: form_id, class: form_class, attributes: block.shopify_attributes, style: style %}
+  {% render 'core-form-status', form: form, success_message: success_message %}
+
+  {% content_for 'blocks' %}
+  {% render 'core-button', s: block.settings, tag: 'button', type: 'submit' %}
+
+  <div class="text-r1 text-muted link-line-all">
+    {{ 'shopify.online_store.spam_detection.disclaimer_html' | t }}
+  </div>
+{% endform %}
+
+{% schema %}
+{
+  "name": "Contact form",
+  "tag": null,
+  "settings": [
+    [% json 'schema/grid-gap-setting.jsonc', default_gap: 'sm', default_gap_custom: 10, min_gap_custom: 2 %]
+    {
+      "type": "textarea",
+      "id": "success_message",
+      "label": "Success message",
+      "info": "Leave blank to use the default message"
+    },
+    {
+      "type": "header",
+      "content": "Submit button"
+    },
+    {
+      "type": "text",
+      "id": "text",
+      "label": "Button text",
+      "default": "Send"
+    },
+    [% json 'schema/button-appearance-setting.jsonc' %]
+    [% json 'schema/size-setting.jsonc', size_label: 'Height', default_size: 'md', exclude: 'xs,xl' %]
+    [% json 'schema/color-dropdown.jsonc' %]
+
+    [% json 'schema/type-preset.jsonc', default_preset: 'btn', label: 'Text style', conditional_heading: 'Text style' %]
+    [% json 'schema/type-custom.jsonc', resize: true %]
+    [% json 'schema/rounding-element.jsonc' %]
+  ],
+  "blocks": [
+    { "type": "_form-group" },
+    [% json 'schema/blocks-form-node.jsonc' %]
+  ],
+  "presets": [
+    {
+      "name": "Contact form",
+      "category": "Content",
+      "settings": {},
+      "blocks": [
+        {
+          "type": "_form-input-name",
+          "settings": {
+            "label": "Name"
+          }
+        },
+        {
+          "type": "_form-input-email",
+          "settings": {
+            "label": "Email"
+          }
+        },
+        {
+          "type": "_form-input-text",
+          "settings": {
+            "label": "Message"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

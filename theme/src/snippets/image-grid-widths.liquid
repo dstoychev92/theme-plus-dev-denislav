@@ -1,0 +1,114 @@
+{% doc %}
+  - Prints srcset widths for an image in a section grid
+
+  Starts from 240, 490, and 832, then adds grid item widths at least 100 pixels apart.
+
+  @param {number} [columns_lg] - desktop column count, defaults to section.settings.columns_lg then 2
+  @param {number} [columns_md] - tablet column count, defaults to section.settings.columns_md then 2
+  @param {number} [columns_sm] - mobile column count, defaults to section.settings.columns_sm, or columns_sm_custom when that is 'custom', then columns_sm_grid, then settings.slider_columns_mobile
+  @param {section} [section]
+  @param {number} [section_img_columns_lg] - columns the image spans on desktop, defaults to section.settings.img_columns_lg then 1.0
+  @param {number} [section_img_columns_md] - columns the image spans on tablet, defaults to section.settings.img_columns_md then section_img_columns_lg
+  @param {number} [section_img_columns_sm] - columns the image spans on mobile, defaults to section.settings.img_columns_sm then 1.0
+{% enddoc %}
+
+{% liquid
+  # Base column counts for the grid layout at each breakpoint
+  assign base_columns_lg = columns_lg | default: section.settings.columns_lg | default: 2
+  assign base_columns_md = columns_md | default: section.settings.columns_md | default: 2
+  assign section_columns_sm = section.settings.columns_sm
+  if section_columns_sm == 'custom'
+    assign section_columns_sm = section.settings.columns_sm_custom
+  endif
+  assign base_columns_sm = columns_sm | default: section_columns_sm | default: section.settings.columns_sm_grid | default: settings.slider_columns_mobile
+
+  # Sections which have multiple columns like the pair section use these settings to inform our calculations
+  # for image sizes and srcset so that we're not always rendering full page size images
+  assign section_img_columns_lg = section_img_columns_lg | default: section.settings.img_columns_lg | default: 1.0
+  assign section_img_columns_md = section_img_columns_md | default: section.settings.img_columns_md | default: section_img_columns_lg | default: 1.0
+  assign section_img_columns_sm = section_img_columns_sm | default: section.settings.img_columns_sm | default: 1.0
+
+  # Calculate final column counts by multiplying base columns with image column multipliers
+  assign columns_lg = base_columns_lg | times: section_img_columns_lg
+  assign columns_md = base_columns_md | times: section_img_columns_md
+  assign columns_sm = base_columns_sm | times: section_img_columns_sm
+
+  # Grab page size constants and assign them to local vars, these are in effect the MINIMUM widths for each breakpoint
+  assign page_min_width_xl = [= screen_xl =]
+  assign page_min_width_lg = [= screen_lg =]
+  assign page_min_width_md = [= screen_md =]
+  assign page_min_width_sm = [= screen_sm =]
+
+  # Convert those to maximum widths for each breakpoint
+  assign page_max_width_lg = page_min_width_xl | minus: 1
+  assign page_max_width_md = page_min_width_lg | minus: 1
+
+  assign page_mid_width_lg = page_max_width_lg | minus: page_min_width_lg | divided_by: 2 | plus: page_min_width_lg
+  assign page_mid_width_md = page_max_width_md | minus: page_min_width_md | divided_by: 2 | plus: page_min_width_md
+
+  # Calculate the largest width that each grid size item would be for a given screen size
+  assign grid_max_width_lg = page_max_width_lg
+  assign grid_max_width_md = page_max_width_md
+
+  assign grid_item_max_width_lg = grid_max_width_lg | divided_by: columns_lg | ceil
+  assign grid_item_max_width_lg_2x = grid_item_max_width_lg | times: 2
+  assign grid_item_max_width_md = grid_max_width_md | divided_by: columns_md | ceil
+  assign grid_item_max_width_md_2x = grid_item_max_width_md | times: 2
+
+  # Calculate the mid width that each grid size item would be for a given screen size
+  assign grid_mid_width_lg = page_mid_width_lg
+  assign grid_mid_width_md = page_mid_width_md
+
+  assign grid_item_mid_width_lg = grid_mid_width_lg | divided_by: columns_lg | ceil
+  assign grid_item_mid_width_lg_2x = grid_item_mid_width_lg | times: 2
+  assign grid_item_mid_width_md = grid_mid_width_md | divided_by: columns_md | ceil
+  assign grid_item_mid_width_md_2x = grid_item_mid_width_md | times: 2
+
+  # Calculate the smallest width that each grid size item would be for a given screen size
+  assign grid_min_width_lg = page_min_width_lg
+  assign grid_min_width_md = page_min_width_md
+  assign grid_min_width_sm = page_min_width_sm
+
+  assign grid_item_min_width_lg = grid_min_width_lg | divided_by: columns_lg | ceil
+  assign grid_item_min_width_lg_2x = grid_item_min_width_lg | times: 2
+  assign grid_item_min_width_md = grid_min_width_md | divided_by: columns_md | ceil
+  assign grid_item_min_width_md_2x = grid_item_min_width_md | times: 2
+  assign grid_item_min_width_sm = grid_min_width_sm | divided_by: columns_sm | ceil
+  assign grid_item_min_width_sm_2x = grid_item_min_width_sm | times: 2
+
+  # Start with common mobile image widths, then add more accurate grid item widths for tablet and desktop (deduplicated, min 100px apart)
+  assign widths = '240, 490, 832'
+  assign candidates = grid_item_max_width_lg_2x
+  assign candidates = candidates | append: ','
+  assign candidates = candidates | append: grid_item_max_width_md_2x
+  assign candidates = candidates | append: ','
+  assign candidates = candidates | append: grid_item_mid_width_lg_2x
+  assign candidates = candidates | append: ','
+  assign candidates = candidates | append: grid_item_mid_width_md_2x
+  assign candidates = candidates | append: ','
+  assign candidates = candidates | append: grid_item_min_width_lg_2x
+  assign candidates = candidates | append: ','
+  assign candidates = candidates | append: grid_item_min_width_md_2x
+  assign candidates = candidates | append: ','
+  assign candidates = candidates | append: grid_item_min_width_sm_2x
+
+  assign candidates_array = candidates | split: ','
+  for candidate in candidates_array
+    assign candidate_num = candidate | strip | plus: 0
+    assign widths_array = widths | split: ', '
+    assign should_add = true
+    for existing in widths_array
+      assign existing_num = existing | strip | plus: 0
+      assign diff = candidate_num | minus: existing_num | abs
+      if diff < 100
+        assign should_add = false
+        break
+      endif
+    endfor
+    if should_add
+      assign widths = widths | append: ', ' | append: candidate_num
+    endif
+  endfor
+-%}
+
+{{ widths }}

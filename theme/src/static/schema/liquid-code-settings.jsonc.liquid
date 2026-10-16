@@ -1,0 +1,34 @@
+[% assign context = context | default: 'block.settings.' %]
+[% assign entity = entity | default: 'block' %]
+[
+  {
+    "type": "liquid",
+    "id": "code",
+    "label": "Code",
+    "default": "<div class='prose' style='text-align: center; padding: 90px 0;'><h2>Custom HTML for {{ shop.name }}</h2><p>Add your custom HTML here.</p></div>",
+    "info": "Accepts HTML and Liquid code"
+  },
+  {
+    "type": "select",
+    "id": "output",
+    "label": "Output",
+    "default": "wrapped",
+    "options": [
+      {"value": "raw", "label": "Raw"},
+      {"value": "wrapped", "label": "Wrapped"}
+    ]
+  },
+  {
+    "type": "paragraph",
+    "content": "Theme editor will not highlight or scroll to selected [= entity =] when output is set to raw",
+    "visible_if": "{{ [= context =]output == 'raw' }}"
+  },
+  {
+    "type": "checkbox",
+    "id": "prevent_dynamic_updates",
+    "label": "Prevent dynamic updates",
+    "default": false,
+    "info": "Prevent this [= entity =] from updating dynamically with cart and product form changes.",
+    "visible_if": "{{ [= context =]output == 'wrapped' }}"
+  }
+]

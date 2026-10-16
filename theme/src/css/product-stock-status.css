@@ -1,0 +1,97 @@
+/* Bundled here since Shopify serves stylesheet-tag CSS per page and a Section API region update drops the inline copy */
+
+/* Default: plain 8px solid dot (used for out-of-stock and when pulse is off) */
+.stockout-dot {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--dot-color);
+}
+
+/* In-stock + Low-stock (pulse enabled): 5px wrapper with halo + double radar ring */
+.stockout-dot--in,
+.stockout-dot--low {
+  position: relative;
+  width: 5px;
+  height: 5px;
+  background: transparent;
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--dot-color) 20%, transparent);
+  transform-origin: center;
+}
+
+/* Compress dot + halo briefly before each radar ping, as a wind-up */
+.stockout-dot--in {
+  animation: stockout-anticipate 3.5s linear infinite;
+}
+.stockout-dot--low {
+  animation: stockout-anticipate 7s linear infinite;
+}
+
+@keyframes stockout-anticipate {
+  0%,
+  80% {
+    transform: scale(1);
+    animation-timing-function: ease-in;
+  }
+  97% {
+    transform: scale(0.82);
+    animation-timing-function: cubic-bezier(0.2, 0, 0.3, 1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Solid full-opacity center dot inside in/low wrappers */
+.stockout-dot-core {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--dot-color);
+  z-index: 1;
+}
+
+/* Staggered double radar ring. Two spans pulse out of phase with a soft low-opacity fill. */
+.stockout-dot-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: color-mix(in oklch, var(--dot-color) 20%, transparent);
+  animation: stockout-pulse-ring 7s cubic-bezier(0, 0, 0.2, 1) infinite;
+  pointer-events: none;
+}
+
+@keyframes stockout-pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  25% {
+    transform: scale(5);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(5);
+    opacity: 0;
+  }
+}
+
+/* In-stock: second ring at half-cycle offset for a slow continuous wave */
+.stockout-dot--in .stockout-dot-ring--delayed {
+  animation-delay: 3.5s;
+}
+
+/* Low-stock: second ring just behind the first for quick layered urgency */
+.stockout-dot--low .stockout-dot-ring--delayed {
+  animation-delay: 200ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stockout-dot--in,
+  .stockout-dot--low,
+  .stockout-dot-ring {
+    animation: none;
+  }
+}

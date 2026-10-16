@@ -1,0 +1,113 @@
+{% doc %}
+  - Renders product card media that swaps to a second image on hover
+
+  Filtered collections swap featured_media to the matching variant, whose position is nil, so
+  the reveal media is the first media other than the initial media. With has_option_media_list
+  the first two product_media entries are the pair. Reads $productCard, so render it inside
+  x-product-card.
+
+  @param {string} [class] - The classes
+  @param {boolean} [has_option_media_list] - product_media is an option media list
+  @param {string} [image_sizes] - sizes hint for the image
+  @param {string} [image_widths] - widths for the image srcset
+  @param {string} [initial_image_fetchpriority] - fetch priority for the first image
+  @param {string} [initial_image_loading] - loading attribute for the first image
+  @param {media} [initial_media] - media shown before any hover, defaults to product.featured_media
+  @param {product} product
+  @param {object} [product_media] - media to show, defaults to product.media
+{% enddoc %}
+
+{% liquid
+  assign product_media = product_media | default: product.media
+
+  # Media that is shown initially
+  assign initial_media = initial_media | default: product.featured_media
+
+  if has_option_media_list
+    for media in product_media
+      if forloop.first
+        assign initial_media = media
+      else
+        assign reveal_media = media
+        break
+      endif
+    endfor
+  else
+    # In filtered collections featured_media swaps to the matching variant's media, whose position is
+    # nil — so pick the reveal media by excluding the initial media instead of indexing by position
+    assign other_media = product_media | reject: 'id', initial_media.id
+    assign reveal_media = other_media.first
+  endif
+
+  assign initial_image = initial_media.preview_image | default: initial_media
+  assign reveal_image = reveal_media.preview_image | default: reveal_media
+%}
+
+{% capture image_class %}
+  absolute inset-0 z-0 size-full
+{% endcapture %}
+
+{% capture image_transition_attributes %}
+  x-transition:enter="z-20 transition-opacity duration-[--transition-duration]"
+  x-transition:enter-start="opacity-0"
+  x-transition:enter-end="opacity-100"
+  x-transition:leave="z-0 transition-opacity duration-[--transition-duration] delay-[calc(var(--transition-duration)/4)]"
+  x-transition:leave-start="opacity-100"
+  x-transition:leave-end="opacity-0"
+{% endcapture %}
+
+<div
+  class="
+    {{ class }}
+    [--transition-duration:250ms]
+  "
+  x-data="
+    {
+      get isRevealed() {
+        return $productCard.isHoveringMedia;
+      }
+    }
+  "
+  data-test-id="product-card-reveal"
+>
+  {% comment %}
+    Initial image
+  {% endcomment %}
+  {% capture inital_image_attributes %}
+    x-show="!isRevealed"
+    {{ image_transition_attributes }}
+  {% endcapture %}
+
+  {% render 'card-product-lg-image',
+    image: initial_image,
+    product: product,
+    class: image_class,
+    loading: initial_image_loading,
+    fetchpriority: initial_image_fetchpriority,
+    attributes: inital_image_attributes,
+    image_widths: image_widths,
+    image_sizes: image_sizes
+  %}
+
+  {% comment %}
+    Reveal image
+  {% endcomment %}
+  {% capture reveal_image_attributes %}
+    x-cloak
+    x-show="isRevealed"
+    {{ image_transition_attributes }}
+  {% endcapture %}
+
+  {% if reveal_media != blank %}
+    {% render 'card-product-lg-image',
+      image: reveal_image,
+      product: product,
+      class: image_class,
+      loading: initial_image_loading,
+      fetchpriority: 'low',
+      attributes: reveal_image_attributes,
+      image_widths: image_widths,
+      image_sizes: image_sizes
+    %}
+  {% endif %}
+</div>

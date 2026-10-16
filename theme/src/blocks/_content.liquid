@@ -1,0 +1,32 @@
+{% doc %}
+  - Renders content blocks placed over the banner media
+
+  Private, only offered by _pair-pro-banner as the static content block.
+{% enddoc %}
+
+{% capture blocks %}
+  {% content_for "blocks" %}
+{% endcapture %}
+
+{% render 'core-placement-grid', s: block.settings, content: blocks, attributes: block.shopify_attributes %}
+
+{% schema %}
+{
+  "name": "Content",
+  "tag": null,
+  "settings": [
+    [% json 'schema/vertical-placement-setting.jsonc' %]
+    [% json 'schema/horizontal-placement-setting.jsonc', default_horizontal_placement: 'left' %]
+    [% json 'schema/padding-settings.jsonc' %]
+  ],
+  "blocks": [
+    {
+      "type": "@theme"
+    },
+    {
+      "type": "@app"
+    },
+    [% json 'schema/blocks-extended.jsonc' %]
+  ]
+}
+{% endschema %}

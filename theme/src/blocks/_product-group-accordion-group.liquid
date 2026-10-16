@@ -1,0 +1,49 @@
+{% doc %}
+  - Renders accordion group holding product accordion blocks
+{% enddoc %}
+
+[%- capture additional_blocks -%]
+  { "type": "_product-group-accordion" },
+[%- endcapture -%]
+
+[%- capture additional_presets -%]
+  {
+    "name": "Accordions",
+    "category": "Layout",
+    "settings": {
+      "multiple": false
+    },
+    "blocks": [
+      {
+        "type": "_product-group-accordion",
+        "settings": {
+          "expand": true,
+          "title": "Description"
+        },
+        "blocks": [
+          {
+            "type": "_product-description"
+          }
+        ]
+      },
+      {
+        "type": "_product-group-accordion",
+        "settings": {
+          "expand": false,
+          "title": "Information"
+        },
+        "blocks": [
+          {
+            "type": "theme-text",
+            "settings": {
+              "text": "Fast shipping on qualifying orders. Eligible items can be returned per our return policy.",
+              "type_preset": "p"
+            }
+          }
+        ]
+      }
+    ]
+  },
+[%- endcapture -%]
+
+[% render 'groups/accordions', additional_blocks: additional_blocks, additional_presets: additional_presets %]

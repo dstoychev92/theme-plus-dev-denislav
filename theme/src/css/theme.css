@@ -1,0 +1,233 @@
+@import url('alignment.css');
+@import url('alpine.css');
+@import url('buttons.css');
+@import url('card.css');
+@import url('controls.css');
+@import url('forms.css');
+@import url('dialog.css');
+@import url('drawer.css');
+@import url('flourish.css');
+@import url('layout.css');
+@import url('page.css');
+@import url('placement.css');
+@import url('rounding.css');
+@import url('section.css');
+@import url('highlight.css');
+@import url('icon.css');
+@import url('links.css');
+@import url('reset.css');
+@import url('shame.css');
+@import url('shape.css');
+@import url('transition.css');
+@import url('type.css');
+@import url('card-list.css');
+@import url('animations.css');
+@import url('focus-group.css');
+@import url('slider-controls.css');
+@import url('effects.css');
+@import url('sticky-columns.css');
+@import url('pointer-events.css');
+@import url('cart-notification.css');
+@import url('product-media-thumbnails.css');
+@import url('product-option-buttons.css');
+@import url('product-stock-status.css');
+@import url('swatch.css');
+@import url('shopify/pages.css');
+@import url('shopify/payment.css');
+@import url('shopify/challenge.css');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --PI: 3.14159265358979;
+
+    /* Typography defaults */
+    --font-family-adjust: 1;
+    --caps-adjust: 1;
+    --caps-transform: none;
+    --caps-tracking: normal;
+
+    /* Timing functions */
+    --ease-in-out: cubic-bezier(0.215, 0.61, 0.355, 1);
+    --ease-in-out-sharp: cubic-bezier(0.25, 0.1, 0.25, 1);
+    --ease-out-fast: cubic-bezier(0.2, 0.8, 0.75, 1);
+
+    /* Colors */
+
+    --placeholder-bg: #eeeeee;
+    --placeholder-fill: #b4b6b9;
+    --swatch-color: #4d4d4d;
+
+    --focus-outline-color: var(--secondary);
+
+    --page-canvas-color: var(--canvas);
+    --page-content-color: var(--content);
+
+    /* Transition / Animation timing */
+
+    --popover-enter-duration: 300ms;
+    --popover-exit-duration: 200ms;
+
+    --custom-select-enter-duration: 300ms;
+    --custom-select-exit-duration: 290ms;
+
+    --header-menu-flyout-enter-duration: 300ms;
+    --header-menu-flyout-exit-duration: 300ms;
+
+    --header-menu-dropdown-enter-duration: 300ms;
+    --header-menu-dropdown-exit-duration: 250ms;
+
+    --quick-actions-enter-animation-duration: 300ms;
+    --quick-actions-exit-animation-duration: 280ms;
+
+    --active-indicator-position-duration: 150ms;
+    --active-indicator-opacity-duration: 200ms;
+    --active-indicator-width-duration: 500ms;
+
+    --notification-enter-duration: 300ms;
+    --notification-exit-duration: 250ms;
+
+    --drawer-enter-duration: 325ms;
+    --drawer-backdrop-enter-duration: 250ms;
+    --drawer-enter-delay: calc(var(--drawer-backdrop-enter-duration) * 0.75);
+    --drawer-exit-duration: 250ms;
+    --drawer-backdrop-exit-duration: 300ms;
+    --drawer-backdrop-exit-delay: calc(var(--drawer-exit-duration) * 0.25);
+
+    --dialog-enter-duration: 300ms;
+    --dialog-backdrop-enter-duration: 250ms;
+    --dialog-enter-delay: calc(var(--dialog-backdrop-enter-duration) * 0.5);
+    --dialog-exit-duration: 300ms;
+    --dialog-backdrop-exit-duration: 300ms;
+    --dialog-backdrop-exit-delay: var(--dialog-exit-duration);
+
+    /* Duration of the transition between slides */
+    --slide-transition-duration: 600ms;
+
+    /* Duration of the transition of the slideshow indicator when it slides down initially and back up when the user unhovers */
+    --slideshow-indicator-transition-duration: 500ms;
+
+    /* Checkboxes & Radio Buttons */
+
+    @apply [--checkbox-size:18px];
+    @apply md:[--checkbox-size:16px];
+
+    @apply [--radio-size:18px];
+    @apply md:[--radio-size:16px];
+
+    /* Header */
+    --header-bg-blur: 10px;
+
+    /* Drawer */
+
+    --drawer-desktop-width: 25rem;
+
+    /* Badge color defaults, overridden by all schemes */
+    --badge-bg-color: color-mix(in oklch, var(--page-content-color) 10%, var(--page-canvas-color));
+    --badge-text-color: var(--page-content-color);
+
+    --radius-badge: var(--radius-sm);
+
+    /* Image min aspect ratios */
+    --tile-min-aspect-ratio: 1.8;
+    --image-min-aspect-ratio: 5;
+  }
+
+  /* Resets */
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  th {
+    text-align: start;
+  }
+}
+
+@view-transition {
+  navigation: auto;
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 100%;
+  }
+
+  to {
+    opacity: 0%;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0%;
+  }
+
+  to {
+    opacity: 100%;
+  }
+}
+
+@keyframes slideshow-progress-scale-x {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes slideshow-progress-stroke {
+  from {
+    stroke-dashoffset: 37.7;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+[data-slideshow-progress][data-current='true'] {
+  animation-duration: var(--slideshow-duration, 1s);
+  animation-fill-mode: both;
+  animation-play-state: var(--slideshow-play-state, paused);
+  animation-timing-function: linear;
+}
+
+[data-slideshow-progress='scale-x'] {
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+[dir='rtl'] [data-slideshow-progress='scale-x'] {
+  transform-origin: right center;
+}
+
+[data-slideshow-progress='scale-x'][data-current='true'] {
+  animation-name: slideshow-progress-scale-x;
+}
+
+[data-slideshow-progress='scale-x'][data-complete='true'] {
+  transform: scaleX(1);
+}
+
+[data-slideshow-progress='stroke'][data-current='true'] {
+  animation-name: slideshow-progress-stroke;
+}
+
+::view-transition-old(content) {
+  animation: 0.1s ease-in both fade-out;
+}
+
+::view-transition-new(content) {
+  animation: 0.3s ease-in both fade-in;
+}

@@ -1,0 +1,25 @@
+[% if id_suffix %]
+ [% assign _id_suffix = id_suffix | prepend: '_' %]
+[% endif %]
+[
+  {
+    "type": "select",
+    "label": "[= label | default: 'Show on' =]",
+    "id": "target_device[= _id_suffix =]",
+    "default": "[= default_value | default: 'both' =]",
+    [% if conditional %]
+      "visible_if": "{{ [= conditional =] }}",
+    [% endif %]
+    "options": [
+      [% unless exclude contains 'mobile' %]
+        {"value": "mobile", "label": "Mobile"},
+      [% endunless %]
+      [% unless exclude contains 'desktop' %]
+        {"value": "desktop", "label": "Desktop"},
+      [% endunless %]
+      [% unless exclude contains 'both' %]
+        {"value": "both", "label": "Both"}
+      [% endunless %]
+    ]
+  }
+]

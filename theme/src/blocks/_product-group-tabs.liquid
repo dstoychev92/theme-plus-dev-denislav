@@ -1,0 +1,46 @@
+{% doc %}
+  - Renders tab group holding product tab blocks
+{% enddoc %}
+
+[% capture additional_blocks %]
+  {
+    "type": "_product-group-tab"
+  }
+[% endcapture %]
+
+[% capture additional_presets %]
+  {
+    "name": "Tabs",
+    "category": "Layout",
+    "blocks": [
+      {
+        "type": "_product-group-tab",
+        "settings": {
+          "title": "Description"
+        },
+        "blocks": [
+          {
+            "type": "_product-description"
+          }
+        ]
+      },
+      {
+        "type": "_product-group-tab",
+        "settings": {
+          "title": "Information"
+        },
+        "blocks": [
+          {
+            "type": "theme-text",
+            "settings": {
+              "text": "Fast shipping on qualifying orders. Eligible items can be returned per our return policy.",
+              "type_preset": "p"
+            }
+          }
+        ]
+      }
+    ]
+  }
+[% endcapture %]
+
+[% render 'groups/tabs', additional_blocks: additional_blocks, additional_presets: additional_presets %]

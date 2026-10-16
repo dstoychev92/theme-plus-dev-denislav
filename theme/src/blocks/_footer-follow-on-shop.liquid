@@ -1,0 +1,41 @@
+{% doc %}
+  - Renders Follow on Shop button
+
+  Sits inside _footer-column. Renders nothing when shop.features.follow_on_shop? is false.
+{% enddoc %}
+
+{%- if shop.features.follow_on_shop? -%}
+  {% capture style %}
+    {% case block.settings.sizing %}
+    {% when 'xl' %}
+      --scale: 1;
+    {% when 'lg' %}
+      --scale: 0.9;
+    {% when 'md' %}
+      --scale: 0.8;
+    {% when 'sm' %}
+      --scale: 0.7;
+    {% when 'xs' %}
+      --scale: 0.65;
+    {% endcase %}
+  {% endcapture %}
+  <div class="grayscale origin-left" style="{{- style -}} scale: var(--scale);" {{ block.shopify_attributes }}>
+    {{ shop | login_button: action: 'follow' }}
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Follow on shop",
+  "tag": null,
+  "settings": [
+    [% json 'schema/size-setting.jsonc', size_label: 'Size', default_size: 'md', exclude: 'xs' %]
+  ],
+  "presets": [
+    {
+      "name": "Follow on shop",
+      "category": "Content"
+    }
+  ]
+}
+{% endschema %}

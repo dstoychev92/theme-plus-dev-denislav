@@ -1,0 +1,92 @@
+{% doc %}
+  - Renders product star rating
+
+  Reads closest.product. Renders nothing without the reviews metafields from a review app.
+{% enddoc %}
+
+{% assign product = closest.product %}
+
+{% capture content %}
+  {% if request.visual_preview_mode %}
+    {%- render 'product-rating', placeholder: true -%}
+  {% else %}
+    {%- render 'product-rating', product: product, rating_show_count: block.settings.rating_show_count -%}
+  {% endif %}
+{% endcapture %}
+{% assign content = content | strip %}
+{% if block.settings.set_link and block.settings.link_href != blank and content != '' %}
+  {% capture content %}
+    <a href="{{ block.settings.link_href }}">{{ content }}</a>
+  {% endcapture %}
+{% endif %}
+
+{% capture class %}
+  {% if block.settings.enable_typography %}
+    {% render 'props-class-type-preset', s: block.settings, type_preset: 'custom' %}
+  {% else %}
+    font-family-body text-r4
+  {% endif %}
+{% endcapture %}
+
+{% render 'product-block',
+  s: block.settings,
+  content: content,
+  class: class,
+  attributes: block.shopify_attributes
+%}
+
+{% schema %}
+{
+  "name": "Product rating",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Star rating",
+      "info": "Requires a product review app to create [standard metafields](https://shopify.dev/apps/metafields/definitions/standard-definitions) for star ratings."
+    },
+    {
+      "type": "checkbox",
+      "id": "rating_show_count",
+      "label": "Show rating count",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_typography",
+      "label": "Set typography",
+      "default": false
+    },
+    [% json 'schema/type-custom.jsonc', default_font: 'body', default_size: '4', conditional: 'block.settings.enable_typography == true' %]
+
+
+    {
+      "type": "header",
+      "content": "Link"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_link",
+      "label": "Set link",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "link_href",
+      "visible_if": "{{ block.settings.set_link == true }}",
+      "label": "Link"
+    }
+
+  ],
+  "presets": [
+    {
+      "name": "Product rating",
+      "category": "Additional product info"
+    }
+  ]
+}
+{% endschema %}

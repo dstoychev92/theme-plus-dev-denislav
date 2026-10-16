@@ -1,0 +1,34 @@
+[
+  {
+    "type": "checkbox",
+    "id": "set_rounding",
+    "label": "Set rounding",
+    "default": false,
+    "visible_if": "{{ section.settings.contain_section }}"
+  },
+  {
+    "type": "select",
+    "id": "rounding_radius",
+    "label": "Radius",
+    "default": "lg",
+    "options": [
+      {"value": "xs", "label": "XS"},
+      {"value": "sm", "label": "S"},
+      {"value": "md", "label": "M"},
+      {"value": "lg", "label": "L"},
+      {"value": "custom", "label": "⋯"}
+    ],
+    "visible_if": "{{ section.settings.contain_section and section.settings.set_rounding }}"
+  },
+  {
+    "type": "range",
+    "id": "rounding_radius_custom",
+    "label": "Radius",
+    "unit": "px",
+    "min": 0,
+    "max": 50,
+    "step": 1,
+    "default": 20,
+    "visible_if": "{{ section.settings.contain_section and section.settings.set_rounding and section.settings.rounding_radius == 'custom' }}"
+  }
+]

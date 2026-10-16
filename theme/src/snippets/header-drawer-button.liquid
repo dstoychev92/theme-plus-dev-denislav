@@ -1,0 +1,45 @@
+{% doc %}
+  - Renders menu drawer open button
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {string} [icon_type_class] - classes for the icon
+  @param {string} [label]
+  @param {object} [s] - settings object
+  @param {string} [target_device] - 'mobile' or 'desktop', defaults to s.target_device
+{% enddoc %}
+
+{% liquid
+  assign target_device = target_device | default: s.target_device
+%}
+
+{% capture class %}
+  transition-opacity duration-200
+  aria-expanded:opacity-25 hit-area-x-[calc(var(--header-row-gap-x)/2)]
+  {{ class }}
+{% endcapture %}
+
+{% capture aria_label %}
+  {{ 'header.accessibility.menu_drawer' | t }}
+{% endcapture %}
+
+{% capture attributes %}
+  aria-controls="header-drawer"
+  aria-haspopup="dialog"
+  :aria-expanded="$store.drawer.isOpen && $store.drawer.type === 'menu'"
+  @click.stop.prevent="$dispatch('theme:menu-drawer:open')"
+  {{ attributes }}
+{% endcapture %}
+
+{% render 'header-link',
+  s: s,
+  tag: 'button',
+  icon: 'stroke-header-hamburger-uneven',
+  label: label,
+  class: class,
+  aria_label: aria_label,
+  attributes: attributes,
+  icon_type_class: icon_type_class,
+  target_device: target_device,
+  label_style: 'icon'
+%}

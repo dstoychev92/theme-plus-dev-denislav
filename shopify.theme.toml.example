@@ -1,0 +1,4 @@
+# Copy this file to shopify.theme.toml. Add a password line only to use a Theme Access password: password = "shptka_..."
+
+[environments.theme-plus-dev-denislav]
+store = "theme-plus-dev-denislav.myshopify.com"

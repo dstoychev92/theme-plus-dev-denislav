@@ -1,0 +1,64 @@
+{% doc %}
+  - Renders one collection card for each chosen collection
+
+  An empty list renders placeholder cards in the editor and in placeholder mode.
+{% enddoc %}
+
+{% liquid
+  assign collections = block.settings.collections
+
+  if block.settings.set_aspect_ratio
+    assign aspect_ratio = block.settings.aspect_ratio
+  endif
+%}
+
+{% if request.visual_preview_mode %}
+  {% render 'placeholder-cards-collection',
+    limit: 8,
+    block_attributes: block.shopify_attributes,
+    aspect_ratio: aspect_ratio
+  %}
+{% elsif collections.size == 0 or collections == blank %}
+  {% render 'placeholder-cards-collection',
+    limit: 8,
+    block_attributes: block.shopify_attributes,
+    aspect_ratio: aspect_ratio
+  %}
+{% else %}
+  {% for collection in collections %}
+    {% if forloop.first %}
+      {% assign attributes = block.shopify_attributes %}
+    {% endif %}
+    {% render 'card-collection',
+      size: 'lg',
+      collection: collection,
+      attributes: attributes,
+      aspect_ratio: aspect_ratio
+    %}
+  {% endfor %}
+{% endif %}
+
+{% schema %}
+{
+  "name": "Collection cards",
+  "tag": null,
+  "settings": [
+    {
+      "type": "collection_list",
+      "id": "collections",
+      "label": "Collections"
+    },
+    {
+      "type": "header",
+      "content": "Aspect ratio"
+    },
+    [% json 'schema/aspect-ratio-settings.jsonc' %]
+  ],
+  "presets": [
+    {
+      "name": "Collection cards",
+      "category": "Other cards"
+    }
+  ]
+}
+{% endschema %}

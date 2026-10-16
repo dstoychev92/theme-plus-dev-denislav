@@ -1,0 +1,37 @@
+[% assign set_rhythm = set_rhythm | default: false, allow_false: true %]
+[% if default_padding_top or default_padding_bottom %]
+  [% assign set_rhythm = true %]
+[% endif %]
+[
+  {
+    "type": "checkbox",
+    "id": "set_rhythm",
+    "label": "Custom rhythm",
+    "default": [= set_rhythm =],
+    [% if conditional %]
+      "visible_if": "{{ [= conditional =] }}"
+    [% endif %]
+  },
+  {
+    "type": "range",
+    "id": "section_padding_top",
+    "label": "Spacing top",
+    "min": 0,
+    "max": 200,
+    "step": 2,
+    "unit": "px",
+    "default": [= default_padding_top | default: 40 =],
+    "visible_if": "{{ section.settings.set_rhythm == true [% if conditional %] and [= conditional =][% endif %] }}"
+  },
+  {
+    "type": "range",
+    "id": "section_padding_bottom",
+    "label": "Spacing bottom",
+    "min": 0,
+    "max": 200,
+    "step": 2,
+    "unit": "px",
+    "default": [= default_padding_bottom | default: 40 =],
+    "visible_if": "{{ section.settings.set_rhythm == true [% if conditional %] and [= conditional =][% endif %] }}"
+  }
+]

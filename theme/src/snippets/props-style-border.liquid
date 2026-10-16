@@ -1,0 +1,39 @@
+{% doc %}
+  - Prints border width and color variables and rules
+
+  @param {string} [border_color] - CSS color, transparent by default
+  @param {string} [border_sides] - 'all', 'top', 'bottom', 'left', 'right', 'top-bottom' or 'left-right', defaults to 'all'
+  @param {number} [border_width] - border width in pixels
+  @param {object} [s] - settings object
+{% enddoc %}
+
+{% liquid
+  assign border_width = border_width | default: s.border_width | default: 0
+  assign border_color = border_color | default: s.border_color | default: '#ffffff00'
+  assign border_sides = border_sides | default: s.border_sides | default: 'all'
+%}
+
+{% if border_width != blank %}
+  --border-width: {{ border_width }}px;
+  {% case border_sides %}
+    {% when 'top' %}
+      border-width: var(--border-width) 0 0;
+    {% when 'bottom' %}
+      border-width: 0 0 var(--border-width);
+    {% when 'left' %}
+      border-width: 0 0 0 var(--border-width);
+    {% when 'right' %}
+      border-width: 0 var(--border-width) 0 0;
+    {% when 'top-bottom' %}
+      border-width: var(--border-width) 0;
+    {% when 'left-right' %}
+      border-width: 0 var(--border-width);
+    {% else %}
+      border-width: var(--border-width);
+  {% endcase %}
+{% endif %}
+
+{% if border_color != blank %}
+  --border-color: {{ border_color }};
+  border-color: var(--border-color);
+{% endif %}

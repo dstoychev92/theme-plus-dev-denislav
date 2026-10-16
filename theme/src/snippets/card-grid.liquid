@@ -1,0 +1,47 @@
+{% doc %}
+  - Renders cards in a responsive grid
+
+  An omitted column count inherits its --card-grid-cols-* variable from an ancestor.
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {number} [columns_lg] - column count, sets --card-grid-cols-lg
+  @param {number} [columns_md] - column count, sets --card-grid-cols-md
+  @param {number} [columns_sm] - column count, sets --card-grid-cols-sm
+  @param {string} items - rendered card markup
+  @param {section} [section] - section.settings.mobile_dense_card_grid tightens the mobile grid
+  @param {string} [style] - inline styles
+{% enddoc %}
+
+<card-grid
+  class="
+    vars-layout-gutter-card grid gap-layout
+    [--card-grid-cols:--card-grid-cols-sm]
+    md:[--card-grid-cols:--card-grid-cols-md]
+    lg:[--card-grid-cols:--card-grid-cols-lg]
+    grid-cols-[repeat(var(--card-grid-cols),minmax(0,1fr))]
+    entrance-container *:auto-set-stagger-order
+
+    {% if section.settings.mobile_dense_card_grid %}
+      max-md:[--layout-gutter-x:2px]
+      max-md:[--card-lg-radius:0px] max-md:[--card-lg-media-radius:0px]
+    {% endif %}
+
+    {{ class }}
+  "
+  style="
+    {% if columns_sm %}
+      --card-grid-cols-sm: {{ columns_sm }};
+    {%- endif -%}
+    {% if columns_md %}
+      --card-grid-cols-md: {{ columns_md }};
+    {%- endif -%}
+    {% if columns_lg %}
+      --card-grid-cols-lg: {{ columns_lg }};
+    {%- endif -%}
+    {{ style }}
+  "
+  {{ attributes }}
+>
+  {{ items }}
+</card-grid>

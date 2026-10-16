@@ -1,0 +1,8 @@
+[
+  [% json 'schema/link-settings.jsonc', default_text_content: "Button" %]
+  [% json 'schema/button-appearance-setting.jsonc' %]
+  [% json 'schema/color-dropdown.jsonc', overlay_colors: false %]
+  [% if has_target_device != false %]
+    [% json 'schema/target-device-setting.jsonc', default_value: 'both' %]
+  [% endif %]
+]

@@ -1,0 +1,123 @@
+[
+  {
+    "type": "select",
+    "id": "schedule",
+    "label": "Schedule",
+    "default": "repeat",
+    "options": [
+      {"value": "repeat", "label": "Repeat"},
+      {"value": "once", "label": "Once"}
+    ]
+  },
+  {
+    "type": "select",
+    "id": "repeat_frequency",
+    "label": "Frequency",
+    "default": "weekly",
+    "visible_if": "{{ block.settings.schedule == 'repeat' }}",
+    "options": [
+      {"value": "daily", "label": "Daily"},
+      {"value": "weekly", "label": "Weekly"}
+    ]
+  },
+  {
+    "type": "select",
+    "id": "repeat_day",
+    "label": "Repeat every",
+    "default": "4",
+    "visible_if": "{{ block.settings.schedule == 'repeat' and block.settings.repeat_frequency == 'weekly' }}",
+    "options": [
+      {"value": "1", "label": "Monday"},
+      {"value": "2", "label": "Tuesday"},
+      {"value": "3", "label": "Wednesday"},
+      {"value": "4", "label": "Thursday"},
+      {"value": "5", "label": "Friday"},
+      {"value": "6", "label": "Saturday"},
+      {"value": "0", "label": "Sunday"}
+    ]
+  },
+  {
+    "type": "text",
+    "id": "end_date",
+    "label": "End date",
+    "info": "YYYY-MM-DD",
+    "visible_if": "{{ block.settings.schedule == 'once' }}"
+  },
+  {
+    "type": "text",
+    "id": "end_time",
+    "label": "At this time",
+    "default": "01:00",
+    "info": "HH:MM in your [store primary timezone](/admin/settings/general)."
+  },
+  {
+    "type": "select",
+    "id": "period",
+    "label": "AM/PM",
+    "default": "am",
+    "options": [
+      {"value": "am", "label": "AM"},
+      {"value": "pm", "label": "PM"}
+    ]
+  },
+  {
+    "type": "inline_richtext",
+    "id": "end_message",
+    "label": "End of timer message",
+    "default": "Offer has expired"
+  },
+  {
+    "type": "paragraph",
+    "content": "Shows for one hour when the repeat cycle ends",
+    "visible_if": "{{ block.settings.schedule == 'repeat' }}"
+  },
+  {
+    "type": "checkbox",
+    "id": "hide_on_complete",
+    [% if hides_block == true %]
+    "label": "Hide block after end of timer",
+    [% else %]
+    "label": "Hide section after end of timer",
+    [% endif %]
+    "default": false,
+    "visible_if": "{{ block.settings.schedule == 'once' and block.settings.end_date != blank }}"
+  },
+  {
+    "type": "header",
+    "content": "Style"
+  },
+  {
+    "type": "select",
+    "id": "word_length",
+    "label": "Labels",
+    "default": "letter",
+    "options": [
+      {"value": "letter", "label": "Letter"},
+      {"value": "short", "label": "Short"},
+      {"value": "full", "label": "Full"}
+    ]
+  },
+  {
+    "type": "checkbox",
+    "id": "leading_zero",
+    "label": "Leading zero",
+    "default": true,
+    "info": "Adds a leading zero to single-digit numbers (e.g., 7 → 07). Seconds are always shown with a leading zero."
+  },
+  [% unless text_size == false %]
+    [% json 'schema/type-preset.jsonc' %]
+    [% json 'schema/type-custom.jsonc', resize: true %]
+  [% endunless %]
+  {
+    "type": "header",
+    "content": "Colors"
+  },
+  {
+    "type": "checkbox",
+    "id": "set_color",
+    "label": "Set color",
+    "default": false
+  },
+  [% json 'schema/color-dropdown.jsonc', custom: true, muted: true, conditional: "block.settings.set_color == true", label: 'Digit color', label_custom: 'Digit custom color', id_suffix: 'digit' %]
+  [% json 'schema/color-dropdown.jsonc', custom: true, muted: true, conditional: "block.settings.set_color == true", label: 'Label color', label_custom: 'Label custom color', default_color: 'muted' %]
+]

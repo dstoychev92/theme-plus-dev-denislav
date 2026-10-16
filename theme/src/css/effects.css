@@ -1,0 +1,113 @@
+@layer base {
+  :root {
+    --cursor-highlight-transition-enter-duration: 0.3s;
+    --cursor-highlight-transition-exit-duration: 0.5s;
+    --cursor-highlight-bg-opacity: 0.2;
+    --cursor-highlight-bg-width: 80%;
+    --cursor-highlight-bg-height: calc(var(--cursor-highlight-bg-width) * 2);
+    --cursor-highlight-bg-color: #fff;
+    --cursor-highlight-text-opacity: 0.2;
+    --cursor-highlight-border-width: 0px;
+  }
+
+  /* Register custom properties as animatable so gradient positions can transition smoothly */
+  @supports (background: radial-gradient(ellipse 100% 100% at 0% 0%, transparent)) {
+    @property --gradient-x {
+      syntax: '<percentage>';
+      inherits: true;
+      initial-value: 0%;
+    }
+
+    @property --gradient-y {
+      syntax: '<percentage>';
+      inherits: true;
+      initial-value: 0%;
+    }
+  }
+}
+
+@layer components {
+  @media (pointer: fine) {
+    /* Cursor-following hover glow effects */
+    /* Note: these effects require the x-cursor-position directive to be applied to the element */
+    .hover-effect-bg-highlight {
+      --gradient-x: var(--cursor-x, 50%);
+      --gradient-y: var(--cursor-y, 50%);
+
+      transition-timing-function: var(--ease-in-out);
+      transition-duration: var(--cursor-highlight-transition-exit-duration);
+
+      @supports (color: oklch(from white l c h)) {
+        /* Cursor following background highlight - creates a glowing background effect that follows the cursor */
+        &::after {
+          border-radius: inherit;
+          will-change: opacity;
+          pointer-events: none;
+          content: '';
+          inset: var(--cursor-highlight-border-width);
+          position: absolute;
+          background-attachment: fixed;
+          background: radial-gradient(
+            ellipse var(--cursor-highlight-bg-width) var(--cursor-highlight-bg-height) at var(--gradient-x)
+              var(--gradient-y),
+            oklch(from var(--cursor-highlight-bg-color, #fff) l c h / var(--cursor-highlight-bg-opacity)),
+            transparent
+          );
+          opacity: 0;
+          transition-property: opacity;
+          transition-duration: calc(var(--cursor-highlight-transition-exit-duration) * 2);
+          transition-timing-function: var(--ease-in-out-sharp);
+          z-index: 0;
+        }
+      }
+    }
+
+    .hover-effect-target:hover .hover-effect-bg-highlight,
+    .hover-effect-target.hover-effect-bg-highlight:hover {
+      @supports (color: oklch(from white l c h)) {
+        &::after {
+          opacity: 1;
+          transition-duration: var(--cursor-highlight-transition-enter-duration);
+        }
+      }
+    }
+
+    /* Cursor-following text highlight effect */
+    @supports (color: oklch(from white l c h)) {
+      .hover-effect-text-highlight {
+        --gradient-x: var(--cursor-x, 50%);
+        background-color: oklch(from currentColor calc(l - 0.04) c h / 0.8);
+        background-position: 0% center;
+        background-image: linear-gradient(
+          to right,
+          transparent 30%,
+          rgba(255, 255, 255, var(--cursor-highlight-text-opacity)) 50%,
+          transparent 70%
+        );
+        background-position: calc(100% - var(--gradient-x)) center;
+        background-repeat: no-repeat;
+        background-size: 200% 100%;
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        transition-property: opacity;
+        transition-duration: var(--cursor-highlight-transition-exit-duration);
+        transition-timing-function: var(--ease-in-out);
+        will-change: opacity;
+        opacity: 0;
+      }
+
+      .hover-effect-target:hover .hover-effect-text-highlight,
+      .hover-effect-target.hover-effect-text-highlight:hover {
+        opacity: 1;
+        transition-duration: var(--cursor-highlight-transition-enter-duration);
+      }
+    }
+  }
+
+  @media (pointer: coarse) and (hover: none) {
+    .hover-effect-text-highlight {
+      display: none;
+    }
+  }
+}

@@ -1,0 +1,107 @@
+{% doc %}
+  - Renders pair column with image and hotspot blocks
+
+  Private, only offered by section-pair. Reads section.settings.height_mode and height to decide whether the image sizes the column or covers it.
+{% enddoc %}
+
+{% liquid
+  # Section height mode: the image covers the column instead of putting a floor
+  # under it. Content-driven heights keep the in-flow image, since the image is
+  # the content that sizes them.
+  assign hotspots_height = 'image'
+  if section.settings.height_mode == 'section'
+    unless section.settings.height == 'content'
+      assign hotspots_height = false
+    endunless
+  endif
+%}
+
+{% capture class %}
+  pair-media
+  {% comment %} Keep columns equal height when placeholder image {% endcomment %}
+  {% if block.settings.image != blank and section.settings.height_mode == 'column' %}
+    self-start h-fit
+  {% endif %}
+{% endcapture %}
+
+{% capture attributes %}
+  data-test-id="pair-hotspots"
+  {{ block.shopify_attributes }}
+{% endcapture %}
+
+{% capture blocks %}
+  {% content_for "blocks" %}
+{% endcapture %}
+
+{% capture content %}
+  {% render 'hotspots', s: block.settings, hotspots: blocks, height: hotspots_height %}
+{% endcapture %}
+
+{% render 'pair-column',
+  content: content,
+  s: block.settings,
+  class: class,
+  attributes: attributes,
+  is_media_block: true
+%}
+
+{% schema %}
+{
+  "name": "Hotspots",
+  "tag": null,
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_mobile",
+      "label": "Mobile image"
+    },
+    [% json 'schema/aspect-ratio-settings.jsonc' %]
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "hotspot_color",
+      "label": "Hotspot color",
+      "default": "#ffffff"
+    },
+    [% json 'schema/color-settings-column-solid.jsonc', default_background: 'tint', header: false %]
+    {
+      "type": "header",
+      "content": "Border"
+    },
+    [% json 'schema/border-settings.jsonc' %]
+    {
+      "type": "header",
+      "content": "Rounding"
+    },
+    [% json 'schema/rounding-large.jsonc' %]
+  ],
+  "blocks": [
+    {
+      "type": "_pair-hotspot"
+    },
+    {
+      "type": "_pair-hotspots-product"
+    },
+    {
+      "type": "_pair-hotspots-tooltip"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Hotspots",
+      "category": "Media",
+      "blocks": [
+        [% json 'schema/hotspots-blocks-preset.jsonc' %]
+      ]
+    }
+  ]
+}
+{% endschema %}

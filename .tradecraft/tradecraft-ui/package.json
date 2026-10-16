@@ -1,0 +1,46 @@
+{
+  "name": "@groupthought/tradecraft-ui",
+  "version": "26.5.3",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "exports": {
+    "./api": "./dist/api/index.js",
+    "./testing": "./dist/testing/index.js",
+    "./types": "./dist/types/index.js",
+    "./alpine": "./dist/alpine/index.js",
+    "./alpine/morph": "./dist/alpine/morph.js",
+    "./utils": "./dist/utils/index.js",
+    "./tailwind": "./dist/tailwind/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "peerDependencies": {
+    "@alpinejs/collapse": ">=3.15.11 <3.16.0",
+    "@alpinejs/focus": ">=3.15.11 <3.16.0",
+    "@alpinejs/morph": ">=3.15.11 <3.16.0",
+    "@alpinejs/persist": ">=3.15.11 <3.16.0",
+    "@floating-ui/dom": "^1.5.3",
+    "@floating-ui/utils": "^0.2.11",
+    "alpinejs": ">=3.15.11 <3.16.0",
+    "fishery": "^2.2.2",
+    "motion": "12.36.0",
+    "motion-plus": "2.11.2",
+    "photoswipe": "^5.4.4",
+    "photoswipe-video-plugin": "^1.0.2",
+    "tabbable": "^6.4.0",
+    "tailwindcss": "^3.4.0"
+  },
+  "peerDependenciesMeta": {
+    "fishery": {
+      "optional": true
+    },
+    "tailwindcss": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@shopify/events": "0.0.0",
+    "motion-plus": "2.11.2"
+  }
+}

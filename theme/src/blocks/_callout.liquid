@@ -1,0 +1,462 @@
+{% doc %}
+  - Renders icon or number callout with title and text
+
+  Carries its own layout, type, and color settings. Inside _callout-group it renders as is, so
+  the group's settings do not apply to it.
+{% enddoc %}
+
+{%- liquid
+  assign media_type = block.settings.media_type
+
+  # Media width (px value for icon)
+  assign media_px = 32
+  if media_type == 'icon'
+    case block.settings.media_width
+      when 'xs'
+        assign media_px = 12
+      when 'sm'
+        assign media_px = 20
+      when 'md'
+        assign media_px = 32
+      when 'lg'
+        assign media_px = 50
+      when 'custom'
+        assign media_px = block.settings.media_width_custom
+    endcase
+  endif
+
+  # Icon width: px with responsive multiplier
+  assign icon_width = 'calc(' | append: media_px | append: 'px * var(--r-multiplier))'
+
+  # Icon image srcset width
+  if media_type == 'icon' and block.settings.icon_set == 'image'
+    assign icon_image_src_width = media_px | default: 48 | times: 2
+  endif
+
+  assign body_text = block.settings.body
+-%}
+
+{%- comment -%} ── Callout color ── {%- endcomment -%}
+{%- capture callout_color_style -%}
+  {%- if block.settings.set_color_callout and block.settings.color_callout == 'custom' -%}
+    --color-custom-text: {{ block.settings.color_custom_callout }};
+  {%- endif -%}
+  {%- if block.settings.icon_set == 'art' and block.settings.set_color_callout and block.settings.color_callout == 'custom' and block.settings.color_shade != blank -%}
+    --icon-color-shade: {{ block.settings.color_shade }};
+  {%- endif -%}
+{%- endcapture -%}
+
+{%- capture callout_color_class -%}
+  {%- if block.settings.set_color_callout -%}
+    text-{{ block.settings.color_callout | default: 'content' }}
+  {%- endif -%}
+  {%- if block.settings.icon_set == 'art' and block.settings.set_color_callout and block.settings.color_callout == 'custom' and block.settings.color_shade != blank -%}
+    icon-shade-custom
+  {%- endif -%}
+{%- endcapture -%}
+
+{%- comment -%} ── Media ── {%- endcomment -%}
+{%- capture media -%}
+  {%- case media_type -%}
+
+    {%- when 'icon' -%}
+      <div style="--icon-width: {{ icon_width }};">
+        {%- case block.settings.icon_set -%}
+          {%- when 'core' -%}
+            {%- render 'core-icon', icon: block.settings.icon_list_core -%}
+          {%- when 'art' -%}
+            {%- render 'core-icon', icon: block.settings.icon_list_art -%}
+          {%- when 'image' -%}
+            <span class="block w-icon">
+              {%- render 'core-image', image: block.settings.icon_image, width: icon_image_src_width -%}
+            </span>
+        {%- endcase -%}
+      </div>
+
+    {%- when 'number' -%}
+      {%- assign show_discount = block.settings.show_discount -%}
+      {%- assign number_text = block.settings.number_value | default: '' -%}
+      {%- assign number_prefix = '' -%}
+      {%- assign number_digits_str = '' -%}
+      {%- assign number_suffix = '' -%}
+
+      {%- if show_discount -%}
+        {%- assign number_digits_str = number_text -%}
+      {%- else -%}
+        {%- assign found_digit = false -%}
+        {%- assign past_digits = false -%}
+        {%- assign number_chars = number_text | split: '' -%}
+        {%- for char in number_chars -%}
+          {%- assign is_digit = false -%}
+          {%- case char -%}
+            {%- when '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' -%}
+              {%- assign is_digit = true -%}
+          {%- endcase -%}
+          {%- if is_digit and past_digits == false -%}
+            {%- assign found_digit = true -%}
+            {%- assign number_digits_str = number_digits_str | append: char -%}
+          {%- elsif found_digit == false -%}
+            {%- assign number_prefix = number_prefix | append: char -%}
+          {%- else -%}
+            {%- assign past_digits = true -%}
+            {%- assign number_suffix = number_suffix | append: char -%}
+          {%- endif -%}
+        {%- endfor -%}
+
+      {%- endif -%}
+
+      {%- capture number_type_class -%}
+        {%- render 'props-class-type-preset', s: block.settings, settings_suffix: 'number' -%}
+      {%- endcapture -%}
+
+      {%- if show_discount -%}
+        {%- assign number_digits = number_digits_str | split: '' -%}
+        <div
+          class="flex items-start leading-[1] whitespace-nowrap {{ number_type_class }}"
+          {%- if block.settings.enable_animation and number_digits_str != blank -%}
+            x-data="{ triggered: false }"
+            x-intersect.once="setTimeout(() => triggered = true, 400)"
+          {%- endif -%}
+        >
+          {%- if block.settings.enable_animation and number_digits_str != blank -%}
+            {%- for digit in number_digits -%}
+              <span
+                class="relative overflow-hidden edge-mask edge-mask-y inline-block w-[1ch]"
+                x-animated-wheel.reverse
+                data-spins="{{ forloop.index0 | plus: 3 }}"
+              >
+                <span
+                  class="w-[1ch] inline-block will-change-contents text-center"
+                  :class="{ 'opacity-0': $animatedWheel.isTrackVisible }"
+                  x-animated-wheel:input
+                  x-data="{ value: 0 }"
+                  x-effect="if (triggered) setTimeout(() => { $animatedWheel.updatePosition(0, {{ digit }}); value = {{ digit }} }, {{ forloop.index0 | times: 80 }})"
+                  x-text="String(value)"
+                  data-min="0"
+                  data-max="9"
+                  data-step="1"
+                  :data-value="value"
+                >0</span>
+                <div
+                  x-animated-wheel:track
+                  x-cloak
+                  class="absolute h-fit inset-0 block pointer-events-none whitespace-pre-line will-change-transform"
+                  aria-hidden="true"
+                ></div>
+              </span>
+            {%- endfor -%}
+          {%- else -%}
+            <span>{{- number_digits_str -}}</span>
+          {%- endif -%}
+
+          {%- if block.settings.discount_style == 'percentage' -%}
+            <span class="flex flex-col items-center leading-none self-start">
+              <span class="text-[.55em]">%</span>
+              <span class="text-[.35em] uppercase tracking-wider">off</span>
+            </span>
+          {%- elsif block.settings.discount_style == 'dollar' -%}
+            <span class="flex flex-col items-center leading-none self-start">
+              <span class="text-[.55em]">$</span>
+              <span class="text-[.35em] uppercase tracking-wider">off</span>
+            </span>
+          {%- endif -%}
+        </div>
+
+      {%- elsif block.settings.enable_animation and number_digits_str != blank -%}
+        {%- assign number_digits = number_digits_str | split: '' -%}
+        <div
+          class="flex items-baseline leading-[1] {{ number_type_class }}"
+          x-data="{ triggered: false }"
+          x-intersect.once="setTimeout(() => triggered = true, 400)"
+        >
+          {%- if number_prefix != blank -%}<span class="whitespace-pre">{{ number_prefix }}</span>{%- endif -%}
+          {%- for digit in number_digits -%}
+            <span
+              class="relative overflow-hidden edge-mask edge-mask-y inline-block w-[1ch]"
+              x-animated-wheel.reverse
+              data-spins="{{ forloop.index0 | plus: 3 }}"
+            >
+              <span
+                class="w-[1ch] inline-block will-change-contents text-center"
+                :class="{ 'opacity-0': $animatedWheel.isTrackVisible }"
+                x-animated-wheel:input
+                x-data="{ value: 0 }"
+                x-effect="if (triggered) setTimeout(() => { $animatedWheel.updatePosition(0, {{ digit }}); value = {{ digit }} }, {{ forloop.index0 | times: 80 }})"
+                x-text="String(value)"
+                data-min="0"
+                data-max="9"
+                data-step="1"
+                :data-value="value"
+              >0</span>
+              <div
+                x-animated-wheel:track
+                x-cloak
+                class="absolute h-fit inset-0 block pointer-events-none whitespace-pre-line will-change-transform"
+                aria-hidden="true"
+              ></div>
+            </span>
+          {%- endfor -%}
+          {%- if number_suffix != blank -%}<span class="whitespace-pre">{{ number_suffix }}</span>{%- endif -%}
+        </div>
+
+      {%- else -%}
+        <span class="leading-[1] {{ number_type_class }}">
+          {{- block.settings.number_value -}}
+        </span>
+      {%- endif -%}
+
+  {%- endcase -%}
+{%- endcapture -%}
+
+{%- render 'core-callout',
+  media: media,
+  title_text: block.settings.title,
+  body_text: body_text,
+  media_type: media_type,
+  media_px: media_px,
+  callout_color_class: callout_color_class,
+  callout_color_style: callout_color_style,
+  s: block.settings,
+  attributes: block.shopify_attributes
+-%}
+
+{% schema %}
+{
+  "name": "Callout",
+  "tag": null,
+  "settings": [
+    {
+      "type": "select",
+      "id": "media_type",
+      "label": "Callout",
+      "default": "icon",
+      "options": [
+        {"value": "icon", "label": "Icon"},
+        {"value": "number", "label": "Number"}
+      ]
+    },
+    {
+      "type": "select",
+      "id": "icon_set",
+      "label": "Set",
+      "default": "art",
+      "options": [
+        {"value": "core", "label": "Core"},
+        {"value": "art", "label": "Art"},
+        {"value": "image", "label": "Image"}
+      ],
+      "visible_if": "{{ block.settings.media_type == 'icon' }}"
+    },
+    {
+      "type": "select",
+      "id": "icon_list_core",
+      "label": "Icon",
+      "visible_if": "{{ block.settings.media_type == 'icon' and block.settings.icon_set == 'core' }}",
+      "options": [% render 'icons-manual/json-list-core-icons' %]
+    },
+    {
+      "type": "select",
+      "id": "icon_list_art",
+      "label": "Icon",
+      "default": "fill-art-commerce-award-wreath",
+      "visible_if": "{{ block.settings.media_type == 'icon' and block.settings.icon_set == 'art' }}",
+      "options": [% render 'icons-autogenerated/json-list-art-icons' %]
+    },
+    {
+      "type": "image_picker",
+      "id": "icon_image",
+      "label": "Image",
+      "visible_if": "{{ block.settings.media_type == 'icon' and block.settings.icon_set == 'image' }}"
+    },
+    {
+      "type": "select",
+      "id": "media_width",
+      "label": "Icon size",
+      "default": "sm",
+      "options": [
+        {"value": "xs", "label": "XS"},
+        {"value": "sm", "label": "S"},
+        {"value": "md", "label": "M"},
+        {"value": "lg", "label": "L"},
+        {"value": "custom", "label": "⋯"}
+      ],
+      "visible_if": "{{ block.settings.media_type == 'icon' }}"
+    },
+    {
+      "type": "range",
+      "id": "media_width_custom",
+      "label": "Custom size",
+      "unit": "px",
+      "min": 16,
+      "max": 400,
+      "step": 4,
+      "default": 80,
+      "visible_if": "{{ block.settings.media_type == 'icon' and block.settings.media_width == 'custom' }}"
+    },
+    {
+      "type": "text",
+      "id": "number_value",
+      "label": "Value",
+      "default": "100+",
+      "info": "First group of digits will animate",
+      "visible_if": "{{ block.settings.media_type == 'number' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_animation",
+      "label": "Animate scroll",
+      "default": false,
+      "visible_if": "{{ block.settings.media_type == 'number' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_discount",
+      "label": "Show as discount",
+      "default": false,
+      "visible_if": "{{ block.settings.media_type == 'number' }}"
+    },
+    {
+      "type": "select",
+      "id": "discount_style",
+      "label": "Discount style",
+      "default": "percentage",
+      "options": [
+        {"value": "percentage", "label": "% off"},
+        {"value": "dollar", "label": "$ off"}
+      ],
+      "visible_if": "{{ block.settings.media_type == 'number' and block.settings.show_discount }}"
+    },
+    [% json 'schema/type-preset.jsonc', id_suffix: 'number', default_preset: 'section', label: 'Style', select_conditional: "block.settings.media_type == 'number'" %]
+    [% json 'schema/type-custom.jsonc', id_suffix: 'number', resize: true, resize_label: 'Size', resize_conditional: "block.settings.media_type == 'number' and block.settings.type_preset_number != 'custom'", default_font: 'heading', default_size: '8', conditional: "block.settings.media_type == 'number' and block.settings.type_preset_number == 'custom'" %]
+
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "default": "stacked",
+      "options": [
+        {"value": "stacked", "label": "⬒ Callout on top", "group": "Stacked"},
+        {"value": "between", "label": "☰ Callout between title and text", "group": "Stacked"},
+        {"value": "below", "label": "⬓ Callout on bottom", "group": "Stacked"},
+        {"value": "inline", "label": "⤵ Callout next to title", "group": "Inline"},
+        {"value": "all_inline", "label": "⟿ Everything on one line", "group": "Inline"},
+        {"value": "side_left", "label": "◧ Callout on left", "group": "Side by side"},
+        {"value": "side_right", "label": "◨ Callout on right", "group": "Side by side"}
+      ]
+    },
+    {
+      "type": "text_alignment",
+      "id": "content_align",
+      "label": "Alignment",
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "vertical_align",
+      "label": "Vertical alignment",
+      "default": "center",
+      "options": [
+        {"value": "start", "label": "⤒"},
+        {"value": "center", "label": "—"},
+        {"value": "end", "label": "⤓"}
+      ],
+      "visible_if": "{{ block.settings.layout == 'side_left' or block.settings.layout == 'side_right' or block.settings.layout == 'inline' or block.settings.layout == 'all_inline' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_gap",
+      "label": "Set gap",
+      "default": false
+    },
+    [% json 'schema/grid-gap-setting.jsonc', default_gap: 'sm', conditional: 'block.settings.set_gap' %]
+    [% json 'schema/grid-gap-setting.jsonc', id_suffix: 'x', default_gap: 'sm', gap_label: 'Horizontal gap', gap_custom_label: 'Custom horizontal gap', conditional: "block.settings.layout == 'side_left' or block.settings.layout == 'side_right' or block.settings.layout == 'inline' or block.settings.layout == 'all_inline'" %]
+    {
+      "type": "checkbox",
+      "id": "limit_width",
+      "label": "Limit width",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "Limit",
+      "unit": "px",
+      "min": 100,
+      "max": 1100,
+      "step": 10,
+      "default": 500,
+      "visible_if": "{{ block.settings.limit_width }}"
+    },
+
+    {
+      "type": "header",
+      "content": "Title"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "title",
+      "label": "Title",
+      "default": "Quality guaranteed"
+    },
+    [% json 'schema/type-preset.jsonc', default_preset: 'h6' %]
+    [% json 'schema/type-custom.jsonc', resize: true, default_font: 'heading', default_size: '6' %]
+
+    {
+      "type": "header",
+      "content": "Text"
+    },
+    {
+      "type": "richtext",
+      "id": "body",
+      "label": "Text"
+    },
+    [% json 'schema/type-preset.jsonc', id_suffix: 'body', default_preset: 'p' %]
+    [% json 'schema/type-custom.jsonc', id_suffix: 'body', resize: true, default_font: 'body', default_size: '4' %]
+
+    {
+      "type": "header",
+      "content": "Color"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_color_callout",
+      "label": "Set callout color",
+      "default": false
+    },
+    [% json 'schema/color-dropdown.jsonc', custom: true, muted: true, id_suffix: 'callout', conditional: 'block.settings.set_color_callout' %]
+    {
+      "type": "color",
+      "id": "color_shade",
+      "alpha": true,
+      "label": "Custom shade",
+      "default": "#00000080",
+      "info": "Accent color for two-tone art icons",
+      "visible_if": "{{ block.settings.icon_set == 'art' and block.settings.set_color_callout == true and block.settings.color_callout == 'custom' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_color",
+      "label": "Set title color",
+      "default": false
+    },
+    [% json 'schema/color-dropdown.jsonc', custom: true, muted: true, conditional: 'block.settings.set_color' %]
+    {
+      "type": "checkbox",
+      "id": "set_color_body",
+      "label": "Set text color",
+      "default": false
+    },
+    [% json 'schema/color-dropdown.jsonc', custom: true, muted: true, id_suffix: 'body', default_color: 'muted', conditional: 'block.settings.set_color_body' %]
+  ],
+  "presets": [
+    {
+      "name": "Callout",
+      "category": "Content"
+    }
+  ]
+}
+{% endschema %}

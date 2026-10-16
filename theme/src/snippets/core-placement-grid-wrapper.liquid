@@ -1,0 +1,50 @@
+{% doc %}
+  - Renders placement grid wrapper for content over background media
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {string} [content]
+  @param {string} [controls_alignment] - vars-placement-controls-horizontal-* suffix
+  @param {string} [horizontal_placement] - defaults to s.horizontal_placement
+  @param [padding] - padding step, or false for none, defaults to s.padding
+  @param {number} [padding_custom] - padding in pixels when padding is 'custom', defaults to s.padding_custom
+  @param {object} [s] - settings object
+  @param {string} [style] - inline styles
+  @param {string} [vertical_placement] - 'top', 'middle', 'bottom', or 'full', defaults to s.vertical_placement
+{% enddoc %}
+{%- liquid
+  assign vertical_placement = vertical_placement | default: s.vertical_placement, allow_false: true
+  assign horizontal_placement = horizontal_placement | default: s.horizontal_placement, allow_false: true
+  assign padding = padding | default: s.padding, allow_false: true
+  assign padding_custom = padding_custom | default: s.padding_custom, allow_false: true
+-%}
+
+{% if content != blank %}
+  <div class="size-full z-10 {{ class }}" style="{{ style }}" {{ attributes }}>
+    <placement-grid
+      style="
+        {% if padding %}
+          {% render 'props-style-padding', padding: padding, padding_custom: padding_custom %}
+        {% endif %}
+      "
+      class="
+        size-full placement-grid
+        {% if vertical_placement and horizontal_placement %}
+          vars-placement-grid-{{ vertical_placement }}-{{ horizontal_placement }}
+        {% elsif vertical_placement %}
+          vars-placement-grid-{{ vertical_placement }}-center
+        {% elsif horizontal_placement %}
+          vars-placement-grid-middle-{{ horizontal_placement }}
+        {% endif %}
+
+        {% if controls_alignment %}
+          vars-placement-controls-horizontal-{{ controls_alignment }}
+        {% endif %}
+
+         has-[[data-controls]]:gap-x-md
+      "
+    >
+      {{ content }}
+    </placement-grid>
+  </div>
+{% endif %}

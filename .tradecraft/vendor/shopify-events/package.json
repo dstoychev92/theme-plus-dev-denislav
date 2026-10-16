@@ -1,0 +1,15 @@
+{
+  "name": "@shopify/events",
+  "version": "0.0.0",
+  "main": "./standard-events.js",
+  "types": "./standard-events.d.ts",
+  "exports": {
+    ".": {
+      "types": "./standard-events.d.ts",
+      "default": "./standard-events.js"
+    },
+    "./actions": {
+      "types": "./standard-actions.d.ts"
+    }
+  }
+}

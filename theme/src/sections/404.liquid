@@ -1,0 +1,55 @@
+{%- capture content -%}
+  <h1 class="type-h1">
+    <span class="text-content text-r15">{{ 'page.404.title' | t }}</span>
+
+    <br>
+
+    <span class="text-muted text-r10">{{ 'page.404.subheading' | t }}</span>
+  </h1>
+
+  <p class="mt-r10 text-r5">{{ 'page.404.subtext_html' | t }}</p>
+
+  <div class="mt-r10 flex w-full flex-col gap-r8 items-content-align">
+    {% content_for 'blocks' %}
+  </div>
+{%- endcapture -%}
+
+{%- render 'core-section',
+  s: section.settings,
+  content: content,
+  class: 'entrance-container',
+  inner_col_class: 'col-section-content justify-center text-content-align items-content-align',
+  photoswipe: false,
+  lazy_alpine: false
+-%}
+
+{% schema %}
+{
+  "name": "404",
+  "class": "section-404",
+  "blocks": [{"type": "@theme"}, {"type": "_search"}],
+  "settings": [
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "text_alignment",
+      "id": "content_align",
+      "label": "Text alignment",
+      "default": "center"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    [% json 'schema/section-content-width-setting.jsonc', default_width: 'custom', default_width_custom: 30 %]
+    [% json 'schema/section-padding-settings.jsonc' %]
+  ]
+}
+{% endschema %}

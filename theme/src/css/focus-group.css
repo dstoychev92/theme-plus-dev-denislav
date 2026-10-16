@@ -1,0 +1,33 @@
+@layer components {
+  @media screen(md) {
+    /* Group a set of items that can be focused on */
+    .focus-group {
+      .focus-group-item {
+        transition-property: opacity;
+        transition-duration: 0.5s;
+        transition-timing-function: var(--ease-in-out);
+      }
+
+      /* Add an active styling to an item when other focus items are being hovered, focused, clicked or have a popup open */
+      &:has(
+        .focus-group-item:hover,
+        .focus-group-item:focus-within,
+        .focus-group-item:active,
+        .focus-group-item:focus,
+        .focus-group-item[aria-expanded='true'],
+        .focus-group-item *[aria-expanded='true']
+      ) {
+        .focus-group-item:not(
+          :hover,
+          :active,
+          :focus,
+          :focus-within,
+          [aria-expanded='true'],
+          :has([aria-expanded='true'])
+        ) {
+          opacity: 0.5;
+        }
+      }
+    }
+  }
+}

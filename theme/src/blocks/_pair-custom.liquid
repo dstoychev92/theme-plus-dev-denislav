@@ -1,0 +1,87 @@
+{% doc %}
+  - Renders a pair column of freely placed blocks
+
+  @param {string} [block_style] - inline styles for this block instance
+{% enddoc %}
+
+{% capture blocks %}
+  {% content_for 'blocks' %}
+{% endcapture %}
+
+{% capture placement %}
+  {% render 'core-placement-grid', content: blocks, s: block.settings, attributes: 'data-test-id="pair-content"' %}
+{% endcapture %}
+
+{% capture class %}
+  entrance-container [--sticky-padding:--pair-pt]
+{% endcapture %}
+
+{% render 'pair-column',
+  s: block.settings,
+  content: placement,
+  class: class,
+  style: block_style,
+  attributes: block.shopify_attributes
+%}
+
+{% schema %}
+{
+  "name": "Pair content",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    [% json 'schema/vertical-placement-setting.jsonc' %]
+    [% json 'schema/horizontal-placement-setting.jsonc', default_horizontal_placement: 'left' %]
+
+    [% json 'schema/color-settings-column-solid.jsonc', default_background: 'tint' %]
+    {
+      "type": "header",
+      "content": "Border"
+    },
+    [% json 'schema/border-settings.jsonc' %]
+    {
+      "type": "header",
+      "content": "Rounding",
+      "visible_if": "{{ block.settings.set_color_scheme or block.settings.set_border }}"
+    },
+    [% json 'schema/rounding-large.jsonc', conditional: 'block.settings.set_color_scheme or block.settings.set_border' %]
+
+    [% json 'schema/buffer-spacing.jsonc' %]
+
+    {
+      "type": "header",
+      "content": "Gap"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_gap",
+      "label": "Set gap",
+      "default": false
+    },
+    [% json 'schema/grid-gap-setting.jsonc', default_gap: 'md', conditional: 'block.settings.set_gap' %]
+    {
+      "type": "header",
+      "content": "Height"
+    },
+    [% json 'schema/pair-column-height-setting.jsonc', image_height: false %]
+  ],
+  "blocks": [
+    {
+      "type": "@theme"
+    },
+    {
+      "type": "@app"
+    },
+    [% json 'schema/blocks-extended.jsonc' %]
+  ],
+  "presets": [
+    {
+      "name": "Pair content",
+      "blocks": []
+    }
+  ]
+}
+{% endschema %}

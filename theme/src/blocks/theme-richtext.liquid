@@ -1,0 +1,63 @@
+{% doc %}
+  - Renders rich text
+{% enddoc %}
+
+{%- assign limit_width = block.settings.limit_width -%}
+{%- assign max_width = block.settings.max_width -%}
+
+{% capture style %}
+  {% if limit_width %}
+    {% render 'props-style-max-width', max_width: max_width %}
+  {% endif %}
+
+  {% if block.settings.set_color and block.settings.color == 'custom' %}
+    --color-custom-text: {{ block.settings.color_custom }};
+  {% endif %}
+{% endcapture %}
+
+{% capture class %}
+  {% if block.settings.set_color %}
+    text-{{ block.settings.color | default: 'content' }}
+  {% else %}
+    text-default
+  {% endif %}
+  {% comment %} Disable entrance animations in visual preview mode to prevent "No preview available" error {% endcomment %}
+  {% unless request.visual_preview_mode %}
+    entrance-item entrance-standard
+  {% endunless %}
+{% endcapture %}
+
+{% render 'core-richtext',
+  s: block.settings,
+  attributes: block.shopify_attributes,
+  class: class,
+  style: style
+%}
+
+{% schema %}
+{
+  "name": "Rich text",
+  "tag": null,
+  "settings": [
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p><strong>Tell your story.</strong> Use rich text to share information about your brand or products with customers.</p>"
+    },
+    [% json 'schema/type-richtext-resize-all-setting.jsonc', default: 'md' %]
+    [% json 'schema/width-limit-setting.jsonc' %]
+    {
+      "type": "header",
+      "content": "Color"
+    },
+    [% json 'schema/color-dropdown.jsonc', optional: true, custom: true, muted: true %]
+  ],
+  "presets": [
+    {
+      "name": "Rich text",
+      "category": "Basic"
+    }
+  ]
+}
+{% endschema %}

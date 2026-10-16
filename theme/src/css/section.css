@@ -1,0 +1,261 @@
+@layer base {
+  :root {
+    /*****************************/
+    /* Section default variables */
+    /*****************************/
+
+    /* Vertical inter-section spacing controlled by theme settings that gives page its rhythm */
+    --section-rhythm: calc(var(--raw-section-rhythm) * var(--r-multiplier));
+
+    /* Sections are full width by default */
+    --section-width: 100%;
+    /* Page and fullpad are equal when the screen is smaller than the page-width */
+    /* The 'min' allows width-page to obey buffer, but not exceed page-width */
+    --section-width-fullpad: calc(100% - calc(var(--root-buffer) * 2));
+    --section-width-page: min(var(--page-width), var(--section-width-fullpad));
+
+    /* Content takes up its entire section width by default (minus edge buffer) */
+    --section-content-width: 100%;
+
+    --section-background-row-start: 1;
+    --section-background-row-end: -1;
+    --section-background-col-start: section-start;
+    --section-background-col-end: section-end;
+
+    --section-content-row-start: 1;
+    --section-content-row-end: -1;
+    --section-content-col-start: content-start;
+    --section-content-col-end: content-end;
+
+    /* Height vars */
+    --height-screen: 100vh;
+    --height-screen-five-sixths: 83vh;
+    --height-screen-three-quarters: 75vh;
+    --height-screen-one-half: 50vh;
+    --height-screen-one-third: 33.33vh;
+    --height-screen-one-quarter: 25vh;
+  }
+
+  /* Small viewport height (svh) prevents dynamic url bar */
+  /* from changing the section height on mobile devices */
+  @supports (height: 100svh) {
+    :root {
+      --height-screen: 100svh;
+      --height-screen-five-sixths: 83svh;
+      --height-screen-three-quarters: 75svh;
+      --height-screen-one-half: 50svh;
+      --height-screen-one-third: 33svh;
+      --height-screen-one-quarter: 25svh;
+    }
+  }
+}
+
+@layer components {
+  /* ---------------------------- */
+  /* Section Grid                 */
+  /* ---------------------------- */
+
+  .section-grid {
+    /* Distance from the window edge to the section edge */
+    --layout-bg-buffer-x: calc((100% - var(--section-width, 0px)) / 2);
+
+    /* Distance from the section edge to the content edge. Ensures that content is inset from the edge of the page by at least the edge buffer so it doesn't touch the edge of the page or background */
+    --section-content-margin: max(
+      calc((var(--section-width) - var(--section-content-width)) / 2),
+      var(--layout-buffer-x, 0px)
+    );
+
+    /* prettier-ignore */
+    --section-grid-template-columns:
+      [fullbleed-start]
+      var(--layout-bg-buffer-x)
+      [section-start]
+      var(--section-content-margin)
+      [content-start]
+      var(--section-grid-content-cols, minmax(0, 1fr))
+      [content-end]
+      var(--section-content-margin)
+      [section-end]
+      var(--layout-bg-buffer-x)
+      [fullbleed-end];
+
+    /* prettier-ignore */
+    --section-grid-template-rows: auto;
+
+    display: grid;
+    grid-template-areas: var(--section-grid-areas-mobile, var(--section-grid-areas));
+    grid-template-columns: var(--section-grid-template-columns-mobile, var(--section-grid-template-columns));
+    grid-template-rows: var(--section-grid-template-rows-mobile, var(--section-grid-template-rows));
+    column-gap: var(--section-grid-column-gap-mobile, var(--section-grid-column-gap));
+    row-gap: var(--section-grid-row-gap-mobile, var(--section-grid-row-gap));
+
+    @media screen(md) {
+      grid-template-areas: var(--section-grid-areas-desktop, var(--section-grid-areas));
+      grid-template-columns: var(--section-grid-template-columns-desktop, var(--section-grid-template-columns));
+      grid-template-rows: var(--section-grid-template-rows-desktop, var(--section-grid-template-rows));
+    }
+  }
+
+  /* Pair sections */
+
+  @media screen(md) {
+    .vars-section-grid-layout-pair {
+      --pair-column-content-col-1-width: 1fr;
+      --pair-column-content-col-2-width: 1fr;
+
+      /* prettier-ignore */
+      --section-grid-content-cols:
+        minmax(0, var(--pair-column-content-col-1-width))
+        [col-gap-start]
+        var(--pair-gap-x)
+        [col-gap-end]
+        minmax(0, var(--pair-column-content-col-2-width))
+      ;
+    }
+  }
+
+  @media screen(md) {
+    .vars-section-grid-layout-pair-first-wide {
+      --pair-column-content-col-1-width: 7fr;
+      --pair-column-content-col-2-width: 5fr;
+    }
+
+    .vars-section-grid-layout-pair-second-wide {
+      --pair-column-content-col-1-width: 5fr;
+      --pair-column-content-col-2-width: 7fr;
+    }
+
+    .vars-section-grid-layout-pair-even {
+      --pair-column-content-col-1-width: 1fr;
+      --pair-column-content-col-2-width: 1fr;
+    }
+  }
+
+  /* Card list sections */
+  /* The card list row is auto instead of 1fr since WebKit keeps the stale flexible row height when the cards grow on a narrower viewport */
+  .vars-section-grid-layout-card-list-rows-tabs {
+    /* prettier-ignore */
+    --section-grid-template-rows:
+      [section-title-start]
+      minmax(0, max-content)
+      [section-title-end header-start btns-start]
+      minmax(0, max-content)
+      [header-end btns-end card-list-start]
+      auto
+      [card-list-end]
+    ;
+  }
+
+  .vars-section-grid-layout-card-list-rows-footer {
+    /* prettier-ignore */
+    --section-grid-template-rows:
+      [section-title-start header-start btns-start]
+      minmax(0, max-content)
+      [section-title-end header-end btns-end card-list-start]
+      auto
+      [footer-start card-list-end]
+      minmax(0, max-content)
+      [footer-end]
+    ;
+  }
+  /* This is defined below .vars-section-grid-layout-card-list-rows-tabs and .vars-section-grid-layout-card-list-rows-footer so that it overrides them as needed in related.liquid */
+  .vars-section-grid-layout-card-list-rows {
+    /* prettier-ignore */
+    --section-grid-template-rows:
+      [section-title-start header-start btns-start]
+      minmax(0, max-content)
+      [section-title-end header-end btns-end card-list-start]
+      auto
+      [card-list-end]
+    ;
+  }
+
+  .vars-section-grid-layout-card-list-title-center {
+    /* TODO: Explain why we use 0px here */
+    /* prettier-ignore */
+    --section-grid-content-cols:
+      0px [card-list-start btn-prev-start]
+      minmax(0, max-content)
+      [btn-prev-end header-start section-title-start]
+      minmax(0, 1fr)
+      [header-end btn-next-start section-title-end]
+      minmax(0, max-content)
+      [btn-next-end card-list-end] 0px;
+  }
+
+  .vars-section-grid-layout-card-list-title-left {
+    /* prettier-ignore */
+    --section-grid-content-cols:
+      0px [card-list-start section-title-start header-start]
+      minmax(0, min-content)
+      minmax(0, 1fr)
+      [header-end section-title-end btns-start]
+      minmax(0, max-content)
+      [btns-end card-list-end] 0px;
+  }
+
+  .vars-section-grid-layout-card-list-title-right {
+    /* prettier-ignore */
+    --section-grid-content-cols:
+      0px [card-list-start btns-start]
+      minmax(0, max-content)
+      [btns-end header-start section-title-start]
+      minmax(0, 1fr)
+      minmax(0, min-content)
+      [header-end card-list-end section-title-end] 0px;
+  }
+
+  /* --------------------------------- */
+  /* Section Custom Height SVH Support */
+  /* --------------------------------- */
+
+  .vars-custom-height-svh-support {
+    @supports (height: 100svh) {
+      --custom-height-unit: 1svh;
+    }
+  }
+  .vars-mobile-custom-height-svh-support {
+    @supports (height: 100svh) {
+      --mobile-custom-height-unit: 1svh;
+    }
+  }
+
+  /* -------------------------------- */
+  /* Section Width                    */
+  /* -------------------------------- */
+
+  .vars-section-width-bleed {
+    @apply [--section-width:100%];
+  }
+
+  .vars-section-width-full {
+    @apply [--section-width:var(--section-width-fullpad)];
+  }
+
+  .vars-section-width-page {
+    @apply [--section-width:var(--section-width-page)];
+    @apply [--layout-buffer-x:var(--section-setting-space)];
+  }
+
+  /* ---------------------------------------- */
+  /* Section Content Width                    */
+  /* ---------------------------------------- */
+
+  .vars-section-content-width-full {
+    @apply [--section-content-width:100%];
+  }
+
+  .vars-section-content-width-page {
+    @apply [--section-content-width:var(--page-width)];
+  }
+
+  .vars-section-content-width-custom {
+    /* We need to use percentages and px values with min (instead of calc) so grid calculations above can work for all values */
+    --mobile-handoff-width: min(var(--raw-custom-width-mobile-percent), var(--raw-custom-width-desktop-px));
+    --tablet-handoff-width: min(var(--raw-custom-width-tablet-percent), var(--raw-custom-width-desktop-px));
+
+    --section-content-width: var(--mobile-handoff-width);
+    @apply md:[--section-content-width:var(--tablet-handoff-width)];
+    @apply lg:[--section-content-width:var(--raw-custom-width-desktop-px)];
+  }
+}

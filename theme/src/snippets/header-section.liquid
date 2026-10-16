@@ -1,0 +1,192 @@
+{% doc %}
+  - Renders one header row with its background and sticky behavior
+
+  Defines the x-data that header-link reads for the nav underline.
+
+  @param {string} [attributes]
+  @param {string} [background] - 'transparent', 'canvas', 'tint', or 'custom', defaults to s.background then 'canvas'
+  @param {color} [background_color] - color behind a 'custom' background, defaults to s.background_color
+  @param {string} [class] - The classes
+  @param {color_scheme} [color_scheme] - defaults to s.color_scheme
+  @param {string} content
+  @param {string} [content_width] - 'full' or 'page', defaults to s.content_width
+  @param {string} [inner_class] - classes for the inner row
+  @param {number} [padding_y] - vertical padding in pixels, defaults to s.padding_y then 0
+  @param {object} [s] - settings object
+  @param {string} [style] - inline styles
+  @param {string} [tag] - defaults to 'div'
+  @param {string} [target_device] - 'mobile' or 'desktop', defaults to s.target_device
+{% enddoc %}
+
+{% liquid
+  assign sticky_style = s.sticky_style
+  assign transparent = s.transparent
+
+  if sticky_style != 'never'
+    assign sticky_background_style = s.sticky_background_style
+  endif
+
+  assign tag = tag | default: 'div'
+
+  if transparent
+    assign is_overlay = true
+  endif
+
+  assign content_width = content_width | default: s.content_width, allow_false: true
+  assign padding_y = padding_y | default: s.padding_y, allow_false: true
+  assign target_device = target_device | default: s.target_device
+
+  assign color_scheme = color_scheme | default: s.color_scheme, allow_false: true
+  assign background = background | default: s.background
+  assign background_color = background_color | default: s.background_color
+%}
+
+{% stylesheet %}
+  :root {
+    --header-bg-opacity: 1;
+    --header-auto-border: 1;
+    --header-blur-amount: 0px;
+    --header-transparent-white-logo-opacity: 0;
+
+    /* Default approximate values until JS kicks in and sets the correct values */
+
+    /* Sum of all of the header rows */
+    --header-height: 50px;
+
+    /* Distance from viewport top to bottom of the header */
+    --header-bottom: 50px;
+
+    /* Height of the currently sticky rows. 0px when at the top of the page or when no rows are sticky. */
+    --header-sticky-offset: 0px;
+  }
+
+  /* Default dark header logo opacity */
+  header:has([data-header-menu-style='dark']):is(
+      [data-header-stuck],
+      [data-header-hover],
+      :focus-within,
+      :has([aria-expanded='true']),
+      :has(:popover-open),
+      :has([data-megamenu-visible])
+    ) {
+    /* Transparent header selector when stuck, hover, focus, etc */
+    --header-transparent-white-logo-opacity: 1;
+  }
+  header:has([data-header-menu-style='dark']):not([data-overlay-header]) {
+    /* Non-transparent header selector - default */
+    --header-transparent-white-logo-opacity: 1;
+  }
+
+  /* Hover devices */
+  @media (hover: hover) {
+    /* Blur/solid when header is stuck */
+    header[data-header-stuck]:not(
+        [data-header-hover],
+        :focus-within,
+        :has([aria-expanded='true']),
+        :has(:popover-open),
+        :has([data-megamenu-visible])
+      )
+      [data-sticky-blur] {
+      --header-bg-opacity: 0.75;
+      --header-blur-amount: 10px;
+      --header-auto-border: 1;
+    }
+  }
+
+  /* Touch devices */
+  @media (pointer: coarse) and (hover: none) {
+    /* Blur/solid when header is stuck */
+    header[data-header-stuck] [data-sticky-blur] {
+      --header-bg-opacity: 0.6;
+      --header-blur-amount: 10px;
+      --header-auto-border: 1;
+    }
+  }
+{% endstylesheet %}
+
+<{{ tag }}
+  class="
+    {% if color_scheme -%}vars-{{ color_scheme.id }}{%- endif %}
+    {% if content_width -%}vars-section-content-width-{{ content_width }}{%- endif %}
+    section-grid relative w-full overflow-hidden text-content
+
+    {% case background -%}
+      {%- when 'transparent' -%}
+        bg-transparent
+      {%- when 'canvas' -%}
+        bg-canvas
+      {%- when 'tint' -%}
+        bg-content-mix-5
+      {%- when 'custom' -%}
+        bg-[--section-custom-bg]
+      {%- else -%}
+        bg-canvas
+    {%- endcase %}
+    bg-opacity-[--header-bg-opacity]
+    {% if sticky_background_style == 'blur' %}
+      backdrop-blur-[var(--header-blur-amount)]
+    {% endif %}
+    will-change-[opacity,transform,background-color]
+    transition-[background-color] duration-400
+
+    [--header-section-border-opacity:calc(var(--line-alpha-subtle)*(var(--header-auto-border)))]
+    [--header-row-height:calc(var(--control-height)+var(--section-pt,0px)+var(--section-pb,0px))]
+    [--control-padding-x:--control-padding]
+
+    {{ class }}
+  "
+  style="
+    --section-pt: calc({{- padding_y | default: 0 -}}px * var(--r-multiplier));
+    --section-pb: calc({{- padding_y | default: 0 -}}px * var(--r-multiplier));
+
+    {%- if background == 'custom' and background_color -%}
+      --section-custom-bg: hsl({{ background_color.hue }} {{ background_color.saturation }}% {{ background_color.lightness }}% / var(--header-bg-opacity));
+    {%- elsif background == 'custom' -%}
+      --section-custom-bg: transparent;
+    {%- endif -%}
+
+    {{ style }}
+  "
+  x-data="
+    {
+      underlinedEl: null,
+      initialUnderlinedEl: null,
+      hasInteractedWithNav: false,
+      setUnderlinedEl(el) {
+        if (el) this.hasInteractedWithNav = true;
+        this.underlinedEl = el;
+      }
+    }
+  "
+  x-shared-layout
+  x-hover:end.delay.500ms="setUnderlinedEl(null)"
+  x-header-stack:header.{{ sticky_style }}
+
+  data-sticky-header="{{ sticky_style }}"
+
+  {% if is_overlay %}
+    {% comment %} Mark this header as one that can appear as an overlay over other content on the page like image banners {% endcomment %}
+    data-overlay-header
+  {% endif %}
+
+  {% if sticky_background_style == 'blur' %}
+    data-sticky-blur
+  {% endif %}
+
+  {% comment %} Close any open popup when use presses escape {% endcomment %}
+  @keydown.escape.stop.prevent="$store.headerMenu.close()"
+
+  {{ attributes }}
+>
+  <div
+    class="
+      col-section-content text-content cq-width
+      flex flex-row flex-nowrap items-stretch gap-x-r8
+      min-h-[--header-row-height] relative z-[1]
+      {{ inner_class }}
+    "
+  >
+    {{ content }}
+  </div>
+</{{ tag }}>

@@ -1,0 +1,59 @@
+{% doc %}
+  - Renders inline text split into words, with auto or full highlight
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {object} [s] - settings object
+  @param {string} [split_text_attributes] - attributes for the split-text wrapper
+{% enddoc %}
+
+{% liquid
+  assign text = s.text
+  assign highlight_toggle = s.highlight_toggle
+  assign enable_typography = s.enable_typography
+  assign outline_text = s.outline_text
+%}
+
+{% capture style %}
+  {% if s.set_color and s.color == 'custom' %}
+    --color-custom-text: {{ s.color_custom }};
+  {% endif %}
+{% endcapture %}
+
+{% capture class %}
+  inline inline-richtext
+  {{ class }}
+
+  {% if enable_typography %}
+    {% render 'props-class-type-preset', s: s, type_preset: 'custom' %}
+  {% endif %}
+
+  {% if s.set_color %}
+    text-{{ s.color | default: 'content' }}
+  {% else %}
+    text-content
+  {% endif %}
+
+  {% if outline_text %}
+    text-stroke
+    {% if s.set_color and s.color == 'custom' %}
+      text-stroke-[color:--color-custom-text]
+    {% else %}
+      text-stroke-current
+    {% endif %}
+  {% endif %}
+{% endcapture %}
+
+{% capture split_text %}
+  {% render 'split-text', text: text, attributes: split_text_attributes %}
+{% endcapture %}
+
+<span style="{{ style }}" class="{{ class }}" {{ attributes }}>
+  {% if highlight_toggle == 'auto' %}
+    {% render 'text-autohighlight', text: split_text, s: s %}
+  {% elsif highlight_toggle == 'full' %}
+    {% render 'text-highlight', text: split_text, s: s %}
+  {% else %}
+    {{ split_text }}
+  {% endif %}
+</span>

@@ -1,0 +1,116 @@
+{% doc %}
+  - Renders filter form
+
+  @param {number} [all_products_count] - unused
+  @param {boolean} [autosubmit] - submits as each filter changes, defaults to true
+  @param {string} [class] - The classes
+  @param {string} [default_sort_by] - fallback sort key for the filter tags, defaults to collection.default_sort_by
+  @param {string} filter_url - form action URL
+  @param {object} [filters]
+  @param {string} [form] - ID of the form the inputs belong to
+  @param {string} [id] - form ID and prefix for the filter IDs, defaults to 'collection-filters'
+  @param {number} [products_count] - unused
+  @param {string} [q] - search query carried through the form
+  @param {section} [section]
+  @param {boolean} [show_filter_tags] - renders the active filter tags above the list
+  @param {string} [sort_by] - sort key for the filter tags, defaults to collection.sort_by
+{% enddoc %}
+
+{% liquid
+  assign base_id = id | default: 'collection-filters'
+  assign expanded_filters_count = section.settings.expanded_filters_count
+  assign filter_menu = section.settings.filter_menu
+  assign filter_menu_title = section.settings.filter_menu_title
+  assign visible_filter_options_limit = section.settings.visible_filter_options_limit | default: 6
+
+  assign sort_by = sort_by | default: collection.sort_by
+  assign default_sort_by = default_sort_by | default: collection.default_sort_by
+  assign products_count = products_count | default: collection.products_count
+  assign all_products_count = all_products_count | default: collection.all_products_count
+%}
+
+<form
+  action="{{ filter_url }}"
+  id="{{ base_id }}"
+  class="flex flex-col gap-y-r7 {{ class }}"
+  aria-label="{{ 'collection.filters.filters' | t }}"
+  data-test-id="collection-filters"
+  x-section-api:form
+  x-ref="collectionFiltersForm"
+  {% comment %} Enter on a checkbox/radio natively submits the form without toggling it — a no-op refresh that looks broken to keyboard users. Activate the option instead {% endcomment %}
+  @keydown.enter="
+    if ($event.target.matches('input[type=checkbox], input[type=radio]')) {
+      $event.preventDefault();
+      $event.target.click();
+    }
+  "
+  {% comment %} Drop empty facet values (the availability 'Show' radio always submits filter.v.availability=) so they don't pollute the URL on every submission {% endcomment %}
+  @formdata="
+    [...$event.formData.entries()].forEach(([key, value]) => {
+      if (value === '' && key.startsWith('filter.')) $event.formData.delete(key);
+    })
+  "
+  {% unless autosubmit == false %}
+    {% comment %} Autosubmit when any form input changes {% endcomment %}
+    @input.debounce.1500ms="$el.requestSubmit()"
+  {% endunless %}
+>
+  {% if show_filter_tags %}
+    {% render 'collection-filter-tags',
+      url: filter_url,
+      filters: filters,
+      sort_by: sort_by,
+      default_sort_by: default_sort_by
+    %}
+  {% endif %}
+
+  {% if q %}
+    <input type="hidden" name="q" value="{{ q }}">
+  {% endif %}
+
+  {% comment %} A GET submit rebuilds the query from the form fields, so the type in the action url is dropped and a filtered search widens back to every resource type {% endcomment %}
+  {% if search.types.size > 0 %}
+    <input type="hidden" name="type" value="{{ search.types | join: ',' }}">
+  {% endif %}
+
+  {% if filters.size > 0 or filter_menu.count > 0 %}
+    <div
+      class="
+        [--filter-row-height:--row-sm]
+        [--filter-row-gap:--r1]
+        [--filter-group-gap:--r5]
+        flex flex-col text-r2
+        gap-y-[--filter-group-gap]
+      "
+    >
+      {% liquid
+        if filter_menu.count > 0
+          assign expanded = false
+          if expanded_filters_count > 0
+            assign expanded = true
+            assign expanded_filters_count = expanded_filters_count | minus: 1 | at_least: 0
+          endif
+          render 'filter-list-links', filter_menu: filter_menu, label: filter_menu_title, expanded: expanded, visible_limit: visible_filter_options_limit
+        endif
+
+        for filter in filters
+          assign filter_base_id = base_id | append: '-' | append: forloop.index0
+          assign expanded = false
+          if forloop.index0 < expanded_filters_count
+            assign expanded = true
+          endif
+          render 'filter', filter: filter, base_id: filter_base_id, form: form, expanded: expanded, visible_limit: visible_filter_options_limit
+        endfor
+      %}
+
+      <button type="submit" data-test-id="filter-button" class="sr-only" tabindex="-1">
+        {{ 'collection.filters.filter' | t }}
+      </button>
+    </div>
+
+    <noscript>
+      {% assign no_js_button_label = 'other.no_js.submit' | t %}
+      {% render 'core-button', type: 'submit', label: no_js_button_label %}
+    </noscript>
+  {% endif %}
+</form>

@@ -1,0 +1,100 @@
+{% doc %}
+  - Renders tab group from theme blocks
+
+  Each panel block renders its own tab button as a data-tab-template, and the tab list clones
+  it with x-clone, because Liquid cannot read a theme block before it renders. With
+  section.settings.enable_ensemble the root becomes x-ensemble:tabs.
+
+  @param {string} [attributes]
+  @param {object} [blocks] - panel theme blocks
+  @param {object} [s] - settings object
+  @param {section} [section]
+  @param {boolean} [section_tabs] - true uses x-section-tabs in place of x-tabs
+  @param {string} [tab_panels] - rendered panels placed before the block panels
+  @param {string} [tabs] - rendered tab buttons placed before the cloned ones
+{% enddoc %}
+
+{% liquid
+  assign set_gap_tab_y = s.set_gap_tab_y
+  assign gap_tab_y = s.gap_tab_y
+  assign gap_custom_tab_y = s.gap_custom_tab_y
+%}
+
+{% for block in blocks %}
+  {% comment %}
+    Extract tab button from each tab content block and render it in the tab list.
+    Would be nicer to be able to do all this rendering in liquid but theme blocks currently makes that impossible
+  {% endcomment %}
+  {% capture tabs %}
+    {{ tabs }}
+    <template x-clone="tabTemplates[{{ forloop.index0 }}]"></template>
+  {% endcapture %}
+
+  {% capture tab_panels %}
+    {{ tab_panels }}
+    {% render block, block_index: forloop.index0 %}
+  {% endcapture %}
+{% endfor %}
+
+{% capture tabs_class %}
+  {% if set_gap_tab_y %}
+    gap-y-layout
+  {% else %}
+    gap-y-r8
+  {% endif %}
+{% endcapture %}
+
+{% if set_gap_tab_y %}
+  {% capture tabs_attributes %}
+    style="
+      {% render 'props-style-gap', gap: gap_tab_y, gap_custom: gap_custom_tab_y, vars: false, apply: false %}
+      --layout-gutter-y: var(--custom-gutter-y);
+    "
+  {% endcapture %}
+{% endif %}
+
+<tab-group class="flex flex-col w-full" {{ attributes }}>
+  <div
+    {% if section_tabs %}
+      x-section-tabs
+    {% elsif section.settings.enable_ensemble %}
+      x-ensemble:tabs
+      x-ensemble:slideshow.duration.{{ section.settings.duration | times: 1000 }}ms
+    {% else %}
+      x-tabs
+    {% endif %}
+    x-data="
+      {
+        get tabTemplates() {
+          const templates = Array.from($el.querySelectorAll('[data-tab-template]'));
+          return templates.sort((a, b) => {
+            const indexA = parseInt(a.getAttribute('data-tab-template') ?? '0', 10);
+            const indexB = parseInt(b.getAttribute('data-tab-template') ?? '0', 10);
+            return indexA - indexB;
+          });
+        }
+      }
+    "
+    class="w-full flex flex-col {{ tabs_class }}"
+    x-overflow
+    :data-selected-index="$tabs.selectedIndex"
+    {{ tabs_attributes }}
+  >
+    {% if blocks.size > 1 %}
+      {% comment %} We need an extra container to do the alignment, because doing it on the tablist element will break the scrolling behavior when center-aligned {% endcomment %}
+      <div class="flex flex-col w-full items-content-align">
+        {% render 'core-tablist', tabs: tabs, s: s %}
+      </div>
+    {% endif %}
+
+    <tab-panels
+      class="
+        contents
+        {% comment %} Hide all but the first tab panel until alpine has loaded and taken over rendering {% endcomment %}
+        prealpine:[&>:not(:first-of-type)]:!hidden
+      "
+    >
+      {{ tab_panels }}
+    </tab-panels>
+  </div>
+</tab-group>

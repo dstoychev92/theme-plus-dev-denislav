@@ -1,0 +1,248 @@
+{% comment %}
+  Section: Pro Banner
+  Advanced banner with modular background blocks for complex multi-layer
+  compositions. Unlike section-banner which has a single background media,
+  this section uses _section-background blocks that accept sub-blocks like
+  _background-split, _background-collage-image, and _background-marquee.
+
+  Use when you need layered backgrounds, split imagery, collage layouts, or
+  creative compositions that a standard banner cannot achieve. Max 1 background
+  block — the complexity comes from nesting within that block.
+
+  Content is placed via horizontal/vertical placement settings over the
+  background. Color scheme defaults to "scheme-opposite". Supports transparent
+  header integration.
+{% endcomment %}
+
+{% capture content %}
+  {% content_for "block", id: "content", type: "_section-content" %}
+  {% content_for "blocks" %}
+
+  {% if section.settings.height == 'screen' %}
+    {% render 'scroll-button' %}
+  {% endif %}
+{% endcapture %}
+
+{% capture class %}
+  relative entrance-container
+{% endcapture %}
+
+{% render 'core-section-wrapper',
+  s: section.settings,
+  content: content,
+  contain_controls_rhythm: true,
+  contain_disables_transparent_header: true,
+  contain_controls_background: true,
+  class: class
+%}
+
+{% schema %}
+{
+  "name": "Banner layers",
+  "class": "section-pro-banner",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    [% json 'schema/height-setting.jsonc', context: 'section.settings.', default_height: 'screen-one-third', image_height: false, height_mobile: true %]
+    [% json 'schema/section-banner-width-settings.jsonc', contain_section_label: 'Contain section' %]
+    [% json 'schema/section-rounding-settings.jsonc' %]
+    [% json 'schema/section-border-settings.jsonc' %]
+    {
+      "type": "header",
+      "content": "Content layout"
+    },
+    [% json 'schema/section-conditional-content-width-setting.jsonc', default_width: "page" %]
+    [% json 'schema/vertical-placement-setting.jsonc' %]
+    [% json 'schema/horizontal-placement-setting.jsonc', default_horizontal_placement: 'left' %]
+    [% json 'schema/padding-settings.jsonc', context: 'section.settings.', id_prefix: 'content' %]
+    {
+      "type": "header",
+      "content": "Appearance"
+    },
+    [% json 'schema/color-settings-section-banner.jsonc', default_color_scheme: 'scheme-opposite' %]
+    [% json 'schema/transparent-header-settings.jsonc' %]
+    [% json 'schema/section-target-device-settings.jsonc' %]
+  ],
+  "blocks": [
+    {
+      "type": "_section-background"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Banner layers",
+      "category": "Core",
+      "blocks": [
+        {
+          "type": "_section-content",
+          "static": true,
+          "id": "content",
+          "blocks": [
+            {
+              "type": "theme-group-frame",
+              "blocks": [
+                {
+                  "type": "theme-text",
+                  "settings": {
+                    "text": "Introducing",
+                    "type_preset": "h5"
+                  }
+                },
+                {
+                  "type": "theme-decoration"
+                },
+                {
+                  "type": "theme-text",
+                  "settings": {
+                    "text": "The new collection",
+                    "type_preset": "h2"
+                  }
+                },
+                {
+                  "type": "theme-richtext",
+                  "settings": {
+                    "text": "<p>Thoughtfully made, honestly sold. Discover pieces worth keeping.</p>"
+                  }
+                },
+                {
+                  "type": "theme-group-row",
+                  "settings": {
+                    "gap": "lg"
+                  },
+                  "blocks": [
+                    {
+                      "type": "theme-button"
+                    },
+                    {
+                      "type": "theme-link"
+                    }
+                  ]
+                },
+              ],
+            },
+          ],
+        },
+        {
+          "type": "_section-background",
+          "blocks": [
+            {
+              "type": "_background-image"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Countdown banner with layers",
+      "category": "Try: Promote a deal",
+      "settings": {
+        "contain_section": true,
+        "section_width": "page"
+      },
+      "blocks": [
+        {
+          "type": "_section-content",
+          "static": true,
+          "id": "content",
+          "blocks": [
+            {
+              "type": "theme-group-frame",
+              "blocks": [
+                {
+                  "type": "theme-text",
+                  "settings": {
+                    "text": "Act Now",
+                    "type_preset": "kicker"
+                  }
+                },
+                {
+                  "type": "theme-countdown"
+                },
+                {
+                  "type": "theme-text",
+                  "settings": {
+                    "text": "Shop the archive",
+                    "type_preset": "h2"
+                  }
+                },
+                {
+                  "type": "theme-button",
+                  "settings": {
+                    "text": "Archive Sale",
+                    "href": "shopify://collections/all"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "_section-background",
+          "settings": {
+            "set_parallax": true,
+            "parallax": 0
+          },
+          "blocks": [
+            {
+              "type": "_background-marquee",
+              "settings": {
+                "top": 90
+              },
+              "blocks": [
+                {
+                  "type": "_background-spotlight-text",
+                  "settings": {
+                    "text": "Act Now"
+                  }
+                },
+                {
+                  "type": "_background-spotlight-text",
+                  "settings": {
+                    "text": "Limited time only"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "_background-collage-image",
+              "settings": {
+                "image_max_limit": 400,
+                "set_parallax": true,
+                "parallax": -50,
+                "left": 65
+              }
+            },
+            {
+              "type": "_background-collage-image",
+              "settings": {
+                "set_parallax": true,
+                "parallax": 50,
+                "left": 85
+              }
+            }
+          ]
+        },
+        {
+          "type": "_section-background",
+          "settings": {
+            "overlay_opacity": 80,
+            "set_parallax": true,
+            "parallax": 0
+          },
+          "blocks": [
+            {
+              "type": "_background-pattern-text"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "custom.overlays", "custom.drawers"]
+  }
+}
+{% endschema %}

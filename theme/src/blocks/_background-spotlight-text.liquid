@@ -1,0 +1,23 @@
+{% doc %}
+  - Renders one highlighted text item in a background marquee
+
+  Sits inside _background-marquee. Links in the text render as plain text.
+{% enddoc %}
+
+{% render 'marquee-text', s: block.settings, attributes: block.shopify_attributes, hide_links: true %}
+
+{% schema %}
+{
+  "name": "Spotlight text",
+  "tag": null,
+  "settings": [
+    [% json 'schema/highlight-text-settings.jsonc', link_warning: true %]
+  ],
+  "presets": [
+    {
+      "name": "Spotlight text",
+      "category": "Basic"
+    }
+  ]
+}
+{% endschema %}

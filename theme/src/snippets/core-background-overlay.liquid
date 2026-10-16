@@ -1,0 +1,31 @@
+{% doc %}
+  - Renders color overlay over background media
+
+  @param {string} [class] - The classes
+  @param {string} [overlay_color] - CSS color, defaults to s.overlay_color, then var(--canvas)
+  @param {number} [overlay_opacity] - percent, defaults to s.overlay_opacity, then 0. 0 prints nothing
+  @param {object} [s] - settings object
+  @param {boolean} [set_overlay] - false prints nothing, defaults to s.set_overlay, then true
+  @param {string} [style] - inline styles
+{% enddoc %}
+
+{% liquid
+  assign overlay_opacity = overlay_opacity | default: s.overlay_opacity | default: 0
+  assign overlay_color = overlay_color | default: s.overlay_color | default: 'var(--canvas)'
+
+  # Allow passing "false" to disable overlay from outside this snippet
+  if set_overlay == null
+    assign set_overlay = s.set_overlay | default: true, allow_false: true
+  endif
+%}
+
+{%- if overlay_opacity > 0 and set_overlay -%}
+  <background-overlay
+    class="block absolute overflow-hidden inset-0 {{ class }}"
+    style="
+      opacity: {{ overlay_opacity | divided_by: 100.0 }};
+      background-color: {{ overlay_color }};
+      {{ style }}
+    "
+  ></background-overlay>
+{%- endif -%}

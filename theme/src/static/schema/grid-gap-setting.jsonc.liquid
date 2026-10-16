@@ -1,0 +1,38 @@
+[% if id_suffix %]
+ [% assign _id_suffix = id_suffix | prepend: '_' %]
+[% endif %]
+[% assign context = context | default: 'block.settings.' %]
+[
+  {
+    "type": "select",
+    "id": "gap[= _id_suffix =]",
+    "label": "[= gap_label | default: 'Gap' =]",
+    "default": "[= default_gap | default: 'lg' =]",
+    [% if conditional %]
+    "visible_if": "{{ [= conditional =] }}",
+    [% endif %]
+    [% if info %]
+    "info": "[= info =]",
+    [% endif %]
+    "options": [
+      {"value": "sm", "label": "S"},
+      {"value": "md", "label": "M"},
+      {"value": "lg", "label": "L"},
+      {"value": "custom", "label": "⋯"}
+    ]
+  },
+  {
+    "type": "range",
+    "id": "gap_custom[= _id_suffix =]",
+    "label": "[= gap_custom_label | default: 'Custom gap' =]",
+    "default": [= default_gap_custom | default: min_gap_custom | default: 0 =],
+    "min": [= min_gap_custom | default: 0 =],
+    "max": [= max_gap_custom | default: 80 =],
+    "step": 2,
+    "unit": "px",
+    "visible_if": "{{ [= context =]gap[= _id_suffix =] == 'custom' [% if conditional %] and [= conditional =][% endif %] }}"
+  },
+]
+
+
+

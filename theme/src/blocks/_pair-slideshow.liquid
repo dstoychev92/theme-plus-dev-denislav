@@ -1,0 +1,151 @@
+{% doc %}
+  - Renders pair column with slideshow of _pair-slide blocks
+
+  Private, only offered by section-pair. When section.settings.enable_ensemble is on, the section autoplay and duration apply. The viewport carries data-hide-controls when pagination is off or there is one slide, and _pair-slide hides its controls from that marker.
+{% enddoc %}
+
+{% liquid
+  if section.settings.enable_ensemble
+    assign autoplay = section.settings.autoplay
+    assign duration = section.settings.duration | times: 1000
+  else
+    assign autoplay = block.settings.autoplay
+    assign duration = block.settings.duration | times: 1000
+  endif
+%}
+
+{% capture attributes %}
+  {% if section.settings.enable_ensemble %}
+    x-init="$ensemble.registerMember('slideshow', $el)"
+    x-ensemble:slideshow.duration.{{ duration }}ms
+    {% if request.design_mode %}
+      {% if autoplay %}
+        @shopify:block:select="$ensemble.autoplay = false"
+        @shopify:block:deselect="$ensemble.autoplay = true"
+      {% endif %}
+    {% endif %}
+  {% else %}
+    {% if autoplay %}
+      x-slideshow.duration.{{ duration }}ms.autoplay
+      {% if request.design_mode %}
+        @shopify:block:select="$slideshow.pause()"
+        @shopify:block:deselect="$slideshow.play()"
+      {% endif %}
+    {% else %}
+      x-slideshow.duration.{{ duration }}ms
+    {% endif %}
+  {% endif %}
+
+  {{ block.shopify_attributes }}
+{% endcapture %}
+
+{% capture content %}
+  <div
+    class="
+      flex-1 z-0 grid-stack group/slideshow relative
+
+      {% comment %} Prevent browser from interfering with the horizontal panning because we are handling it ourselves with x-slideshow-mobile-swipe {% endcomment %}
+      touch-pan-y
+
+      {% comment %} Hide all but the first slide until alpine has loaded and taken over rendering {% endcomment %}
+      prealpine:[&>:not(:first-of-type)]:!hidden
+    "
+    x-slideshow:viewport
+    x-slideshow-mobile-swipe
+    data-test-id="pair-slideshow"
+
+    {% # Child blocks have no way to access this (parent) block's settings, so mark the cases where their controls must stay hidden: the merchant turned them off, or there is only one slide %}
+    {% unless block.settings.show_controls and block.blocks.size > 1 %}
+      data-hide-controls
+    {% endunless %}
+  >
+    {% content_for 'blocks' %}
+  </div>
+{% endcapture %}
+
+{% render 'pair-column',
+  content: content,
+  s: block.settings,
+  class: 'pair-media',
+  attributes: attributes,
+  is_media_block: true
+%}
+
+{% schema %}
+{
+  "name": "Slideshow",
+  "tag": null,
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Auto-rotate slides",
+      "default": true,
+      "visible_if": "{{ section.settings.enable_ensemble != true }}"
+    },
+    {
+      "type":    "range",
+      "id":      "duration",
+      "min":     1,
+      "max":     15,
+      "step":    1,
+      "unit":    "sec",
+      "label":   "Change slides every",
+      "default": 5,
+      "visible_if": "{{ block.settings.autoplay and section.settings.enable_ensemble != true }}"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme"
+    },
+    {
+      "type": "header",
+      "content": "Border"
+    },
+    [% json 'schema/border-settings.jsonc' %]
+    {
+      "type": "header",
+      "content": "Rounding"
+    },
+    [% json 'schema/rounding-large.jsonc' %]
+    {
+      "type": "header",
+      "content": "Height"
+    },
+    [% json 'schema/pair-column-height-setting.jsonc', default_height: 'screen-one-half', image_height: false, content_height: false %]
+    {
+      "type": "header",
+      "content": "Navigation"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_controls",
+      "label": "Show pagination",
+      "default": false
+    }
+  ],
+  "blocks": [
+    {
+      "type": "_pair-slide"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Slideshow",
+      "category": "Media",
+      "blocks": [
+        {
+          "type": "_pair-slide"
+        },
+        {
+          "type": "_pair-slide"
+        },
+        {
+          "type": "_pair-slide"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

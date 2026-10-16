@@ -1,0 +1,40 @@
+{% doc %}
+  - Renders link around swatch
+
+  An enclosing x-selection-group matches data-selection-id against its data-selected-id and writes data-selected.
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {string} content - rendered swatch markup
+  @param {string} [focus_key] - data-preserve-focus-key value
+  @param {string} label - accessible name
+  @param {boolean} selected
+  @param {string} [selection_id] - data-selection-id value
+  @param {string} [title] - defaults to label
+  @param {string} url
+{% enddoc %}
+
+<a
+  class="
+    block transition-[filter]
+    has-[[data-selected=true]]:pointer-events-none
+    {% if settings.swatch_shape == 'circle' %}rounded-full{% endif %}
+    {{ class }}
+  "
+  href="{{ url }}"
+  title="{{ title | default: label | escape_once }}"
+  aria-label="{{ label | escape_once }}"
+  data-selected="{{ selected }}"
+  {% if selection_id != blank %}
+    data-selection-id="{{ selection_id }}"
+  {% endif %}
+  {% if focus_key != blank %}
+    data-preserve-focus-key="{{ focus_key }}"
+  {% endif %}
+  {% if selected %}
+    aria-current="true"
+  {% endif %}
+  {{ attributes }}
+>
+  {{ content }}
+</a>

@@ -1,0 +1,290 @@
+{% doc %}
+  - Renders font faces, typography custom properties, and font preloads
+
+  Typography variables live here so the stylesheet stays free of Liquid and loads sooner.
+{% enddoc %}
+
+<!-- Fonts & Typography -->
+
+{% style %}
+  {% comment %} Render fonts {% endcomment %}
+  {% assign font_types = 'heading, subheading, accent, body' | split: ', ' %}
+  {% for font_type in font_types %}
+    {% liquid
+      assign font_key = 'font_family_' | append: font_type
+      assign font_default = settings[font_key]
+      assign font_bold = font_default | font_modify: 'weight', 'bolder' | default: font_default
+
+      # Find a semibold weight with the smallest possible step
+      assign modifiers = '+100, +200, +300, +400' | split: ', '
+      for modifier in modifiers
+        assign semibold = font_default | font_modify: 'weight', modifier
+        if semibold and semibold.weight > font_default.weight
+          assign font_bold = semibold
+          break
+        endif
+      endfor
+
+      assign font_italic = font_default | font_modify: 'style', 'italic' | default: font_default
+      assign font_bold_italic = font_bold | font_modify: 'style', 'italic' | default: font_bold
+      assign font_adjust = 1.0
+      if settings.font_rebalance
+        assign font_adjust = 'font_adjust_' | append: font_type
+        assign font_adjust = settings[font_adjust] | divided_by: 100.0
+      endif
+
+      # Defaults to 0.125em if custom tracking is not enabled
+      assign font_caps_tracking = 125 | divided_by: 1000.0
+      if settings.font_caps_tracking
+        assign key_caps_tracking = 'font_caps_tracking_' | append: font_type
+        assign font_caps_tracking = settings[key_caps_tracking] | divided_by: 1000.0
+      endif
+    %}
+    {{ font_default | font_face: font_display: 'swap' }}
+    {{ font_bold | font_face: font_display: 'swap' }}
+    {{ font_italic | font_face: font_display: 'swap' }}
+    {{ font_bold_italic | font_face: font_display: 'swap' }}
+    :root {
+      --root-font-stack-{{ font_type }}: {{ font_default.family }}, {{ font_default.fallback_families }};
+      --root-font-style-{{ font_type }}: {{ font_default.style }};
+      --root-font-weight-normal-{{ font_type }}: {{ font_default.weight | default: 400 }};
+      --root-font-weight-bold-{{ font_type }}: {{ font_bold.weight | default: 700 }};
+      --root-font-adjust-{{ font_type }}: {{ font_adjust }};
+      --root-font-caps-tracking-{{ font_type }}: {{ font_caps_tracking }}em;
+      --root-font-baseline-ratio-{{ font_type }}: {{ font_default.baseline_ratio | default: 0.15 }};
+    }
+  {% endfor %}
+
+  {% comment %} Type presets {% endcomment %}
+  {% liquid
+
+    assign tags = 'p       | h6         | h5         | h4         | h3      | h2      | h1      | button     | accordion  | tab        | section    | kicker      | micro      ' | remove: ' ' | split: '|'
+    #------------|---------|------------|------------|------------|---------|---------|---------|------------|------------|------------|------------|-------------|------------|
+    assign font = 'body    | heading    | heading    | heading    | heading | heading | heading | heading    | subheading | heading    | heading    | accent      | body       ' | remove: ' ' | split: '|'
+    assign size = '4       | 4          | 5          | 6          | 7       | 8       | 10      | 4          | 4          | 4          | 7          | 4           | 2          ' | remove: ' ' | split: '|'
+    assign caps = 'no      | no         | no         | no         | no      | no      | no      | no         | no         | no         | no         | yes         | yes        ' | remove: ' ' | split: '|'
+
+    # Secret sauce: Additional typography defaults
+
+    # Fashion: Wide differentiation between size of elements, lots of small caps
+    # assign font = 'body    | accent     | subheading | heading    | heading | heading | heading | subheading | subheading | subheading | heading    | subheading | body       ' | remove: ' ' | split: '|'
+    # assign size = '4       | 4          | 5          | 7          | 8       | 9       | 11      | 4          | 4          | 4          | 9          | 5          | 3          ' | remove: ' ' | split: '|'
+    # assign caps = 'no      | yes        | yes        | yes        | yes     | yes     | yes     | yes        | yes        | yes        | yes        | yes        | no         ' | remove: ' ' | split: '|'
+
+    # App: Tight spacing, less dramatic + lots of small caps
+    # assign font = 'body    | accent     | subheading | heading    | heading | heading | heading | subheading | subheading | subheading | subheading | accent     | body       ' | remove: ' ' | split: '|'
+    # assign size = '4       | 4          | 5          | 6          | 7       | 8       | 9       | 4          | 4          | 4          | 5          | 4          | 3          ' | remove: ' ' | split: '|'
+    # assign caps = 'no      | yes        | yes        | no         | no      | no      | no      | yes        | yes        | yes        | yes        | yes        | no         ' | remove: ' ' | split: '|'
+  %}
+
+  {% for element in tags %}
+
+    {% assign preset_key = 'type_preset_' | append: element %}
+    {% assign preset_setting = settings[preset_key] %}
+
+    {% if preset_setting == 'preset' or preset_setting == 'custom' %}
+      {% liquid
+        if preset_setting == 'preset'
+          assign el_font = font[forloop.index0]
+          assign el_size = size[forloop.index0]
+          assign el_caps = caps[forloop.index0]
+        elsif preset_setting == 'custom'
+          assign key_font = 'type_font_' | append: element
+          assign key_size = 'type_size_' | append: element
+          assign key_caps = 'type_uppercase_' | append: element
+          assign el_font = settings[key_font]
+          assign el_size = settings[key_size]
+          assign el_caps = settings[key_caps]
+        endif
+
+
+      # Capitalization affects both size and tracking
+      assign el_caps_transform = 'none'
+      assign el_caps_adjust = 1
+      assign el_caps_tracking = 'normal'
+      if el_caps == 'yes' or el_caps == true
+        assign el_caps_transform = 'uppercase'
+        assign el_caps_adjust = 0.85
+        assign el_caps_tracking = 'var(--root-font-caps-tracking-' | append: el_font | append: ')'
+      endif
+      %}
+      /* Styles for {{ element }} */
+      :root {
+        --root-font-stack-{{ element }}: var(--root-font-stack-{{ el_font }});
+        --root-font-style-{{ element }}: var(--root-font-style-{{ el_font }});
+        --root-font-weight-normal-{{ element }}: var(--root-font-weight-normal-{{ el_font }});
+        --root-font-weight-bold-{{ element }}: var(--root-font-weight-bold-{{ el_font }});
+        --root-font-adjust-{{ element }}: var(--root-font-adjust-{{ el_font }});
+        --root-font-caps-tracking-{{ element }}: var(--root-font-caps-tracking-{{ el_font }});
+        --root-font-baseline-ratio-{{ element }}: var(--root-font-baseline-ratio-{{ el_font }});
+
+        --root-font-size-{{ element }}-xs: var(--font-r{{ el_size | minus: 2 | at_least: 1 }});
+        --root-font-size-{{ element }}-sm: var(--font-r{{ el_size | minus: 1 | at_least: 1 }});
+        --root-font-size-{{ element }}-md: var(--font-r{{ el_size }});
+        --root-font-size-{{ element }}-lg: var(--font-r{{ el_size | plus: 1 | at_most: 15 }});
+        --root-font-size-{{ element }}-xl: var(--font-r{{ el_size | plus: 2 | at_most: 15 }});
+
+        --root-leading-prose-{{ element }}: var(--leading-prose-{{ el_size }});
+        --root-leading-block-{{ element }}: var(--leading-block-{{ el_size }});
+
+        --root-caps-transform-{{ element }}: {{ el_caps_transform }};
+        --root-caps-adjust-{{ element }}: {{ el_caps_adjust }};
+        --root-caps-tracking-{{ element }}: {{ el_caps_tracking }};
+      }
+    {% else %}
+      /* Styles for {{ element }} - mapped from: {{ preset_setting }} */
+      :root {
+        --root-font-stack-{{ element }}: var(--root-font-stack-{{ preset_setting }});
+        --root-font-style-{{ element }}: var(--root-font-style-{{ preset_setting }});
+        --root-font-weight-normal-{{ element }}: var(--root-font-weight-normal-{{ preset_setting }});
+        --root-font-weight-bold-{{ element }}: var(--root-font-weight-bold-{{ preset_setting }});
+        --root-font-adjust-{{ element }}: var(--root-font-adjust-{{ preset_setting }});
+        --root-font-caps-tracking-{{ element }}: var(--root-font-caps-tracking-{{ preset_setting }});
+        --root-font-baseline-ratio-{{ element }}: var(--root-font-baseline-ratio-{{ preset_setting }});
+
+        --root-font-size-{{ element }}-xs:  var(--root-font-size-{{ preset_setting }}-xs);
+        --root-font-size-{{ element }}-sm:  var(--root-font-size-{{ preset_setting }}-sm);
+        --root-font-size-{{ element }}-md:  var(--root-font-size-{{ preset_setting }}-md);
+        --root-font-size-{{ element }}-lg:  var(--root-font-size-{{ preset_setting }}-lg);
+        --root-font-size-{{ element }}-xl:  var(--root-font-size-{{ preset_setting }}-xl);
+
+        --root-leading-prose-{{ element }}: var(--root-leading-prose-{{ preset_setting }});
+        --root-leading-block-{{ element }}: var(--root-leading-block-{{ preset_setting }});
+
+        --root-caps-transform-{{ element }}: var(--root-caps-transform-{{ preset_setting }});
+        --root-caps-adjust-{{ element }}: var(--root-caps-adjust-{{ preset_setting }});
+        --root-caps-tracking-{{ element }}: var(--root-caps-tracking-{{ preset_setting }});
+      }
+    {% endif %}
+  {% endfor %}
+
+  {% liquid
+      # Font Size Scaling - Three scales with 15 values per screen size
+      # Modify these values to change font sizes across the whole theme
+      if settings.font_scaling_system == 'lg'
+        assign mobile = '[= font_system_large_mobile | join: ', '  =]' | split: ', '
+        assign tablet = '[= font_system_large_tablet | join: ', '  =]' | split: ', '
+        assign desktop = '[= font_system_large_desktop | join: ', '  =]' | split: ', '
+      elsif settings.font_scaling_system == 'md'
+        assign mobile = '[= font_system_medium_mobile | join: ', '  =]' | split: ', '
+        assign tablet = '[= font_system_medium_tablet | join: ', '  =]' | split: ', '
+        assign desktop = '[= font_system_medium_desktop | join: ', '  =]' | split: ', '
+      else
+        assign mobile = '[= font_system_small_mobile | join: ', '  =]' | split: ', '
+        assign tablet = '[= font_system_small_tablet | join: ', '  =]' | split: ', '
+        assign desktop = '[= font_system_small_desktop | join: ', '  =]' | split: ', '
+      endif
+      assign leading_prose = '[= leading_prose | join: ', '  =]' | split: ', '
+      assign leading_block = '[= leading_block | join: ', '  =]' | split: ', '
+      assign font_sizes = "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15" | split: ', '
+    %}
+
+  :root {
+    /* Mobile first system == {{ settings.font_scaling_system }} */
+    {% for size in font_sizes %}
+      --font-r{{ size }}: {{ mobile[forloop.index0] }}px;
+      --leading-prose-{{ size }}: {{ leading_prose[forloop.index0] }};
+      --leading-block-{{ size }}: {{ leading_block[forloop.index0] }};
+    {% endfor %}
+
+    /* Tablet */
+    @media screen and (min-width: [= screen_sm =]px) {
+      {% for size in font_sizes %}
+        --font-r{{ size }}: {{ tablet[forloop.index0] }}px;
+      {% endfor %}
+    }
+
+    /* Desktop */
+    @media screen and (min-width: [= screen_lg =]px) {
+      {% for size in font_sizes %}
+        --font-r{{ size }}: {{ desktop[forloop.index0] }}px;
+      {% endfor %}
+    }
+
+  }
+{% endstyle %}
+
+{% comment %} Preload improves performance, but not in the theme editor {% endcomment %}
+{% unless request.design_mode %}
+  {% liquid
+    assign font_body = settings.font_family_body
+    assign font_subheading = settings.font_family_subheading
+    assign font_heading = settings.font_family_heading
+    assign font_accent = settings.font_family_accent
+  %}
+  {% comment %} Paranoid if statement to prevent visible preload tag errors on screen {% endcomment %}
+  {% # These are hand-written on purpose: preload_tag competes with the banner image preload and makes the page feel slower %}
+  {% # theme-check-disable AssetPreload %}
+  {% if font_body.system? != true %}
+    <link
+      rel="preload"
+      as="font"
+      href="{{ font_body | font_url }}"
+      type="font/woff2"
+      crossorigin
+      fetchpriority="low"
+    >
+  {% endif %}
+  {% if font_subheading.system? != true %}
+    <link
+      rel="preload"
+      as="font"
+      href="{{ font_subheading | font_url }}"
+      type="font/woff2"
+      crossorigin
+      fetchpriority="low"
+    >
+  {% endif %}
+  {% if font_heading.system? != true %}
+    <link
+      rel="preload"
+      as="font"
+      href="{{ font_heading | font_url }}"
+      type="font/woff2"
+      crossorigin
+      fetchpriority="low"
+    >
+  {% endif %}
+  {% if font_accent.system? != true %}
+    <link
+      rel="preload"
+      as="font"
+      href="{{ font_accent | font_url }}"
+      type="font/woff2"
+      crossorigin
+      fetchpriority="low"
+    >
+  {% endif %}
+  {% # theme-check-enable AssetPreload %}
+
+  {% comment %} If you are using custom fonts, upload to /content/files and preload for quicker performance {% endcomment %}
+  {% comment %} NOTE: Prefer `<link rel="preload"> here vs `preload_tag` filter as doing the latter may "crowd out" the banner image preload causing worse perceived performance {% endcomment %}
+  {% comment %}
+    <link
+      rel="preload"
+      as="font"
+      href="{{ 'comik_sanz.woff2' | file_url }}"
+      type="font/woff2"
+      crossorigin
+      fetchpriority="low"
+    >
+  {% endcomment %}
+  {% comment %} ...then override the default font types (heading, subheading, accent, body) per your needs {% endcomment %}
+  {% comment %}
+    <style>
+      :root {
+        --root-font-stack-heading: 'Comic Sanz', sans-serif;
+        --root-font-style-heading: normal;
+        --root-font-weight-normal-heading: 400;
+        --root-font-weight-bold-heading: 700;
+        --root-font-adjust-heading: 1.0;
+        --root-font-caps-tracking-heading: 0.125em;
+        --root-font-baseline-ratio-heading: 0.15;
+
+        --root-font-stack-subheading: 'Comic Sanz', sans-serif;
+        --root-font-style-subheading: normal;
+        ...
+      }
+    </style>
+  {% endcomment %}
+{% endunless -%}

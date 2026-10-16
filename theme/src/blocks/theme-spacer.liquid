@@ -1,0 +1,78 @@
+{% doc %}
+  - Renders empty box with set width or height
+{% enddoc %}
+
+{% liquid
+  case block.settings.direction
+    when 'row'
+      assign width = block.settings.width_px | append: 'px'
+      assign height = '1px'
+    when 'column'
+      assign width = '1px'
+      assign height = block.settings.height_px | append: 'px'
+  endcase
+%}
+
+<div
+  class="
+    relative flex
+    {% render 'props-class-target-device', target_device: block.settings.target_device %}
+  "
+  style="
+    width: {{ width }};
+    height: {{ height }};
+  "
+  {{ block.shopify_attributes }}
+></div>
+
+{% schema %}
+{
+  "name": "Spacer",
+  "tag": null,
+  "settings": [
+    {
+      "type": "select",
+      "id": "direction",
+      "label": "Direction",
+      "default": "row",
+      "options": [
+        {"value": "row", "label": "→"},
+        {"value": "column", "label": "↓"}
+      ]
+    },
+    {
+      "type": "range",
+      "id": "width_px",
+      "label": "Width",
+      "unit": "px",
+      "min": 0,
+      "max": 200,
+      "step": 2,
+      "default": 20,
+      "visible_if": "{{ block.settings.direction == 'row' }}"
+    },
+    {
+      "type": "range",
+      "id": "height_px",
+      "label": "Height",
+      "unit": "px",
+      "min": 0,
+      "max": 200,
+      "step": 2,
+      "default": 20,
+      "visible_if": "{{ block.settings.direction == 'column' }}"
+    },
+    {
+      "type": "header",
+      "content": "Limit by screen size"
+    },
+    [% json 'schema/target-device-setting.jsonc', default_value: 'both' %]
+  ],
+  "presets": [
+    {
+      "name": "Spacer",
+      "category": "Utility"
+    }
+  ]
+}
+{% endschema %}

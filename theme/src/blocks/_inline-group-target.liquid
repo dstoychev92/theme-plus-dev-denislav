@@ -1,0 +1,9 @@
+{% doc %}
+  - Renders inline blocks for one screen size
+
+  Private, only offered by theme-group-text. Renders hidden when it holds no blocks.
+{% enddoc %}
+
+[% capture additional_blocks %] [% json 'schema/blocks-inline.jsonc' %] [% endcapture %]
+
+[% render 'groups/target', additional_blocks: additional_blocks %]

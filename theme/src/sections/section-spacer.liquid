@@ -1,0 +1,59 @@
+{% comment %}
+  Section: Spacer
+  Simple vertical spacing between sections. Use when you need explicit space
+  beyond the default section rhythm.
+
+  spacer_section_height: 0-500px in 5px steps, default 100px. Height scales
+  responsively via the --r-multiplier CSS variable. bg_color sets the
+  background (defaults to white).
+
+  No content blocks — this section does one thing only.
+{% endcomment %}
+
+<div
+  class="
+    {% if settings.show_target_device_settings == true and section.settings.set_target_device == true %}
+      {% render 'props-class-target-device', target_device: section.settings.target_device %}
+    {% endif %}
+  "
+  style="
+    height: calc({{ section.settings.spacer_section_height }}px * var(--r-multiplier));
+    background-color: {{ section.settings.bg_color }};
+  "
+></div>
+
+{% schema %}
+{
+  "name": "Spacer",
+  "class": "section-spacer",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "range",
+      "id": "spacer_section_height",
+      "min": 0,
+      "max": 500,
+      "step": 5,
+      "unit": "px",
+      "label": "Height",
+      "default": 100
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background",
+      "default": "#FFFFFF"
+    },
+    [% json 'schema/section-target-device-settings.jsonc' %]
+  ],
+  "presets": [
+    {
+      "name": "Spacer",
+      "category": "Utility"
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "custom.overlays", "custom.drawers"]
+  }
+}
+{% endschema %}

@@ -1,0 +1,54 @@
+[% if id_suffix %]
+ [% assign _id_suffix = id_suffix | prepend: '_' %]
+[% endif %]
+[% assign context = context | default: 'block.settings.' %]
+[
+  {
+    "type": "select",
+    "id": "media_type[= _id_suffix =]",
+    "label": "[= label | default: 'Type' =]",
+    "options": [
+      {
+        "value": "image",
+        "label": "Image"
+      },
+      {
+        "value": "video",
+        "label": "Video"
+      }
+    ],
+    "default": "image"
+  },
+  {
+    "type": "image_picker",
+    "id": "image[= _id_suffix =]",
+    "label": "Image",
+    "visible_if": "{{ [= context =]media_type[= _id_suffix =] == 'image' }}"
+  },
+  {
+    "type": "video",
+    "id": "video_bg[= _id_suffix =]",
+    "label": "Video",
+    "visible_if": "{{ [= context =]media_type[= _id_suffix =] == 'video' }}"
+  },
+  {
+    "type": "paragraph",
+    "content": "Background videos autoplay and are muted",
+    "visible_if": "{{ [= context =]media_type[= _id_suffix =] == 'video' }}"
+  }
+  [% unless disable_image_mobile == true %]
+    {
+      "type": "checkbox",
+      "id": "show_image_on_mobile[= _id_suffix =]",
+      "label": "Show image on mobile",
+      "default": false,
+      "visible_if": "{{ [= context =]media_type[= _id_suffix =] == 'video' }}"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_mobile[= _id_suffix =]",
+      "label": "Image mobile",
+      "visible_if": "{{ [= context =]media_type[= _id_suffix =] == 'image' or [= context =]media_type[= _id_suffix =] == 'video' and [= context =]show_image_on_mobile[= _id_suffix =] == true }}"
+    }
+  [% endunless %]
+]

@@ -1,0 +1,18 @@
+[% if id_suffix %]
+  [% assign _id_suffix = id_suffix | prepend: '_' %]
+[% endif %]
+[% assign context = context | default: 'block.settings.' %]
+[
+  {
+    "type": "color",
+    "id": "text_color[= _id_suffix =]",
+    "label": "Text color",
+    "default": "#FFFFFF",
+    "visible_if": "{{ [= context =]appearance[= _id_suffix =] == 'fill' and [= context =]color[= _id_suffix =] == 'custom' or [= context =]color[= _id_suffix =] == 'custom_gradient' }}"
+  },
+  {
+    "type": "paragraph",
+    "content": "Custom gradients only apply to fill buttons",
+    "visible_if": "{{ [= context =]color[= _id_suffix =] == 'custom_gradient' and [= context =]appearance[= _id_suffix =] != 'fill' }}"
+  }
+]

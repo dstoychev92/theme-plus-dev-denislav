@@ -1,0 +1,86 @@
+{% doc %}
+  - Renders language select
+
+  Changing the value submits the closest form.
+
+  @param {string} [button_class] - classes for the button that opens the list
+  @param {string} [button_style] - inline styles for the button
+  @param {string} [class] - The classes
+  @param {boolean} [disabled]
+  @param {string} [edge_padding] - padding kept between the popup and the viewport edge
+  @param {string} [end_icon] - icon after the label
+  @param {boolean} [flip] - lets the popup flip to the other side
+  @param {string} [language_style] - 'short' for the ISO code, otherwise the endonym
+  @param [lazy] - data-lazy-alpine-on value, defaults to 'interact'. false starts the select immediately
+  @param {boolean} [match] - matches the popup width to the button
+  @param {string} [offset] - gap from the button, such as '5px', defaults to '0px'
+  @param {string} [option_class] - classes for each option
+  @param {string} [placement] - popup placement
+  @param {string} [popup_class] - classes for the popup
+  @param {string} [popup_list_class] - classes for the option list
+  @param [size] - control size
+  @param {string} [start_icon] - icon before the label
+{% enddoc %}
+
+{% liquid
+  assign label = 'other.accessibility.localization_locale_select' | t
+  assign initial_locale = localization.language
+
+  # A picker is only ever used by opening it, so its options can wait until then.
+  assign lazy = lazy | default: 'interact', allow_false: true
+
+  assign offset = offset | default: '0px'
+%}
+
+{% capture options %}
+  {% for language in localization.available_languages %}
+    {% if language_style == 'short' %}
+      {% assign option_display_value = language.iso_code | upcase %}
+    {% else %}
+      {% assign option_display_value = language.endonym_name %}
+    {% endif %}
+
+    {% assign option_selected = false %}
+    {% if initial_locale.iso_code == language.iso_code %}
+      {% assign initial_display = option_display_value %}
+      {% assign option_selected = true %}
+    {% endif %}
+
+    {% render 'custom-select-option',
+      class: option_class,
+      label: language.endonym_name,
+      display_value: option_display_value,
+      value: language.iso_code,
+      selected: option_selected
+    %}
+  {% endfor %}
+{% endcapture %}
+
+{% capture attributes %}
+  {% comment %} When the custom select value changes, autosubmit the associated form {% endcomment %}
+  @change="$el.closest('form').requestSubmit()"
+{% endcapture %}
+
+{% render 'custom-select',
+  lazy: lazy,
+  name: 'language_code',
+  size: size,
+  options: options,
+  label: label,
+  value: initial_locale.iso_code,
+  attributes: attributes,
+  disabled: disabled,
+  start_icon: start_icon,
+  end_icon: end_icon,
+  class: class,
+  button_class: button_class,
+  button_style: button_style,
+  popup_class: popup_class,
+  popup_list_class: popup_list_class,
+  placement: placement,
+  offset: offset,
+  flip: flip,
+  match: match,
+  edge_padding: edge_padding,
+  initial_display: initial_display
+%}

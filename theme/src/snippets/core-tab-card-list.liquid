@@ -1,0 +1,94 @@
+{% doc %}
+  - Renders one tab panel holding a card list
+
+  The first block in section.blocks starts selected. The tab button sits in a data-tab-template
+  template for the tab list to adopt.
+
+  @param {string} [attributes]
+  @param {block} [block]
+  @param {number} [columns_lg] - desktop column count, defaults to s.columns_lg
+  @param {number} [columns_md] - tablet column count, defaults to s.columns_md
+  @param {string} [list_attributes] - attributes for the card list
+  @param {string} list_items - rendered card markup
+  @param {object} [s] - settings object
+  @param {section} [section]
+  @param {string} [tab_button_attributes] - attributes for the tab button
+  @param {string} [title] - tab label, defaults to block.settings.title
+{% enddoc %}
+
+{% liquid
+  assign block_index = section.blocks | find_index: 'id', block.id
+  assign selected = false
+
+  assign title = title | default: block.settings.title
+
+  if block_index == 0
+    assign selected = true
+  endif
+
+  #
+  # Desktop
+  #
+
+  assign columns_lg = columns_lg | default: s.columns_lg
+
+  #
+  # Tablet
+  #
+
+  assign layout_tablet = 'slider'
+  assign columns_md = columns_md | default: s.columns_md
+
+  #
+  # Mobile
+  #
+
+  assign layout_mobile = 'slider'
+  assign columns_sm = s.columns_sm
+  if columns_sm == 'custom'
+    assign columns_sm = s.columns_sm_custom
+  endif
+  assign columns_sm = columns_sm | default: settings.slider_columns_mobile
+%}
+
+{% capture tab_style %}
+  {% if block_index != blank %}
+    --stagger-order: {{ block_index }};
+  {% endif %}
+{% endcapture %}
+
+<div
+  role="tabpanel"
+  x-tabs:tabpanel
+  {% unless selected %}
+    x-cloak
+  {% endunless %}
+  {{ attributes }}
+  class="contents entrance-container *:auto-stagger-animations-[--entrance-animation-stagger]"
+  x-carousel
+  x-overflow.autoregister
+  aria-label="{{ title | strip_html | escape_once }}"
+  aria-live="off"
+>
+  <template data-tab-template>
+    {% render 'core-tab',
+      selected: selected,
+      attributes: tab_button_attributes,
+      label: title,
+      type: 'button',
+      style: tab_style
+    %}
+  </template>
+
+  {% render 'core-section-card-list-elements',
+    s: section.settings,
+    list_items: list_items,
+    layout_desktop: 'slider',
+    layout_tablet: layout_tablet,
+    layout_mobile: layout_mobile,
+    columns_lg: columns_lg,
+    columns_md: columns_md,
+    columns_sm: columns_sm,
+    list_attributes: list_attributes
+  %}
+</div>

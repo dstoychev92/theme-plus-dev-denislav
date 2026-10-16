@@ -1,0 +1,70 @@
+{% doc %}
+  - Renders collection card at the requested size
+
+  @param {string} [appearance] - suffix for vars-card-lg-appearance-*, size 'lg' only
+  @param {number} [aspect_ratio] - defaults to settings.card_aspect_ratio
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {collection} [collection]
+  @param {image} [image] - defaults to collection.image, then the first product's preview image
+  @param {boolean} [loader] - true disables placeholder
+  @param {boolean} [placeholder] - placeholder card, design mode or settings.placeholder_mode only
+  @param {number} [placeholder_image_index] - placeholder artwork number, defaults to 1
+  @param {string} [size] - 'xs', 'sm', 'md' or 'lg', selecting the card-layout snippet
+  @param [url] - card URL, defaults to collection.url, false removes the link
+{% enddoc %}
+
+{%- liquid
+  assign url = url | default: collection.url, allow_false: true | default: false, allow_false: true
+  assign image = image | default: collection.image | default: collection.products.first.featured_media.preview_image
+  assign title = collection.title
+  assign products_count = 'collection.product_count' | t: count: collection.products_count
+  assign aspect_ratio = aspect_ratio | default: settings.card_aspect_ratio
+
+  # Safety measure to only show placeholder when on request.design_mode
+  assign enable_placeholder_product = false
+  if settings.placeholder_mode or request.design_mode
+    assign enable_placeholder_product = true
+  endif
+
+  # Disable placeholder when we need to show the loader - for example, when we are ajaxing the products
+  if loader == true
+    assign placeholder = false
+  endif
+  # Disable placeholder outside of design mode
+  if enable_placeholder_product == false
+    assign placeholder = false
+  endif
+  # Hide filler when not on design mode and image is null
+  if enable_placeholder_product == false and image == null
+    assign media = false
+  endif
+
+  if placeholder
+    assign url = null
+    assign image = null
+    assign title = 'homepage.placeholder.collection_card_title' | t
+    assign products_count = 'homepage.placeholder.collection_card_product_count' | t
+
+    # Use 'product' SVG placeholder
+    assign placeholder_image_type = 'product'
+    assign placeholder_image_index = placeholder_image_index | strip | default: 1
+    assign placeholder_image = placeholder_image_type | append: '-' | append: placeholder_image_index
+    capture media
+      render 'core-image', placeholder: placeholder_image, aspect_ratio: aspect_ratio
+    endcapture
+  endif
+
+  if collection or placeholder
+    case size
+      when 'xs'
+        render 'card-layout-xs', url: url, image: image, title: title, class: class, attributes: attributes, details: products_count, media: media
+      when 'sm'
+        render 'card-layout-sm', url: url, image: image, title: title, class: class, attributes: attributes, details: products_count, media: media
+      when 'md'
+        render 'card-layout-md', url: url, image: image, title: title, class: class, attributes: attributes, details: products_count, media: media
+      when 'lg'
+        render 'card-layout-lg', url: url, image: image, title: title, class: class, attributes: attributes, media: media, appearance: appearance, aspect_ratio: aspect_ratio
+    endcase
+  endif
+-%}

@@ -1,0 +1,100 @@
+/*
+ * CSS :hover and :has(:hover) caused whole-header flashing when animated countdown digits changed
+ * inside the display: contents header. Use [data-header-hover] to prevent hover state flashing.
+ */
+
+/* Hover devices */
+@media (hover: hover) {
+  /* Dark transparent header when header not stuck and not being interacted with */
+  body:has(main > .shopify-section:first-of-type > [data-allows-overlay-header='dark']):not([data-drawer-open='true']) {
+    header:not(
+        [data-header-stuck],
+        [data-header-hover],
+        :focus-within,
+        :has([aria-expanded='true']),
+        :has(:popover-open),
+        :has([data-megamenu-visible])
+      )
+      :is([data-overlay-header][data-sticky-header='always'], [data-overlay-header][data-sticky-header='scroll']),
+    header:not(
+        [data-header-hover],
+        :focus-within,
+        :has([aria-expanded='true']),
+        :has(:popover-open),
+        :has([data-megamenu-visible])
+      )
+      [data-overlay-header][data-sticky-header='never'] {
+      --header-bg-opacity: 0;
+      --header-transparent-white-logo-opacity: 1;
+      --header-auto-border: 0;
+
+      @apply vars-scheme-dark;
+      --muted: oklch(var(--content-oklch) / var(--muted-alpha));
+    }
+  }
+
+  /* Light transparent header when header not stuck and not being interacted with */
+  body:has(
+      main > .shopify-section:first-of-type > [data-allows-overlay-header='light'],
+      main > .shopify-section:first-of-type > [data-allows-overlay-header='']
+    ):not([data-drawer-open='true']) {
+    header:not(
+        [data-header-stuck],
+        [data-header-hover],
+        :focus-within,
+        :has([aria-expanded='true']),
+        :has(:popover-open),
+        :has([data-megamenu-visible])
+      )
+      :is([data-overlay-header][data-sticky-header='always'], [data-overlay-header][data-sticky-header='scroll']),
+    header:not(
+        [data-header-hover],
+        :focus-within,
+        :has([aria-expanded='true']),
+        :has(:popover-open),
+        :has([data-megamenu-visible])
+      )
+      [data-overlay-header][data-sticky-header='never'] {
+      --header-bg-opacity: 0;
+      --header-transparent-white-logo-opacity: 0;
+      --header-auto-border: 0;
+
+      @apply vars-scheme-light;
+      --muted: oklch(var(--content-oklch) / var(--muted-alpha));
+    }
+  }
+}
+
+/* Touch devices */
+@media (pointer: coarse) and (hover: none) {
+  /* Dark transparent header when header not stuck */
+  body:has(main > .shopify-section:first-of-type > [data-allows-overlay-header='dark']) {
+    header:not([data-header-stuck]) {
+      [data-overlay-header] {
+        --header-bg-opacity: 0;
+        --header-transparent-white-logo-opacity: 1;
+        --header-auto-border: 0;
+
+        @apply vars-scheme-dark;
+        --muted: oklch(var(--content-oklch) / var(--muted-alpha));
+      }
+    }
+  }
+
+  /* Light transparent header when header not stuck */
+  body:has(
+    main > .shopify-section:first-of-type > [data-allows-overlay-header='light'],
+    main > .shopify-section:first-of-type > [data-allows-overlay-header='']
+  ) {
+    header:not([data-header-stuck]) {
+      [data-overlay-header] {
+        --header-bg-opacity: 0;
+        --header-transparent-white-logo-opacity: 0;
+        --header-auto-border: 0;
+
+        @apply vars-scheme-light;
+        --muted: oklch(var(--content-oklch) / var(--muted-alpha));
+      }
+    }
+  }
+}

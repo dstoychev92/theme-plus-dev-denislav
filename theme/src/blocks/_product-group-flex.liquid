@@ -1,0 +1,20 @@
+{% doc %}
+  - Renders flex group holding product blocks
+{% enddoc %}
+
+[%- capture additional_blocks -%]
+  { "type": "_product-group-flex-item" },
+[%- endcapture -%]
+
+[%- capture additional_presets -%]
+  {
+    "name": "Flexbox",
+    "category": "Pro",
+    "blocks": [
+      { "type": "_product-group-flex-item" },
+      { "type": "_product-group-flex-item" },
+    ]
+  }
+[%- endcapture -%]
+
+[% render 'groups/flex', additional_blocks: additional_blocks, additional_presets: additional_presets %]

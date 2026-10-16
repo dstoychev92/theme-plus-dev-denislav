@@ -1,0 +1,116 @@
+{% doc %}
+  - Renders pair column with content block over background layers
+
+  Private, only offered by section-pair. The content is the static _content block with id content. The other blocks are _background layers.
+{% enddoc %}
+
+{% liquid
+  # Can't do parallax if height is set to content
+  if block.settings.set_height and block.settings.height == 'image'
+    assign parallax = false
+  endif
+%}
+
+{% capture attributes %}
+  {{ block.shopify_attributes }}
+{% endcapture %}
+
+{% capture content %}
+  {% content_for 'block', id: 'content', type: '_content' %}
+{% endcapture %}
+
+{% capture background %}
+  {% content_for 'blocks' %}
+{% endcapture %}
+
+{% capture content %}
+  {% render 'core-banner',
+    id: block.id,
+    s: block.settings,
+    set_height: false,
+    set_height_mobile: true,
+    parallax: parallax,
+    content_class: 'pair-padding entrance-container',
+    content: content,
+    background: background
+  %}
+{% endcapture %}
+
+{% render 'pair-column',
+  s: block.settings,
+  content: content,
+  attributes: attributes,
+  class: 'pair-media',
+  is_media_block: true
+%}
+
+{% schema %}
+{
+  "name": "Banner layers",
+  "tag": null,
+  "settings": [
+    [% json 'schema/color-settings-image.jsonc' %]
+    {
+      "type": "header",
+      "content": "Border"
+    },
+    [% json 'schema/border-settings.jsonc' %]
+    {
+      "type": "header",
+      "content": "Rounding"
+    },
+    [% json 'schema/rounding-large.jsonc' %]
+    {
+      "type": "header",
+      "content": "Height"
+    },
+    [% json 'schema/pair-column-height-setting.jsonc', image_height: false, content_height: false, default_height: 'screen-one-half' %]
+  ],
+  "blocks": [
+    {
+      "type": "_content"
+    },
+    {
+      "type": "_background"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Banner layers",
+      "category": "Media",
+      "blocks": [
+        {
+          "type": "_content",
+          "id": "content",
+          "static": true,
+          "settings": {
+            "vertical_placement": "middle",
+            "horizontal_placement": "center"
+          },
+          "blocks": [
+            {
+              "type": "theme-button",
+              "settings": {
+                "text": "View products",
+                "href": "shopify://collections/all",
+                "open_in_new_window": false,
+                "appearance": "solid",
+                "sizing": "md",
+                "color": "content"
+              }
+            }
+          ]
+        },
+        {
+          "type": "_background",
+          "blocks": [
+            {
+              "type": "_background-image"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,51 @@
+{% doc %}
+  - Renders accordion group holding _accordion blocks
+
+  Reads section.settings.enable_ensemble to link the accordions with the section's other
+  interactive content.
+{% enddoc %}
+
+[%- capture additional_blocks -%]
+  { "type": "_accordion" },
+[%- endcapture -%]
+
+[%- capture additional_presets -%]
+  {
+    "name": "Accordions",
+    "category": "Layout",
+    "blocks": [
+      {
+        "type": "_accordion",
+        "settings": {
+          "title": "How long will my order take to ship?",
+          "expand": true
+        },
+        "blocks": [
+          {
+            "type": "theme-richtext",
+            "settings": {
+              "text": "<p>Share where you ship and estimated delivery times. Link to your shipping policy for the full details.</p>"
+            }
+          }
+        ]
+      },
+      {
+        "type": "_accordion",
+        "settings": {
+          "title": "What is your return policy?"
+        },
+        "blocks": [
+          {
+            "type": "theme-text",
+            "settings": {
+              "text": "Explain how returns or exchanges work and how customers can start one. Link to your return policy for the full details.",
+              "type_preset": "p"
+            }
+          }
+        ]
+      }
+    ]
+  },
+[%- endcapture -%]
+
+[% render 'groups/accordions', ensemble_context: true, additional_blocks: additional_blocks, additional_presets: additional_presets %]

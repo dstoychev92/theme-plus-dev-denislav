@@ -1,0 +1,116 @@
+{% doc %}
+  - Renders cart order notes form, plain or in an accordion
+
+  @param {boolean} [accordion] - wraps the form in an accordion, defaults to block.settings.accordion
+  @param {string} [attributes]
+  @param {block} [block]
+  @param {string} [class] - The classes
+  @param {number} [index] - position among the cart blocks, defaults to 0
+{% enddoc %}
+
+{% liquid
+  assign index = index | default: 0
+  assign title = block.settings.title
+  assign label = block.settings.label
+  assign accordion = accordion | default: block.settings.accordion | default: false
+  assign textarea_id = 'cart-note' | append: '-' | append: block.id
+  # Without an explicit id every cart form renders as id="cart", and the cart page and drawer copies of this block coexist on /cart
+  assign form_id = 'cart-note-form-' | append: block.id
+%}
+
+{% capture content %}
+  {% capture textarea_attributes %}
+    @input.debounce.500ms="$el.closest('form').requestSubmit()"
+  {% endcapture %}
+
+  {% form 'cart', cart, id: form_id %}
+    {% render 'field-textarea',
+      id: textarea_id,
+      label: label,
+      name: 'note',
+      size: 'md',
+      value: cart.note,
+      input_class: 'h-r14',
+      input_attributes: textarea_attributes
+    %}
+  {% endform %}
+{% endcapture %}
+
+{% if accordion %}
+  <div
+    class="{{ class }}"
+    x-disclosure
+    x-cart-form
+
+    {% comment %} Scrolls to the bottom of the drawer when either of the accordions gets opened {% endcomment %}
+    x-effect="
+      if ($disclosure.isExpanded) {
+        await $disclosure.waitForAnimations()
+        setTimeout(() => {
+          $el.scrollIntoView({ block: 'end', behavior: 'smooth' });
+        }, 250);
+      }
+    "
+    {% if request.design_mode %}
+      @shopify:block:select="$disclosure.expand()"
+    {% endif %}
+    {{ attributes }}
+  >
+    <button
+      type="button"
+      x-disclosure:button
+      class="relative p-[--drawer-padding] w-full cursor-pointer flex-row-center justify-between gap-r5 text-r4"
+    >
+      <div class="flex items-center gap-x-r4 flex-shrink overflow-hidden">
+        {% if title != blank %}
+          <span class="whitespace-nowrap text-start">{{ title }}</span>
+        {% endif %}
+        {% if cart.note != blank %}
+          <span class="border-2 border-content/20 rounded-full" x-show="!$disclosure.isExpanded"></span>
+          <span class="text-r2 italic whitespace-nowrap text-ellipsis overflow-hidden" x-show="!$disclosure.isExpanded">
+            {{- cart.note -}}
+          </span>
+        {% endif %}
+      </div>
+      <div class="flex flex-row gap-x-r3 flex-none">
+        <div class="relative size-icon">
+          {% capture spinner_attributes %}
+            x-show="$cartForm.state === 'pending'" aria-hidden="true" role="presentation"
+            x-transition.opacity
+          {% endcapture %}
+          {% render 'spinner', class: 'absolute inset-0', attributes: spinner_attributes %}
+
+          {% capture success_attributes %}
+            x-show="$cartForm.state === 'success'" aria-hidden="true" role="presentation"
+            x-transition.opacity
+          {% endcapture %}
+          {% render 'core-icon', icon: 'stroke-bare-check', class: 'absolute inset-0', attributes: success_attributes %}
+        </div>
+
+        {% render 'core-icon', icon: 'stroke-bare-plus', attributes: 'x-show="!$disclosure.isExpanded"' %}
+        {% render 'core-icon', icon: 'stroke-bare-minus', attributes: 'x-show="$disclosure.isExpanded"' %}
+      </div>
+    </button>
+
+    <div
+      class="nojs:!block"
+      x-collapse
+      x-disclosure:panel
+      x-cloak
+    >
+      <div class="px-[--drawer-padding] pb-[--drawer-padding] pt-r3">
+        {{ content }}
+      </div>
+    </div>
+  </div>
+{% else %}
+  <div class="{{ class }}" {{ attributes }}>
+    {% if title != blank %}
+      <p class="pb-r7 text-r4">
+        {{ title }}
+      </p>
+    {% endif %}
+
+    {{ content }}
+  </div>
+{% endif %}

@@ -1,0 +1,78 @@
+@layer base {
+  /*
+  * There's a split in the styling of form elements:
+  * 1. Controls: form elements that will not zoom on mobile if less than 16px (checkboxes, radio buttons, etc)
+  * 2. Inputs: a subset of form elements that zoom the window on mobile when greater than 16px (textarea, inputs, etc)
+  */
+  :root {
+    @apply vars-control-md;
+    @apply [--input-font-size:max(var(--control-font-size),16px)];
+    @apply md:[--input-font-size:var(--control-font-size)];
+
+    /* Control line heights default to 1, but can be overridden by setting --leading variable. */
+    --leading-control: 1;
+  }
+}
+
+@layer components {
+  /* Control heights use row height to match the height of a button.
+   * smaller input controls with 16px font-size lock on mobile can blow out of their row height.
+   */
+  .vars-control-xs {
+    @apply [--control-height:--row-xs];
+    @apply [--control-padding:theme(space.r3)];
+    @apply [--control-font-size:var(--root-font-size-p-sm)];
+    @apply [--control-icon-size:theme(space.r6)];
+    @apply md:[--control-padding:theme(space.r2)];
+    @apply md:[--control-font-size:var(--root-font-size-p-sm)];
+    @apply md:[--control-icon-size:theme(space.r5)];
+  }
+
+  .vars-control-sm {
+    @apply [--control-height:--row-sm];
+    @apply [--control-padding:theme(space.r4)];
+    @apply [--control-font-size:var(--root-font-size-p-sm)];
+    @apply [--control-icon-size:theme(space.r7)];
+    @apply md:[--control-padding:theme(space.r3)];
+    @apply md:[--control-font-size:var(--root-font-size-p-sm)];
+    @apply md:[--control-icon-size:theme(space.r6)];
+  }
+
+  .vars-control-md {
+    @apply [--control-height:--row-md];
+    @apply [--control-padding:theme(space.r5)];
+    @apply [--control-font-size:var(--root-font-size-p-md)];
+    @apply [--control-icon-size:theme(space.r8)];
+    @apply md:[--control-padding:theme(space.r4)];
+    @apply md:[--control-font-size:var(--root-font-size-p-md)];
+    @apply md:[--control-icon-size:theme(space.r7)];
+  }
+
+  .vars-control-lg {
+    @apply [--control-height:--row-lg];
+    @apply [--control-padding:theme(space.r6)];
+    @apply [--control-font-size:var(--root-font-size-p-md)];
+    @apply [--control-icon-size:theme(space.r8)];
+    @apply md:[--control-padding:theme(space.r6)];
+    @apply md:[--control-font-size:var(--root-font-size-p-md)];
+    @apply md:[--control-icon-size:theme(space.r8)];
+  }
+
+  .vars-control-xl {
+    @apply [--control-height:--row-xl];
+    @apply [--control-padding:theme(space.r6)];
+    @apply [--control-font-size:var(--root-font-size-p-md)];
+    @apply [--control-icon-size:theme(space.r8)];
+    @apply md:[--control-padding:theme(space.r6)];
+    @apply md:[--control-font-size:var(--root-font-size-p-md)];
+    @apply md:[--control-icon-size:theme(space.r8)];
+  }
+
+  .vars-leading-control {
+    --leading-prose: var(--leading, var(--leading-control));
+    --leading-block: var(--leading, var(--leading-control));
+  }
+  .leading-control {
+    line-height: var(--leading, var(--leading-control));
+  }
+}

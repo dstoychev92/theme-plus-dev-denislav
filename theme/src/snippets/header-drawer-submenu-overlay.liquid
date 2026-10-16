@@ -1,0 +1,82 @@
+{% doc %}
+  - Renders sliding submenu overlay for one drawer link
+
+  index has to match the one header-drawer-menu-item used, since the trigger finds this panel
+  through the same composed id. Render it inside the header-drawer x-data, which holds
+  activeSubmenuOverlay and visibleSubmenuOverlay.
+
+  @param {string} [attributes]
+  @param {string} content
+  @param {number} [index] - position among the links, appended to the submenu id
+  @param {link} link
+{% enddoc %}
+
+{% assign back_aria_label = 'header.accessibility.menu_back' | t %}
+{% liquid
+  assign menu_id = link.title | downcase | strip_html | escape_once | handleize
+  # Must mirror header-drawer-menu-item: the index keeps same-titled links from sharing
+  # an overlay id, and the trigger finds this overlay through the same composed key
+  if index
+    assign menu_id = menu_id | append: '-' | append: index
+  endif
+%}
+
+<div
+  x-data="
+    {
+      close() {
+        activeSubmenuOverlay = null
+      },
+      get isVisible() {
+        return visibleSubmenuOverlay == '{{ menu_id }}'
+      },
+      get isActive() {
+        return activeSubmenuOverlay == '{{ menu_id }}'
+      }
+    }
+  "
+
+  id="header-drawer-menu-submenu-overlay-{{ menu_id }}"
+  aria-labelledby="header-drawer-link-{{ menu_id }}"
+  role="group"
+  class="flex flex-col z-20 bg-canvas h-full absolute inset-0"
+  :inert="!(isActive || isVisible)"
+  x-trap="isVisible"
+  x-show="isActive"
+  x-transition:enter="animate-in slide-in-from-right animate-duration-300"
+  x-transition:leave="animate-out slide-out-to-right animate-duration-500"
+  {{ attributes }}
+>
+  <div class="bg-canvas flex-row-center border-b border-b-line min-h-control">
+    <div
+      class="flex-row-center size-full"
+      x-transition:enter="animate-in animate-duration-400 slide-in-from-right fade-in"
+      x-transition:leave="animate-out animate-duration-500 slide-out-to-right fade-out"
+      x-show="isActive || isVisible"
+    >
+      <button
+        class="h-full px-[calc(var(--drawer-padding)*1.5)] text-r3 transition-transform hover:opacity-70 rtl:rotate-180"
+        aria-label="{{ back_aria_label }}"
+        @click="close"
+      >
+        {% render 'core-icon', icon: 'stroke-chevron-left' %}
+      </button>
+
+      {% assign link_title = link.title | strip_html %}
+      {% assign text_class = 'h-full flex items-center py-r4 text-start type-kicker font-bold' %}
+
+      {% if link.url == '#' %}
+        <p class="{{ text_class }}">{{ link_title }}</p>
+      {% else %}
+        <a href="{{ link.url }}" class="{{ text_class }}">{{ link_title }}</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div
+    class="scroll-area-y"
+    x-show="isActive || isVisible"
+  >
+    {{ content }}
+  </div>
+</div>

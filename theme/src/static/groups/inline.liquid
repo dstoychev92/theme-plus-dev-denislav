@@ -1,0 +1,185 @@
+{% capture blocks %}
+  {% content_for "blocks" %}
+{% endcapture %}
+
+{% liquid
+  assign tag = 'div'
+  if settings.show_tag_settings and block.settings.set_heading_tag
+    assign tag = block.settings.heading_tag | default: 'div'
+  endif
+%}
+
+{% capture class %}
+  text-group
+  inline entrance-item entrance-standard
+  *:auto-stagger-animations-[--entrance-animation-stagger]
+
+  {% comment %}
+   The wraps-inline-graphics class duplicates the default, but it's very
+   important that icon, decoration and image block wrappers have an inline-block
+   wrapper when contained by the inline group.
+  {% endcomment %}
+  [&>.wraps-inline-graphics]:!inline-block
+  {% if block.settings.set_alignment %}
+    [&>.wraps-inline-graphics]:[vertical-align:var(--inline-block-gravity)]
+  {% endif %}
+
+  {% comment %} Use margin instead of gap for inline display {% endcomment %}
+  {% if block.settings.set_gap %}
+    *:me-[var(--custom-gutter-x)]
+  {% endif %}
+
+  {% if block.settings.set_alignment %}
+    vars-content-align-{{ block.settings.text_alignment }}
+  {% endif %}
+
+  {% render 'props-class-type-preset', s: block.settings %}
+
+  text-content-align
+{% endcapture %}
+
+{% capture style %}
+  {% if block.settings.set_gap %}
+    {% render 'props-style-gap', s: block.settings, apply: false, vars: false %}
+  {% endif %}
+  {% if block.settings.limit_width %}
+    {% render 'props-style-max-width', max_width: block.settings.max_width %}
+  {% endif %}
+
+  {% if block.settings.set_alignment %}
+    --inline-block-gravity: {{ block.settings.inline_block_alignment }};
+  {% endif %}
+
+  {% if block.settings.set_column_alignment %}
+    {% case block.settings.column_style %}
+      {% when 'count' %}
+        columns: {{ block.settings.column_count }};
+      {% when 'pixels' %}
+        columns: {{ block.settings.column_width_px }}px;
+    {% endcase %}
+  {% endif %}
+  {% comment %} Columns combines nicely with the gap setting {% endcomment %}
+  {% if block.settings.set_gap %}
+    column-gap: var(--custom-gutter-x);
+  {% else %}
+    column-gap: var(--layout-gutter-x);
+  {% endif %}
+{% endcapture %}
+
+<{{ tag }}
+  class="{{ class }}"
+  style="{{ style }}"
+  {{ block.shopify_attributes }}
+>
+  {{ blocks }}
+</{{ tag }}>
+
+{% schema %}
+{
+  "name": "Text group",
+  "tag": null,
+  "settings": [
+    [% json 'schema/type-preset.jsonc', default_preset: 'p' %]
+    [% json 'schema/type-custom.jsonc', resize: true, default_font: 'heading', default_size: '10' %]
+    {
+      "type": "header",
+      "content": "Gap"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_gap",
+      "label": "Set gap",
+      "default": false
+    },
+    [% json 'schema/grid-gap-setting.jsonc', default_gap: 'sm', conditional: 'block.settings.set_gap' %]
+
+    {
+      "type": "header",
+      "content": "Width"
+    },
+    [% json 'schema/width-limit-setting.jsonc' %]
+
+    {
+      "type": "header",
+      "content": "Columns"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_column_alignment",
+      "label": "Set columns",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "column_style",
+      "label": "Column style",
+      "visible_if": "{{ block.settings.set_column_alignment }}",
+      "default": "count",
+      "options": [
+        {"value": "count", "label": "Count"},
+        {"value": "pixels", "label": "Pixels"}
+      ]
+    },
+    {
+      "type": "range",
+      "id": "column_count",
+      "label": "Column count",
+      "visible_if": "{{ block.settings.set_column_alignment and block.settings.column_style == 'count' }}",
+      "min": 1,
+      "max": 4,
+      "default": 2,
+      "step": 1
+    },
+    {
+      "type": "range",
+      "id": "column_width_px",
+      "label": "Column width",
+      "visible_if": "{{ block.settings.set_column_alignment and block.settings.column_style == 'pixels' }}",
+      "unit": "px",
+      "min": 100,
+      "max": 1000,
+      "default": 400,
+      "step": 20
+    },
+    {
+      "type": "header",
+      "content": "Alignment"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_alignment",
+      "label": "Set alignment",
+      "default": false
+    },
+    {
+      "type": "text_alignment",
+      "id": "text_alignment",
+      "label": "Text alignment",
+      "visible_if": "{{ block.settings.set_alignment }}",
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "inline_block_alignment",
+      "label": "Graphic alignment",
+      "info": "Image, decoration, icon, etc.",
+      "visible_if": "{{ block.settings.set_alignment }}",
+      "default": "middle",
+      "options": [
+        {"value": "middle", "label": "Center"},
+        {"value": "baseline", "label": "Baseline"}
+      ]
+    },
+    [% json 'schema/seo-settings.jsonc' %]
+  ],
+  "blocks": [
+    {
+      "type": "@app"
+    },
+    [= additional_blocks =]
+  ],
+  "presets": [
+    [= additional_presets =]
+  ]
+}
+{% endschema %}

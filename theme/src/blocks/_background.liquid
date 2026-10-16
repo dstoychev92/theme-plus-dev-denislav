@@ -1,0 +1,69 @@
+{% doc %}
+  - Renders background layer holding background blocks
+
+  Sits inside _pair-pro-banner or the password section. Use _section-background inside section-pro-banner.
+{% enddoc %}
+
+{% assign target_device = block.settings.target_device %}
+
+{% capture blocks %}
+  {% content_for "blocks" %}
+{% endcapture %}
+
+{% capture class %}
+  {% render 'props-class-target-device', target_device: target_device %}
+{% endcapture %}
+
+{% render 'core-background',
+  content: blocks,
+  s: block.settings,
+  class: class,
+  attributes: block.shopify_attributes
+%}
+
+{% schema %}
+{
+  "name": "Background layer",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Overlay"
+    },
+    [% json 'schema/overlay-settings.jsonc' %]
+    {
+      "type": "header",
+      "content": "Parallax"
+    },
+    [% json 'schema/parallax-settings.jsonc', context: 'block.settings.' %]
+    {
+      "type": "header",
+      "content": "Limit by screen size",
+      "info": "Optional: use a different background for mobile and desktop"
+    },
+    [% json 'schema/target-device-setting.jsonc', default_value: 'both' %]
+  ],
+  "blocks": [
+    {
+      "type": "_background-pattern-text"
+    },
+    {
+      "type": "_background-collage-image"
+    },
+    {
+      "type": "_background-image"
+    },
+    {
+      "type": "_background-split"
+    },
+    {
+      "type": "_background-marquee"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Background layer"
+    }
+  ]
+}
+{% endschema %}

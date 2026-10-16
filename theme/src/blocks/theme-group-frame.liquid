@@ -1,0 +1,10 @@
+{% doc %}
+  - Renders framed container holding other blocks
+{% enddoc %}
+
+[%- capture additional_blocks -%]
+  { "type": "@theme" },
+  [% json 'schema/blocks-extended.jsonc' %]
+[%- endcapture -%]
+
+[% render 'groups/frame', additional_blocks: additional_blocks %]

@@ -1,0 +1,29 @@
+[
+  {
+    "type": "color_scheme",
+    "id": "color_scheme",
+    "label": "Color scheme",
+    "default": "[= default_color_scheme | default: 'scheme-opposite' =]"
+  },
+  {
+    "type": "select",
+    "id": "background",
+    "label": "Background",
+    "default": "[= default_background | default: 'transparent' =]",
+    "options": [
+      {"value": "canvas", "label": "Default"},
+      {"value": "tint", "label": "Tint"},
+      {"value": "transparent", "label": "∅"},
+      {"value": "custom", "label": "⋯"}
+    ],
+    "visible_if": "{{ section.settings.contain_section }}"
+  },
+  {
+    "type": "color",
+    "id": "background_color",
+    "label": "Background color",
+    "default": "#ffffff",
+    "alpha": false,
+    "visible_if": "{{ section.settings.contain_section and section.settings.background == 'custom' }}"
+  }
+]

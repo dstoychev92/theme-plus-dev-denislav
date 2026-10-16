@@ -1,0 +1,70 @@
+{% doc %}
+  - Prints sizes attribute for an image in a section grid
+
+  Column counts come from the section settings, multiplied by the img_columns_* settings for
+  an image spanning more than one column.
+
+  @param {number} [columns_lg] - desktop column count, defaults to section.settings.columns_lg then 2
+  @param {number} [columns_md] - tablet column count, defaults to section.settings.columns_md then 2
+  @param {number} [columns_sm] - mobile column count, defaults to section.settings.columns_sm, or columns_sm_custom when that is 'custom', then columns_sm_grid, then settings.slider_columns_mobile
+  @param {number} [content_width_custom] - percentage of site width, defaults to section.settings.content_width_custom then 65
+  @param {number} [layout_site_width] - site width in pixels, defaults to settings.layout_site_width then 1440
+  @param {section} [section]
+  @param {number} [section_img_columns_lg] - columns the image spans on desktop, defaults to section.settings.img_columns_lg then 1.0
+  @param {number} [section_img_columns_md] - columns the image spans on tablet, defaults to section.settings.img_columns_md then section_img_columns_lg
+  @param {number} [section_img_columns_sm] - columns the image spans on mobile, defaults to section.settings.img_columns_sm then 1.0
+  @param {string} [section_width] - 'full', 'page', or 'custom', defaults to section.settings.content_width then section.settings.section_width
+{% enddoc %}
+
+{% liquid
+  # Section/layout width: full = viewport; page = min(viewport, layout_site_width); custom = layout_site_width * content_width_custom / 100
+  assign section_width = section_width | default: section.settings.content_width | default: section.settings.section_width
+  assign layout_site_width = layout_site_width | default: settings.layout_site_width | default: 1440
+  assign content_width_custom = content_width_custom | default: section.settings.content_width_custom | default: 65
+
+  # Base column counts and image column multipliers
+  assign base_columns_lg = columns_lg | default: section.settings.columns_lg | default: 2
+  assign base_columns_md = columns_md | default: section.settings.columns_md | default: 2
+  assign section_columns_sm = section.settings.columns_sm
+  if section_columns_sm == 'custom'
+    assign section_columns_sm = section.settings.columns_sm_custom
+  endif
+  assign base_columns_sm = columns_sm | default: section_columns_sm | default: section.settings.columns_sm_grid | default: settings.slider_columns_mobile
+  assign section_img_columns_lg = section_img_columns_lg | default: section.settings.img_columns_lg | default: 1.0
+  assign section_img_columns_md = section_img_columns_md | default: section.settings.img_columns_md | default: section_img_columns_lg | default: 1.0
+  assign section_img_columns_sm = section_img_columns_sm | default: section.settings.img_columns_sm | default: 1.0
+  assign columns_lg = base_columns_lg | times: section_img_columns_lg
+  assign columns_md = base_columns_md | times: section_img_columns_md
+  assign columns_sm = base_columns_sm | times: section_img_columns_sm
+%}
+
+{% comment %}
+  Base width of section for CSS: full = 100vw; page = min(100vw, layout_site_width px); custom = fixed px width.
+{% endcomment %}
+
+{%- capture base_section_width -%}
+  {% case section_width %}
+    {% when 'full' %}
+      100vw
+    {% when 'page' %}
+      min(100vw, {{ layout_site_width }}px)
+    {% when 'custom' %}
+      {{ layout_site_width | times: content_width_custom | divided_by: 100 }}px
+    {% else %}
+      100vw
+  {% endcase %}
+{%- endcapture -%}
+
+{% capture size_lg %}
+  calc({{ base_section_width | strip }} / {{ columns_lg }})
+{% endcapture %}
+
+{% capture size_md %}
+  calc({{ base_section_width | strip }} / {{ columns_md }})
+{% endcapture %}
+
+{% capture size_sm %}
+  calc({{ base_section_width | strip }} / {{ columns_sm }})
+{% endcapture %}
+
+(min-width: [= screen_lg =]px) {{- size_lg -}}, (min-width: [= screen_md =]px) {{- size_md -}}, {{- size_sm -}}

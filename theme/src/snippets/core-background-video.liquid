@@ -1,0 +1,98 @@
+{% doc %}
+  - Renders autoplaying background video
+
+  @param {number} [aspect_ratio] - defaults to s.aspect_ratio, then video.aspect_ratio
+  @param {string} [attributes]
+  @param {block} [block]
+  @param {string} [class] - The classes
+  @param {string} [height] - 'image' sizes the wrapper from the aspect ratio when set_height is on, defaults to s.height
+  @param {string} [height_mobile] - 'image' sizes the wrapper from the aspect ratio below md, defaults to s.height_mobile
+  @param {string} [id] - defaults to id_prefix with '-video'
+  @param {string} [id_prefix] - prefix for the video ID, defaults to block.id, then section.id
+  @param {boolean} [preload] - defaults to true in the first section
+  @param {object} [s] - settings object
+  @param {section} [section]
+  @param {boolean} [set_height] - applies height
+  @param {boolean} [set_height_mobile] - applies height_mobile, defaults to s.set_height_mobile, then true
+  @param {string} [style] - inline styles
+  @param {video} [video] - defaults to s.video_bg
+  @param {string} [video_class] - classes for the video element
+  @param {string} [video_wrapper_class] - classes for the core-video wrapper
+  @param {number} [width] - video width in pixels
+{% enddoc %}
+
+{% liquid
+  assign video = video | default: s.video_bg
+  assign aspect_ratio = aspect_ratio | default: s.aspect_ratio | default: video.aspect_ratio
+  assign height = height | default: s.height, allow_false: true
+  assign height_mobile = height_mobile | default: s.height_mobile, allow_false: true
+
+  if id == blank
+    assign id_prefix = id_prefix | default: block.id | default: section.id
+    assign id = id_prefix | append: '-video'
+  endif
+
+  if set_height_mobile == null
+    assign set_height_mobile = s.set_height_mobile | default: true, allow_false: true
+  endif
+
+  assign mobile_height_overrides = false
+  if set_height_mobile and height_mobile != blank and height_mobile != 'image'
+    assign mobile_height_overrides = true
+  endif
+
+  if preload == null and section.index0 == 0
+    assign preload = true
+  endif
+%}
+
+{% capture video_wrapper_class %}
+  size-full absolute inset-0 !z-10
+  {{ video_wrapper_class }}
+{% endcapture %}
+
+<div
+  class="
+    {{ class }} overflow-hidden w-full
+    {% if height == 'image' and set_height %}
+      h-auto
+      md:aspect-[var(--video-aspect-ratio)]
+      {% unless mobile_height_overrides %}
+        {% # The bare aspect keeps the video band on mobile only while no mobile height overrides it, since an aspect box adds intrinsic height under max-md:h-full %}
+        aspect-[var(--video-aspect-ratio)]
+      {% endunless %}
+    {% else %}
+      h-full
+    {% endif %}
+
+    {% if height_mobile == 'image' and set_height_mobile %}
+      max-md:h-auto
+      max-md:aspect-[var(--video-aspect-ratio)]
+    {% else %}
+      max-md:h-full
+    {% endif %}
+  "
+  style="
+    {{ style }}
+    {% if aspect_ratio != 0 and aspect_ratio != blank %}
+      {% if height == 'image' and set_height %}
+        --video-aspect-ratio: {{ aspect_ratio }};
+      {% elsif height_mobile == 'image' and set_height_mobile %}
+        --video-aspect-ratio: {{ aspect_ratio }};
+      {% endif %}
+    {% endif %}
+  "
+  {{ attributes }}
+>
+  {% render 'core-video',
+    video: video,
+    preload: preload,
+    autoplay: true,
+    controls: false,
+    aspect_ratio: aspect_ratio,
+    width: width,
+    video_class: video_class,
+    class: video_wrapper_class,
+    id: id
+  %}
+</div>

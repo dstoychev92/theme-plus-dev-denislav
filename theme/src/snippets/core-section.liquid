@@ -1,0 +1,67 @@
+{% doc %}
+  - Renders section wrapper with content column around rendered content
+
+  Renders content through core-section-content, then core-section-wrapper.
+
+  @param {string} [attributes]
+  @param {string} [background] - 'transparent', 'canvas', 'tint', or 'custom', defaults to s.background
+  @param {string} [background_color] - CSS color when background is 'custom', defaults to s.background_color
+  @param {string} [class] - The classes
+  @param {color_scheme} [color_scheme] - defaults to s.color_scheme
+  @param {boolean} [contain_controls_rhythm] - the contain setting drives padding and rhythm
+  @param {boolean} [contain_disables_transparent_header] - containing the section turns off header transparency
+  @param {string} content
+  @param {string} [content_align] - horizontal alignment, defaults to s.content_align
+  @param {string} [content_padding] - 'sm', 'md', 'lg', or 'custom', defaults to s.content_padding
+  @param {string} [content_width] - 'page', 'full', or 'custom', defaults to s.content_width
+  @param {number} [content_width_custom] - percent of the site width when content_width is 'custom', defaults to s.content_width_custom, then 100
+  @param {number} [content_width_custom_mobile] - percent on mobile when content_width is 'custom', defaults to s.content_width_custom_mobile, then 100
+  @param {string} [inner_attributes] - attributes for the content column
+  @param {string} [inner_class] - classes for the content column
+  @param {string} [inner_col_class] - replaces col-section-content on the content column
+  @param {string} [inner_style] - inline styles for the content column
+  @param {boolean} [lazy_alpine] - false removes data-lazy-alpine
+  @param {boolean} [padding] - false removes the section padding
+  @param {boolean} [photoswipe] - false leaves the section out of the lightbox
+  @param {object} [s] - settings object
+  @param {string} [section_width] - 'page' or 'full', defaults to s.section_width
+  @param {string} [style] - inline styles
+  @param {string} [tag] - defaults to 'section-wrapper'
+  @param {string} [target_device] - 'mobile' or 'desktop' hides the section on the other device, defaults to s.target_device
+  @param {string} [text_class] - classes for the text color, defaults to 'text-content'
+{% enddoc %}
+
+{% capture section_content %}
+  {% render 'core-section-content',
+    class: inner_class,
+    attributes: inner_attributes,
+    inner_col_class: inner_col_class,
+    content: content,
+    style: inner_style
+  %}
+{% endcapture %}
+
+{% render 'core-section-wrapper',
+  tag: tag,
+  s: s,
+  section_width: section_width,
+  content_width: content_width,
+  content_width_custom: content_width_custom,
+  content_width_custom_mobile: content_width_custom_mobile,
+  content_padding: content_padding,
+  contain_controls_rhythm: contain_controls_rhythm,
+  contain_disables_transparent_header: contain_disables_transparent_header,
+  padding: padding,
+  target_device: target_device,
+  color_scheme: color_scheme,
+  background: background,
+  background_color: background_color,
+  text_class: text_class,
+  class: class,
+  style: style,
+  attributes: attributes,
+  content: section_content,
+  lazy_alpine: lazy_alpine,
+  content_align: content_align,
+  photoswipe: photoswipe
+%}

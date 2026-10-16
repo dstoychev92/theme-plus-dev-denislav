@@ -1,0 +1,99 @@
+{% doc %}
+  - Renders checkbox with label
+
+  @param {string} [attributes]
+  @param {boolean} [checked]
+  @param {string} [class] - The classes
+  @param {boolean} [disabled]
+  @param {string} [error_message] - error text shown below, with id plus '-error' as its id
+  @param {string} [form] - id of the form it belongs to
+  @param {string} [id] - defaults to name handleized
+  @param {string} [input_attributes] - attributes for the input
+  @param {string} [input_class] - classes for the input
+  @param {string} label
+  @param {string} [label_attributes] - attributes for the label
+  @param {string} [label_class] - classes for the label
+  @param {string} [name]
+  @param {boolean} [reversed] - puts the label before the box
+  @param {string} [size] - 'sm', 'md' or 'lg', omitted leaves sizing to a wrapper
+  @param {string} [success_message] - message shown after a successful post
+  @param {string} [value]
+{% enddoc %}
+{% liquid
+  assign id = id | default: name | strip_html | handleize
+  assign reversed = reversed | default: false
+
+  # Passing null or false will allow us to set the size class on a wrapping container, e.g. a checkbox group container
+  if size != null and size != false
+    assign size = size | default: 'md'
+    case size
+      when 'sm'
+        assign size_class = 'vars-control-sm'
+      when 'md'
+        assign size_class = 'vars-control-md'
+      when 'lg'
+        assign size_class = 'vars-control-lg'
+    endcase
+  endif
+%}
+
+<div
+  class="
+    flex items-center gap-x-r4
+    {% if reversed %}flex-row-reverse{% else %}flex-row{% endif %}
+    text-size-control text-start
+    {{ size_class }}
+    {{ class }}
+  "
+  {{ attributes }}
+>
+  <input
+    type="checkbox"
+    id="{{ id }}"
+    name="{{ name }}"
+    {% if value %}
+      value="{{ value }}"
+    {% endif %}
+    {% if form %}
+      form="{{ form }}"
+    {% endif %}
+    class="
+      checkbox peer relative flex-none
+      {{ input_class }}
+    "
+    {% if disabled %}
+      disabled
+    {% endif %}
+    {% if checked %}
+      checked
+    {% endif %}
+    {{ input_attributes }}
+  >
+  <label
+    for="{{ id }}"
+    class="
+      flex-1 flex py-r2 cursor-pointer peer-disabled:cursor-default peer-disabled:opacity-50
+      {{ label_class }}
+    "
+    {{ label_attributes }}
+  >
+    {{ label }}
+  </label>
+</div>
+
+{%- if error_message != '' and error_message != null -%}
+  <p
+    class="vars-scheme-error mt-r2 text-start text-r2 text-content"
+    {% if id != '' %}
+      id="{{ id }}-error"
+    {% endif %}
+  >
+    {{ error_message }}
+  </p>
+{%- endif -%}
+
+{%- if success_message != '' and success_message != null -%}
+  <p class="vars-scheme-success mt-r2 text-start text-r2 text-content">
+    {{ success_message }}
+  </p>
+{%- endif -%}

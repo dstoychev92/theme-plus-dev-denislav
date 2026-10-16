@@ -1,0 +1,193 @@
+{% doc %}
+  - Renders positioned image or video with optional clip mask and parallax
+
+  Sits inside _background or _section-background.
+{% enddoc %}
+
+{% liquid
+  if block.settings.set_parallax
+    assign parallax = block.settings.parallax | default: 0
+    assign parallax_direction = block.settings.parallax_direction | default: 'vertical'
+  endif
+
+  assign target_device = block.settings.target_device
+%}
+
+{% capture class %}
+  w-fit h-fit
+  {% render 'props-class-target-device', target_device: target_device %}
+  {% if parallax != blank and parallax != 0 %}
+    will-change-transform
+  {% endif %}
+{% endcapture %}
+
+{% capture media %}
+  {% case block.settings.media_type %}
+    {% when 'image' %}
+      {% liquid
+        assign media_width = block.settings.image.width | default: block.settings.image_max_limit | at_most: block.settings.image_max_limit | at_least: 50
+        assign aspect_ratio = block.settings.image.aspect_ratio | default: 1
+        if block.settings.crop_image
+          assign aspect_ratio = block.settings.aspect_ratio
+        endif
+      %}
+      {% comment %} This needs 'max-w-none' to avoid shrinking it when positioned close to the edge of the screen {% endcomment %}
+      {% render 'core-image',
+        image: block.settings.image,
+        width: media_width,
+        class: "max-w-none",
+        aspect_ratio: aspect_ratio,
+        placeholder: 'product-1'
+      %}
+
+    {% when 'video' %}
+      {% liquid
+        assign media_width = block.settings.video_bg.width | default: block.settings.image_max_limit | at_most: block.settings.image_max_limit | at_least: 50
+        assign aspect_ratio = block.settings.video_bg.aspect_ratio | default: 1
+        if block.settings.crop_image
+          assign aspect_ratio = block.settings.aspect_ratio
+        endif
+      %}
+
+      {% capture video_attributes %}
+        {% if target_device == 'desktop' %}
+          data-video-desktop
+        {% elsif target_device == 'mobile' %}
+          data-video-mobile
+        {% else %}
+          data-video
+        {% endif %}
+      {% endcapture %}
+
+      {% render 'core-background-video',
+        s: block.settings,
+        width: media_width,
+        video_class: 'max-w-none',
+        video_wrapper_class: '!relative',
+        attributes: video_attributes
+      %}
+
+  {% endcase %}
+{% endcapture %}
+
+{% capture style %}
+  width: {{ media_width }}px;
+{% endcapture %}
+
+{% capture masked_media_attributes %}
+  {% if parallax != blank and parallax != 0 %}
+    x-parallax:element.{{ parallax_direction }}.distance.{{ parallax }}%
+  {% endif %}
+{% endcapture %}
+
+{% capture masked_media %}
+  {% render 'core-clip-mask',
+    s: block.settings,
+    content: media,
+    class: 'block w-fit h-fit',
+    style: style,
+    attributes: masked_media_attributes
+  %}
+{% endcapture %}
+
+{% capture attributes %}
+  {{ block.shopify_attributes }}
+{% endcapture %}
+
+<div
+  class="
+    {% render 'props-class-float', s: block.settings %}
+    {{ class }}
+  "
+  style="
+    {% render 'props-style-float', s: block.settings %}
+    {{ style }}
+  "
+  {{ attributes }}
+>
+  {{ masked_media }}
+</div>
+
+{% schema %}
+{
+  "name": "Collage image",
+  "tag": null,
+  "settings": [
+    [% json 'schema/media-settings.jsonc', disable_image_mobile: true %]
+    {
+      "type": "range",
+      "id": "image_max_limit",
+      "min": 10,
+      "max": 900,
+      "step": 10,
+      "unit": "px",
+      "label": "Image width",
+      "default": 300
+    },
+    [% json 'schema/target-device-setting.jsonc' %]
+    [% json 'schema/clip-mask-settings.jsonc' %]
+    {
+      "type": "range",
+      "id": "aspect_ratio",
+      "min": 0.5,
+      "max": 5,
+      "step": 0.1,
+      "unit": ":1",
+      "label": "Aspect ratio",
+      "info": "Width to height",
+      "default": 1,
+      "visible_if": "{{ block.settings.crop_image == true }}"
+    },
+    {
+      "type": "header",
+      "content": "Parallax"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_parallax",
+      "label": "Set parallax amount",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "parallax",
+      "min": -100,
+      "max": 100,
+      "step": 2,
+      "label": "Amount",
+      "default": 0,
+      "info": "Positive values move the element in the opposite direction of the scroll direction. Negative values move the element in the same direction as the scroll direction.",
+      "unit": "%",
+      "visible_if": "{{ block.settings.set_parallax }}"
+    },
+    {
+      "type": "select",
+      "id": "parallax_direction",
+      "label": "Direction",
+      "default": "vertical",
+      "options": [
+        {
+          "value": "vertical",
+          "label": "↓"
+        },
+        {
+          "value": "horizontal",
+          "label": "→"
+        }
+      ],
+      "visible_if": "{{ block.settings.set_parallax }}"
+    },
+    {
+      "type": "header",
+      "content": "Image position"
+    },
+    [% json 'schema/position-settings.jsonc', visible_if_desktop: "block.settings.target_device != 'mobile'", visible_if_mobile: "block.settings.target_device != 'desktop'" %]
+    [% json 'schema/rotation-setting.jsonc' %]
+  ],
+  "presets": [
+    {
+      "name": "Collage image"
+    }
+  ]
+}
+{% endschema %}

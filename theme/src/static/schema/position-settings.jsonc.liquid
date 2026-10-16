@@ -1,0 +1,82 @@
+[
+  [% unless left == false %]
+    {
+      "type": "range",
+      "id": "left",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "label": "Left",
+      "default": 50,
+      [% if visible_if_desktop %]
+        "visible_if": "{{ [= visible_if_desktop =] }}",
+      [% endif %]
+      "unit": "%"
+    },
+  [% endunless %]
+  [% unless top == false %]
+    {
+      "type": "range",
+      "id": "top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "label": "Top",
+      "default": 50,
+      [% if visible_if_desktop %]
+        "visible_if": "{{ [= visible_if_desktop =] }}",
+      [% endif %]
+      "unit": "%"
+    },
+  [% endunless %]
+  [% if optional_mobile == true %]
+    {
+      "type": "checkbox",
+      "id": "set_position_mobile",
+      "label": "Set mobile position",
+      "info": "Match dot with a mobile image override",
+      [% if visible_if_mobile %]
+        "visible_if": "{{ [= visible_if_mobile =] }}",
+      [% endif %]
+      "default": false
+    },
+  [% endif %]
+  [% unless left == false %]
+    {
+      "type": "range",
+      "id": "left_mobile",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "label": "Left (Mobile)",
+      "default": 50,
+      [% if optional_mobile == true and visible_if_mobile %]
+        "visible_if": "{{ block.settings.set_position_mobile == true and [= visible_if_mobile =] }}",
+      [% elsif optional_mobile == true %]
+        "visible_if": "{{ block.settings.set_position_mobile == true }}",
+      [% elsif visible_if_mobile %]
+        "visible_if": "{{ [= visible_if_mobile =] }}",
+      [% endif %]
+      "unit": "%"
+    },
+  [% endunless %]
+  [% unless top == false %]
+    {
+      "type": "range",
+      "id": "top_mobile",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "label": "Top (Mobile)",
+      "default": 50,
+      [% if optional_mobile == true and visible_if_mobile %]
+        "visible_if": "{{ block.settings.set_position_mobile == true and [= visible_if_mobile =] }}",
+      [% elsif optional_mobile == true %]
+        "visible_if": "{{ block.settings.set_position_mobile == true }}",
+      [% elsif visible_if_mobile %]
+        "visible_if": "{{ [= visible_if_mobile =] }}",
+      [% endif %]
+      "unit": "%"
+    },
+  [% endunless %]
+]

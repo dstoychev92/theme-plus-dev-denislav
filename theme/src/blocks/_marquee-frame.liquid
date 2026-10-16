@@ -1,0 +1,99 @@
+{% doc %}
+  - Renders fixed-width frame holding other blocks inside a marquee
+
+  Sits inside _marquee. Tablet and mobile widths fall back to width_px unless set_width_tablet or set_width_mobile is on. Descendants can adapt with @container width queries, as in layout.css.
+{% enddoc %}
+
+{%- liquid
+  assign width_desktop = block.settings.width_px
+
+  assign width_tablet = width_desktop
+  if block.settings.set_width_tablet
+    assign width_tablet = block.settings.width_px_tablet
+  endif
+
+  assign width_mobile = width_desktop
+  if block.settings.set_width_mobile
+    assign width_mobile = block.settings.width_px_mobile
+  endif
+-%}
+
+<div
+  class="w-layout cq-width shrink-0 inline-block align-top"
+  style="
+    --layout-width-mobile: {{ width_mobile }}px;
+    --layout-width-tablet: {{ width_tablet }}px;
+    --layout-width-desktop: {{ width_desktop }}px;
+  "
+  {{ block.shopify_attributes }}
+>
+  {% content_for 'blocks' %}
+</div>
+
+{% schema %}
+{
+  "name": "Frame",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Width"
+    },
+    {
+      "type": "range",
+      "id": "width_px",
+      "label": "Width",
+      "min": 80,
+      "max": 800,
+      "step": 10,
+      "default": 320,
+      "unit": "px"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_width_tablet",
+      "label": "Set tablet",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "width_px_tablet",
+      "label": "Tablet width",
+      "min": 80,
+      "max": 800,
+      "step": 10,
+      "default": 280,
+      "unit": "px",
+      "visible_if": "{{ block.settings.set_width_tablet }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "set_width_mobile",
+      "label": "Set mobile",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "width_px_mobile",
+      "label": "Mobile width",
+      "min": 80,
+      "max": 600,
+      "step": 10,
+      "default": 200,
+      "unit": "px",
+      "visible_if": "{{ block.settings.set_width_mobile }}"
+    }
+  ],
+  "blocks": [
+    { "type": "@theme" },
+    [% json 'schema/blocks-extended.jsonc', no_marquee: true %]
+    { "type": "@app" }
+  ],
+  "presets": [
+    {
+      "name": "Frame",
+      "category": "Layout",
+    }
+  ]
+}
+{% endschema %}

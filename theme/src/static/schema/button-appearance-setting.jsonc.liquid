@@ -1,0 +1,14 @@
+{
+  "type": "select",
+  "id": "[= id | default: 'appearance' =]",
+  "label": "Style",
+  "default": "[= default_appearance | default: 'fill' =]",
+  [% if conditional %]
+    "visible_if": "{{ [= conditional =] }}",
+  [% endif %]
+  "options": [
+    {"value": "fill", "label": "Fill"},
+    {"value": "stroke", "label": "Stroke"},
+    {"value": "soft", "label": "Soft"}
+  ]
+}

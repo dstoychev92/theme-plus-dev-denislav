@@ -1,0 +1,55 @@
+@layer base {
+  :root {
+    --card-lg-inner-padding: 0px;
+    --card-lg-text-padding: 0px;
+    --card-lg-text-buffer: 0px;
+    --card-lg-radius: 0px;
+    --card-lg-media-radius: var(--radius-card);
+  }
+}
+
+@layer components {
+  .vars-card-lg {
+    --card-lg-text-gap: var(--card-lg-text-gap);
+    --card-lg-media-padding: var(--r5);
+    --radius-badge: var(--radius-card-badge);
+    --card-lg-width: 100%;
+  }
+
+  .vars-card-md {
+    --card-md-inner-padding-x: var(--r5);
+    --card-md-inner-padding-y: var(--r3);
+    --card-md-radius: min(var(--radius-element-default), var(--radius-md));
+    --card-md-media-radius: 0px;
+    --card-md-bg-color: var(--canvas);
+    --card-md-border-color: var(--line-subtle);
+  }
+
+  .vars-card-sm {
+    --card-sm-inner-padding-x: var(--r4);
+    --card-sm-inner-padding-y: var(--r2);
+    --card-sm-radius: min(var(--radius-element-default), var(--radius-md));
+    --card-sm-media-radius: 0px;
+    --card-sm-bg-color: var(--canvas);
+    --card-sm-border-color: var(--line-subtle);
+  }
+
+  .vars-card-xs {
+    --card-xs-media-radius: var(--radius-element-default);
+  }
+
+  @media screen(md) {
+    .vars-card-lg-appearance-normal {
+      --card-lg-text-color: var(--content);
+      --card-lg-bg-color: transparent;
+    }
+
+    .vars-card-lg-appearance-framed {
+      --card-lg-radius: var(--radius-card);
+      --card-lg-media-radius: var(--radius-card) var(--radius-card) 0 0;
+      --card-lg-text-buffer: var(--r5);
+      --card-lg-text-color: var(--content);
+      --card-lg-bg-color: var(--card-lg-framed-bg-color, var(--content-mix-5));
+    }
+  }
+}

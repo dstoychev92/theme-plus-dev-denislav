@@ -1,0 +1,18 @@
+[
+  {
+    "type": "select",
+    "id": "[= id | default: 'richtext_size' =]",
+    "label": "[= label | default: 'Text size' =]",
+    "default": "[= default | default: 'md' =]",
+    [% if conditional %]
+      "visible_if": "{{ [= conditional =] }}",
+    [% endif %]
+    "options": [
+      {"value": "xs", "label": "XS"},
+      {"value": "sm", "label": "S"},
+      {"value": "md", "label": "M"},
+      {"value": "lg", "label": "L"},
+      {"value": "xl", "label": "XL"}
+    ]
+  }
+]

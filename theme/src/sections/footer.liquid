@@ -1,0 +1,156 @@
+{%- capture content -%}
+  <div
+    class="
+      grid gap-r8 grid-cols-1
+      {% if section.settings.custom_col_span %}
+        md:grid-cols-[--cols-tablet]
+        lg:grid-cols-[--cols-desktop]
+      {% else %}
+        md:grid-cols-[--columns]
+      {% endif %}
+    "
+    style="
+      {% if section.settings.custom_col_span %}
+        --cols-desktop: repeat({{ section.settings.columns_lg }}, minmax(0, 1fr));
+        --cols-tablet: repeat({{ section.settings.columns_md }}, minmax(0, 1fr));
+      {% else %}
+        --columns: repeat({{ section.blocks.size }}, minmax(0, 1fr));
+      {% endif %}
+    "
+  >
+    {% for block in section.blocks %}
+      {% render block %}
+    {% endfor %}
+  </div>
+{%- endcapture -%}
+
+{%- render 'core-section', s: section.settings, content: content, photoswipe: false -%}
+
+{% schema %}
+{
+  "name": "Footer",
+  "class": "section-footer",
+  "max_blocks": 6,
+  "settings": [
+    [% json 'schema/color-settings-section-solid.jsonc', default_color_scheme: 'scheme-opposite' %]
+    {
+      "type": "header",
+      "content": "Block titles"
+    },
+    [% json 'schema/color-dropdown.jsonc', custom: true, muted: true, context: 'section.settings.' %]
+    [% json 'schema/type-preset.jsonc', default_preset: 'accordion', label: 'Text style' %]
+    [% json 'schema/type-custom.jsonc', resize: true, context: 'section.settings.' %]
+    [% json 'schema/seo-settings.jsonc', hide_header: true, context: 'section.settings.' %]
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    [% json 'schema/section-padding-settings.jsonc' %]
+    {
+      "type": "select",
+      "id": "content_width",
+      "label": "Width",
+      "default": "full",
+      "options": [
+        {"value": "full", "label": "Full"},
+        {"value": "page", "label": "Page"}
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "custom_col_span",
+      "label": "Set column grid",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "columns_lg",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "label": "Desktop",
+      "default": 4,
+      "visible_if": "{{ section.settings.custom_col_span == true }}"
+    },
+    {
+      "type": "range",
+      "id": "columns_md",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "label": "Tablet",
+      "default": 4,
+      "visible_if": "{{ section.settings.custom_col_span == true }}"
+    }
+  ],
+  "blocks": [
+    { "type": "_footer-column" }
+  ],
+  "presets": [
+    {
+      "name": "Footer",
+      "blocks": [
+        {
+          "type": "_footer-column",
+          "settings": {
+            "title": "Main menu"
+          },
+          "blocks": [
+            {
+              "type": "_footer-link-list",
+              "settings": {
+                "linklist": "main-menu"
+              }
+            }
+          ]
+        },
+        {
+          "type": "_footer-column",
+          "settings": {
+            "title": "Quick links"
+          },
+          "blocks": [
+            {
+              "type": "_footer-link-list",
+              "settings": {
+                "linklist": "footer"
+              }
+            }
+          ]
+        },
+        {
+          "type": "_footer-column",
+          "settings": {
+            "title": "About"
+          },
+          "blocks": [
+            {
+              "type": "theme-richtext",
+              "settings": {
+                "text": "<p>Share your brand story, introduce your team, or explain what makes your products unique. This is a great place to connect with your customers and build trust.</p>"
+              }
+            }
+          ]
+        },
+        {
+          "type": "_footer-column",
+          "settings": {
+            "title": "Stay connected"
+          },
+          "blocks": [
+            {
+              "type": "theme-form-newsletter"
+            },
+            {
+              "type": "theme-social-links"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "enabled_on": {
+    "groups": ["footer"]
+  }
+}
+{% endschema %}

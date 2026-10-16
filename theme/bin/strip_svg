@@ -1,0 +1,88 @@
+#!/bin/bash
+
+# Check if the root folder path is provided
+# Default usage: bash bin/strip-svg icons/output icons/paths
+if [ -z "$1" ] || [ -z "$2" ]; then
+  echo "Usage: bash bin/strip-svg <input_folder> <output_folder>"
+  exit 1
+fi
+
+# Input and output folders
+SVG_ROOT_FOLDER="$1"
+OUTPUT_FOLDER="$2"
+
+# Create the output directory if it doesn't exist
+mkdir -p "$OUTPUT_FOLDER"
+
+# Temporary arrays to store accumulated names and their associated output files
+output_files_paths=()
+output_files_list=()
+names_accumulator=()
+
+# Clear the content of each existing output file at the start
+find "$OUTPUT_FOLDER" -type f -name "*.liquid" -exec sh -c 'cat /dev/null > "$1"' _ {} \;
+
+# Find all SVG files recursively in the specified folder and sort them
+while IFS= read -r -d '' svg_file; do
+  # Extract content between <svg> and </svg>
+  inner_content=$(sed -n 's|.*<svg[^>]*>\(.*\)</svg>.*|\1|p' "$svg_file")
+
+  # Get the relative path from the root folder and remove the .svg extension
+  relative_path="${svg_file#$SVG_ROOT_FOLDER/}"
+  base_name="${relative_path%.svg}"
+
+  # Extract the root-level folder name (first subdirectory)
+  root_folder=$(echo "$relative_path" | cut -d'/' -f1)
+
+  # Format the name by replacing slashes with hyphens
+  formatted_name=$(echo "$base_name" | tr '/' '-')
+
+  # Determine the output file names based on the root folder
+  output_file_paths="$OUTPUT_FOLDER/$root_folder-paths.liquid"
+  output_file_list="$OUTPUT_FOLDER/$root_folder-list.liquid"
+
+  # Append the content to the paths output file in the desired format
+  echo "      {% when '$formatted_name' %}" >> "$output_file_paths"
+  echo "        $inner_content" >> "$output_file_paths"
+  echo "" >> "$output_file_paths"
+
+  # Check if the output_file_list is already in the array
+  index=-1
+  for i in "${!output_files_list[@]}"; do
+    if [ "${output_files_list[$i]}" == "$output_file_list" ]; then
+      index=$i
+      break
+    fi
+  done
+
+  # If output_file_list is not in the array, add it
+  if [ $index -eq -1 ]; then
+    output_files_list+=("$output_file_list")
+    names_accumulator+=("$formatted_name")
+  else
+    names_accumulator[$index]="${names_accumulator[$index]}, $formatted_name"
+  fi
+
+  echo "Processed: $svg_file"
+done < <(find "$SVG_ROOT_FOLDER" -type f -name "*.svg" -print0 | sort -z)
+
+# Append accumulated names to the bottom of each list file
+for i in "${!output_files_list[@]}"; do
+  output_file="${output_files_list[$i]}"
+  names_list="${names_accumulator[$i]}"
+  # Remove leading comma and space from the accumulated string
+  names_list=$(echo "$names_list" | sed 's/^, //')
+
+  # Sort the names alphabetically
+  names_list=$(echo "$names_list" | tr ',' '\n' | sed 's/^ //' | sed '/^$/d' | sort | paste -sd ',' - | sed 's/,/, /g')
+
+  # Only prepend a newline if the file is not empty
+  if [ -s "$output_file" ]; then
+    echo "" >> "$output_file"
+  fi
+
+  # Append the accumulated names without adding a newline at the end
+  echo -n "'$names_list'" >> "$output_file"
+done
+
+echo "All SVG files processed successfully."

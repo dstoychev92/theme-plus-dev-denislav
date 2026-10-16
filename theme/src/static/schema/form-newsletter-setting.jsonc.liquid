@@ -1,0 +1,37 @@
+[
+  [% unless enable_newsletter == false %]
+  {
+    "type": "checkbox",
+    "id": "enable_newsletter",
+    "label": "Show newsletter",
+    "info": "Subscribers are added to your [customer admin](/admin/customers) and marked as 'subscribed'.",
+    "default": true
+  },
+  [% endunless %]
+  {
+    "type": "select",
+    "id": "newsletter_appearance",
+    "label": "Style",
+    "default": "[= default_appearance | default: 'line' =]",
+    "options": [
+      {"value": "box", "label": "Box"},
+      {"value": "line", "label": "Line"}
+    ]
+  },
+  [% unless success_message == false %]
+  {
+    "type": "textarea",
+    "id": "success_message",
+    "label": "Success message",
+    "default": "[= default_success_message | default: 'Thank you for signing up' =]",
+    "info": "The success message can contain an optional discount code to be applied at checkout."
+  },
+  [% endunless %]
+  {
+    "type": "checkbox",
+    "id": "show_captcha_terms",
+    "label": "Captcha message",
+    "info": "Enable if spam protection is turned on in [online store preferences](/admin/online_store/preferences) to show hCaptcha terms inline and prevent sticky terms button.",
+    "default": [= default_show_captcha_terms | default: true, allow_false: true =]
+  },
+]

@@ -1,0 +1,61 @@
+{% doc %}
+  - Renders YouTube or Vimeo player, or Shopify placeholder
+
+  @param {number} [aspect_ratio] - CSS ratio, defaults to 16 / 9
+  @param {string} [attributes]
+  @param {boolean} [autoplay]
+  @param {string} [class] - The classes
+  @param {boolean} [lazy] - waits for loadPlayer()
+  @param {boolean} [loop]
+  @param {string} [on_init] - Alpine expression for x-init
+  @param {string} [on_load_video] - Alpine expression run once the player loads
+  @param [placeholder] - Shopify placeholder name, or false for none, defaults to 'image'
+  @param {string} [video_id] - YouTube or Vimeo ID, not the URL
+  @param {string} [video_type] - 'youtube' or 'vimeo'
+{% enddoc %}
+
+{% assign placeholder = placeholder | default: 'image', allow_false: true %}
+
+{% if video_type and video_id %}
+  {% case video_type %}
+    {% when 'youtube' %}
+      {% render 'video-youtube',
+        video_id: video_id,
+        placeholder: placeholder,
+        aspect_ratio: aspect_ratio,
+        lazy: lazy,
+        autoplay: autoplay,
+        loop: loop,
+        class: class,
+        attributes: attributes,
+        on_init: on_init,
+        on_load_video: on_load_video
+      %}
+    {% when 'vimeo' %}
+      {% render 'video-vimeo',
+        video_id: video_id,
+        placeholder: placeholder,
+        aspect_ratio: aspect_ratio,
+        lazy: lazy,
+        autoplay: autoplay,
+        loop: loop,
+        class: class,
+        attributes: attributes,
+        on_init: on_init,
+        on_load_video: on_load_video
+      %}
+  {% endcase %}
+{% elsif placeholder %}
+  {% capture style %}
+    --aspect-ratio: {{ aspect_ratio | default: '16 / 9' }};
+  {% endcapture %}
+
+  {% comment %} Placeholder {% endcomment %}
+  {% assign placeholder_class = class | append: ' h-auto max-w-full' %}
+  {% render 'image-placeholder',
+    placeholder: placeholder,
+    class: placeholder_class,
+    style: style,
+    attributes: attributes
+  %}
+{% endif %}

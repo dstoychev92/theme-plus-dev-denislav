@@ -1,0 +1,34 @@
+{% doc %}
+  - Renders styled text link
+{% enddoc %}
+
+{% capture attributes %}
+  {{ block.shopify_attributes }}
+{% endcapture %}
+
+{% capture class %}
+  entrance-item entrance-standard
+{% endcapture %}
+
+{% render 'core-link', s: block.settings, attributes: attributes, class: class %}
+
+{% schema %}
+{
+  "name": "Link",
+
+  "tag": null,
+  "settings": [
+    [% json 'schema/link-settings.jsonc' %]
+    [% json 'schema/link-appearance-setting.jsonc', default_appearance: 'line' %]
+    [% json 'schema/color-dropdown.jsonc', overlay_colors: true, muted: true %]
+    [% json 'schema/type-preset.jsonc', default_preset: 'btn', label: 'Text style' %]
+    [% json 'schema/type-custom.jsonc', resize: true %]
+  ],
+  "presets": [
+    {
+      "name": "Link",
+      "category": "Basic"
+    }
+  ]
+}
+{% endschema %}

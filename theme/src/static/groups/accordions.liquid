@@ -1,0 +1,69 @@
+{% capture content %}
+  {% content_for 'blocks' %}
+{% endcapture %}
+
+{% capture class %}
+  group/accordions
+  flex flex-col w-full
+  {% if block.settings.show_top_border %}
+    border-t border-t-line-subtle
+  {% endif %}
+{% endcapture %}
+
+{% capture attributes %}
+  {% if section.settings.enable_ensemble %}
+    x-ensemble:disclosure-group
+    x-ensemble:slideshow.duration.{{ section.settings.duration | times: 1000 }}ms
+  {% else %}
+    {% comment %}
+      Use the section- variant so expanded state survives theme editor section
+      morphing — bare x-disclosure-group keeps its state in component-local
+      x-data, which gets destroyed on morph.
+    {% endcomment %}
+    {% if block.settings.multiple %}
+      x-section-disclosure-group.multiple
+    {% else %}
+      x-section-disclosure-group
+    {% endif %}
+  {% endif %}
+  data-test-id="accordion"
+  {% if block.settings.show_number %}
+    style="counter-reset: accordion-group"
+  {% endif %}
+  {{ block.shopify_attributes }}
+  {% if block.settings.enable_muted_title %}
+    data-muted-title
+  {% endif %}
+{% endcapture %}
+
+<div
+  class="{{ class }}"
+  {% if block.settings.show_number %}
+    data-has-counter
+  {% endif %}
+  {% if block.settings.show_open_close_icon %}
+    data-has-icon
+  {% endif %}
+  {% if block.settings.enable_timer_indicator and section.settings.enable_ensemble %}
+    data-enable-timer-indicator
+  {% endif %}
+  {{ attributes }}
+>
+  {{ content }}
+</div>
+
+{% schema %}
+{
+  "name": "Accordions",
+  "tag": null,
+  "settings": [
+    [% json 'schema/accordion-group-settings.jsonc', conditional_multiple: "section.settings.enable_ensemble != true", enable_timer_indicator: ensemble_context, conditional_timer_indicator: "section.settings.enable_ensemble == true and section.settings.autoplay == true" %]
+  ],
+  "blocks": [
+    [= additional_blocks =]
+  ],
+  "presets": [
+    [= additional_presets =]
+  ]
+}
+{% endschema %}

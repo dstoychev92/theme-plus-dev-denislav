@@ -1,0 +1,44 @@
+{% doc %}
+  - Renders flex row holding other blocks
+
+  Private, only offered by _section-title.
+{% enddoc %}
+
+[% capture additional_presets %]
+{
+  "name": "Row",
+  "category": "Layout",
+  "settings": {
+    "set_stack": true,
+    "stack_breakpoint_px": 760
+  },
+  "blocks": [
+    {
+      "type": "theme-decoration"
+    },
+    {
+      "type": "theme-text",
+      "settings": {
+        "text": "Section Title",
+        "type_preset": "h5"
+      }
+    },
+    {
+      "type": "theme-decoration"
+    }
+  ]
+}
+[% endcapture %]
+
+[% capture additional_blocks %]
+  {"type": "theme-link"},
+  {"type": "theme-button"},
+  {"type": "theme-spacer"},
+  {"type": "theme-text"},
+  {"type": "theme-richtext"},
+  {"type": "theme-group-text"},
+  {"type": "theme-decoration"},
+  {"type": "theme-icon"}
+[% endcapture %]
+
+[% render 'groups/row', additional_blocks: additional_blocks, additional_presets: additional_presets %]

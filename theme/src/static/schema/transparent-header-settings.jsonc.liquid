@@ -1,0 +1,28 @@
+[
+  {
+    "type": "header",
+    "content": "Transparent header",
+    "info": "Applies when the header has transparency enabled, and this section is first.",
+    "visible_if": "{{ section.settings.contain_section == false and section.settings.enable_transparent == true }}"
+  },
+  {
+    "type": "checkbox",
+    "id": "enable_transparent",
+    "label": "Enable transparent header",
+    "default": true,
+    "visible_if": "{{ section.settings.contain_section == false }}"
+  },
+  {
+    "type": "select",
+    "id": "transparent_style",
+    "visible_if": "{{ section.settings.contain_section == false and section.settings.enable_transparent == true }}",
+    "label": "Transparent style",
+    "info": "Note: Section content will be pushed down by the header height.",
+    "default": "auto",
+    "options": [
+      {"value": "auto", "label": "Auto"},
+      {"value": "light", "label": "Light"},
+      {"value": "dark", "label": "Dark"}
+    ]
+  }
+]

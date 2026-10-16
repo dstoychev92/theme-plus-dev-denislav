@@ -1,0 +1,60 @@
+{% doc %}
+  - Renders product share button
+
+  Reads closest.product.
+{% enddoc %}
+
+{% liquid
+  assign product = closest.product
+
+  if product == blank and request.visual_preview_mode
+    assign product = collections.all.products.first
+  endif
+%}
+
+{% capture content %}
+  {% render 'share', product: product, label: block.settings.share_label %}
+{% endcapture %}
+
+{% render 'product-block',
+  s: block.settings,
+  content: content,
+  class: 'flex justify-content-align',
+  attributes: block.shopify_attributes
+%}
+
+{% schema %}
+{
+  "name": "Sharing",
+  "tag": null,
+  "settings": [
+
+    {
+      "type": "text",
+      "id": "share_label",
+      "label": "Text",
+      "default": "Share"
+    },
+    {
+      "type": "paragraph",
+      "content": "If you include a link in social media posts, the page's featured image will be shown as the preview image. [Learn more](https://help.shopify.com/en/manual/online-store/images/showing-social-media-thumbnail-images)."
+    },
+    {
+      "type": "paragraph",
+      "content": "A store title and description are included with the preview image. [Learn more](https://help.shopify.com/en/manual/promoting-marketing/seo/adding-keywords#set-a-title-and-description)."
+    },
+    {
+      "type": "header",
+      "content": "Limit by screen size"
+    },
+    [% json 'schema/target-device-setting.jsonc' %]
+
+  ],
+  "presets": [
+    {
+      "name": "Sharing",
+      "category": "Additional product info"
+    }
+  ]
+}
+{% endschema %}

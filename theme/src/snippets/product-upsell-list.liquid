@@ -1,0 +1,74 @@
+{% doc %}
+  - Renders upsell product cards, a loading placeholder, or editor placeholder cards
+
+  Drops unavailable products. Prints nothing when there is no list, single_product, loader, or
+  placeholder mode.
+
+  @param {string} [attributes]
+  @param {block} [block] - scopes each card's product form id, pass it when the caller holds a section-local block
+  @param {number} [limit] - maximum products to show, defaults to s.limit
+  @param {boolean} [loader] - renders a loading placeholder in place of cards
+  @param {object} [products] - products to show, defaults to s.upsell_product_list
+  @param {object} [s] - settings object
+  @param {product} [single_product] - one product to show instead of the list
+  @param {string} [title] - list heading, defaults to s.title
+{% enddoc %}
+
+{%- liquid
+  assign title = title | default: s.title
+  assign limit = limit | default: s.limit
+  assign products = products | default: s.upsell_product_list
+
+  if single_product != blank
+    assign products = null
+  else
+    # An empty array is blank but still truthy, and the render guards below test truthiness
+    assign single_product = null
+  endif
+
+  if products != blank
+    assign single_product = null
+    # filter-out sold out products
+    assign products = products | reject: 'available', false
+    assign products_size_count = products.size | default: products.count
+  endif
+
+  # enable/disable the placeholder products based on request.design_mode
+  assign enable_placeholder_product = false
+  if settings.placeholder_mode or request.design_mode or request.visual_preview_mode
+    assign enable_placeholder_product = true
+  endif
+-%}
+
+{% comment %} Trim dashes keep the no-render case at zero output, since the complementary block's :empty selector fails on whitespace {% endcomment %}
+{%- if products_size_count > 0 or single_product or loader or enable_placeholder_product -%}
+  <fieldset
+    class="relative flex flex-col gap-y-r8 py-r4"
+    {{ attributes }}
+  >
+    {% if title != blank %}
+      <legend
+        class="
+          type-kicker
+          line-clamp-2 text-ellipsis overflow-hidden
+        "
+      >
+        {{ title }}
+      </legend>
+    {% endif %}
+
+    {% if loader %}
+      {% render 'card-layout-md', loader: true, aspect_ratio: settings.card_aspect_ratio %}
+    {% elsif products_size_count > 0 %}
+      {% for product in products limit: limit %}
+        {% render 'card-product', block: block, size: 'md', product: product, button: true, view_context: 'recommendation' %}
+      {% endfor %}
+    {% elsif single_product %}
+      {% render 'card-product', block: block, size: 'md', product: single_product, button: true, view_context: 'recommendation' %}
+    {% elsif enable_placeholder_product %}
+      {% for i in (1..limit) %}
+        {% render 'card-product', size: 'md', placeholder: true, button: true %}
+      {% endfor %}
+    {% endif %}
+  </fieldset>
+{%- endif -%}

@@ -1,0 +1,147 @@
+{% doc %}
+  - Renders auto grid item holding other blocks
+
+  @param {string} [block_class] - classes for this block instance
+  @param {string} [block_style] - inline styles for this block instance
+{% enddoc %}
+
+[%- capture additional_blocks -%]
+  { "type": "@theme" },
+  { "type": "@app" },
+  { "type": "_card-product" },
+  { "type": "_card-collection" },
+  [% json 'schema/blocks-extended.jsonc' %]
+  [% json 'schema/blocks-card-list.jsonc' %]
+[%- endcapture -%]
+
+[% capture replace_presets %]
+[%- assign image_block = '{ "type": "theme-image", "settings": { "image_size_mode": "full", "height": "full" } }' -%]
+"presets": [
+  {
+    "name": "Grid auto item",
+    "blocks": [ [= image_block =] ]
+  },
+
+  {
+    "name": "Featured 2×2",
+    "category": "Preset: grid auto item",
+    "settings": { "size": "featured" },
+    "blocks": [ [= image_block =] ]
+  },
+  {
+    "name": "Wide 2×1",
+    "category": "Preset: grid auto item",
+    "settings": { "size": "wide" },
+    "blocks": [ [= image_block =] ]
+  },
+  {
+    "name": "Tall 1×2",
+    "category": "Preset: grid auto item",
+    "settings": { "size": "tall" },
+    "blocks": [ [= image_block =] ]
+  },
+
+  {
+    "name": "D: 2×2  T: 2×2  M: 2×2",
+    "category": "Pro: item, featured",
+    "settings": {
+      "size": "custom",
+      "custom_col_span": 2,
+      "custom_row_span": 2,
+      "set_tablet_span": true,
+      "custom_col_span_tablet": 2,
+      "custom_row_span_tablet": 2,
+      "set_mobile_span": true,
+      "custom_col_span_mobile": 2,
+      "custom_row_span_mobile": 2
+    },
+    "blocks": [ [= image_block =] ]
+  },
+  {
+    "name": "D: 3×2  T: 2×2  M: 2×2",
+    "category": "Pro: item, featured",
+    "settings": {
+      "size": "custom",
+      "custom_col_span": 3,
+      "custom_row_span": 2,
+      "set_tablet_span": true,
+      "custom_col_span_tablet": 2,
+      "custom_row_span_tablet": 2,
+      "set_mobile_span": true,
+      "custom_col_span_mobile": 2,
+      "custom_row_span_mobile": 2
+    },
+    "blocks": [ [= image_block =] ]
+  },
+  {
+    "name": "D: 3×3  T: 2×2  M: 1×1",
+    "category": "Pro: item, featured",
+    "settings": {
+      "size": "custom",
+      "custom_col_span": 3,
+      "custom_row_span": 3,
+      "set_tablet_span": true,
+      "custom_col_span_tablet": 2,
+      "custom_row_span_tablet": 2,
+      "set_mobile_span": true
+    },
+    "blocks": [ [= image_block =] ]
+  },
+
+  {
+    "name": "D: 2×1  T: 2×1  M: 2×1",
+    "category": "Pro: item, wide",
+    "settings": {
+      "size": "custom",
+      "custom_col_span": 2,
+      "set_tablet_span": true,
+      "set_mobile_span": true,
+      "custom_col_span_mobile": 2
+    },
+    "blocks": [ [= image_block =] ]
+  },
+  {
+    "name": "D: 3×1  T: 2×1  M: 1×1",
+    "category": "Pro: item, wide",
+    "settings": {
+      "size": "custom",
+      "custom_col_span": 3,
+      "set_tablet_span": true,
+      "set_mobile_span": true
+    },
+    "blocks": [ [= image_block =] ]
+  },
+
+  {
+    "name": "D: 1×2  T: 1×2  M: 1×2",
+    "category": "Pro: item, tall",
+    "settings": {
+      "size": "custom",
+      "custom_col_span": 1,
+      "custom_row_span": 2,
+      "set_tablet_span": true,
+      "custom_col_span_tablet": 1,
+      "custom_row_span_tablet": 2,
+      "set_mobile_span": true,
+      "custom_row_span_mobile": 2
+    },
+    "blocks": [ [= image_block =] ]
+  },
+  {
+    "name": "D: 1×3  T: 1×2  M: 1×1",
+    "category": "Pro: item, tall",
+    "settings": {
+      "size": "custom",
+      "custom_col_span": 1,
+      "custom_row_span": 3,
+      "set_tablet_span": true,
+      "custom_col_span_tablet": 1,
+      "custom_row_span_tablet": 2,
+      "set_mobile_span": true
+    },
+    "blocks": [ [= image_block =] ]
+  }
+]
+[% endcapture %]
+
+[% render 'groups/grid-auto-item', additional_blocks: additional_blocks, replace_presets: replace_presets %]

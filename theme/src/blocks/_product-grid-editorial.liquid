@@ -1,0 +1,22 @@
+{% doc %}
+  - Renders editorial grid holding product blocks
+
+  Each item places itself with col_start and col_end on a 12 column grid.
+{% enddoc %}
+
+[%- capture additional_blocks -%]
+ { "type": "_product-grid-editorial-item" },
+[%- endcapture -%]
+
+[%- capture additional_presets -%]
+  {
+    "name": "Grid editorial",
+    "category": "Pro",
+    "blocks": [
+      { "type": "_product-grid-editorial-item", "settings": { "col_start": 1, "col_end": 6 } },
+      { "type": "_product-grid-editorial-item", "settings": { "col_start": 7, "col_end": 12 } },
+    ]
+  }
+[%- endcapture -%]
+
+[% render 'groups/grid-editorial', additional_blocks: additional_blocks, additional_presets: additional_presets %]

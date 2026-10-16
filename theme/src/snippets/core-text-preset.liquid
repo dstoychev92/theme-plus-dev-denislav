@@ -1,0 +1,53 @@
+{% doc %}
+  - Renders text element with type preset classes
+
+  Wraps props-class-type-preset. Renders nothing when text is blank. A type parameter wins over
+  the matching s key.
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {string} [default_type_preset] - preset when neither type_preset nor s sets one
+  @param {object} [s] - settings object
+  @param {string} [settings_suffix] - suffix on the s keys, such as 'title' for s.text_title
+  @param {string} [style] - inline styles
+  @param {string} [tag] - defaults to 'p'
+  @param {string} [text] - defaults to s.text, with settings_suffix appended to the key
+  @param {string} [type_font]
+  @param {string} [type_preset] - defaults to s.type_preset, then default_type_preset, then 'p'
+  @param {string} [type_resize]
+  @param {number} [type_size]
+  @param {boolean} [type_uppercase]
+{% enddoc %}
+{% liquid
+  if settings_suffix
+    assign id_suffix = settings_suffix | prepend: '_'
+  endif
+
+  assign text_id = 'text' | append: id_suffix
+  assign text = text | default: s[text_id]
+
+  assign tag = tag | default: 'p'
+%}
+
+{% if text != blank %}
+  <{{ tag }}
+    class="
+      {% render 'props-class-type-preset',
+        s: s,
+        id_suffix: id_suffix,
+        settings_suffix: settings_suffix,
+        default_type_preset: default_type_preset,
+        type_preset: type_preset,
+        type_size: type_size,
+        type_font: type_font,
+        type_resize: type_resize,
+        type_uppercase: type_uppercase
+      %}
+      {{ class }}
+    "
+    style="{{ style }}"
+    {{ attributes }}
+  >
+    {{ text }}
+  </{{ tag }}>
+{% endif %}

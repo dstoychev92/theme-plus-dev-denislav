@@ -1,0 +1,176 @@
+{% doc %}
+  - Renders dropdown and megamenu panels for header menu
+
+  Links that share a title also share a menu id, so repeated titles are rendered once. A link
+  claimed by a custom megamenu block in blocks gets no default panel.
+
+  @param {string} [blocks] - rendered megamenu blocks
+  @param {color_scheme} [color_scheme] - color scheme for the panels, defaults to s.color_scheme
+  @param {object} [s] - settings object
+  @param {section} [section]
+{% enddoc %}
+
+{% liquid
+  assign link_list = s.linklist
+  assign color_scheme = color_scheme | default: s.color_scheme, allow_false: true
+  assign megamenu_width = s.megamenu_width
+%}
+
+{% if link_list != blank and linklists[link_list].links.size > 0 %}
+  {% comment %}
+    Same-titled links share a menu id by design, so without dedup a repeated title would
+    render two popups carrying the same header-menu-popup id. Only the first render wins —
+    the same element every id-based lookup (aria-controls, float target) resolves to.
+    The accumulator spans both loops below because dropdowns and megamenu content share
+    the same id namespace.
+  {% endcomment %}
+  {% assign seen_popup_menu_ids = '' %}
+
+  {% comment %}
+    Dropdowns stay separate (different positioning/styling)
+    Rendered FIRST so custom megamenu blocks (below) can override
+    them in the store's popups Map by registering later in DOM order.
+  {% endcomment %}
+  {% for link in linklists[link_list].links %}
+    {%- liquid
+      assign menu_id = link.title | downcase | strip_html | escape_once | handleize
+      assign unique_menu_id = section.id | append: '-' | append: menu_id
+
+      # A custom megamenu block replaces this link's default popup, so skip rendering the
+      # default — both nodes would carry the same header-menu-popup id. The rendered blocks
+      # HTML is the only place a snippet can see which links the blocks claim.
+      assign custom_popup_marker = 'data-custom-megamenu="' | append: unique_menu_id | append: '"'
+      if blocks contains custom_popup_marker
+        continue
+      endif
+
+      assign menu_item_label = link.title | strip_html
+      assign menu_label = 'header.accessibility.menu_item' | t: label: menu_item_label
+    -%}
+
+    {% if link.links.size > 0 and link.levels == 1 %}
+      {% liquid
+        assign seen_marker = '|' | append: unique_menu_id | append: '|'
+        if seen_popup_menu_ids contains seen_marker
+          continue
+        endif
+        assign seen_popup_menu_ids = seen_popup_menu_ids | append: seen_marker
+      %}
+      {% capture popup_attributes %}
+        id="header-menu-popup-{{ unique_menu_id }}"
+        role="region"
+        aria-label="{{ menu_label | escape_once }}"
+        data-menu-label="{{ menu_label | escape_once }}"
+      {% endcapture %}
+
+      {% render 'header-dropdown',
+        menu_id: unique_menu_id,
+        link: link,
+        attributes: popup_attributes,
+        s: s
+      %}
+    {% endif %}
+  {% endfor %}
+
+  {% comment %}
+    data-morph-update="none" skips this whole subtree during section-rendering-API morphs (e.g. the cart-driven
+    header refresh on tab focus). The nav menu never changes on a cart update, and morphing
+    re-stamps data-lazy-alpine onto the already-initialised x-megamenu root, which corrupts
+    the megamenu lifecycle and tears out registered popups.
+  {% endcomment %}
+  <div
+    data-lazy-alpine="desktop"
+    data-lazy-alpine-module="@theme/megamenu"
+    x-megamenu
+    x-overflow
+    data-morph-update="none"
+  >
+    {% # Top shadow when megamenu overflows %}
+    <div
+      class="
+        relative z-60 w-full h-[10px] -mb-[10px] -translate-y-full pointer-events-none
+        {% if megamenu_width == 'page' %}max-w-[--section-width-page] mx-auto{% endif %}
+      "
+      :class="{ 'shadow': $overflow.start && $store.headerMenu.activePopupType === 'flyout' }"
+    ></div>
+
+    {% comment %} Shared megamenu panel — one element for all flyout megamenus {% endcomment %}
+    <mega-menu
+      x-megamenu:panel
+      x-overflow:viewport
+      x-cloak
+      class="
+        vars-{{ color_scheme.id }}
+        transition-none bg-canvas block z-50 top-auto inset-x-0 absolute border-b border-line-subtle
+        group/section reverse-z-stack grid-stack min-h-0 overflow-x-hidden overflow-y-auto overscroll-y-contain
+        {% if megamenu_width == 'page' %}max-w-[--section-width-page] mx-auto border-x{% endif %}
+      "
+      data-layout
+      style="
+        --section-pt: {{ section.settings.padding_top | default: 0 }}px;
+        --section-pb: {{ section.settings.padding_bottom | default: 0 }}px;
+      "
+    >
+      <div x-overflow:start aria-hidden="true" role="presentation" class="w-full h-px"></div>
+
+      {% comment %}
+        Default megamenu content for multi-level links.
+        Rendered FIRST so custom megamenu blocks (below) can override
+        them in the store's popups Map by registering later in DOM order.
+      {% endcomment %}
+      {% for link in linklists[link_list].links %}
+        {%- liquid
+          assign menu_id = link.title | downcase | strip_html | escape_once | handleize
+          assign unique_menu_id = section.id | append: '-' | append: menu_id
+
+          # Same skip as the dropdowns above: a custom block claims this link
+          assign custom_popup_marker = 'data-custom-megamenu="' | append: unique_menu_id | append: '"'
+          if blocks contains custom_popup_marker
+            continue
+          endif
+
+          assign menu_item_label = link.title | strip_html
+          assign menu_label = 'header.accessibility.menu_item' | t: label: menu_item_label
+        -%}
+
+        {% if link.links.size > 0 and link.levels > 1 %}
+          {% liquid
+            assign seen_marker = '|' | append: unique_menu_id | append: '|'
+            if seen_popup_menu_ids contains seen_marker
+              continue
+            endif
+            assign seen_popup_menu_ids = seen_popup_menu_ids | append: seen_marker
+          %}
+          {% capture popup_attributes %}
+            data-megamenu="{{ unique_menu_id }}"
+          {% endcapture %}
+
+          {% capture megamenu_content %}
+            {% capture inner_content %}
+              {% render 'header-megamenu-linklist', parent_link: link, s: s %}
+            {% endcapture %}
+
+            {% render 'header-megamenu-grid', content: inner_content %}
+          {% endcapture %}
+
+          {% render 'header-megamenu-content',
+            menu_id: unique_menu_id,
+            menu_label: menu_label,
+            content: megamenu_content,
+            content_width: s.content_width,
+            attributes: popup_attributes
+          %}
+        {% endif %}
+      {% endfor %}
+
+      {% comment %}
+        Custom megamenu blocks render their own content divs after the defaults.
+        They register later in the store's popups Map, overriding any default
+        for the same link.
+      {% endcomment %}
+      {{ blocks }}
+
+      <div x-overflow:end class="w-full h-px relative !row-auto" aria-hidden="true" role="presentation"></div>
+    </mega-menu>
+  </div>
+{% endif %}

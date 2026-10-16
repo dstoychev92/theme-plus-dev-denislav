@@ -1,0 +1,70 @@
+{% doc %}
+  - Renders selected variant SKU
+
+  Reads closest.product. Renders nothing when the variant has no SKU.
+{% enddoc %}
+
+{% liquid
+  assign product = closest.product
+
+  if product == blank and request.visual_preview_mode
+    assign product = collections.all.products.first
+  endif
+
+  assign current_variant = product.selected_or_first_available_variant
+  assign sku = current_variant.sku
+%}
+
+{% capture sku_style %}
+  {% if block.settings.set_color and block.settings.color == 'custom' %}
+    --color-custom-text: {{ block.settings.color_custom }};
+  {% endif %}
+{% endcapture %}
+
+{% capture sku_class %}
+  {% if block.settings.set_color %}
+    text-{{ block.settings.color | default: 'content' }}
+  {% else %}
+    text-default
+  {% endif %}
+  inline-richtext
+{% endcapture %}
+
+{% assign sku_attributes = 'aria-live="polite"' %}
+
+{% if sku %}
+  {% capture content %}
+    {% render 'core-text-preset',
+      s: block.settings,
+      tag: 'div',
+      text: sku,
+      style: sku_style,
+      class: sku_class,
+      attributes: sku_attributes
+    %}
+  {% endcapture %}
+
+  {% render 'product-block', content: content, attributes: block.shopify_attributes, s: block.settings %}
+{% endif %}
+
+{% schema %}
+{
+  "name": "SKU",
+  "tag": null,
+  "settings": [
+    [% json 'schema/type-preset.jsonc', default_preset: 'micro' %]
+    [% json 'schema/type-custom.jsonc', resize: true, default_font: 'body', default_size: '4' %]
+    {
+      "type": "header",
+      "content": "Color"
+    },
+    [% json 'schema/color-dropdown.jsonc', optional: true, custom: true, muted: true %]
+  ],
+  "presets": [
+    {
+      "name": "SKU",
+      "category": "Additional product info"
+    }
+  ]
+}
+{% endschema %}
