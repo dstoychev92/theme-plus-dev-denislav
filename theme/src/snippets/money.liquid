@@ -1,0 +1,39 @@
+{%- doc -%}
+  - Formats price in cents with theme currency settings
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {boolean} [hide_trailing_zeros] - overrides theme setting
+  @param {string} [iso] - currency code, defaults to cart currency
+  @param {number} price - price in cents
+  @param {boolean} [show_currency] - overrides theme setting and appends ISO code
+  @param {string} [style] - inline styles
+{%- enddoc -%}
+
+{%- liquid
+  assign iso = iso | default: cart.currency.iso_code
+  assign hide_trailing_zeros = hide_trailing_zeros | default: settings.hide_trailing_zeros, allow_false: true
+  assign show_currency = show_currency | default: settings.show_currency, allow_false: true
+
+  if hide_trailing_zeros
+    assign money_price = price | money_without_trailing_zeros
+  else
+    assign money_price = price | money
+  endif
+
+  if show_currency
+    assign money_price = money_price | append: ' ' | append: iso
+  endif
+-%}
+
+<span
+  class="money {{ class }}"
+  {% if style %}
+    style="{{ style }}"
+  {% endif %}
+  {% comment %} Specifying 'ltr' direction in order to prevent the currency(USD) from swapping places with the price when the direction is 'rtl' {% endcomment %}
+  dir="ltr"
+  {{ attributes }}
+>
+  {{- money_price -}}
+</span>

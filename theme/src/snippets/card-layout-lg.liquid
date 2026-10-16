@@ -1,0 +1,271 @@
+{% doc %}
+  - Renders large card layout
+
+  Title renders as plain text. Use details or content for markup.
+
+  @param {string} [appearance] - suffix for vars-card-lg-appearance-*
+  @param {string} [aria_label] - card link label, defaults to title
+  @param {number} [aspect_ratio] - defaults to settings.card_aspect_ratio
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {boolean} [content] - content replacing title and details
+  @param {boolean} [details] - content below title
+  @param {boolean} [icon] - icon shown without image or media
+  @param {string} [id]
+  @param {image} [image]
+  @param {string} [image_class] - classes for loading placeholder
+  @param {string} [image_fetchpriority]
+  @param {string} [image_loading]
+  @param {string} [image_overlay] - content over image
+  @param {string} [image_sizes]
+  @param {string} [image_widths]
+  @param {string} [link_attributes] - attributes for card links
+  @param {boolean} [loader] - renders loading state
+  @param {media} [media] - media used instead of image
+  @param {string} [media_attributes]
+  @param {string} [media_class] - classes for media link
+  @param {string} [media_overlay] - content over media
+  @param {string} [media_tag] - 'div' by default, or 'a' when url is set
+  @param {string} [media_wrapper_attributes]
+  @param {string} [style] - inline styles
+  @param {boolean} [title] - plain-text title
+  @param {string} [title_tag] - 'div' by default, or 'a' when url is set
+  @param {boolean} [url] - card URL, turns title and media into links
+{% enddoc %}
+
+{% liquid
+  assign loader = loader | default: false
+  assign url = url | default: false
+  assign aspect_ratio = aspect_ratio | default: settings.card_aspect_ratio
+  assign title_tag = title_tag | default: 'div'
+  assign media_tag = media_tag | default: 'div'
+  assign title = title | default: false
+  assign details = details | default: false
+  assign aria_label = aria_label | default: title
+  assign alt_default = title | strip_html | escape_once
+%}
+
+{% if loader %}
+  {% capture media %}
+    {% render 'spinner', class: 'absolute top-1/2 left-1/2 -mx-r4 -mt-r4 z-10' %}
+  {% endcapture %}
+  {% capture content %}
+    <span class="line-clamp-2 type-p opacity-0">
+      Loading...
+    </span>
+  {% endcapture %}
+{% endif %}
+
+{% if url != false %}
+  {% capture link_attributes %}
+    {{ link_attributes }}
+    href="{{ url }}"
+  {% endcapture %}
+  {% assign title_tag = 'a' %}
+  {% assign media_tag = 'a' %}
+{% endif %}
+
+<card-lg
+  role="article"
+  class="
+    rounded-[--card-lg-radius] bg-[--card-lg-bg-color,transparent] text-[color:--card-lg-text-color,var(--content)] p-[--card-lg-inner-padding]
+    ring-1 ring-[color:var(--card-lg-border-color,transparent)]
+    group/card font-family-body relative flex
+    flex-col gap-y-r5 overflow-hidden
+
+    keyboard-active:has-[:focus]:ring-focus-outline
+    keyboard-active:has-[:focus]:ring-2
+
+    {% comment %} Bottom out at really small half-width card on small phone {% endcomment %}
+    w-[--card-lg-width]
+    max-w-full
+
+    vars-card-lg
+    {% if appearance != blank %}
+      vars-card-lg-appearance-{{ appearance }}
+    {% endif %}
+
+    {% if url != false %}cursor-pointer{% endif %}
+
+    {{ class }}
+  "
+  {% if url != false %}
+    x-link-area data-interactive
+  {% endif %}
+  {{ attributes }}
+
+  style="--card-aspect-ratio: {{ aspect_ratio }}; {{ style }}"
+>
+  {% if url != false %}
+    {% # full-card click-target for x-link-area. tab stop is the media link below. %}
+    <a
+      x-link-area:anchor
+      {{ link_attributes }}
+      class="absolute inset-0 z-0"
+      aria-hidden="true"
+      tabindex="-1"
+    ></a>
+  {% endif %}
+  {% comment %} Media {% endcomment %}
+  <card-lg-media
+    class="
+      group/media relative z-20 flex flex-none rounded-[--card-lg-media-radius] flex-col overflow-hidden
+      no-aspect:min-h-[--card-fallback-height] aspect-[--card-aspect-ratio]
+      {% if content == false %}h-full{% endif %}
+    "
+    style="--card-fallback-height: 300px;"
+    {% if id != blank %}
+      id="{{ id }}-media"
+    {% endif %}
+    {{ media_wrapper_attributes }}
+  >
+    {% comment %} Wrap card media in a link {% endcomment %}
+    <{{ media_tag }}
+      class="absolute size-full z-20 {{ media_class }}"
+      tabindex="0"
+      {{ media_attributes }}
+      {% if media_tag == 'a' %}
+        {{ link_attributes }}
+        {% if aria_label %}
+          aria-label="{{ aria_label | strip_html | escape_once }}"
+        {% elsif id != blank %}
+          aria-labelledby="{{ id }}-content"
+        {% endif %}
+      {% endif %}
+    >
+      {% if media %}
+        {{ media }}
+      {% elsif image %}
+        {%- liquid
+          if image_sizes == blank
+            capture sizes
+              render 'image-grid-sizes'
+            endcapture
+          else
+            assign sizes = image_sizes
+          endif
+          if image_widths == blank
+            capture widths
+              render 'image-grid-widths'
+            endcapture
+          else
+            assign widths = image_widths
+          endif
+        -%}
+
+        {%- comment -%}
+          Redundant rounding of inner image is a defensive Safari/WebKit patch.
+          In earlier versions of WebKit, a parent with overflow:hidden and
+          border-radius failed to fully clip transformed/animated children.
+        {%- endcomment -%}
+        {%- render 'core-image',
+          cover: true,
+          image: image,
+          alt_default: alt_default,
+          class: 'size-full rounded-[--card-lg-media-radius]',
+          sizes: sizes,
+          widths: widths,
+          loading: image_loading,
+          fetchpriority: image_fetchpriority
+        -%}
+
+        {% if image_loading == 'lazy' %}
+          {% render 'image-loading-placeholder',
+            image: image,
+            wrapper_class: 'absolute inset-0 z-0 js:z-10',
+            class: image_class
+          %}
+        {% endif %}
+
+        {%- if image_overlay -%}
+          <card-lg-media-overlay
+            class="
+              pointer-events-none absolute inset-0
+              z-30 flex flex-col justify-between
+              p-card-lg-media
+            "
+          >
+            <div class="flex-row-center">
+              <div class="flex-1">
+                {{ image_overlay }}
+              </div>
+            </div>
+          </card-lg-media-overlay>
+        {%- endif -%}
+      {% elsif icon %}
+        <div class="flex size-full flex-none flex-center bg-content-mix-5">
+          {% render 'core-icon', icon: icon %}
+        </div>
+      {% else %}
+        {% comment %} Always show filler on 'lg' cards to avoid disrupting the layout consisitency {% endcomment %}
+        {% render 'image-filler', size_class: 'size-full' %}
+      {% endif %}
+    </{{ media_tag }}>
+
+    {% comment %} Media overlay goes _after_ media tag so that the media link is the first focusable element {% endcomment %}
+    {% if media_overlay %}
+      <card-lg-media-overlay
+        class="
+          pointer-events-none absolute inset-0
+          z-30 flex flex-col justify-between
+          p-card-lg-media
+        "
+        style="
+          --badge-bg-color: var(--badge-bg-color-card);
+          --badge-text-color: var(--badge-text-color-card);
+        "
+      >
+        {{ media_overlay }}
+      </card-lg-media-overlay>
+    {% endif %}
+  </card-lg-media>
+
+  {% comment %} Content {% endcomment %}
+  {% unless content == false %}
+    <card-lg-details
+      style="--card-lg-text-padding: max(calc(var(--text-buffer) - var(--layout-gutter-x)), var(--card-lg-text-buffer));"
+      class="
+        relative z-10 flex flex-1 flex-col gap-y-card-lg-text
+        px-card-lg-text pb-card-lg-text
+        no-children-entrance
+      "
+      {% if id != blank %}
+        id="{{ id }}-content"
+      {% endif %}
+    >
+      {% if content != blank %}
+        {{ content }}
+      {% else %}
+        <div class="flex flex-col gap-y-r2 text-start">
+          {%- if title -%}
+            <{{ title_tag }}
+              {{ link_attributes }}
+              {% comment %} We don't want to expose this tag as a link to screen readers since we already have a link for this card {% endcomment %}
+              role="presentation"
+              aria-hidden="true"
+              tabindex="-1"
+              class="{% if settings.truncate_card_titles %}line-clamp-2{% endif %} type-p"
+              {% if title_tag == 'a' %}
+                {% if aria_label %}
+                  aria-label="{{ aria_label | strip_html | escape_once }}"
+                {% elsif id != blank %}
+                  aria-labelledby="{{ id }}-content"
+                {% endif %}
+              {% endif %}
+            >
+              <strong class="font-bold">
+                {{ title | strip_html | escape_once }}
+              </strong>
+            </{{ title_tag }}>
+          {%- endif -%}
+
+          {%- if details -%}
+            <div class="flex-1 flex flex-col type-p">
+              {{ details }}
+            </div>
+          {%- endif -%}
+        </div>
+      {% endif %}
+    </card-lg-details>
+  {% endunless %}
+</card-lg>

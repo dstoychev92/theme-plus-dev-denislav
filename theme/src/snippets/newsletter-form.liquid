@@ -1,0 +1,163 @@
+{% doc %}
+  - Renders the newsletter signup form
+
+  @param {string} [appearance] - form appearance
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {string} [id] - id for the form
+  @param {object} [s] - settings object
+  @param {boolean} [show_captcha_terms] - adds the reCAPTCHA notice
+  @param {string} [success_message] - message shown after a successful signup
+{% enddoc %}
+
+{%- liquid
+  assign email_label = 'homepage.newsletter_form.email' | t
+  assign button_label = 'homepage.newsletter_form.submit' | t
+  assign homepage_success_message = 'homepage.newsletter_form.success_message' | t
+  assign default_success_message = s.success_message | default: homepage_success_message
+  assign success_message = success_message | default: default_success_message
+  assign show_captcha_terms = show_captcha_terms | default: s.show_captcha_terms, allow_false: true
+  assign id = id | default: 'newsletter-form'
+  assign appearance = appearance | default: s.newsletter_appearance | default: 'line'
+-%}
+
+{% capture class %}
+  group-newsletter text-r4 overflow-hidden
+  {{ class }}
+{% endcapture %}
+
+{%- form 'customer', class: class, id: id -%}
+  <input type="hidden" name="contact[accepts_marketing]" value="true">
+
+  {% if form.posted_successfully? or form.errors %}
+    {% comment %} When we have multiple forms on the same page, this hides the success/error message of the other forms {% endcomment %}
+    <div
+      x-show="
+        sessionStorage.getItem('submitted-newsletter-form') == '{{ id }}' ||
+        {% comment %} Edge-case: show the success/error message if the form has generated them but there is no sessionStorage value at all(meaning something went wrong) {% endcomment %}
+        sessionStorage.getItem('submitted-newsletter-form') == null
+      "
+      {% comment %} If the newsletter-form gets submitted within an accordion, expand the accordion and scroll to it when the page loads {% endcomment %}
+      x-init="
+        if ($disclosure && !$disclosure.isExpanded && sessionStorage.getItem('submitted-newsletter-form') == '{{ id }}') {
+          $disclosure.expand();
+          {% comment %} Wait for accordion to finish expanding {% endcomment %}
+          await $disclosure.waitForAnimations();
+
+          {% comment %}
+            Need to wait for the browser to fully calculate the newsletter's height before scrolling
+            2 frames are needed to ensure the browser layout has fully settled
+          {% endcomment %}
+          await new Promise(requestAnimationFrame);
+          await new Promise(requestAnimationFrame);
+          $el.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'center' });
+        }
+      "
+      x-cloak
+    >
+      {% if form.posted_successfully? %}
+        <p class="mb-r3 text-r3 vars-scheme-success text-content">
+          <em>{{ success_message }}</em>
+        </p>
+      {% elsif form.errors %}
+        <div class="mb-r3 text-r3 vars-scheme-error text-content">
+          {% # Unlike the product form, the customer form has translated errors. %}
+          {% for field in form.errors %}
+            <p>
+              <em>
+                {%- if field == 'form' -%}
+                  {{ form.errors.messages[field] }}
+                {%- else -%}
+                  {% # One expression so the field name and message render with a plain space between them %}
+                  {{
+                    form.errors.translated_fields[field]
+                    | capitalize
+                    | append: ' '
+                    | append: form.errors.messages[field]
+                  }}
+                {%- endif -%}
+              </em>
+            </p>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <div
+    class="
+      flex-row-center gap-r6
+      vars-scheme-error-if-invalid
+      {% case appearance %}
+        {% when 'line' %}
+          border-b border-line-bold
+        {% when 'box' %}
+          border border-line-bold p-r3 ps-r6
+          rounded-btn
+      {% endcase %}
+    "
+    {{ attributes }}
+  >
+    <label class="sr-only" for="{{ id }}-email">{{ email_label }}</label>
+
+    <input
+      id="{{ id }}-email"
+      type="email"
+      name="contact[email]"
+      placeholder="{{ 'homepage.newsletter_form.example_email' | t }}"
+      autocomplete="email"
+      autocorrect="off"
+      autocapitalize="off"
+      required
+      {% # type="email" alone accepts "test@test" %}
+      pattern="[^@\s]+@[^@\s]+\.[^@\s]+"
+      title="{{ 'other.form.invalid_email' | t }}"
+      class="
+        bg-transparent
+        vars-control-md py-control min-h-control leading-control
+        text-content
+        text-size-input
+        flex-1 placeholder-muted
+
+        {% comment %} Hack to reduces the "min-width" of the input to 0. The input is still visible, because it has flex-grow: 1 {% endcomment %}
+        w-0
+
+        {% comment %} Hack to get rid of default webkit autofill styles {% endcomment %}
+        webkit-autofill-bg-transparent
+        webkit-autofill-text-content
+      "
+    >
+
+    {% capture button_storage_attributes %}
+      @click="sessionStorage.setItem('submitted-newsletter-form', '{{ id }}')"
+    {% endcapture %}
+
+    {% case appearance %}
+      {% when 'line' %}
+        <button
+          name="subscribe"
+          type="submit"
+          class="p-0 relative min-w-r9 flex justify-end text-content"
+          aria-label="{{ button_label }}"
+          {{ button_storage_attributes }}
+        >
+          {% render 'core-icon', icon: 'stroke-enter-right-long', class: '[--icon-size:1.5em] rtl:rotate-180' %}
+        </button>
+      {% when 'box' %}
+        {% render 'core-button',
+          type: 'submit',
+          label: button_label,
+          sizing: 'md',
+          color: 'content',
+          appearance: 'soft',
+          attributes: button_storage_attributes
+        %}
+    {% endcase %}
+  </div>
+
+  {%- if show_captcha_terms -%}
+    <div class="mt-r4 text-r1 text-muted text-start max-w-[var(--min-width)] link-line-all">
+      {{ 'shopify.online_store.spam_detection.disclaimer_html' | t }}
+    </div>
+  {%- endif -%}
+{%- endform -%}

@@ -1,0 +1,651 @@
+<!-- blocks/_pair-card-showcase.liquid -->
+
+{% # theme-check-disable ValidSchema %}
+{% liquid
+  # Desktop (always showcase)
+  assign columns_lg = 1
+  assign showcase_width_desktop = block.settings.showcase_width | default: 50
+
+  # Tablet (optional: could add custom logic, but default to desktop)
+  assign columns_md = 1
+  assign showcase_width_tablet = showcase_width_desktop
+
+  # Mobile: always slider
+  assign columns_sm = settings.slider_columns_mobile
+
+  assign arrow_style = block.settings.arrow_style
+
+  if block.settings.set_pagination_style
+    assign pagination_style = block.settings.pagination_style
+    assign slider_control_style = block.settings.slider_control_style
+  endif
+
+  # Determine if arrows should be shown on sides (big) or in pagination (small)
+  assign show_side_arrows = false
+  assign hide_pagination_arrows = true
+
+  if arrow_style == 'big'
+    assign show_side_arrows = true
+    assign hide_pagination_arrows = true
+  elsif arrow_style == 'small'
+    assign show_side_arrows = false
+    assign hide_pagination_arrows = false
+  else
+    assign show_side_arrows = false
+    assign hide_pagination_arrows = true
+  endif
+%}
+
+{% capture class %}
+  pair-column-card-showcase pair-column-yields-to-surface
+  {% if block.settings.set_color_scheme %}
+    vars-{{ block.settings.color_scheme }}
+  {% endif %}
+  {% if block.settings.card_appearance == 'framed' %}
+    vars-card-lg-appearance-framed
+  {% else %}
+    vars-card-lg-appearance-normal
+  {% endif %}
+{% endcapture %}
+
+{% capture attributes %}
+  x-ensemble:carousel
+  x-overflow.autoregister
+  role="group"
+  aria-label="{{ 'other.accessibility.card_carousel' | t }}"
+  aria-live="polite"
+  {{ block.shopify_attributes }}
+{% endcapture %}
+
+{% capture style %}
+  --card-list-columns-desktop: {{ columns_lg }};
+  --card-list-columns-tablet: {{ columns_md }};
+  --card-list-columns-mobile: {{ columns_sm }};
+
+  --card-list-showcase-desktop-width: {{ showcase_width_desktop }}%;
+  --card-list-showcase-tablet-width: {{ showcase_width_tablet }}%;
+
+  {% if block.settings.card_appearance == 'framed' %}
+    {% case block.settings.framed_card_bg %}
+      {% when 'canvas' %}
+        --card-lg-framed-bg-color: var(--canvas);
+      {% when 'tint' %}
+        --card-lg-framed-bg-color: var(--content-mix-5);
+      {% when 'custom' %}
+        {% if block.settings.framed_card_bg_custom != blank %}
+          --card-lg-framed-bg-color: {{ block.settings.framed_card_bg_custom }};
+        {% endif %}
+    {% endcase %}
+  {% endif %}
+{% endcapture %}
+
+{% capture card_list_class %}
+  col-span-full w-full justify-self-center self-center
+  row-start-2 row-end-2
+  vars-card-list-pair-desktop-showcase
+  vars-card-list-pair-tablet-showcase
+  vars-card-list-pair-mobile-slider
+  card-list-layout-showcase
+  card-list-mobile-layout-slider
+{% endcapture %}
+
+{% capture showcase_controls_class %}
+  max-md:hidden
+{% endcapture %}
+
+{% capture content %}
+  <div class="
+    h-fit justify-self-center self-center w-full overflow-hidden max-w-screen col-span-full
+    grid grid-cols-[--pair-grid-cols] justify-items-center auto-rows-[minmax(0,max-content)]
+    gap-y-layout
+  ">
+    <div class="pair-column-title w-full vars-content-align-{{ block.settings.title_placement }} empty:hidden">
+      {%- content_for 'block', type: '_section-title', id: 'card-showcase-title' -%}
+    </div>
+
+    {% capture blocks %}
+      {% content_for "blocks" %}
+    {% endcapture %}
+
+    {% if show_side_arrows %}
+      {% capture overflow_button_prev_attributes %}
+        :disabled="!$overflow.start"
+        :class="{
+          '!opacity-40': !$overflow.start,
+        }"
+        x-show="$carousel.items.length > 1"
+        x-cloak
+      {% endcapture %}
+
+      {% render 'slider-overflow-button', type: 'prev', class: 'col-start-[inner-start] justify-self-start self-center row-start-2 row-end-2 max-md:hidden', attributes: overflow_button_prev_attributes, background_style: slider_control_style %}
+    {% endif %}
+
+    {% render 'core-card-slider', items: blocks, class: card_list_class %}
+
+    {% if show_side_arrows %}
+      {% capture overflow_button_next_attributes %}
+        :disabled="!$overflow.end"
+        :class="{
+          '!opacity-40': !$overflow.end,
+        }"
+        x-show="$carousel.items.length > 1"
+        x-cloak
+      {% endcapture %}
+
+      {% render 'slider-overflow-button', type: 'next', class: 'col-end-[inner-end] justify-self-end self-center row-start-2 row-end-2 max-md:hidden', attributes: overflow_button_next_attributes, background_style: slider_control_style %}
+    {% endif %}
+
+    <div class="col-span-full flex flex-center row-start-3 row-end-3">
+      {% render 'showcase-controls', pagination_style: pagination_style, background_style: slider_control_style, class: showcase_controls_class, hide_arrows: hide_pagination_arrows %}
+    </div>
+  </div>
+{% endcapture %}
+
+{% render 'pair-column',
+  content: content,
+  class: class,
+  style: style,
+  attributes: attributes,
+  s: block.settings
+%}
+
+{% schema %}
+{
+	"name": "Card showcase",
+	"tag": null,
+	"settings": [
+		{
+			"type": "range",
+			"id": "showcase_width",
+			"min": 30,
+			"max": 100,
+			"step": 5,
+			"label": "Showcase width",
+			"default": 50,
+			"unit": "%",
+			"info": "The width of the card within the pair column"
+		},
+		{
+			"type": "header",
+			"content": "Title"
+		},
+		{
+			"type": "text_alignment",
+			"id": "title_placement",
+			"label": "Title alignment",
+			"default": "center"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_color_scheme",
+			"label": "Set colors",
+			"default": false
+		},
+		{
+			"type": "color_scheme",
+			"id": "color_scheme",
+			"label": "Color scheme",
+			"visible_if": "{{ block.settings.set_color_scheme }}",
+			"default": "scheme-opposite"
+		},
+		{
+			"type": "select",
+			"id": "background",
+			"label": "Background",
+			"default": "tint",
+			"options": [
+				{
+					"value": "canvas",
+					"label": "Default"
+				},
+				{
+					"value": "tint",
+					"label": "Tint"
+				},
+				{
+					"value": "transparent",
+					"label": "∅"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			],
+			"visible_if": "{{ block.settings.set_color_scheme }}"
+		},
+		{
+			"type": "color",
+			"id": "background_custom",
+			"label": "Background color",
+			"default": "#DEDEDE",
+			"visible_if": "{{ block.settings.set_color_scheme and block.settings.background == 'custom' }}"
+		},
+		{
+			"type": "header",
+			"content": "Border"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_border",
+			"label": "Set border",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "border_width",
+			"label": "Thickness",
+			"unit": "px",
+			"min": 0,
+			"max": 10,
+			"step": 1,
+			"default": 1,
+			"visible_if": "{{ block.settings.set_border }}"
+		},
+		{
+			"type": "color",
+			"id": "border_color",
+			"label": "Color",
+			"alpha": true,
+			"default": "#000000",
+			"visible_if": "{{ block.settings.set_border }}"
+		},
+		{
+			"type": "header",
+			"content": "Rounding",
+			"visible_if": "{{ block.settings.set_color_scheme or block.settings.set_border }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_rounding",
+			"label": "Set rounding",
+			"default": false,
+			"visible_if": "{{ block.settings.set_color_scheme or block.settings.set_border }}"
+		},
+		{
+			"type": "select",
+			"id": "rounding_radius",
+			"label": "Radius",
+			"default": "lg",
+			"options": [
+				{
+					"value": "none",
+					"label": "0"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			],
+			"visible_if": "{{ block.settings.set_rounding  and block.settings.set_color_scheme or block.settings.set_border }}"
+		},
+		{
+			"type": "range",
+			"id": "rounding_radius_custom",
+			"label": "Radius",
+			"unit": "px",
+			"min": 0,
+			"max": 50,
+			"step": 1,
+			"default": 20,
+			"visible_if": "{{ block.settings.set_rounding and block.settings.rounding_radius == 'custom'  and block.settings.set_color_scheme or block.settings.set_border }}"
+		},
+		{
+			"type": "header",
+			"content": "Card appearance"
+		},
+		{
+			"type": "select",
+			"id": "card_appearance",
+			"label": "Card style",
+			"default": "framed",
+			"options": [
+				{
+					"value": "normal",
+					"label": "Bare"
+				},
+				{
+					"value": "framed",
+					"label": "Framed"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "framed_card_bg",
+			"label": "Background",
+			"default": "tint",
+			"options": [
+				{
+					"value": "canvas",
+					"label": "Default"
+				},
+				{
+					"value": "tint",
+					"label": "Tint"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			],
+			"visible_if": "{{ block.settings.card_appearance == 'framed' }}"
+		},
+		{
+			"type": "color",
+			"id": "framed_card_bg_custom",
+			"label": "Color",
+			"default": "#DEDEDE",
+			"visible_if": "{{ block.settings.card_appearance == 'framed' and block.settings.framed_card_bg == 'custom' }}"
+		},
+		{
+			"type": "header",
+			"content": "Navigation"
+		},
+		{
+			"type": "select",
+			"id": "arrow_style",
+			"label": "Arrow placement",
+			"default": "small",
+			"options": [
+				{
+					"value": "big",
+					"label": "Side"
+				},
+				{
+					"value": "small",
+					"label": "Pagination"
+				}
+			]
+		},
+		{
+			"type": "checkbox",
+			"id": "set_pagination_style",
+			"label": "Set pagination style",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "pagination_style",
+			"label": "Pagination style",
+			"default": "counter",
+			"options": [
+				{
+					"value": "counter",
+					"label": "Counter"
+				},
+				{
+					"value": "dots",
+					"label": "Dots"
+				},
+				{
+					"value": "lines",
+					"label": "Lines"
+				}
+			],
+			"visible_if": "{{ block.settings.set_pagination_style }}"
+		},
+		{
+			"type": "select",
+			"id": "slider_control_style",
+			"label": "Style",
+			"default": "soft",
+			"options": [
+				{
+					"value": "fill",
+					"label": "Fill"
+				},
+				{
+					"value": "stroke",
+					"label": "Stroke"
+				},
+				{
+					"value": "soft",
+					"label": "Soft"
+				}
+			],
+			"visible_if": "{{ block.settings.set_pagination_style }}"
+		},
+		{
+			"type": "header",
+			"content": "Height"
+		},
+		{
+			"type": "select",
+			"id": "height",
+			"label": "Desktop height",
+			"default": "content",
+			"visible_if": "{{ section.settings.height_mode == 'column' }}",
+			"options": [
+				{
+					"value": "content",
+					"label": "Content height"
+				},
+				{
+					"value": "image",
+					"label": "Image height"
+				},
+				{
+					"value": "screen",
+					"label": "Full screen height"
+				},
+				{
+					"value": "screen-five-sixths",
+					"label": "Five sixths screen"
+				},
+				{
+					"value": "screen-three-quarters",
+					"label": "Three quarters screen"
+				},
+				{
+					"value": "screen-one-half",
+					"label": "One half screen"
+				},
+				{
+					"value": "screen-one-third",
+					"label": "One third screen"
+				},
+				{
+					"value": "screen-one-quarter",
+					"label": "One quarter screen"
+				},
+				{
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "custom_height_type",
+			"label": "Height type",
+			"default": "percentage",
+			"options": [
+				{
+					"value": "percentage",
+					"label": "%"
+				},
+				{
+					"value": "px",
+					"label": "px"
+				}
+			],
+			"visible_if": "{{ section.settings.height_mode == 'column' and block.settings.height == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "custom_height_percentage",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"unit": "%",
+			"label": "Custom height",
+			"default": 33,
+			"visible_if": "{{ section.settings.height_mode == 'column' and block.settings.height == 'custom' and block.settings.custom_height_type == 'percentage' }}",
+			"info": "Percentage of screen height"
+		},
+		{
+			"type": "range",
+			"id": "custom_height_px",
+			"min": 0,
+			"max": 1000,
+			"step": 50,
+			"unit": "px",
+			"label": "Custom height",
+			"default": 350,
+			"visible_if": "{{ section.settings.height_mode == 'column' and block.settings.height == 'custom' and block.settings.custom_height_type == 'px' }}"
+		},
+		{
+			"visible_if": "{{ section.settings.height_mode != 'column' }}",
+			"type": "paragraph",
+			"content": "Desktop height setting isn't available when the height is set by the section."
+		},
+		{
+			"type": "select",
+			"id": "height_mobile",
+			"label": "Mobile height",
+			"default": "content",
+			"options": [
+				{
+					"value": "content",
+					"label": "Content height"
+				},
+				{
+					"value": "image",
+					"label": "Image height"
+				},
+				{
+					"value": "screen",
+					"label": "Full screen height"
+				},
+				{
+					"value": "screen-five-sixths",
+					"label": "Five sixths screen"
+				},
+				{
+					"value": "screen-three-quarters",
+					"label": "Three quarters screen"
+				},
+				{
+					"value": "screen-one-half",
+					"label": "One half screen"
+				},
+				{
+					"value": "screen-one-third",
+					"label": "One third screen"
+				},
+				{
+					"value": "screen-one-quarter",
+					"label": "One quarter screen"
+				},
+				{
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "custom_height_type_mobile",
+			"label": "Mobile height type",
+			"default": "percentage",
+			"options": [
+				{
+					"value": "percentage",
+					"label": "%"
+				},
+				{
+					"value": "px",
+					"label": "px"
+				}
+			],
+			"visible_if": "{{ block.settings.height_mobile == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "custom_height_percentage_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"unit": "%",
+			"label": "Mobile custom height",
+			"default": 33,
+			"visible_if": "{{ block.settings.height_mobile == 'custom' and block.settings.custom_height_type_mobile == 'percentage' }}"
+		},
+		{
+			"type": "range",
+			"id": "custom_height_px_mobile",
+			"min": 0,
+			"max": 1000,
+			"step": 50,
+			"unit": "px",
+			"label": "Mobile custom height",
+			"default": 350,
+			"visible_if": "{{ block.settings.height_mobile == 'custom' and block.settings.custom_height_type_mobile == 'px' }}"
+		},
+	],
+	"blocks": [
+		{
+			"type": "_card-product"
+		},
+		{
+			"type": "_cards-products"
+		},
+		{
+			"type": "_cards-collections"
+		},
+		{
+			"type": "_cards-articles"
+		},
+		{
+			"type": "_tile-image"
+		},
+		{
+			"type": "_card-custom"
+		},
+		{
+			"type": "_tile-frame"
+		},
+	],
+	"presets": [
+		{
+			"name": "Card showcase",
+			"category": "Grid",
+			"settings": {
+				"showcase_width": 50
+			},
+			"blocks": [
+				{
+					"id": "card-showcase-title",
+					"type": "_section-title",
+					"static": true,
+					"settings": {
+						"text": "Featured Products"
+					}
+				},
+				{
+					"type": "_cards-products",
+					"settings": {
+						"source": "collection"
+					}
+				}
+			]
+		}
+	]
+}
+{% endschema %}

@@ -1,0 +1,346 @@
+{% doc %}
+  - Renders the column count switcher
+
+  Mobile offers 1 and 2 columns, tablet and desktop 2, 3 and 4.
+
+  @param {object} columns_lg - desktop column counts
+  @param {object} columns_md - tablet column counts
+  @param {object} columns_sm - mobile column counts
+  @param {section} [section]
+{% enddoc %}
+
+{% liquid
+  assign columns_sm = '1,2' | split: ','
+  assign columns_md = '2,3,4' | split: ','
+  assign columns_lg = '2,3,4' | split: ','
+
+  assign columns_sm = columns_sm
+  assign columns_md = columns_md
+  assign columns_lg = columns_lg
+
+  assign initial_value_sm = section.settings.columns_sm
+  assign initial_value_md = section.settings.columns_md
+  assign initial_value_lg = section.settings.columns_lg
+
+  assign initial_value_sm = initial_value_sm | times: 1
+  assign initial_value_md = initial_value_md | times: 1
+  assign initial_value_lg = initial_value_lg | times: 1
+
+  assign layout_label = 'collection.layout_select.label' | t
+
+  assign initial_display_sm = null
+  assign initial_display_md = null
+  assign initial_display_lg = null
+
+  case initial_value_sm
+    when 1
+      capture initial_display_sm
+        render 'core-icon', icon: 'fill-grid-1'
+      endcapture
+    when 2
+      capture initial_display_sm
+        render 'core-icon', icon: 'fill-grid-2'
+      endcapture
+    when 3
+      capture initial_display_sm
+        render 'core-icon', icon: 'fill-grid-3'
+      endcapture
+    when 4
+      capture initial_display_sm
+        render 'core-icon', icon: 'fill-grid-4'
+      endcapture
+  endcase
+
+  case initial_value_md
+    when 1
+      capture initial_display_md
+        render 'core-icon', icon: 'fill-grid-1'
+      endcapture
+    when 2
+      capture initial_display_md
+        render 'core-icon', icon: 'fill-grid-2'
+      endcapture
+    when 3
+      capture initial_display_md
+        render 'core-icon', icon: 'fill-grid-3'
+      endcapture
+    when 4
+      capture initial_display_md
+        render 'core-icon', icon: 'fill-grid-4'
+      endcapture
+  endcase
+
+  case initial_value_lg
+    when 1
+      capture initial_display_lg
+        render 'core-icon', icon: 'fill-grid-1'
+      endcapture
+    when 2
+      capture initial_display_lg
+        render 'core-icon', icon: 'fill-grid-2'
+      endcapture
+    when 3
+      capture initial_display_lg
+        render 'core-icon', icon: 'fill-grid-3'
+      endcapture
+    when 4
+      capture initial_display_lg
+        render 'core-icon', icon: 'fill-grid-4'
+      endcapture
+  endcase
+%}
+
+{% comment %} Mobile {% endcomment %}
+{% capture options_sm %}
+  {% for count in columns_sm %}
+    {% assign count_num = count | times: 1 %}
+    {% assign is_selected = false %}
+    {% if count_num == initial_value_sm %}
+      {% assign is_selected = true %}
+    {% endif %}
+    {% capture icon %}
+      {% case count_num %}
+        {% when 1 %}
+          fill-grid-1
+        {% when 2 %}
+          fill-grid-2
+        {% when 3 %}
+          fill-grid-3
+        {% when 4 %}
+          fill-grid-4
+      {% endcase %}
+    {% endcapture %}
+    {% assign label = 'collection.layout_select.column_option' | t: count: count %}
+    {% capture icon_html %}
+      {% render 'core-icon', icon: icon %}
+    {% endcapture %}
+    {% capture display_value_html %}
+      {{ icon_html }}
+      <span class="sr-only">
+        {{ label }}
+      </span>
+    {% endcapture %}
+    {% render 'custom-select-option',
+      label: label,
+      value: count,
+      start_accessory: icon_html,
+      display_value: display_value_html,
+      selected: is_selected
+    %}
+  {% endfor %}
+{% endcapture %}
+
+{% capture button_content_sm %}
+  {% comment %} Desktop - show icon {% endcomment %}
+  <span
+    class="truncate text-ellipsis flex-1 leading-[1.5] flex items-center"
+    x-select:display
+  >
+    {{ initial_display_sm }}
+
+    <span class="sr-only">
+      {{ 'collection.layout_select.column_option' | t: count: initial_value_sm }}
+    </span>
+  </span>
+{% endcapture %}
+
+{% capture button_sm %}
+  {% render 'core-button',
+    content: button_content_sm,
+    color: 'content',
+    appearance: 'stroke',
+    sizing: 'sm',
+    attributes: 'x-select:button'
+  %}
+{% endcapture %}
+
+{% capture attributes_sm %}
+  x-model.number.fill="columns.mobile"
+  data-morph-update="none"
+  {% comment %}
+    One select per breakpoint band, and only one of the three is ever on screen — the other
+    two render but stay dark. Start immediately on the band that shows this one, so the first
+    tap is not waiting on a dead select.
+  {% endcomment %}
+  data-lazy-alpine="mobile"
+  data-lazy-alpine-on="immediate"
+{% endcapture %}
+
+{% render 'custom-select',
+  name: 'mobile-columns',
+  size: 'sm',
+  placement: 'bottom-start',
+  label: layout_label,
+  options: options_sm,
+  value: initial_value_sm,
+  initial_display: initial_display_sm,
+  button: button_sm,
+  attributes: attributes_sm,
+  class: 'md:hidden',
+  popup_class: 'md:min-w-fit [--custom-select-popup-radius:var(--radius-btn)]'
+%}
+
+{% comment %} Tablet {% endcomment %}
+{% capture options_md %}
+  {% for count in columns_md %}
+    {% assign count_num = count | times: 1 %}
+    {% assign is_selected = false %}
+    {% if count_num == initial_value_md %}
+      {% assign is_selected = true %}
+    {% endif %}
+    {% capture icon %}
+      {% case count_num %}
+        {% when 1 %}
+          fill-grid-1
+        {% when 2 %}
+          fill-grid-2
+        {% when 3 %}
+          fill-grid-3
+        {% when 4 %}
+          fill-grid-4
+      {% endcase %}
+    {% endcapture %}
+    {% capture icon_html %}
+      {% render 'core-icon', icon: icon %}
+    {% endcapture %}
+    {% assign label = 'collection.layout_select.column_option' | t: count: count %}
+    {% capture display_value_html %}
+      {{ icon_html }}
+      <span class="sr-only">
+        {{ label }}
+      </span>
+    {% endcapture %}
+    {% render 'custom-select-option',
+      label: label,
+      value: count,
+      start_accessory: icon_html,
+      display_value: display_value_html,
+      selected: is_selected
+    %}
+  {% endfor %}
+{% endcapture %}
+
+{% capture button_content_md %}
+  <span
+    class="truncate text-ellipsis flex-1 leading-[1.5] flex items-center"
+    x-select:display
+  >
+    {{ initial_display_md }}
+    <span class="sr-only">
+      {{ 'collection.layout_select.column_option' | t: count: initial_value_md }}
+    </span>
+  </span>
+{% endcapture %}
+
+{% capture button_md %}
+  {% render 'core-button',
+    content: button_content_md,
+    color: 'content',
+    appearance: 'stroke',
+    sizing: 'sm',
+    attributes: 'x-select:button'
+  %}
+{% endcapture %}
+
+{% capture attributes_md %}
+  x-model.number.fill="columns.tablet"
+  data-morph-update="none"
+  data-lazy-alpine="tablet"
+  data-lazy-alpine-on="immediate"
+{% endcapture %}
+
+{% render 'custom-select',
+  name: 'tablet-columns',
+  size: 'sm',
+  placement: 'bottom-start',
+  label: layout_label,
+  options: options_md,
+  value: initial_value_md,
+  initial_display: initial_display_md,
+  button: button_md,
+  attributes: attributes_md,
+  class: 'max-md:hidden lg:hidden',
+  popup_class: 'md:min-w-fit [--custom-select-popup-radius:var(--radius-btn)]'
+%}
+
+{% comment %} Desktop {% endcomment %}
+{% capture options_lg %}
+  {% for count in columns_lg %}
+    {% assign count_num = count | times: 1 %}
+    {% assign is_selected = false %}
+    {% if count_num == initial_value_lg %}
+      {% assign is_selected = true %}
+    {% endif %}
+    {% capture icon %}
+      {% case count_num %}
+        {% when 1 %}
+          fill-grid-1
+        {% when 2 %}
+          fill-grid-2
+        {% when 3 %}
+          fill-grid-3
+        {% when 4 %}
+          fill-grid-4
+      {% endcase %}
+    {% endcapture %}
+    {% assign label = 'collection.layout_select.column_option' | t: count: count %}
+    {% capture icon_html %}
+      {% render 'core-icon', icon: icon %}
+    {% endcapture %}
+    {% capture display_value_html %}
+      {{ icon_html }}
+      <span class="sr-only">
+        {{ label }}
+      </span>
+    {% endcapture %}
+    {% render 'custom-select-option',
+      label: label,
+      value: count,
+      start_accessory: icon_html,
+      display_value: display_value_html,
+      selected: is_selected
+    %}
+  {% endfor %}
+{% endcapture %}
+
+{% capture button_content_lg %}
+  <span
+    class="truncate text-ellipsis flex-1 leading-[1.5] flex items-center"
+    x-select:display
+  >
+    {{ initial_display_lg }}
+    <span class="sr-only">
+      {{ 'collection.layout_select.column_option' | t: count: initial_value_lg }}
+    </span>
+  </span>
+{% endcapture %}
+
+{% capture button_lg %}
+  {% render 'core-button',
+    content: button_content_lg,
+    color: 'content',
+    appearance: 'stroke',
+    sizing: 'sm',
+    attributes: 'x-select:button'
+  %}
+{% endcapture %}
+
+{% capture attributes_lg %}
+  x-model.number.fill="columns.desktop"
+  data-morph-update="none"
+  data-lazy-alpine="wide"
+  data-lazy-alpine-on="immediate"
+{% endcapture %}
+
+{% render 'custom-select',
+  name: 'desktop-columns',
+  size: 'sm',
+  placement: 'bottom-start',
+  label: layout_label,
+  options: options_lg,
+  value: initial_value_lg,
+  button: button_lg,
+  attributes: attributes_lg,
+  class: 'max-lg:hidden',
+  popup_class: 'md:min-w-fit [--custom-select-popup-radius:var(--radius-btn)]'
+%}

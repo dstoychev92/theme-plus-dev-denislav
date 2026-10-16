@@ -1,0 +1,68 @@
+{% doc %}
+  - Renders the slider progress bar
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {string} [style] - inline styles
+{% enddoc %}
+
+<slider-progress-bar
+  class="block {{ class }}"
+  {{ attributes }}
+  style="{{ style }}"
+>
+  <div
+    class="flex vars-stain-content w-full items-center h-row-sm py-r3 justify-center transition-opacity duration-200"
+    role="presentation"
+    :class="
+      {
+        'opacity-0': !($carousel.isEnabled && $carousel.items.length > 1 && $carousel.visibleIndices?.length < $carousel.items.length)
+      }
+    "
+  >
+    <template x-for="(_, index) in $carousel.items.length">
+      <span
+        class="relative rounded-sm flex-1 h-[2px] hit-area-y-r5"
+        :key="index"
+        x-data="
+          {
+            get wasLastItem() {
+              return $carousel.visibleIndices?.[0] == index
+            },
+            get isVisibleItem() {
+              return $carousel.visibleIndices?.includes(index)
+            },
+            get isFirstVisibleItem() {
+              return $carousel.visibleIndices?.[0] == index
+            },
+            get isLastVisibleItem() {
+              return $carousel.visibleIndices?.[$carousel.visibleIndices?.length - 1] == index
+            },
+            get wasFirstVisibleItem() {
+              return $carousel.visibleIndices?.[0] - 1 == index
+            },
+            get wasLastVisibleItem() {
+              return $carousel.visibleIndices?.[$carousel.visibleIndices?.length - 1] + 1 == index
+            }
+          }
+        "
+      >
+        {% comment %} Background {% endcomment %}
+        <span class="block size-full absolute top-0 left-0 bg-content/20"></span>
+        {% comment %} Active segment {% endcomment %}
+        <span
+          class="relative block h-full bg-content/80 scale-x-0 transition-none"
+          :class="
+            {
+              '!scale-x-100': isVisibleItem,
+              'origin-right !transition !scale-x-100 !duration-200': isFirstVisibleItem,
+              'origin-right !transition !duration-200': wasFirstVisibleItem,
+              'origin-left !transition !scale-x-100 !duration-200': isLastVisibleItem,
+              'origin-left !transition !duration-200': wasLastVisibleItem
+            }
+          "
+        ></span>
+      </span>
+    </template>
+  </div>
+</slider-progress-bar>

@@ -1,0 +1,17 @@
+{% doc %}
+  - Prints class limiting an element to one device
+
+  @param {object} [s] - settings object
+  @param {string} [target_device] - 'mobile' or 'desktop', defaults to s.target_device
+{% enddoc %}
+
+{% liquid
+  assign target_device = target_device | default: s.target_device | default: false
+%}
+
+{% case target_device %}
+  {% when 'mobile' %}
+    md:hidden
+  {% when 'desktop' %}
+    max-md:hidden
+{% endcase %}

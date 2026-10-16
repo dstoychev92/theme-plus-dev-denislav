@@ -1,0 +1,43 @@
+{% doc %}
+  - Renders a menu level in the drawer
+
+  @param {string} [class] - The classes
+  @param {boolean} [expand_dropdowns] - opens every submenu instead of nesting them
+  @param {linklist} [linklist] - menu to render when there is no parent_link
+  @param {object} [parent_link] - link whose children are rendered
+  @param {object} [s] - settings object
+{% enddoc %}
+
+{% assign links = parent_link.links | default: linklist.links %}
+
+{% comment %} Collection image {% endcomment %}
+{% if s.show_collection_images
+  and parent_link.type == 'collection_link'
+  and parent_link.object.image != blank
+%}
+  {%- render 'core-image',
+    cover: true,
+    image: parent_link.object.image,
+    aspect_ratio: s.collection_images_aspect_ratio,
+    sizes: '400px,800px,100vw',
+    width: '400px',
+    loading: 'lazy',
+    class: 'w-full animate-in fade-in animate-opacity-duration-2000 animate-duration-800 scale-in-110'
+  -%}
+{% endif %}
+
+{% if links.size > 0 %}
+  <ul
+    class="
+      font-family-body text-r3
+      {% # Force a composited layer; fixing iOS Safari hairline border artifacts %}
+      translate-z-0
+      {{ class }}
+    "
+    {% # Make sure the overlay menu is hidden and unfocusable when we focus out the menu container %}
+  >
+    {% for link in links %}
+      {% render 'header-drawer-menu-item', link: link, expand_dropdowns: expand_dropdowns, index: forloop.index %}
+    {% endfor %}
+  </ul>
+{% endif %}

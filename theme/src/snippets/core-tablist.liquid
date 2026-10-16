@@ -1,0 +1,100 @@
+{% doc %}
+  - Renders the tab list for a tab group
+
+  @param {string} [appearance] - tab style, defaults to s.tab_style then the theme setting
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {object} [s] - settings object
+  @param {string} [style] - inline styles
+  @param {string} tabs - rendered tab buttons
+{% enddoc %}
+
+{% liquid
+  assign appearance = appearance | default: s.tab_style
+
+  if appearance == blank or appearance == 'inherit'
+    assign appearance = settings.tab_style
+  endif
+
+  if s != blank
+    assign enable_typography = s.enable_typography
+    assign set_gap_tab_x = s.set_gap_tab_x
+    assign gap_tab_x = s.gap_tab_x
+    assign gap_custom_tab_x = s.gap_custom_tab_x
+  endif
+%}
+
+{% comment %} Tab typography comes from the global element preset, so a caller without settings still gets it {% endcomment %}
+{% capture class %}
+  {% if enable_typography %}
+    {% render 'props-class-type-preset', s: s, type_preset: 'custom' %}
+  {% else %}
+    type-tab
+  {% endif %}
+  {{ class }}
+{% endcapture %}
+
+{% if set_gap_tab_x %}
+  {% capture attributes %}
+    {{ attributes }}
+    style="
+      {% render 'props-style-gap', gap: gap_tab_x, gap_custom: gap_custom_tab_x, vars: false, apply: false %}
+      --layout-gutter-x: var(--custom-gutter-x);
+      {{ style }}
+    "
+  {% endcapture %}
+{% endif %}
+
+<div
+  class="flex items-center max-w-full {{ class }}"
+  x-shared-layout
+  x-overflow.autoregister
+  {{ attributes }}
+>
+  <button
+    type="button"
+    class="hidden md:flex items-center px-r3 self-stretch transition hover:opacity-50 disabled:opacity-30 disabled:hover:opacity-30"
+    aria-label="{{ 'other.accessibility.prev' | t }}"
+    x-cloak
+    x-show="$overflow.start || $overflow.end"
+    :disabled="!$overflow.start"
+    @click="$refs.tablistViewport.scrollBy({ left: -$refs.tablistViewport.clientWidth * 0.75, behavior: 'smooth' })"
+  >
+    {% render 'core-icon', icon: 'stroke-chevron-left', class: 'rtl:rotate-180' %}
+  </button>
+
+  <div
+    :class="
+      {
+        'edge-mask-r': $overflow.end,
+        'edge-mask-l': $overflow.start,
+      }
+    "
+    :data-overflow-start="$overflow.start"
+    :data-overflow-end="$overflow.end"
+    {% comment %} pb-r1 ensures the line indicator stays visible when the font-size increases {% endcomment %}
+    class="
+      vars-btn-height-sm
+      group/tablist vars-control-sm flex-row-center min-h-btn min-w-0 max-w-full pb-r1 edge-mask scroll-area-x
+      entrance-container *:auto-set-stagger-order stagger-animation-50
+    "
+    x-tabs:tablist
+    x-overflow:viewport
+    x-ref="tablistViewport"
+    role="tablist"
+  >
+    {{ tabs }}
+  </div>
+
+  <button
+    type="button"
+    class="hidden md:flex items-center px-r3 self-stretch transition hover:opacity-50 disabled:opacity-30 disabled:hover:opacity-30"
+    aria-label="{{ 'other.accessibility.next' | t }}"
+    x-cloak
+    x-show="$overflow.start || $overflow.end"
+    :disabled="!$overflow.end"
+    @click="$refs.tablistViewport.scrollBy({ left: $refs.tablistViewport.clientWidth * 0.75, behavior: 'smooth' })"
+  >
+    {% render 'core-icon', icon: 'stroke-chevron-right', class: 'rtl:rotate-180' %}
+  </button>
+</div>

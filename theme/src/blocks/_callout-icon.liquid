@@ -1,0 +1,625 @@
+<!-- blocks/_callout-icon.liquid -->
+
+{%- liquid
+  assign icon_set = block.settings.icon_set
+-%}
+
+{%- comment -%} Section markers, leetspeak. See _callout-group.liquid. {%- endcomment -%}
+c4ll0u7x573r7xm3d14
+{%- case icon_set -%}
+  {%- when 'core' -%}
+    {%- render 'core-icon', icon: block.settings.icon_list_core -%}
+  {%- when 'art' -%}
+    {%- render 'core-icon', icon: block.settings.icon_list_art -%}
+  {%- when 'image' -%}
+    <span class="block w-icon">
+      {%- render 'core-image', image: block.settings.icon_image, width: 256 -%}
+    </span>
+{%- endcase -%}
+c4ll0u7x3ndxm3d14
+
+c4ll0u7x573r7x71713
+{%- if block.settings.title != blank -%}{{- block.settings.title -}}{%- endif -%}
+c4ll0u7x3ndx71713
+
+c4ll0u7x573r7xb0dy
+{%- if block.settings.body != blank -%}{{- block.settings.body -}}{%- endif -%}
+c4ll0u7x3ndxb0dy
+
+{% schema %}
+{
+	"name": "Icon callout",
+	"tag": null,
+	"settings": [
+		{
+			"type": "select",
+			"id": "icon_set",
+			"label": "Set",
+			"default": "art",
+			"options": [
+				{
+					"value": "core",
+					"label": "Core"
+				},
+				{
+					"value": "art",
+					"label": "Art"
+				},
+				{
+					"value": "image",
+					"label": "Image"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "icon_list_core",
+			"label": "Icon",
+			"visible_if": "{{ block.settings.icon_set == 'core' }}",
+			"options": [
+				{
+					"value": "fill-circle-check",
+					"label": "Check circle",
+					"group": "Circle"
+				},
+				{
+					"value": "fill-circle-alert",
+					"label": "Alert circle",
+					"group": "Circle"
+				},
+				{
+					"value": "fill-circle-info",
+					"label": "Info circle",
+					"group": "Circle"
+				},
+				{
+					"value": "fill-circle-x",
+					"label": "X circle",
+					"group": "Circle"
+				},
+				{
+					"value": "fill-location",
+					"label": "Location",
+					"group": "Geo"
+				},
+				{
+					"value": "fill-globe",
+					"label": "Globe",
+					"group": "Geo"
+				},
+				{
+					"value": "fill-magnify",
+					"label": "Magnify",
+					"group": "Geo"
+				},
+				{
+					"value": "fill-chat",
+					"label": "Chat",
+					"group": "Caption"
+				},
+				{
+					"value": "fill-ruler",
+					"label": "Ruler",
+					"group": "Caption"
+				},
+				{
+					"value": "fill-camera",
+					"label": "Photo",
+					"group": "Caption"
+				},
+				{
+					"value": "fill-tag",
+					"label": "Tag",
+					"group": "Item"
+				},
+				{
+					"value": "fill-page",
+					"label": "Page",
+					"group": "Item"
+				},
+				{
+					"value": "fill-article",
+					"label": "Article",
+					"group": "Item"
+				},
+				{
+					"value": "fill-file",
+					"label": "File",
+					"group": "Item"
+				},
+				{
+					"value": "fill-text",
+					"label": "Text",
+					"group": "Item"
+				},
+				{
+					"value": "fill-star",
+					"label": "Star",
+					"group": "Action"
+				},
+				{
+					"value": "fill-edit",
+					"label": "Edit",
+					"group": "Action"
+				},
+				{
+					"value": "fill-logout",
+					"label": "Exit",
+					"group": "Action"
+				},
+				{
+					"value": "fill-reset",
+					"label": "Reset",
+					"group": "Action"
+				},
+				{
+					"value": "fill-repeats",
+					"label": "Repeats",
+					"group": "Action"
+				},
+				{
+					"value": "fill-link-generic",
+					"label": "Link",
+					"group": "Action"
+				},
+				{
+					"value": "fill-link-expand",
+					"label": "Link expand",
+					"group": "Action"
+				},
+				{
+					"value": "fill-share-android",
+					"label": "Share android",
+					"group": "Action"
+				},
+				{
+					"value": "fill-share-ios",
+					"label": "Share ios",
+					"group": "Action"
+				},
+				{
+					"value": "fill-social-facebook",
+					"label": "Facebook",
+					"group": "Social"
+				},
+				{
+					"value": "fill-social-instagram",
+					"label": "Instagram",
+					"group": "Social"
+				},
+				{
+					"value": "fill-social-linkedin",
+					"label": "LinkedIn",
+					"group": "Social"
+				},
+				{
+					"value": "fill-social-medium",
+					"label": "Medium",
+					"group": "Social"
+				},
+				{
+					"value": "fill-social-pinterest",
+					"label": "Pinterest",
+					"group": "Social"
+				},
+				{
+					"value": "fill-social-rss",
+					"label": "RSS",
+					"group": "Social"
+				},
+				{
+					"value": "fill-social-snapchat",
+					"label": "Snapchat",
+					"group": "Social"
+				},
+				{
+					"value": "fill-social-tiktok",
+					"label": "TikTok",
+					"group": "Social"
+				},
+				{
+					"value": "fill-social-tumblr",
+					"label": "Tumblr",
+					"group": "Social"
+				},
+				{
+					"value": "fill-social-vimeo",
+					"label": "Vimeo",
+					"group": "Social"
+				},
+				{
+					"value": "fill-social-x",
+					"label": "X",
+					"group": "Social"
+				},
+				{
+					"value": "fill-social-youtube",
+					"label": "YouTube",
+					"group": "Social"
+				},
+				{
+					"value": "stroke-chevron-down",
+					"label": "Chevron down",
+					"group": "Stroke"
+				},
+				{
+					"value": "stroke-chevron-left",
+					"label": "Chevron left",
+					"group": "Stroke"
+				},
+				{
+					"value": "stroke-chevron-right",
+					"label": "Chevron right",
+					"group": "Stroke"
+				},
+				{
+					"value": "stroke-chevron-up",
+					"label": "Chevron up",
+					"group": "Stroke"
+				},
+				{
+					"value": "stroke-arrow-left",
+					"label": "Arrow left",
+					"group": "Stroke"
+				},
+				{
+					"value": "stroke-arrow-right",
+					"label": "Arrow right",
+					"group": "Stroke"
+				},
+				{
+					"value": "stroke-arrow-up-right",
+					"label": "Arrow up right",
+					"group": "Stroke"
+				},
+				{
+					"value": "stroke-enter-keyboard",
+					"label": "Down right",
+					"group": "Stroke"
+				},
+				{
+					"value": "stroke-enter-right-long",
+					"label": "Right long",
+					"group": "Stroke"
+				},
+				{
+					"value": "stroke-bare-plus",
+					"label": "Plus",
+					"group": "Stroke"
+				},
+				{
+					"value": "stroke-bare-minus",
+					"label": "Minus",
+					"group": "Stroke"
+				},
+				{
+					"value": "stroke-bare-x",
+					"label": "Close",
+					"group": "Stroke"
+				},
+				{
+					"value": "stroke-bare-check",
+					"label": "Check",
+					"group": "Stroke"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "icon_list_art",
+			"label": "Icon",
+			"default": "fill-art-commerce-award-wreath",
+			"visible_if": "{{ block.settings.icon_set == 'art' }}",
+			"options": [
+				{
+					"value": "fill-art-clothing-fabric-breathable",
+					"label": "Fabric breathable",
+					"group": "Clothing & Fabric"
+				},
+				{
+					"value": "fill-art-clothing-fabric-hang",
+					"label": "Fabric hang",
+					"group": "Clothing & Fabric"
+				},
+				{
+					"value": "fill-art-clothing-fabric-wash",
+					"label": "Fabric wash",
+					"group": "Clothing & Fabric"
+				},
+				{
+					"value": "fill-art-clothing-iron",
+					"label": "Iron",
+					"group": "Clothing & Fabric"
+				},
+				{
+					"value": "fill-art-clothing-ruler",
+					"label": "Ruler",
+					"group": "Clothing & Fabric"
+				},
+				{
+					"value": "fill-art-clothing-shoes",
+					"label": "Shoes",
+					"group": "Clothing & Fabric"
+				},
+				{
+					"value": "fill-art-clothing-stitch",
+					"label": "Stitch",
+					"group": "Clothing & Fabric"
+				},
+				{
+					"value": "fill-art-clothing-thread",
+					"label": "Thread",
+					"group": "Clothing & Fabric"
+				},
+				{
+					"value": "fill-art-clothing-washer",
+					"label": "Washer",
+					"group": "Clothing & Fabric"
+				},
+				{
+					"value": "fill-art-commerce-award-wreath",
+					"label": "Award wreath",
+					"group": "Commerce"
+				},
+				{
+					"value": "fill-art-commerce-award",
+					"label": "Award",
+					"group": "Commerce"
+				},
+				{
+					"value": "fill-art-commerce-basket-return",
+					"label": "Basket return",
+					"group": "Commerce"
+				},
+				{
+					"value": "fill-art-commerce-cart-check",
+					"label": "Cart check",
+					"group": "Commerce"
+				},
+				{
+					"value": "fill-art-commerce-check-badge",
+					"label": "Check badge",
+					"group": "Commerce"
+				},
+				{
+					"value": "fill-art-commerce-lock-shield",
+					"label": "Lock shield",
+					"group": "Commerce"
+				},
+				{
+					"value": "fill-art-commerce-rating",
+					"label": "Rating",
+					"group": "Commerce"
+				},
+				{
+					"value": "fill-art-commerce-sale",
+					"label": "Sale",
+					"group": "Commerce"
+				},
+				{
+					"value": "fill-art-commerce-star-rating",
+					"label": "Star rating",
+					"group": "Commerce"
+				},
+				{
+					"value": "fill-art-contact-chat",
+					"label": "Chat",
+					"group": "Contact"
+				},
+				{
+					"value": "fill-art-contact-email",
+					"label": "Email",
+					"group": "Contact"
+				},
+				{
+					"value": "fill-art-contact-legal",
+					"label": "Legal",
+					"group": "Contact"
+				},
+				{
+					"value": "fill-art-contact-phone",
+					"label": "Phone",
+					"group": "Contact"
+				},
+				{
+					"value": "fill-art-contact-send",
+					"label": "Send",
+					"group": "Contact"
+				},
+				{
+					"value": "fill-art-contact-support-headphones",
+					"label": "Support headphones",
+					"group": "Contact"
+				},
+				{
+					"value": "fill-art-delivery-shipment-world",
+					"label": "Shipment world",
+					"group": "Delivery"
+				},
+				{
+					"value": "fill-art-delivery-shipment",
+					"label": "Shipment",
+					"group": "Delivery"
+				},
+				{
+					"value": "fill-art-delivery-shipping-eco",
+					"label": "Shipping eco",
+					"group": "Delivery"
+				},
+				{
+					"value": "fill-art-delivery-shipping-fragile",
+					"label": "Shipping fragile",
+					"group": "Delivery"
+				},
+				{
+					"value": "fill-art-delivery-store",
+					"label": "Store",
+					"group": "Delivery"
+				},
+				{
+					"value": "fill-art-delivery-truck",
+					"label": "Truck",
+					"group": "Delivery"
+				},
+				{
+					"value": "fill-art-food-allergy-dairy",
+					"label": "Allergy dairy",
+					"group": "Food & Allergy"
+				},
+				{
+					"value": "fill-art-food-allergy-fish",
+					"label": "Allergy fish",
+					"group": "Food & Allergy"
+				},
+				{
+					"value": "fill-art-food-allergy-gluten",
+					"label": "Allergy gluten",
+					"group": "Food & Allergy"
+				},
+				{
+					"value": "fill-art-food-allergy-nuts",
+					"label": "Allergy nuts",
+					"group": "Food & Allergy"
+				},
+				{
+					"value": "fill-art-food-allergy-shellfish",
+					"label": "Allergy shellfish",
+					"group": "Food & Allergy"
+				},
+				{
+					"value": "fill-art-food-food-grapes",
+					"label": "Food grapes",
+					"group": "Food & Allergy"
+				},
+				{
+					"value": "fill-art-food-food-wine",
+					"label": "Food wine",
+					"group": "Food & Allergy"
+				},
+				{
+					"value": "fill-art-nature-animal-paw-raised",
+					"label": "Animal paw raised",
+					"group": "Nature"
+				},
+				{
+					"value": "fill-art-nature-animal-paw",
+					"label": "Animal paw",
+					"group": "Nature"
+				},
+				{
+					"value": "fill-art-nature-animal",
+					"label": "Animal",
+					"group": "Nature"
+				},
+				{
+					"value": "fill-art-nature-earth",
+					"label": "Earth",
+					"group": "Nature"
+				},
+				{
+					"value": "fill-art-nature-leaf",
+					"label": "Leaf",
+					"group": "Nature"
+				},
+				{
+					"value": "fill-art-nature-recycled",
+					"label": "Recycled",
+					"group": "Nature"
+				},
+				{
+					"value": "fill-art-nature-water",
+					"label": "Water",
+					"group": "Nature"
+				},
+				{
+					"value": "fill-art-weather-cloud-and-rain",
+					"label": "Cloud and rain",
+					"group": "Weather"
+				},
+				{
+					"value": "fill-art-weather-cloud-and-wind",
+					"label": "Cloud and wind",
+					"group": "Weather"
+				},
+				{
+					"value": "fill-art-weather-season-summer",
+					"label": "Season summer",
+					"group": "Weather"
+				},
+				{
+					"value": "fill-art-weather-season-winter",
+					"label": "Season winter",
+					"group": "Weather"
+				},
+				{
+					"value": "fill-art-weather-snowflake",
+					"label": "Snowflake",
+					"group": "Weather"
+				},
+				{
+					"value": "fill-art-weather-sun-and-waves",
+					"label": "Sun and waves",
+					"group": "Weather"
+				},
+				{
+					"value": "fill-art-weather-sun-full",
+					"label": "Sun full",
+					"group": "Weather"
+				},
+				{
+					"value": "fill-art-weather-sun-partial",
+					"label": "Sun partial",
+					"group": "Weather"
+				},
+				{
+					"value": "fill-art-weather-sun",
+					"label": "Sun",
+					"group": "Weather"
+				},
+				{
+					"value": "fill-art-weather-thermometer",
+					"label": "Thermometer",
+					"group": "Weather"
+				},
+				{
+					"value": "fill-art-weather-waves",
+					"label": "Waves",
+					"group": "Weather"
+				},
+				{
+					"value": "fill-art-weather-wind-alt",
+					"label": "Wind alt",
+					"group": "Weather"
+				},
+				{
+					"value": "fill-art-weather-wind",
+					"label": "Wind",
+					"group": "Weather"
+				}
+			]
+		},
+		{
+			"type": "image_picker",
+			"id": "icon_image",
+			"label": "Image",
+			"visible_if": "{{ block.settings.icon_set == 'image' }}"
+		},
+		{
+			"type": "inline_richtext",
+			"id": "title",
+			"label": "Title",
+			"default": "Quality guaranteed"
+		},
+		{
+			"type": "richtext",
+			"id": "body",
+			"label": "Text"
+		}
+	],
+	"presets": [
+		{
+			"name": "Icon callout"
+		}
+	]
+}
+{% endschema %}

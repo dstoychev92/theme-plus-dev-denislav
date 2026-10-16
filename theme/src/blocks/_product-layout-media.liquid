@@ -1,0 +1,655 @@
+<!-- blocks/_product-layout-media.liquid -->
+
+{% doc %}
+  - Renders the product media column
+
+  @param {string} [class_static] - classes that stay on the element in every layout
+{% enddoc %}
+
+
+
+{% liquid
+  assign product = closest.product
+  assign current_variant = product.selected_or_first_available_variant
+  assign product_media = product.media
+
+  if block.settings.set_aspect_ratio_desktop
+    assign aspect_ratio = block.settings.aspect_ratio_desktop
+  endif
+  if block.settings.set_aspect_ratio_mobile
+    assign aspect_ratio_mobile = block.settings.aspect_ratio_mobile
+  endif
+
+  #
+  # Option media list
+  #
+
+  assign has_option_media_list = false
+
+  # Render a list of images for a specific option (usually color option) instead of product media
+  # Note: If two options have values with the same label, the first one will be used
+  if settings.metafield_product_option_media != blank and settings.metafield_product_option_media_list != blank and settings.metafield_product_option_media_swatch != blank
+    assign product_option_media_metafield_namespace = settings.metafield_product_option_media | split: '.' | first
+    assign product_option_media_metafield_key = settings.metafield_product_option_media | split: '.' | last
+    assign product_option_media_metafield = product.metafields[product_option_media_metafield_namespace][product_option_media_metafield_key]
+
+    if product_option_media_metafield.value
+      assign selected_options_array = product.options_with_values | map: 'selected_value'
+      for metaobject_item in product_option_media_metafield.value
+        for selected in selected_options_array
+          assign value_is_found = metaobject_item[settings.metafield_product_option_media_swatch].value | where: 'label', selected.name | first
+          if value_is_found
+            assign product_media = metaobject_item[settings.metafield_product_option_media_list].value
+            assign has_option_media_list = true
+            break
+          endif
+        endfor
+
+        if value_is_found
+          break
+        endif
+      endfor
+    endif
+  endif
+
+  assign has_siblings = false
+  if settings.metafield_siblings != blank
+    assign siblings_metafield_namespace = settings.metafield_siblings | split: '.' | first
+    assign siblings_metafield_key = settings.metafield_siblings | split: '.' | last
+    assign siblings_metafield = product.metafields[siblings_metafield_namespace][siblings_metafield_key]
+    if siblings_metafield != blank
+      assign has_siblings = true
+    endif
+  endif
+
+  # Combined listing
+  # product_url marks the values that switch child products, on the parent page and on every child page
+  assign has_combined_listing = false
+  for option in product.options_with_values
+    for value in option.values
+      if value.product_url != blank
+        assign has_combined_listing = true
+        break
+      endif
+    endfor
+    if has_combined_listing
+      break
+    endif
+  endfor
+
+  #
+  # Featured media index
+  #
+
+  # Preserve product.media order in thumbnails; remember which one to select on load.
+
+  assign featured_media_index = 0
+  if has_option_media_list
+    assign featured_media_id = product_media.first.id
+  else
+    # A variant selected in the URL always wins. Without one, the global
+    # "Product page image" setting decides between the first available
+    # variant's image (matches the preselected variant in the form) and the
+    # product's featured image.
+    assign featured_media = product.selected_variant.featured_media
+    if featured_media == blank and settings.product_initial_media != 'featured'
+      assign featured_media = product.selected_or_first_available_variant.featured_media
+    endif
+    assign featured_media = featured_media | default: product.featured_media
+    assign featured_media_id = featured_media.id
+    assign featured_media_index = featured_media.position | minus: 1 | at_least: 0
+  endif
+
+  assign product_media_size_count = product_media.size | default: product_media.count
+
+  assign wrapper_id = 'product-media-' | append: block.id
+%}
+
+{% # "Contain" the whole media area (including breadcrumbs) %}
+{% if block.settings.contain_media_mobile == true %}
+  {% capture contain_spacing_class %}
+    
+      max-md:px-root-buffer
+    
+  {% endcapture %}
+{% else %}
+  {% # Only "contain" breadcrumbs %}
+  {% capture breadcrumbs_class %}
+    
+      max-md:px-root-buffer
+    
+  {% endcapture %}
+{% endif %}
+
+{% capture attributes %}
+  :style="{ 'height': slideshowHeight ? `${slideshowHeight}px` : '' }"
+{% endcapture %}
+
+{% if block.settings.layout_desktop == 'showcase' and product_media_size_count > 1 %}
+  {% capture desktop_attributes %}
+    x-init="
+      {% comment %} We need to wait for the $slideshow to initialize {% endcomment %}
+      $nextTick(() => {
+        $watch('currentSlideIndex', (index) => {
+          {% comment %} We need to wait for the slide to switch from "display: none" to "display: block" so we don't end up with "null" height which will disrupt the transition {% endcomment %}
+          $nextTick(() => {
+            updateSlideshowHeight(Array.from($slideshow.slides)[index]?.offsetHeight)
+          });
+        });
+      })
+    "
+    x-resize="updateSlideshowHeight(Array.from($slideshow.slides)[currentSlideIndex]?.offsetHeight)"
+    {{ attributes }}
+  {% endcapture %}
+{% endif %}
+
+{% if block.settings.layout_mobile == 'showcase' and product_media_size_count > 1 %}
+  {% capture mobile_attributes %}
+    x-init="
+      $watch('currentSlideIndex', (index) => {
+        updateSlideshowHeight($scrollList.items[index]?.offsetHeight)
+      });
+    "
+    x-resize="updateSlideshowHeight($scrollList.items[currentSlideIndex]?.offsetHeight)"
+    {{ attributes }}
+  {% endcapture %}
+{% endif %}
+
+{% comment %} Lazily load CSS that is never needed in the critical path {% endcomment %}
+<link rel="stylesheet" href="{{ 'theme.photoswipe.css' | asset_url }}" media="print" onload="this.media='all'">
+
+
+<div
+  role="region"
+  class="
+    md:row-span-full
+    {{ class_static }}
+  "
+  aria-label="{{ 'product.accessibility.media_label' | t }}"
+>
+
+
+  <div
+    class="
+      {{ contain_spacing_class }}
+      w-full [&_img]:brightness-[--photo-correction]
+      [--frosted-glass-color:var(--canvas-alpha-20)]
+      [--media-overlay-inset:theme(space.r7)]
+      
+      [--sticky-padding:--desktop-pt]
+      sticky-column sticky-column--flush-top
+      
+    "
+    
+    x-sticky-columns:column
+    
+    style="
+      {% if aspect_ratio_mobile %}
+        --mobile-image-aspect-ratio: {{ aspect_ratio_mobile | default: 1 }};
+      {% endif %}
+      {% if section.settings.contain_section %}
+        {% if block.settings.set_media_rounding %}
+          --media-rounding: var(--radius-{{ block.settings.media_rounding }});
+        {% else %}
+          --media-rounding: var(--radius-banner-default);
+        {% endif %}
+      {% endif %}
+      {% if block.settings.contain_media_mobile %}
+        {% if block.settings.set_media_rounding_mobile %}
+          --media-rounding-mobile: var(--radius-{{ block.settings.media_rounding_mobile }});
+        {% else %}
+          --media-rounding-mobile: var(--radius-banner-default);
+        {% endif %}
+      {% endif %}
+    "
+    {% comment %} Force Alpine.morph to re-render media if product or variant changes {% endcomment %}
+    key="{{ product.id }}-{{ current_variant.id }}"
+    id="{{ wrapper_id }}"
+    data-test-id="product-media"
+    {% comment %} Region only when a selection can change the gallery, since a plain variant change keeps the slideshow state {% endcomment %}
+    {% if has_option_media_list or has_siblings or has_combined_listing %}
+      data-render-region="product-media-{{ section.id }}"
+    {% endif %}
+    x-data="
+      {
+        slideshowHeight: null,
+        init() {
+          {% comment %} Initialize 3d model library {% endcomment %}
+          {% assign has_3d_model = product_media | where: 'media_type', 'model' | first %}
+          {% if has_3d_model %}
+            window.Shopify.loadFeatures([
+              {
+                name: 'shopify-xr',
+                version: '1.0'
+              }
+            ]);
+            document.addEventListener('shopify_xr_initialized', () => {
+              const modelsArray = Object.values(this.$cache.models.records);
+              window.ShopifyXR.addModels(modelsArray);
+              window.ShopifyXR.setupXRElements();
+              this.$dispatch('theme:models:loaded');
+            });
+          {% endif %}
+        },
+        get hasMeasuredHeight() {
+          return this.slideshowHeight !== null;
+        },
+        updateSlideshowHeight: $debounce(function (newHeight) {
+          this.slideshowHeight = newHeight;
+        }, 100)
+      }
+    "
+    data-morph-update="children"
+    {{ block.shopify_attributes }}
+  >
+    {% if section.settings.enable_breadcrumbs %}
+      {% assign breadcrumbs_class = breadcrumbs_class | append: ' pb-r4' %}
+
+      {% comment %} Product section {% endcomment %}
+      
+      {% if section.settings.breadcrumbs_position == 'content' %}
+        {% assign breadcrumbs_class = breadcrumbs_class | append: ' md:hidden' %}
+      {% endif %}
+      
+
+      {% render 'product-breadcrumbs', class: breadcrumbs_class %}
+    {% endif %}
+
+    {% if product_media_size_count > 0 %}
+      {% if block.settings.layout_desktop %}
+        {% liquid
+          # "Scroll to variant image on variant change" is only enabled for 'stack' layout and products without option media list or siblings.
+          assign scroll_to_variant_image = false
+          if block.settings.layout_desktop == 'stack' and block.settings.enable_scroll_to_variant_image and has_option_media_list == false and has_siblings == false
+            assign scroll_to_variant_image = true
+          endif
+
+          assign mobile_media_class = 'md:hidden'
+          assign desktop_id = 'product-media-desktop-' | append: block.id
+        %}
+
+        {% render 'product-media-desktop',
+          s: block.settings,
+          product_media: product_media,
+          featured_media_id: featured_media_id,
+          featured_media_index: featured_media_index,
+          has_option_media_list: has_option_media_list,
+          scroll_to_variant_image: scroll_to_variant_image,
+          id: desktop_id,
+          media_attributes: desktop_attributes,
+          aspect_ratio: aspect_ratio
+        %}
+      {% endif %}
+
+      {% assign mobile_id = 'product-media-mobile-' | append: block.id %}
+      {% render 'product-media-mobile',
+        s: block.settings,
+        contain_media: block.settings.contain_media_mobile,
+        product_media: product_media,
+        featured_media_id: featured_media_id,
+        featured_media_index: featured_media_index,
+        has_option_media_list: has_option_media_list,
+        id: mobile_id,
+        class: mobile_media_class,
+        media_attributes: mobile_attributes,
+        aspect_ratio: aspect_ratio_mobile
+      %}
+    {% else %}
+      {% render 'image-filler', size_class: 'w-full aspect-square' %}
+    {% endif %}
+  </div>
+
+  
+</div>
+
+
+{% schema %}
+{
+	"name": "Media",
+	"tag": null,
+	"settings": [
+		{
+			"type": "header",
+			"content": "Desktop"
+		},
+		{
+			"type": "select",
+			"id": "layout_desktop",
+			"label": "Style",
+			"default": "showcase",
+			"options": [
+				{
+					"value": "showcase",
+					"label": "Showcase"
+				},
+				{
+					"value": "stack",
+					"label": "Stack"
+				}
+			]
+		},
+		{
+			"type": "checkbox",
+			"id": "set_aspect_ratio_desktop",
+			"label": "Set aspect ratio",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "aspect_ratio_desktop",
+			"min": 0.5,
+			"max": 3,
+			"step": 0.1,
+			"unit": ":1",
+			"label": "Aspect ratio",
+			"default": 1,
+			"visible_if": "{{ block.settings.set_aspect_ratio_desktop == true  }}"
+		},
+		{
+			"type": "select",
+			"id": "stack_style",
+			"label": "Stack style",
+			"default": "columns",
+			"visible_if": "{{ block.settings.layout_desktop == 'stack' }}",
+			"options": [
+				{
+					"value": "single",
+					"label": "Simple"
+				},
+				{
+					"value": "columns",
+					"label": "Grid"
+				},
+				{
+					"value": "mosaic",
+					"label": "Mosaic"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "carousel_indicator_photo_position",
+			"label": "Indicator photo position",
+			"default": "below",
+			"visible_if": "{{ block.settings.layout_desktop == 'showcase' }}",
+			"options": [
+				{
+					"value": "beside",
+					"label": "Beside"
+				},
+				{
+					"value": "below",
+					"label": "Below"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "carousel_indicator_photo_position_beside_alignment",
+			"label": "Indicator photo alignment",
+			"default": "top",
+			"visible_if": "{{ block.settings.layout_desktop == 'showcase' and block.settings.carousel_indicator_photo_position == 'beside' }}",
+			"options": [
+				{
+					"value": "top",
+					"label": "Top"
+				},
+				{
+					"value": "bottom",
+					"label": "Bottom"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "carousel_indicator_photo_size",
+			"label": "Indicator photo size",
+			"visible_if": "{{ block.settings.layout_desktop == 'showcase' }}",
+			"unit": "px",
+			"min": 20,
+			"max": 200,
+			"step": 10,
+			"default": 50
+		},
+		{
+			"type": "range",
+			"id": "carousel_media_spacing",
+			"label": "Image spacing",
+			"visible_if": "{{ block.settings.layout_desktop == 'showcase' }}",
+			"unit": "px",
+			"min": 0,
+			"max": 10,
+			"step": 1,
+			"default": 3
+		},
+		{
+			"type": "range",
+			"id": "stack_media_spacing",
+			"label": "Image spacing",
+			"visible_if": "{{ block.settings.layout_desktop == 'stack' }}",
+			"unit": "px",
+			"min": 0,
+			"max": 50,
+			"step": 1,
+			"default": 5
+		},
+		{
+			"type": "checkbox",
+			"id": "set_media_rounding",
+			"label": "Set rounding",
+			"default": false,
+			"visible_if": "{{ section.settings.contain_section }}"
+		},
+		{
+			"type": "select",
+			"id": "media_rounding",
+			"label": "Media rounding",
+			"default": "sm",
+			"visible_if": "{{ section.settings.contain_section and block.settings.set_media_rounding }}",
+			"options": [
+				{
+					"value": "none",
+					"label": "0"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				}
+			]
+		},
+		{
+			"type": "paragraph",
+			"content": "Desktop images have no rounding when 'Contain section' is disabled in section settings.",
+			"visible_if": "{{ section.settings.contain_section == false }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_scroll_to_variant_image",
+			"label": "Enable scroll to variant image",
+			"info": "Automatically scrolls to the selected variant image after changing variants.",
+			"default": false,
+			"visible_if": "{{ block.settings.layout_desktop == 'stack' }}"
+		},
+		{
+			"type": "header",
+			"content": "Mobile"
+		},
+		{
+			"type": "checkbox",
+			"id": "contain_media_mobile",
+			"label": "Contain media",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "set_media_rounding_mobile",
+			"label": "Set rounding",
+			"default": false,
+			"visible_if": "{{ block.settings.contain_media_mobile }}"
+		},
+		{
+			"type": "select",
+			"id": "media_rounding_mobile",
+			"label": "Media rounding",
+			"default": "sm",
+			"visible_if": "{{ block.settings.contain_media_mobile and block.settings.set_media_rounding_mobile }}",
+			"options": [
+				{
+					"value": "none",
+					"label": "0"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+			]
+		},
+		{
+			"type": "select",
+			"id": "layout_mobile",
+			"label": "Style",
+			"default": "carousel",
+			"options": [
+				{
+					"value": "carousel",
+					"label": "Carousel"
+				},
+				{
+					"value": "showcase",
+					"label": "Showcase"
+				}
+			]
+		},
+		{
+			"type": "checkbox",
+			"id": "set_aspect_ratio_mobile",
+			"label": "Set aspect ratio",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "aspect_ratio_mobile",
+			"min": 0.5,
+			"max": 3,
+			"step": 0.1,
+			"unit": ":1",
+			"label": "Aspect ratio",
+			"default": 1,
+			"visible_if": "{{ block.settings.set_aspect_ratio_mobile == true  }}"
+		},
+		{
+			"type": "range",
+			"id": "layout_carousel_visible_images_mobile",
+			"label": "Visible images",
+			"visible_if": "{{ block.settings.layout_mobile == 'carousel' }}",
+			"min": 1,
+			"max": 2,
+			"step": 0.1,
+			"default": 1.2
+		},
+		{
+			"type": "range",
+			"id": "layout_carousel_spacing_mobile",
+			"label": "Image spacing",
+			"visible_if": "{{ block.settings.layout_mobile == 'carousel' }}",
+			"unit": "px",
+			"min": 0,
+			"max": 50,
+			"step": 1,
+			"default": 3
+		},
+		{
+			"type": "select",
+			"id": "pagination_style_mobile",
+			"visible_if": "{{ block.settings.layout_mobile == 'showcase' }}",
+			"label": "Slide indicator",
+			"default": "photo",
+			"options": [
+				{
+					"value": "photo",
+					"label": "Photo"
+				},
+				{
+					"value": "position",
+					"label": "Position"
+				},
+				{
+					"value": "none",
+					"label": "None"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "carousel_indicator_photo_spacing_mobile",
+			"label": "Indicator spacing",
+			"visible_if": "{{ block.settings.layout_mobile == 'showcase' and block.settings.pagination_style_mobile == 'photo' }}",
+			"unit": "px",
+			"min": 0,
+			"max": 10,
+			"step": 1,
+			"default": 3
+		},
+		{
+			"type": "range",
+			"id": "carousel_indicator_photo_size_mobile",
+			"label": "Indicator image size",
+			"visible_if": "{{ block.settings.layout_mobile == 'showcase' and block.settings.pagination_style_mobile == 'photo' }}",
+			"unit": "px",
+			"min": 20,
+			"max": 100,
+			"step": 5,
+			"default": 50
+		},
+		{
+			"type": "header",
+			"content": "Video",
+			"info": "Applies to Shopify-hosted video files. YouTube and Vimeo videos inherit default player settings."
+		},
+		{
+			"type": "checkbox",
+			"id": "video_autoplay",
+			"label": "Autoplay video",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "custom_controls",
+			"label": "Show custom controls",
+			"default": true
+		},
+		{
+			"type": "paragraph",
+			"content": "Volume control is hidden for autoplayed videos.",
+			"visible_if": "{{ block.settings.video_autoplay and block.settings.custom_controls }}"
+		},
+		{
+			"type": "header",
+			"content": "Image zoom"
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_zoom",
+			"label": "Enable image zoom",
+			"default": true
+		},
+	]
+}
+{% endschema %}
+

@@ -1,0 +1,330 @@
+<!-- sections/collection.liquid -->
+
+{%- liquid
+  assign product_limit = section.settings.limit
+
+  assign columns_sm = section.settings.columns_sm
+  assign columns_md = section.settings.columns_md
+  assign columns_lg = section.settings.columns_lg
+%}
+
+{%- paginate collection.products by product_limit -%}
+  {%- capture image_widths -%}
+    {%- render 'image-grid-widths' -%}
+  {%- endcapture -%}
+  {%- capture image_sizes -%}
+    {%- render 'image-grid-sizes' -%}
+  {%- endcapture -%}
+
+  {% capture product_cards %}
+    {% for product in collection.products %}
+      {% liquid
+        assign loading = 'lazy'
+        assign fetchpriority = 'auto'
+
+        if forloop.index0 < columns_lg
+          assign loading = 'eager'
+          assign fetchpriority = 'high'
+        endif
+      %}
+
+      {% render 'card-product', size: 'lg',
+        product: product,
+        class: 'flex-1',
+        image_loading: loading,
+        image_fetchpriority: fetchpriority,
+        image_widths: image_widths,
+        image_sizes: image_sizes
+      %}
+    {% endfor %}
+  {% endcapture %}
+
+  {% capture attributes %}
+    id="product-grid"
+    data-test-id="product-grid"
+    x-ref="paginationResults"
+  {% endcapture %}
+
+  {% capture product_grid %}
+    {% if collection.products.size > 0 %}
+      {% render 'card-grid',
+        attributes: attributes,
+        items: product_cards
+      %}
+    {% else %}
+      <div class="w-full h-full flex flex-center">{{ 'collection.product_count.zero' | t }}</div>
+    {% endif %}
+  {% endcapture %}
+
+  {% capture content %}
+    {% render 'collection-layout',
+      content: product_grid,
+      collection: collection,
+      columns_sm: columns_sm,
+      columns_md: columns_md,
+      columns_lg: columns_lg,
+      paginate: paginate
+    %}
+  {% endcapture %}
+{%- endpaginate -%}
+
+{% render 'core-section-wrapper',
+  s: section.settings,
+  lazy_alpine: false,
+  content: content,
+  photoswipe: false
+%}
+
+{% schema %}
+{
+	"name": "Collection product grid",
+	"class": "section-collection",
+	"tag": "section",
+	"settings": [
+		{
+			"type": "header",
+			"content": "Controls"
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_sorting",
+			"label": "Sort by",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_layout_buttons",
+			"label": "Grid toggle",
+			"default": true
+		},
+		{
+			"type": "header",
+			"content": "Filters"
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_filters",
+			"label": "Enable filters",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "show_products_count",
+			"label": "Product count",
+			"default": true
+		},
+		{
+			"type": "range",
+			"id": "expanded_filters_count",
+			"min": 0,
+			"max": 20,
+			"step": 1,
+			"label": "Expanded filters",
+			"info": "Limit the filter groups expanded on page load.",
+			"default": 6
+		},
+		{
+			"type": "range",
+			"id": "visible_filter_options_limit",
+			"min": 0,
+			"max": 20,
+			"step": 1,
+			"label": "Visible options",
+			"info": "Limit the filter values displayed before a \"Show all\" toggle",
+			"default": 6
+		},
+		{
+			"type": "select",
+			"id": "filter_mode",
+			"label": "Desktop style",
+			"default": "sidebar",
+			"info": "Mobile filters show in a drawer.",
+			"options": [
+				{
+					"value": "sidebar",
+					"label": "Sidebar"
+				},
+				{
+					"value": "drawer",
+					"label": "Drawer"
+				}
+			]
+		},
+		{
+			"type": "checkbox",
+			"id": "filter_sidebar_open_by_default",
+			"label": "Sidebar open",
+			"default": true,
+			"visible_if": "{{ section.settings.filter_mode == 'sidebar' }}"
+		},
+		{
+			"type": "select",
+			"id": "out_of_stock_style",
+			"label": "Out of stock",
+			"default": "checkbox",
+			"info": "Toggle presents availability as a one-line Show / Hide control.",
+			"options": [
+				{
+					"value": "checkbox",
+					"label": "Checkbox"
+				},
+				{
+					"value": "toggle",
+					"label": "Toggle"
+				}
+			]
+		},
+		{
+			"type": "header",
+			"content": "Filter menu"
+		},
+		{
+			"type": "text",
+			"id": "filter_menu_title",
+			"label": "Title",
+			"default": "Collections"
+		},
+		{
+			"type": "collection_list",
+			"id": "filter_menu",
+			"label": "Collection links",
+			"info": "Select your top collections or configure a metafield for subcollections."
+		},
+		{
+			"type": "header",
+			"content": "Product grid"
+		},
+		{
+			"type": "range",
+			"id": "columns_lg",
+			"min": 2,
+			"max": 4,
+			"step": 1,
+			"label": "Desktop",
+			"default": 3
+		},
+		{
+			"type": "range",
+			"id": "columns_md",
+			"min": 2,
+			"max": 4,
+			"step": 1,
+			"label": "Tablet",
+			"default": 2
+		},
+		{
+			"type": "select",
+			"id": "columns_sm",
+			"label": "Mobile",
+			"default": "2",
+			"options": [
+				{
+					"value": "1",
+					"label": "1"
+				},
+				{
+					"value": "2",
+					"label": "2"
+				}
+			]
+		},
+		{
+			"type": "checkbox",
+			"id": "mobile_dense_card_grid",
+			"label": "Dense card grid on mobile",
+			"default": true,
+			"info": "Expand card images to their maximum size on mobile by removing page margin, card gaps and card image rounding."
+		},
+		{
+			"type": "range",
+			"id": "limit",
+			"min": 1,
+			"max": 50,
+			"step": 1,
+			"label": "Products per page",
+			"default": 24
+		},
+		{
+			"type": "header",
+			"content": "Section"
+		},
+		{
+			"type": "color_scheme",
+			"id": "color_scheme",
+			"label": "Color scheme"
+		},
+		{
+			"type": "select",
+			"id": "background",
+			"label": "Background",
+			"default": "canvas",
+			"options": [
+				{
+					"value": "canvas",
+					"label": "Default"
+				},
+				{
+					"value": "tint",
+					"label": "Tint"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background color",
+			"default": "#f2f2f2",
+			"alpha": false,
+			"visible_if": "{{ section.settings.background == 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "content_width",
+			"label": "Width",
+			"default": "page",
+			"options": [
+				{
+					"value": "full",
+					"label": "Full"
+				},
+				{
+					"value": "page",
+					"label": "Page"
+				}
+			]
+		},
+		{
+			"type": "checkbox",
+			"id": "set_rhythm",
+			"label": "Custom rhythm",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "section_padding_top",
+			"label": "Spacing top",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 40,
+			"visible_if": "{{ section.settings.set_rhythm == true  }}"
+		},
+		{
+			"type": "range",
+			"id": "section_padding_bottom",
+			"label": "Spacing bottom",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 40,
+			"visible_if": "{{ section.settings.set_rhythm == true  }}"
+		},
+	]
+}
+{% endschema %}

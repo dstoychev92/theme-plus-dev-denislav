@@ -1,0 +1,91 @@
+{% doc %}
+  - Renders large product card media
+
+  Media limit selects one image, second-image reveal, or slideshow.
+
+  @param {string} [attributes]
+  @param {number} [hover_delay] - delay before hover behavior starts, in milliseconds
+  @param {string} [image_sizes] - sizes hint for the image
+  @param {string} [image_widths] - widths for the image srcset
+  @param {string} [initial_image_fetchpriority] - fetch priority for the first image
+  @param {string} [initial_image_loading] - loading attribute for the first image
+  @param {object} [initial_media] - media shown first, defaults to product.featured_media
+  @param {boolean} [has_option_media_list] - product_media is a color-specific image list
+  @param {number} [media_limit] - maximum media count, defaults to settings.product_card_media_limit then 2
+  @param {product} product
+  @param {object} [product_media] - media to show, defaults to product.media
+  @param {number} [unhover_delay] - delay before reset, in milliseconds
+{% enddoc %}
+
+{%- liquid
+  assign product_media = product_media | default: product.media
+  assign initial_media = initial_media | default: product.featured_media
+
+  assign media_limit = media_limit | default: settings.product_card_media_limit | default: 2
+  assign media_size = product_media.size | default: product_media.count | at_most: media_limit
+
+  assign hover_delay = hover_delay | default: 150
+
+  assign unhover_delay = unhover_delay | default: 200
+
+  assign media_mode = 'filler'
+  if media_size == 1
+    assign media_mode = 'single'
+  elsif media_size > 2
+    assign media_mode = 'slideshow'
+  elsif media_size == 2
+    assign media_mode = 'reveal'
+  endif
+
+  assign initial_image = initial_media.preview_image | default: initial_media
+-%}
+
+{% comment %}
+  contain: paint since Chromium paints the first frames of a scoped view transition one device pixel
+  to the right when the scope sits on a half device pixel. Paint containment aligns the snapshot.
+{% endcomment %}
+<product-card-media
+  class="relative size-full block [contain:paint]"
+  data-test-id="product-card-media"
+  data-media-mode="{{ media_mode }}"
+  {{ attributes }}
+>
+  {% if media_size == 1 %}
+    {% render 'card-product-lg-image',
+      image: initial_image,
+      product: product,
+      class: 'absolute inset-0 size-full',
+      loading: initial_image_loading,
+      fetchpriority: initial_image_fetchpriority,
+      image_widths: image_widths,
+      image_sizes: image_sizes
+    %}
+  {% elsif media_size > 2 %}
+    {% render 'card-product-lg-slideshow',
+      class: 'absolute inset-0 size-full',
+      initial_media: initial_media,
+      media_size: media_size,
+      product: product,
+      product_media: product_media,
+      has_option_media_list: has_option_media_list,
+      initial_image_loading: initial_image_loading,
+      initial_image_fetchpriority: initial_image_fetchpriority,
+      image_widths: image_widths,
+      image_sizes: image_sizes
+    %}
+  {% elsif media_size == 2 %}
+    {% render 'card-product-lg-reveal',
+      class: 'absolute inset-0 size-full',
+      initial_media: initial_media,
+      product: product,
+      product_media: product_media,
+      has_option_media_list: has_option_media_list,
+      initial_image_loading: initial_image_loading,
+      initial_image_fetchpriority: initial_image_fetchpriority,
+      image_widths: image_widths,
+      image_sizes: image_sizes
+    %}
+  {% else %}
+    {% render 'image-filler' %}
+  {% endif %}
+</product-card-media>

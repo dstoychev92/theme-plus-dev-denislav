@@ -1,0 +1,44 @@
+{% doc %}
+  - Renders a product YouTube or Vimeo video
+
+  @param {number} [aspect_ratio] - media aspect ratio
+  @param {string} [attributes]
+  @param {string} [layout_desktop] - desktop layout, defaults to s.layout_desktop then 'stack'
+  @param {media} [media] - product media of type 'external_video'
+  @param {object} [s] - settings object
+{% enddoc %}
+
+{% assign layout_desktop = layout_desktop | default: s.layout_desktop | default: 'stack' %}
+
+{% capture on_load_video %}
+  {% comment %} Desktop {% endcomment %}
+  {% if layout_desktop == 'showcase' %}
+    {% comment %} Pause video on slide change {% endcomment %}
+    $watch('$slide.isCurrentSlide', (isCurrentSlide) => {
+      if (!$media.matches.sm) {
+        if (!isCurrentSlide) {
+          pauseVideo();
+        }
+      }
+    })
+  {% endif %}
+
+  {% comment %} Mobile {% endcomment %}
+  if ($media.matches.sm) {
+    $watch('$scrollList.centeredIndex', (centeredIndex) => {
+      if ($media.matches.sm) {
+        if (centeredIndex != {{ media.position | minus: 1 }}) {
+          pauseVideo();
+        }
+      }
+    });
+  }
+{% endcapture %}
+
+{% render 'video-external',
+  video_type: media.host,
+  video_id: media.external_id,
+  aspect_ratio: aspect_ratio,
+  on_load_video: on_load_video,
+  attributes: attributes
+%}

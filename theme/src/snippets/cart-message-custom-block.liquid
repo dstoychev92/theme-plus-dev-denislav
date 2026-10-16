@@ -1,0 +1,13 @@
+{% doc %}
+  - Renders custom cart message from block settings
+
+  @param {string} [attributes]
+  @param {block} [block]
+  @param {string} [class] - The classes
+{% enddoc %}
+
+{%- if block.settings.cart_custom_message_text != blank -%}
+  <p class="text-r4 text-center {{ class }}" {{ attributes }}>
+    {{ block.settings.cart_custom_message_text }}
+  </p>
+{%- endif -%}

@@ -1,0 +1,74 @@
+<!-- blocks/_form-checkbox.liquid -->
+
+{% liquid
+  # A cleared label must not produce contact[]
+  assign label_handle = block.settings.label | handleize
+  if label_handle == blank
+    assign label_handle = 'field-' | append: block.id
+  endif
+  assign id = label_handle | append: '-' | append: block.id
+  assign name = 'contact[' | append: label_handle | append: ']'
+%}
+
+<div {{ block.shopify_attributes }}>
+  {% render 'field-checkbox',
+    name: name,
+    id: id,
+    label: block.settings.label,
+    disabled: block.settings.disabled,
+    checked: block.settings.checked,
+    size: block.settings.sizing
+  %}
+</div>
+
+{% schema %}
+{
+	"name": "Checkbox",
+	"tag": null,
+	"settings": [
+		{
+			"type": "text",
+			"id": "label",
+			"label": "Label",
+			"default": "Checkbox"
+		},
+		{
+			"type": "select",
+			"id": "sizing",
+			"label": "Size",
+			"default": "md",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				}
+			]
+		},
+		{
+			"type": "checkbox",
+			"id": "checked",
+			"label": "Checked",
+			"default": false
+		},
+		{
+			"type": "checkbox",
+			"id": "disabled",
+			"label": "Disabled",
+			"default": false
+		}
+	],
+	"presets": [
+		{
+			"name": "Checkbox"
+		}
+	]
+}
+{% endschema %}

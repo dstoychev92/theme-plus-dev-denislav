@@ -1,0 +1,17 @@
+{% doc %}
+  One dot of the "dots" pagination.
+
+  @param {boolean} [active] - marks this dot current on the first paint, before Alpine takes over
+  @param {string} index - JavaScript expression for this dot's slide index: a literal number when the slides were counted in Liquid, or the `x-for` variable when the count only exists at runtime
+  @param {string} indicator_color_active - classes for the current dot
+  @param {string} indicator_track - classes for the dot
+{% enddoc %}
+<div
+  class="rounded-full size-r2 {{ indicator_track }} opacity-70 transition-opacity duration-400{% if active %} {{ indicator_color_active }} !opacity-100{% endif %}"
+  :key="{{ index }}"
+  :class="
+    {
+      '{{ indicator_color_active }} !opacity-100': $slideshow.currentSlideIndex == {{ index }},
+    }
+  "
+></div>

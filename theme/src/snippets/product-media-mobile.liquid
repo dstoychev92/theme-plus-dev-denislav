@@ -1,0 +1,212 @@
+{% doc %}
+  - Renders the mobile product gallery
+
+  @param {number} [aspect_ratio] - media aspect ratio
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {boolean} [contain_media] - keeps the media inside the page gutters
+  @param {number} [featured_media_id] - id of the media to open on
+  @param {number} [featured_media_index] - position of the featured media
+  @param {boolean} [has_option_media_list] - the gallery is filtered by the selected option
+  @param {string} [id]
+  @param {string} [media_attributes] - attributes for each media item
+  @param {string} [media_style] - 'carousel' or 'stack', defaults to s.layout_mobile
+  @param {string} [pagination_style] - pagination style, defaults to s.pagination_style_mobile then 'none'
+  @param {object} product_media - the media to render, already ordered
+  @param {object} [s] - settings object
+  @param {section} [section]
+  @param {string} [style] - inline styles
+  @param {string} [thumbnail_class] - classes for the thumbnails
+{% enddoc %}
+
+{% liquid
+  assign id = id | default: 'product-media-mobile'
+  assign product = product | default: s.product
+  assign pagination_style = pagination_style | default: s.pagination_style_mobile | default: 'none'
+  assign media_style = media_style | default: s.layout_mobile | default: 'carousel'
+  assign scroll_class = 'scroll-area-x snap-x snap-mandatory'
+  assign viewport_class = ''
+  assign product_media_size_count = product_media.size | default: product_media.count
+
+  if contain_media == true
+    case media_style
+      when 'carousel'
+        assign class = class | append: ' -mx-root-buffer'
+        assign scroll_class = scroll_class | append: ' px-root-buffer scroll-px-root-buffer'
+    endcase
+  endif
+
+  assign media_spacing = 0
+  if media_style == 'carousel'
+    assign media_spacing = s.layout_carousel_spacing_mobile | default: 5
+  endif
+
+  assign indicator_spacing = 0
+  if pagination_style == 'photo'
+    assign indicator_spacing = s.carousel_indicator_photo_spacing_mobile | default: 3
+  endif
+%}
+
+{%- capture image_sizes -%}
+  {%- render 'image-grid-sizes',
+    columns_lg: 1,
+    columns_md: 1,
+    columns_sm: 1,
+    section_width: section.settings.content_width
+  %}
+{%- endcapture -%}
+{%- capture image_widths -%}
+  {%- render 'image-grid-widths',
+    columns_lg: 1,
+    columns_md: 1,
+    columns_sm: 1
+  -%}
+{%- endcapture -%}
+
+{% assign media_item_width = 100 %}
+{% if media_style == 'carousel' and product_media_size_count > 1 %}
+  {% assign layout_carousel_visible_images_mobile = s.layout_carousel_visible_images_mobile | default: 1.2 %}
+  {% assign media_item_width = 100 | divided_by: layout_carousel_visible_images_mobile %}
+{% endif %}
+
+{% if media_style == 'showcase' and pagination_style != 'none' and product_media_size_count > 1 %}
+  {% case pagination_style %}
+    {% when 'photo' %}
+      {% capture thumbnail_picker_indicator %}
+        {% render 'product-media-thumbnail-picker',
+          product_media: product_media,
+          featured_media_id: featured_media_id,
+          image_size: s.carousel_indicator_photo_size_mobile,
+          thumbnail_spacing: s.carousel_indicator_photo_spacing_mobile,
+          orientation: 'horizontal',
+          class: thumbnail_class,
+          id: id
+        %}
+      {% endcapture %}
+
+    {% when 'position' %}
+      {% capture position_indicator %}
+        {% render 'product-media-position-indicator',
+          product_media: product_media,
+          class: 'absolute bottom-r5 right-[calc(var(--root-buffer)+var(--media-overlay-inset))] z-10'
+        %}
+      {% endcapture %}
+  {% endcase %}
+{% endif %}
+
+<product-media-mobile
+  data-media-style="{{ media_style }}"
+  class="relative flex flex-col items-start gap-y-[--indicator-spacing] {{ class }}"
+  style="
+    --indicator-spacing: {{ indicator_spacing }}px;
+    --media-spacing: {{ media_spacing }}px;
+    --media-item-width: {{ media_item_width }}%;
+    {{ style }}
+  "
+  x-data="
+    {
+      set currentSlideIndex(value) {
+        $scrollList.scrollTo(value);
+      },
+      get currentSlideIndex() {
+        return $scrollList.centeredIndex;
+      }
+    }
+  "
+
+  x-photoswipe
+  x-scroll-list="{ initialItemIndex: {{ featured_media_index | default: 0 }} }"
+  :data-current-slide="currentSlideIndex"
+  id="{{ id }}"
+  {% comment %} The thumbnail picker's prev/next buttons reference this element through $id, so the runtime id must carry the same instance counter {% endcomment %}
+  :id="$id('{{ id }}')"
+  x-id="['{{ id }}']"
+  {{ attributes }}
+>
+  <div
+    class="overflow-hidden w-full {{ viewport_class }}"
+    x-scroll-list:viewport
+    data-test-id="product-media-mobile"
+  >
+    <div
+      class="
+        relative flex flex-row flex-nowrap items-start justify-start select-none
+        gap-x-[--media-spacing]
+        will-change-transform backface-hidden
+        transition-[height] duration-400
+        {{ scroll_class }}
+      "
+      x-scroll-list:scroller
+      x-ref="sliderEl"
+      {{ media_attributes }}
+    >
+      {%- for media in product_media -%}
+        {% liquid
+          assign is_featured_media = false
+          if media.id == featured_media_id
+            assign is_featured_media = true
+          endif
+
+          # Prevent jumping on page load for products with option media
+          # The regular media.id == featured_media.id check does not work here, because the "product_media" is a list of strings(URLs) instead of "media objects
+          # For option media list, the first image is always the featured media.
+          if has_option_media_list and forloop.first
+            assign is_featured_media = true
+          endif
+
+          assign media_id = id | append: '-' | append: media.id
+        %}
+
+        {% capture media_class %}
+          flex shrink-0 snap-start flex-col justify-start w-[--media-item-width]
+          {% comment %} This prevents performance issues while slider images are loading {% endcomment %}
+          translate-z
+        {% endcapture %}
+
+        {% capture media_item_attributes %}
+          x-scroll-list:item
+          role="group"
+          aria-roledescription="{{ 'product.gallery.accessibility.slide' | t }}"
+          {% if media_style == 'showcase' %}
+            {% comment %} The thumbnail picker's aria-controls references slides as $id + '_index/count' {% endcomment %}
+            :id="$id('{{ id }}') + '_{{ forloop.index }}/{{ product_media_size_count }}'"
+          {% endif %}
+          :data-current="currentSlideIndex == {{ forloop.index0 }}"
+          data-media-type="{{ media.media_type }}"
+          data-featured="{{ is_featured_media }}"
+          @shopify:product:select.window="if ($event.detail.sectionId == '{{ section.id }}' && $event.detail.variantFeaturedMediaId == {{ media.id }}) $scrollList.scrollTo({{ forloop.index0 }}, { behavior: 'auto' })"
+
+          {% if is_featured_media %}
+            {% if media_style == 'showcase' %}
+              x-intersect:enter.once="
+                $nextTick(() => {
+                  updateSlideshowHeight($el.offsetHeight)
+                })
+              "
+            {% endif %}
+          {% else %}
+            {% if media_style == 'showcase' %}
+              x-show="hasMeasuredHeight"
+            {% endif %}
+            x-cloak
+          {% endif %}
+        {% endcapture %}
+
+        {% render 'product-media-item',
+          s: s,
+          product_media: product_media,
+          media: media,
+          id: media_id,
+          class: media_class,
+          attributes: media_item_attributes,
+          aspect_ratio: aspect_ratio,
+          is_featured_media: is_featured_media,
+          image_sizes: image_sizes,
+          image_widths: image_widths
+        %}
+      {%- endfor -%}
+    </div>
+    {{ position_indicator }}
+  </div>
+  {{ thumbnail_picker_indicator }}
+</product-media-mobile>

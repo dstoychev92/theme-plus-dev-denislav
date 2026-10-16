@@ -1,0 +1,45 @@
+{% doc %}
+  - Renders highlighted text
+
+  @param {boolean} [animate] - animates the highlight in
+  @param {string} [appearance] - highlight style
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {string} [color] - highlight colour
+  @param {object} [s] - settings object
+  @param {string} [style] - inline styles
+  @param {string} [text] - the text to highlight
+{% enddoc %}
+
+{% liquid
+  assign text = text | strip
+  assign appearance = appearance | default: s.highlight_appearance | default: 'full'
+  assign color = color | default: s.highlight_color | default: 'transparent'
+  assign animate = animate | default: true, allow_false: true
+%}
+
+<span
+  class="
+    {{ class }}
+    {% if animate %}
+       animate-highlight-wipe-in
+       !paused intersected:!running
+    {% endif %}
+
+    {% case appearance -%}
+      {% when 'full' -%}
+        highlight
+      {% when 'partial' -%}
+        highlight-partial
+      {% when 'underline' -%}
+        highlight-underline
+    {%- endcase -%}
+  "
+  style="
+    {{ style }}
+    --highlight-color: {{ color }};
+  "
+  {{ attributes }}
+>
+  {{- text | strip -}}
+</span>

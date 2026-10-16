@@ -1,0 +1,117 @@
+{% doc %}
+  Tiles are images wrapped in a link that are designed to be used in a grid like layout. They are "strechy" and will
+  adjust to their container size by default but also having a minimum aspect ratio i.e. they never get super short and
+  skinny.
+
+  @param {string} [aria_label] - Names the tile's link on its own, instead of every text block inside it
+  @param {string} [attributes]
+  @param {string} [banner_class]
+  @param {string} [class]
+  @param {string} [content]
+  @param {string} [content_class]
+  @param {string} [controls]
+  @param {string} [href]
+  @param {string} [id]
+  @param {image} [image]
+  @param {string} [rounding_radius]
+  @param {number} [rounding_radius_custom]
+  @param {object} [s] - settings object
+  @param {boolean} [set_aspect_ratio]
+  @param {boolean} [set_border]
+  @param {boolean} [set_rounding]
+  @param {string} [sizes]
+  @param {string} [style]
+  @param {string} [widths]
+{% enddoc %}
+{% liquid
+  assign set_aspect_ratio = set_aspect_ratio | default: s.set_aspect_ratio | default: false, allow_false: true
+  assign href = href | default: s.href
+
+  # Border
+  assign set_border = set_border | default: s.set_border, allow_false: true | default: false
+
+  # Rounding
+  assign set_rounding = set_rounding | default: s.set_rounding, allow_false: true | default: false
+  assign rounding_radius = rounding_radius | default: s.rounding_radius | default: 'none'
+  assign rounding_radius_custom = rounding_radius_custom | default: s.rounding_radius_custom | default: 0
+
+  # Aspect ratio
+  assign aspect_ratio = 1.5
+  if set_aspect_ratio
+    assign aspect_ratio = s.aspect_ratio
+  endif
+%}
+
+{% capture background_class %}
+  [--custom-height:calc(100cqw/var(--tile-min-aspect-ratio))]
+{% endcapture %}
+
+{% if sizes == blank or widths == blank %}
+  {%- capture sizes -%}
+    {%- render 'image-grid-sizes' -%}
+  {%- endcapture -%}
+{% endif %}
+
+{% if widths == blank %}
+  {%- capture widths -%}
+    {%- render 'image-grid-widths' -%}
+  {%- endcapture -%}
+{% endif %}
+
+{% if id == blank %}
+  id is required for tile
+{% endif %}
+
+<div
+  class="
+    group/tile cq-width block w-full
+    {% if set_aspect_ratio %}
+      h-fit
+    {% else %}
+      h-full
+    {% endif %}
+    overflow-clip
+    keyboard-active:has-[:focus]:ring-focus-outline
+    keyboard-active:has-[:focus]:ring-2
+    {% if href != blank %}cursor-pointer{% endif %}
+    {{ class }}
+  "
+  style="
+    {% if set_aspect_ratio %}
+      --tile-min-aspect-ratio: {{ aspect_ratio }};
+    {% endif %}
+    {% if set_border %}
+      {% render 'props-style-border', s: s %}
+    {% endif %}
+    {% if set_rounding %}
+      {% render 'props-style-radius', rounding_radius: rounding_radius, rounding_radius_custom: rounding_radius_custom %}
+    {% else %}
+      border-radius: var(--radius-card);
+    {% endif %}
+    {% render 'props-style-gap', s: s, apply: false %}
+    {{ style }}
+  "
+  id="{{ id }}-tile"
+  {% if href != blank %}
+    x-link-area data-interactive
+  {% endif %}
+  {{ attributes }}
+>
+  {% render 'core-banner',
+    s: s,
+    id: id,
+    aria_label: aria_label,
+    image: image,
+    text: content,
+    background_class: background_class,
+    href: href,
+    class: banner_class,
+    content_class: content_class,
+    controls: controls,
+    sizes: sizes,
+    widths: widths,
+    placeholder: 'image',
+    set_height: false,
+    set_height_mobile: false
+  %}
+</div>

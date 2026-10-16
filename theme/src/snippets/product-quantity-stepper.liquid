@@ -1,0 +1,41 @@
+{% doc %}
+  - Renders the quantity stepper for a product form
+
+  @param {string} [form] - id of the form the input belongs to
+  @param {string} [id]
+  @param {string} label
+  @param {number} [min] - lowest quantity, defaults to 0
+  @param {string} name
+  @param {string} [size] - stepper size
+  @param {string} [stepper_attributes] - attributes for the stepper
+  @param {string} [stepper_input_attributes] - attributes for the input
+  @param {string} [style] - inline styles
+  @param {number} value - current quantity
+{% enddoc %}
+
+{% liquid
+  assign min = min | default: 0
+
+  # Optionally cap how much the quantity can be increased by in a single request in order to
+  # prevent snooping on remaining stock from shop competitors (e.g. typing 10000 into the quantity input).
+  # Off by default so native browser validation never competes with the server-side stock message.
+  if settings.set_quantity_step_limit
+    assign step_limit = settings.quantity_step_limit | default: 50 | at_least: 1
+    assign max_quantity = value | plus: step_limit
+  endif
+%}
+
+{% render 'field-stepper',
+  id: id,
+  label: label,
+  name: name,
+  size: size,
+  value: value,
+  min: min,
+  max: max_quantity,
+  stepper_attributes: stepper_attributes,
+  stepper_input_attributes: stepper_input_attributes,
+  hide_label: true,
+  form: form,
+  style: style
+%}

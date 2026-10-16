@@ -1,0 +1,139 @@
+<!-- sections/apps.liquid -->
+
+{% capture content %}
+  {%- for block in section.blocks -%}
+    {% render block %}
+  {%- endfor -%}
+{% endcapture %}
+
+{% render 'core-section', s: section.settings, content: content %}
+
+{% schema %}
+{
+	"name": "Apps",
+	"class": "section-apps",
+	"settings": [
+		{
+			"type": "header",
+			"content": "Appearance"
+		},
+		{
+			"type": "color_scheme",
+			"id": "color_scheme",
+			"label": "Color scheme"
+		},
+		{
+			"type": "select",
+			"id": "background",
+			"label": "Background",
+			"default": "canvas",
+			"options": [
+				{
+					"value": "canvas",
+					"label": "Default"
+				},
+				{
+					"value": "tint",
+					"label": "Tint"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background color",
+			"default": "#f2f2f2",
+			"alpha": false,
+			"visible_if": "{{ section.settings.background == 'custom' }}"
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "content_width",
+			"label": "Content width",
+			"default": "page",
+			"options": [
+				{
+					"value": "full",
+					"label": "Full"
+				},
+				{
+					"value": "page",
+					"label": "Page"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "content_width_custom",
+			"label": "Desktop width",
+			"visible_if": "{{ section.settings.content_width == 'custom'  }}",
+			"min": 25,
+			"max": 100,
+			"step": 5,
+			"default": 65,
+			"unit": "%"
+		},
+		{
+			"type": "range",
+			"id": "content_width_custom_mobile",
+			"label": "Mobile width",
+			"visible_if": "{{ section.settings.content_width == 'custom'   }}",
+			"min": 25,
+			"max": 100,
+			"step": 5,
+			"default": 100,
+			"unit": "%"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_rhythm",
+			"label": "Custom rhythm",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "section_padding_top",
+			"label": "Spacing top",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 40,
+			"visible_if": "{{ section.settings.set_rhythm == true  }}"
+		},
+		{
+			"type": "range",
+			"id": "section_padding_bottom",
+			"label": "Spacing bottom",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 40,
+			"visible_if": "{{ section.settings.set_rhythm == true  }}"
+		},
+	],
+	"blocks": [
+		{
+			"type": "@app"
+		}
+	],
+	"presets": [
+		{
+			"name": "Apps"
+		}
+	]
+}
+{% endschema %}

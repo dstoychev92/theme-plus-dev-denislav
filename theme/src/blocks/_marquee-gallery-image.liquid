@@ -1,0 +1,51 @@
+<!-- blocks/_marquee-gallery-image.liquid -->
+
+{%- comment -%}
+  Data-only child of _marquee-gallery. Emits the image (rendered at a generous
+  default width) and an optional href, wrapped in leetspeak markers so the
+  parent gallery can splice the rendering into its own dimensional frame.
+  See _callout-group.liquid for the same pattern. Grep g4lleryx to find every
+  related marker.
+{%- endcomment -%}
+
+g4lleryx574r7xm3d14
+{%- render 'core-image', image: block.settings.image, width: 400, placeholder: 'logo' -%}
+g4lleryx3ndxm3d14
+
+g4lleryx574r7xhr3f
+{%- if block.settings.href != blank -%}{{- block.settings.href -}}{%- endif -%}
+g4lleryx3ndxhr3f
+
+g4lleryx574r7xn3wt48
+{%- if block.settings.open_in_new_window -%}1{%- endif -%}
+g4lleryx3ndxn3wt48
+
+{% schema %}
+{
+	"name": "Gallery image",
+	"tag": null,
+	"settings": [
+		{
+			"type": "image_picker",
+			"id": "image",
+			"label": "Image"
+		},
+		{
+			"type": "url",
+			"id": "href",
+			"label": "Link"
+		},
+		{
+			"type": "checkbox",
+			"id": "open_in_new_window",
+			"label": "Open link in new window",
+			"default": false
+		},
+	],
+	"presets": [
+		{
+			"name": "Gallery image"
+		}
+	]
+}
+{% endschema %}

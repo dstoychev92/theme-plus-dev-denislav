@@ -1,0 +1,97 @@
+<!-- blocks/_pair-hotspots-tooltip.liquid -->
+
+{% capture popover_content %}
+  {% content_for "blocks" %}
+{% endcapture %}
+
+{% capture attributes %}
+  {{ block.shopify_attributes }}
+{% endcapture %}
+
+{% render 'hotspot-tooltip', content: popover_content, s: block.settings, attributes: attributes %}
+
+{% schema %}
+{
+	"name": "Text tooltip",
+	"tag": null,
+	"settings": [
+		{
+			"type": "range",
+			"id": "left",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"label": "Left",
+			"default": 50,
+			"unit": "%"
+		},
+		{
+			"type": "range",
+			"id": "top",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"label": "Top",
+			"default": 50,
+			"unit": "%"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_position_mobile",
+			"label": "Set mobile position",
+			"info": "Match dot with a mobile image override",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "left_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"label": "Left (Mobile)",
+			"default": 50,
+			"visible_if": "{{ block.settings.set_position_mobile == true }}",
+			"unit": "%"
+		},
+		{
+			"type": "range",
+			"id": "top_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"label": "Top (Mobile)",
+			"default": 50,
+			"visible_if": "{{ block.settings.set_position_mobile == true }}",
+			"unit": "%"
+		},
+	],
+	"blocks": [
+		{
+			"type": "@theme"
+		},
+		{
+			"type": "@app"
+		}
+	],
+	"presets": [
+		{
+			"name": "Text tooltip",
+			"blocks": [
+				{
+					"type": "theme-text",
+					"settings": {
+						"text": "A closer look",
+						"type_preset": "h5"
+					}
+				},
+				{
+					"type": "theme-richtext",
+					"settings": {
+						"text": "<p>Thoughtful details, made to notice.</p>"
+					}
+				}
+			]
+		}
+	]
+}
+{% endschema %}

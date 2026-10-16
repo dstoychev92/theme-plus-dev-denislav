@@ -1,0 +1,1052 @@
+<!-- blocks/_product-option-selectors.liquid -->
+
+{% doc %}
+  - Renders the product option selectors as buttons or a select
+
+  @param {string} [block_attributes] - attributes for this block instance
+  @param {string} [block_class] - classes for this block instance
+{% enddoc %}
+
+{% liquid
+  assign product = closest.product
+  assign input_type = block.settings.input_type
+
+  if product == blank and request.visual_preview_mode
+    assign product = collections.all.products.first
+  endif
+%}
+
+{% unless product.has_only_default_variant %}
+  {% liquid
+    assign has_rounding_override = false
+    if block.settings.set_rounding_button or block.settings.set_rounding_select
+      assign has_rounding_override = true
+    endif
+  %}
+
+  {% capture rounding_style %}
+    {% if block.settings.set_rounding_button %}
+      --radius-btn: var(--radius-{{ block.settings.rounding_style_button }});
+    {% endif %}
+    {% if block.settings.set_rounding_select %}
+      --radius-form-field: var(--radius-{{ block.settings.rounding_style_select }});
+    {% endif %}
+  {% endcapture %}
+
+  {% capture content %}
+    {%- capture product_select_product -%}
+      {%- render 'product-select-payload', part: 'product', product: product -%}
+    {%- endcapture -%}
+    <div
+      class="{{ block_class }} flex flex-col gap-y-r10"
+      {% if has_rounding_override %}style="{{ rounding_style }}"{% endif %}
+      {{ block_attributes }}
+      data-test-id="variant-option-fields"
+      {% comment %} Read by $standardEvents.productSelect, once for every option value below {% endcomment %}
+      data-product-select-product="{{ product_select_product | strip | escape }}"
+    >
+      {% for option in product.options_with_values %}
+        {% liquid
+          # Use 'select' over 'options' for long inputs
+          assign longest_value = 0
+          for value in option.values
+            if value.size > longest_value
+              assign longest_value = value.size
+            endif
+          endfor
+
+          if input_type == 'auto' and longest_value > 16
+            assign input_type = 'select'
+          endif
+
+          assign is_swatch_option = false
+
+          if option.values.first.swatch != null
+            assign is_swatch_option = true
+          elsif settings.custom_swatch_names != blank
+            assign group_name_down = option.name | downcase | strip
+            assign custom_swatch_list = settings.custom_swatch_names | downcase | replace: ' ,', ',' | replace: ', ', ',' | split: ','
+            if custom_swatch_list contains group_name_down
+              assign is_swatch_option = true
+            endif
+          endif
+
+          # No match (wrong label, or position past the last option) hides the trigger
+          # silently — intentional so one template can serve products with varying options.
+          assign show_info_popup = false
+          if block.settings.info_popup_page != blank
+            if block.settings.info_popup_match_mode == 'position'
+              if forloop.index == block.settings.info_popup_match_position
+                assign show_info_popup = true
+              endif
+            else
+              assign option_name_down = option.name | downcase | strip
+              assign match_list = block.settings.info_popup_match_labels | downcase | replace: ' ,', ',' | replace: ', ', ',' | split: ','
+              if match_list contains option_name_down
+                assign show_info_popup = true
+              endif
+            endif
+          endif
+        %}
+
+        {% comment %} Use div with role group instead of fieldset to avoid fieldset styling difficulties {% endcomment %}
+        <div
+          role="group"
+          @mouseleave="hoverValue = null"
+          x-data="
+            {
+              hoverValue: null
+            }
+          "
+          aria-label="{{ option.name | escape_once }}"
+        >
+          <div class="
+            {% render 'props-class-type-preset', s: block.settings, settings_suffix: 'indicator' %}
+            mb-r5 flex-row-center justify-content-align gap-x-r5
+          ">
+            <span class="font-bold">{{ option.name }}</span>
+            <span role="presentation" class="block w-px h-[12px] border-r border-line-bold"></span>
+            {%# Value rides a data attribute since a quote in it (Men's, or an inch mark) breaks the expression %}
+            <span
+              data-selected-value="{{ option.selected_value.name | escape_once }}"
+              x-html="hoverValue || $el.dataset.selectedValue"
+            >
+              {{- option.selected_value.name -}}
+            </span>
+
+            {% if show_info_popup %}
+              {% liquid
+                if block.settings.info_popup_text == 'custom'
+                  assign info_popup_label = block.settings.info_popup_text_custom
+                else
+                  assign info_popup_label = block.settings.info_popup_page.title
+                endif
+              %}
+
+              {% capture info_popup_link_slot %}
+                {% render 'core-icon',
+                  icon: block.settings.info_popup_icon,
+                  size: 'md',
+                  class: 'me-r2 opacity-60 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity'
+                %}
+                {% if info_popup_label != blank %}
+                  <span>{{ info_popup_label }}</span>
+                {% endif %}
+              {% endcapture %}
+
+              {% capture info_popup_content %}
+                <h3 class="type-h3">{{ block.settings.info_popup_page.title }}</h3>
+                <div class="prose" tabindex="0">{{ block.settings.info_popup_page.content }}</div>
+              {% endcapture %}
+
+              {% unless block.settings.info_popup_alignment == 'right' %}
+                <span role="presentation" class="block w-px h-[12px] border-r border-line-bold"></span>
+              {% endunless %}
+
+              {% comment %}
+                The popup's content — a whole page, often a large size chart — teleports to
+                the body and gets processed only when this starts up, and the link that opens
+                it is inside this element, so the first hover, focus, or tap wakes it before
+                that interaction reaches the link.
+              {% endcomment %}
+              <div
+                x-dialog.modal
+                data-lazy-alpine
+                data-lazy-alpine-on="interact"
+                class="inline-flex {% if block.settings.info_popup_alignment == 'right' %}ms-auto{% endif %}"
+              >
+                {% render 'core-link',
+                  text_slot: info_popup_link_slot,
+                  color: block.settings.color_info_popup,
+                  appearance: 'clean',
+                  tag: 'button',
+                  settings_suffix: 'indicator',
+                  s: block.settings,
+                  attributes: 'x-dialog:button'
+                %}
+
+                <template x-teleport="body">
+                  {% render 'dialog', modal: true, content: info_popup_content, scrollable: true, content_class: '[&_table]:whitespace-nowrap' %}
+                </template>
+              </div>
+            {% endif %}
+          </div>
+
+          {% if input_type == 'select' and is_swatch_option == false %}
+            {% capture select_class %}
+              {% render 'props-class-type-preset', s: block.settings, settings_suffix: 'select' %}
+              [--control-font-size:--font-size-calc]
+              [--input-font-size:--font-size-calc]
+            {% endcapture %}
+            {% render 'product-form-option-select', product: product, option: option, history: section.settings.enable_history, select_size: block.settings.variant_select_row_height, class: select_class %}
+          {% else %}
+            {% capture buttons_class %}{% render 'props-class-type-preset', s: block.settings, settings_suffix: 'button' %}{% endcapture %}
+            {% render 'product-form-option-buttons', product: product, option: option, is_swatch_option: is_swatch_option, history: section.settings.enable_history, swatch_size: block.settings.swatch_option_sizing, option_size: block.settings.variant_button_row_height, class: buttons_class %}
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% endcapture %}
+{% endunless %}
+
+{% render 'product-block',
+  s: block.settings,
+  content: content,
+  attributes: block.shopify_attributes,
+  class: 'w-full'
+%}
+
+{% schema %}
+{
+	"name": "Form options",
+	"tag": null,
+	"settings": [
+		{
+			"type": "header",
+			"content": "Option style"
+		},
+		{
+			"type": "select",
+			"id": "input_type",
+			"label": "Display as",
+			"default": "auto",
+			"info": "Auto will use a dropdown for long options and buttons for short options",
+			"options": [
+				{
+					"value": "auto",
+					"label": "Auto"
+				},
+				{
+					"value": "select",
+					"label": "Dropdown"
+				},
+				{
+					"value": "buttons",
+					"label": "Buttons"
+				}
+			],
+		},
+		{
+			"type": "header",
+			"content": "Swatch options"
+		},
+		{
+			"type": "select",
+			"id": "swatch_option_sizing",
+			"label": "Size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "gap_swatch",
+			"label": "Gap",
+			"default": "sm",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "gap_custom_swatch",
+			"label": "Custom gap",
+			"default": 0,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ block.settings.gap_swatch == 'custom'  }}"
+		},
+		{
+			"type": "header",
+			"content": "Button options",
+		},
+		{
+			"type": "select",
+			"id": "variant_button_row_height",
+			"label": "Button size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "gap_button",
+			"label": "Gap",
+			"default": "sm",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "gap_custom_button",
+			"label": "Custom gap",
+			"default": 0,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ block.settings.gap_button == 'custom'  }}"
+		},
+		{
+			"type": "select",
+			"id": "type_preset_button",
+			"label": "Text style",
+			"default": "btn",
+			"options": [
+				{
+					"group": "Headings",
+					"value": "h1",
+					"label": "Heading 1"
+				},
+				{
+					"group": "Headings",
+					"value": "h2",
+					"label": "Heading 2"
+				},
+				{
+					"group": "Headings",
+					"value": "h3",
+					"label": "Heading 3"
+				},
+				{
+					"group": "Headings",
+					"value": "h4",
+					"label": "Heading 4"
+				},
+				{
+					"group": "Headings",
+					"value": "h5",
+					"label": "Heading 5"
+				},
+				{
+					"group": "Headings",
+					"value": "h6",
+					"label": "Heading 6"
+				},
+				{
+					"group": "Content",
+					"value": "section",
+					"label": "Section title"
+				},
+				{
+					"group": "Content",
+					"value": "p",
+					"label": "Paragraph"
+				},
+				{
+					"group": "Content",
+					"value": "kicker",
+					"label": "Kicker"
+				},
+				{
+					"group": "Content",
+					"value": "micro",
+					"label": "Micro"
+				},
+				{
+					"group": "Elements",
+					"value": "btn",
+					"label": "Button"
+				},
+				{
+					"group": "Elements",
+					"value": "accordion",
+					"label": "Accordion"
+				},
+				{
+					"group": "Elements",
+					"value": "tab",
+					"label": "Tab"
+				},
+				{
+					"group": "Custom",
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_resize_button",
+			"label": "Text size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset_button != 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_font_button",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset_button == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size_button",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 4,
+			"visible_if": "{{ block.settings.type_preset_button == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase_button",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ block.settings.type_preset_button == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_rounding_button",
+			"label": "Set rounding",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "rounding_style_button",
+			"label": "Rounding",
+			"default": "none",
+			"options": [
+				{
+					"value": "none",
+					"label": "0"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "pill",
+					"label": "L"
+				}
+			],
+			"visible_if": "{{ block.settings.set_rounding_button }}"
+		},
+		{
+			"type": "header",
+			"content": "Dropdown options",
+		},
+		{
+			"type": "select",
+			"id": "variant_select_row_height",
+			"label": "Dropdown size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_preset_select",
+			"label": "Text style",
+			"default": "p",
+			"options": [
+				{
+					"group": "Headings",
+					"value": "h1",
+					"label": "Heading 1"
+				},
+				{
+					"group": "Headings",
+					"value": "h2",
+					"label": "Heading 2"
+				},
+				{
+					"group": "Headings",
+					"value": "h3",
+					"label": "Heading 3"
+				},
+				{
+					"group": "Headings",
+					"value": "h4",
+					"label": "Heading 4"
+				},
+				{
+					"group": "Headings",
+					"value": "h5",
+					"label": "Heading 5"
+				},
+				{
+					"group": "Headings",
+					"value": "h6",
+					"label": "Heading 6"
+				},
+				{
+					"group": "Content",
+					"value": "section",
+					"label": "Section title"
+				},
+				{
+					"group": "Content",
+					"value": "p",
+					"label": "Paragraph"
+				},
+				{
+					"group": "Content",
+					"value": "kicker",
+					"label": "Kicker"
+				},
+				{
+					"group": "Content",
+					"value": "micro",
+					"label": "Micro"
+				},
+				{
+					"group": "Elements",
+					"value": "btn",
+					"label": "Button"
+				},
+				{
+					"group": "Elements",
+					"value": "accordion",
+					"label": "Accordion"
+				},
+				{
+					"group": "Elements",
+					"value": "tab",
+					"label": "Tab"
+				},
+				{
+					"group": "Custom",
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_resize_select",
+			"label": "Text size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset_select != 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_font_select",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset_select == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size_select",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 4,
+			"visible_if": "{{ block.settings.type_preset_select == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase_select",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ block.settings.type_preset_select == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_rounding_select",
+			"label": "Set rounding",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "rounding_style_select",
+			"label": "Rounding",
+			"default": "none",
+			"options": [
+				{
+					"value": "none",
+					"label": "0"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "pill",
+					"label": "L"
+				}
+			],
+			"visible_if": "{{ block.settings.set_rounding_select }}"
+		},
+		{
+			"type": "header",
+			"content": "Variant indicator",
+		},
+		{
+			"type": "select",
+			"id": "type_preset_indicator",
+			"label": "Text style",
+			"default": "p",
+			"options": [
+				{
+					"group": "Headings",
+					"value": "h1",
+					"label": "Heading 1"
+				},
+				{
+					"group": "Headings",
+					"value": "h2",
+					"label": "Heading 2"
+				},
+				{
+					"group": "Headings",
+					"value": "h3",
+					"label": "Heading 3"
+				},
+				{
+					"group": "Headings",
+					"value": "h4",
+					"label": "Heading 4"
+				},
+				{
+					"group": "Headings",
+					"value": "h5",
+					"label": "Heading 5"
+				},
+				{
+					"group": "Headings",
+					"value": "h6",
+					"label": "Heading 6"
+				},
+				{
+					"group": "Content",
+					"value": "section",
+					"label": "Section title"
+				},
+				{
+					"group": "Content",
+					"value": "p",
+					"label": "Paragraph"
+				},
+				{
+					"group": "Content",
+					"value": "kicker",
+					"label": "Kicker"
+				},
+				{
+					"group": "Content",
+					"value": "micro",
+					"label": "Micro"
+				},
+				{
+					"group": "Elements",
+					"value": "btn",
+					"label": "Button"
+				},
+				{
+					"group": "Elements",
+					"value": "accordion",
+					"label": "Accordion"
+				},
+				{
+					"group": "Elements",
+					"value": "tab",
+					"label": "Tab"
+				},
+				{
+					"group": "Custom",
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_resize_indicator",
+			"label": "Text size",
+			"default": "sm",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset_indicator != 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_font_indicator",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset_indicator == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size_indicator",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 4,
+			"visible_if": "{{ block.settings.type_preset_indicator == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase_indicator",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ block.settings.type_preset_indicator == 'custom' }}"
+		},
+		{
+			"type": "header",
+			"content": "Size info popup"
+		},
+		{
+			"type": "page",
+			"id": "info_popup_page",
+			"label": "Page",
+			"info": "This popup will show on every product."
+		},
+		{
+			"type": "select",
+			"id": "info_popup_text",
+			"label": "Link text",
+			"default": "page_title",
+			"options": [
+				{
+					"value": "page_title",
+					"label": "Page title"
+				},
+				{
+					"value": "custom",
+					"label": "Custom"
+				}
+			],
+			"visible_if": "{{ block.settings.info_popup_page != blank }}"
+		},
+		{
+			"type": "text",
+			"id": "info_popup_text_custom",
+			"label": "Custom text",
+			"visible_if": "{{ block.settings.info_popup_page != blank and block.settings.info_popup_text == 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "info_popup_icon",
+			"label": "Icon",
+			"default": "fill-link-expand",
+			"options": [
+				{
+					"value": "fill-link-expand",
+					"label": "Expand"
+				},
+				{
+					"value": "fill-circle-info",
+					"label": "Info"
+				},
+				{
+					"value": "fill-ruler",
+					"label": "Ruler"
+				}
+			],
+			"visible_if": "{{ block.settings.info_popup_page != blank }}"
+		},
+		{
+			"type": "select",
+			"id": "color_info_popup",
+			"label": "Color",
+			"default": "content",
+			"visible_if": "{{ block.settings.info_popup_page != blank }}",
+			"options": [
+				{
+					"value": "content",
+					"label": "Text default"
+				},
+				{
+					"value": "muted",
+					"label": "Text muted"
+				},
+				{
+					"value": "primary",
+					"label": "Primary accent"
+				},
+				{
+					"value": "secondary",
+					"label": "Link accent"
+				},
+				{
+					"value": "sale",
+					"label": "Sale"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "info_popup_alignment",
+			"label": "Alignment",
+			"default": "right",
+			"options": [
+				{
+					"value": "left",
+					"label": "Left"
+				},
+				{
+					"value": "right",
+					"label": "Right"
+				}
+			],
+			"visible_if": "{{ block.settings.info_popup_page != blank }}"
+		},
+		{
+			"type": "select",
+			"id": "info_popup_match_mode",
+			"label": "Placement",
+			"default": "position",
+			"options": [
+				{
+					"value": "label",
+					"label": "By label"
+				},
+				{
+					"value": "position",
+					"label": "By position"
+				}
+			],
+			"visible_if": "{{ block.settings.info_popup_page != blank }}"
+		},
+		{
+			"type": "text",
+			"id": "info_popup_match_labels",
+			"label": "Labels",
+			"default": "Size",
+			"placeholder": "Size, Fit, Sizing, Length, etc",
+			"info": "Case-insensitive. Comma-separated for multiple matches.",
+			"visible_if": "{{ block.settings.info_popup_page != blank and block.settings.info_popup_match_mode == 'label' }}"
+		},
+		{
+			"type": "range",
+			"id": "info_popup_match_position",
+			"label": "Position",
+			"min": 1,
+			"max": 5,
+			"step": 1,
+			"default": 1,
+			"visible_if": "{{ block.settings.info_popup_page != blank and block.settings.info_popup_match_mode == 'position' }}"
+		}
+	],
+	"presets": [
+		{
+			"name": "Form options",
+			"category": "Add to cart"
+		}
+	]
+}
+{% endschema %}

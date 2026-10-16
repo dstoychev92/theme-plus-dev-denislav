@@ -1,0 +1,360 @@
+<!-- blocks/_background-split.liquid -->
+
+{% assign columns_lg = 1 %}
+{% assign columns_md = 1 %}
+{% assign columns_sm = 1 %}
+
+{% if block.settings.flow == 'row'
+  and block.settings.target_device_1 != 'mobile'
+  and block.settings.target_device_2 != 'mobile'
+%}
+  {% assign columns_lg = 2 %}
+  {% assign columns_md = 2 %}
+{% endif %}
+
+{% if block.settings.flow_mobile == 'row'
+  and block.settings.target_device_1 != 'desktop'
+  and block.settings.target_device_2 != 'desktop'
+%}
+  {% assign columns_sm = 2 %}
+{% endif %}
+
+{%- capture sizes -%}
+  {%- render 'image-grid-sizes',
+    columns_lg: columns_lg,
+    columns_md: columns_md,
+    columns_sm: columns_sm
+  -%}
+{%- endcapture -%}
+
+{% if columns_lg == 2 %}
+  {%- capture widths -%}
+    {% comment %} Note: do not exceed 3 widths for images that will be preloaded. Shopify will ignore this image for preloading if it has more than 6 srcset items. {% endcomment %}
+    416, 800, 1280
+  {%- endcapture -%}
+{% else %}
+  {%- capture widths -%}
+    {% comment %} Note: do not exceed 6 widths for images that will be preloaded. Shopify will ignore this image for preloading if it has more than 6 srcset items. {% endcomment %}
+    832, 1200, 1600, 1920, 2560, 3840
+  {%- endcapture -%}
+{% endif %}
+
+<split-images
+  {% comment %} Ensure child blocks are relative so they snap into grid and don't inherit the absolute positioning of the parent {% endcomment %}
+  class="
+    {% if request.visual_preview_mode %}
+      {% comment %} 0.5 aspect-ratio is necessary to ensure visual preview works on various screen sizes {% endcomment %}
+      {% assign visual_preview_aspect_ratio = '0.5' %}
+      relative
+    {% else %}
+      absolute
+    {% endif %}
+    *:relative
+    grid
+    {% if block.settings.flow == 'row' %}
+      md:grid-rows-[minmax(var(--custom-height,max-content))] md:grid-cols-[repeat(auto-fit,minmax(0,1fr))]
+    {% else %}
+      md:grid-rows-[repeat(auto-fit,minmax(0,1fr))] md:grid-cols-[auto]
+    {% endif %}
+
+    {% if block.settings.flow_mobile == 'row' %}
+      max-md:grid-rows-[minmax(var(--custom-height,max-content))] max-md:grid-cols-[repeat(auto-fit,minmax(0,1fr))]
+    {% else %}
+      max-md:grid-rows-[repeat(auto-fit,minmax(0,1fr))] max-md:grid-cols-[auto]
+    {% endif %}
+
+    size-full inset-0
+  "
+  {{ block.shopify_attributes }}
+>
+  {% for i in (1..2) %}
+    {% assign set_overlay_id = 'set_overlay_' | append: forloop.index %}
+    {% assign overlay_opacity_id = 'overlay_opacity_' | append: forloop.index %}
+    {% assign overlay_color_id = 'overlay_color_' | append: forloop.index %}
+    {% assign image_id = 'image_' | append: forloop.index %}
+    {% assign image_mobile_id = 'image_mobile_' | append: forloop.index %}
+    {% assign show_image_on_mobile_id = 'show_image_on_mobile_' | append: forloop.index %}
+    {% assign video_bg_id = 'video_bg_' | append: forloop.index %}
+    {% assign media_type_id = 'media_type_' | append: forloop.index %}
+    {% assign target_device_id = 'target_device_' | append: forloop.index %}
+
+    {% assign set_overlay = block.settings[set_overlay_id] %}
+    {% assign overlay_opacity = block.settings[overlay_opacity_id] %}
+    {% assign overlay_color = block.settings[overlay_color_id] %}
+    {% assign image = block.settings[image_id] %}
+    {% assign image_mobile = block.settings[image_mobile_id] %}
+    {% assign show_image_on_mobile = block.settings[show_image_on_mobile_id] %}
+    {% assign video_bg = block.settings[video_bg_id] %}
+    {% assign media_type = block.settings[media_type_id] %}
+    {% assign target_device = block.settings[target_device_id] %}
+
+    {% capture class %}
+      size-full relative
+      {% render 'props-class-target-device', target_device: target_device %}
+    {% endcapture %}
+
+    {% assign media_attributes = '' %}
+    {% if media_type == 'video' and show_image_on_mobile == true %}
+      {% assign media_attributes = 'data-has-mobile-image' %}
+    {% endif %}
+
+    {% comment %} Both splits would otherwise fall back to the same block.id-derived image id {% endcomment %}
+    {% assign media_id_prefix = block.id | append: '-split-' | append: forloop.index %}
+
+    <div class="{{ class }}">
+      <!-- background overlay -->
+      {% render 'core-background-overlay',
+        set_overlay: set_overlay,
+        overlay_opacity: overlay_opacity,
+        overlay_color: overlay_color,
+        class: 'z-20'
+      %}
+
+      <!-- background content -->
+      {% render 'core-background-media',
+        image: image,
+        image_mobile: image_mobile,
+        media_type: media_type,
+        show_image_on_mobile: show_image_on_mobile,
+        video: video_bg,
+        attributes: media_attributes,
+        id_prefix: media_id_prefix,
+        sizes: sizes,
+        widths: widths,
+        aspect_ratio: visual_preview_aspect_ratio
+      %}
+    </div>
+  {% endfor %}
+</split-images>
+
+{% schema %}
+{
+	"name": "Split images",
+	"tag": null,
+	"settings": [
+		{
+			"type": "select",
+			"id": "flow",
+			"label": "Flow",
+			"default": "row",
+			"options": [
+				{
+					"value": "row",
+					"label": "→"
+				},
+				{
+					"value": "col",
+					"label": "↓"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "flow_mobile",
+			"label": "Mobile flow",
+			"default": "row",
+			"options": [
+				{
+					"value": "row",
+					"label": "→"
+				},
+				{
+					"value": "col",
+					"label": "↓"
+				}
+			]
+		},
+		{
+			"type": "header",
+			"content": "Image 1"
+		},
+		{
+			"type": "select",
+			"id": "media_type_1",
+			"label": "Type",
+			"options": [
+				{
+					"value": "image",
+					"label": "Image"
+				},
+				{
+					"value": "video",
+					"label": "Video"
+				}
+			],
+			"default": "image"
+		},
+		{
+			"type": "image_picker",
+			"id": "image_1",
+			"label": "Image",
+			"visible_if": "{{ block.settings.media_type_1 == 'image' }}"
+		},
+		{
+			"type": "video",
+			"id": "video_bg_1",
+			"label": "Video",
+			"visible_if": "{{ block.settings.media_type_1 == 'video' }}"
+		},
+		{
+			"type": "paragraph",
+			"content": "Background videos autoplay and are muted",
+			"visible_if": "{{ block.settings.media_type_1 == 'video' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_image_on_mobile_1",
+			"label": "Show image on mobile",
+			"default": false,
+			"visible_if": "{{ block.settings.media_type_1 == 'video' }}"
+		},
+		{
+			"type": "image_picker",
+			"id": "image_mobile_1",
+			"label": "Image mobile",
+			"visible_if": "{{ block.settings.media_type_1 == 'image' or block.settings.media_type_1 == 'video' and block.settings.show_image_on_mobile_1 == true }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_overlay_1",
+			"label": "Set overlay",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "overlay_opacity_1",
+			"label": "Opacity",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"visible_if": "{{ block.settings.set_overlay_1 == true }}",
+			"default": 8
+		},
+		{
+			"type": "color",
+			"id": "overlay_color_1",
+			"label": "Color",
+			"visible_if": "{{ block.settings.set_overlay_1 == true }}",
+			"default": "#000000"
+		},
+		{
+			"type": "select",
+			"label": "Show on",
+			"id": "target_device_1",
+			"default": "both",
+			"options": [
+				{
+					"value": "mobile",
+					"label": "Mobile"
+				},
+				{
+					"value": "desktop",
+					"label": "Desktop"
+				},
+				{
+					"value": "both",
+					"label": "Both"
+				}
+			]
+		},
+		{
+			"type": "header",
+			"content": "Image 2"
+		},
+		{
+			"type": "select",
+			"id": "media_type_2",
+			"label": "Type",
+			"options": [
+				{
+					"value": "image",
+					"label": "Image"
+				},
+				{
+					"value": "video",
+					"label": "Video"
+				}
+			],
+			"default": "image"
+		},
+		{
+			"type": "image_picker",
+			"id": "image_2",
+			"label": "Image",
+			"visible_if": "{{ block.settings.media_type_2 == 'image' }}"
+		},
+		{
+			"type": "video",
+			"id": "video_bg_2",
+			"label": "Video",
+			"visible_if": "{{ block.settings.media_type_2 == 'video' }}"
+		},
+		{
+			"type": "paragraph",
+			"content": "Background videos autoplay and are muted",
+			"visible_if": "{{ block.settings.media_type_2 == 'video' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_image_on_mobile_2",
+			"label": "Show image on mobile",
+			"default": false,
+			"visible_if": "{{ block.settings.media_type_2 == 'video' }}"
+		},
+		{
+			"type": "image_picker",
+			"id": "image_mobile_2",
+			"label": "Image mobile",
+			"visible_if": "{{ block.settings.media_type_2 == 'image' or block.settings.media_type_2 == 'video' and block.settings.show_image_on_mobile_2 == true }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_overlay_2",
+			"label": "Set overlay",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "overlay_opacity_2",
+			"label": "Opacity",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"visible_if": "{{ block.settings.set_overlay_2 == true }}",
+			"default": 8
+		},
+		{
+			"type": "color",
+			"id": "overlay_color_2",
+			"label": "Color",
+			"visible_if": "{{ block.settings.set_overlay_2 == true }}",
+			"default": "#000000"
+		},
+		{
+			"type": "select",
+			"label": "Show on",
+			"id": "target_device_2",
+			"default": "both",
+			"options": [
+				{
+					"value": "mobile",
+					"label": "Mobile"
+				},
+				{
+					"value": "desktop",
+					"label": "Desktop"
+				},
+				{
+					"value": "both",
+					"label": "Both"
+				}
+			]
+		},
+	],
+	"presets": [
+		{
+			"name": "Split images"
+		}
+	]
+}
+{% endschema %}

@@ -1,0 +1,28 @@
+<!-- blocks/_toolbar-announcement.liquid -->
+
+{% render 'core-inline-richtext',
+  s: section.settings,
+  text: block.settings.announcement_text,
+  class: 'self-center [&>a]:text-inherit',
+  attributes: block.shopify_attributes
+%}
+
+{% schema %}
+{
+	"name": "Announcement",
+	"tag": null,
+	"settings": [
+		{
+			"type": "inline_richtext",
+			"id": "announcement_text",
+			"label": "Text",
+			"default": "Make an announcement"
+		}
+	],
+	"presets": [
+		{
+			"name": "Announcement"
+		}
+	]
+}
+{% endschema %}

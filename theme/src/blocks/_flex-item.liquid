@@ -1,0 +1,348 @@
+<!-- blocks/_flex-item.liquid -->
+
+{% doc %}
+  - Renders flex row item holding other blocks
+
+  @param {string} [block_class] - classes for this block instance
+  @param {string} [block_style] - inline styles for this block instance
+{% enddoc %}
+
+
+{% liquid
+  assign size = block.settings.size
+  assign custom_size_unit = block.settings.custom_size_unit
+  assign custom_size_percent = block.settings.custom_size_percent
+  assign custom_size_px = block.settings.custom_size_px
+
+  case size
+    when 'auto'
+      assign flex_css = '0 1 auto'
+    when 'fill'
+      assign flex_css = '1 1 0%'
+    when 'fit'
+      assign flex_css = '0 0 auto'
+    when '1x'
+      assign flex_css = '1 1 0%'
+    when '2x'
+      assign flex_css = '2 1 0%'
+    when '3x'
+      assign flex_css = '3 1 0%'
+    when 'custom'
+      if custom_size_unit == 'px'
+        assign flex_css = '0 0 ' | append: custom_size_px | append: 'px'
+      else
+        assign flex_css = '0 0 ' | append: custom_size_percent | append: '%'
+      endif
+  endcase
+
+  assign align_self = block.settings.align_self | default: 'auto'
+
+  if block.settings.set_order
+    assign order_value = block.settings.order
+  else
+    assign order_value = 0
+  endif
+
+  if block.settings.set_layout
+    assign content_align = block.settings.content_align
+    assign gap = block.settings.gap | default: false, allow_false: true
+  endif
+%}
+
+<div
+  class="
+    flex flex-col gap-layout relative
+    text-content-align items-content-align
+    {% if content_align %}
+      vars-content-align-{{ content_align }}
+    {% endif %}
+    {% comment %} Flex items can be size containers ONLY if they have a set width otherwise they might collapse to zero width {% endcomment %}
+    {% if size == 'custom' and custom_size_unit == 'px' %}
+      cq-width
+    {% else %}
+      cq-width-unsafe
+    {% endif %}
+    {% render 'props-class-show-on', s: block.settings %}
+    {{ block_class }}
+  "
+  style="
+    {%- if gap -%}
+      {% render 'props-style-gap', s: block.settings %}
+    {%- endif -%}
+    flex: {{ flex_css }};
+    align-self: {{ align_self }};
+    order: {{ order_value }};
+    {{ block_style }}
+  "
+  {{ block.shopify_attributes }}
+>
+  {% content_for 'blocks' %}
+</div>
+
+{% schema %}
+{
+	"name": "Flex item",
+	"tag": null,
+	"settings": [
+		{
+			"type": "header",
+			"content": "Item"
+		},
+		{
+			"type": "select",
+			"id": "size",
+			"label": "Size",
+			"default": "auto",
+			"options": [
+				{
+					"value": "auto",
+					"label": "⇔ Auto"
+				},
+				{
+					"value": "fit",
+					"label": "⇥⇤ Fit content"
+				},
+				{
+					"value": "fill",
+					"label": "⇹ Fill"
+				},
+				{
+					"value": "1x",
+					"label": "▮ 1×"
+				},
+				{
+					"value": "2x",
+					"label": "▮▮ 2×"
+				},
+				{
+					"value": "3x",
+					"label": "▮▮▮ 3×"
+				},
+				{
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "custom_size_unit",
+			"label": "Unit",
+			"default": "percent",
+			"options": [
+				{
+					"value": "percent",
+					"label": "Percent"
+				},
+				{
+					"value": "px",
+					"label": "Pixels"
+				}
+			],
+			"visible_if": "{{ block.settings.size == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "custom_size_percent",
+			"label": "Size",
+			"min": 0,
+			"max": 100,
+			"step": 5,
+			"default": 50,
+			"unit": "%",
+			"visible_if": "{{ block.settings.size == 'custom' and block.settings.custom_size_unit == 'percent' }}"
+		},
+		{
+			"type": "range",
+			"id": "custom_size_px",
+			"label": "Size",
+			"min": 40,
+			"max": 1000,
+			"step": 10,
+			"default": 200,
+			"unit": "px",
+			"visible_if": "{{ block.settings.size == 'custom' and block.settings.custom_size_unit == 'px' }}"
+		},
+		{
+			"type": "select",
+			"id": "align_self",
+			"label": "Align self",
+			"default": "auto",
+			"options": [
+				{
+					"value": "auto",
+					"label": "— Auto"
+				},
+				{
+					"value": "start",
+					"label": "⤒ Start"
+				},
+				{
+					"value": "center",
+					"label": "| Center"
+				},
+				{
+					"value": "end",
+					"label": "⤓ End"
+				},
+				{
+					"value": "stretch",
+					"label": "↕ Stretch"
+				},
+				{
+					"value": "baseline",
+					"label": "_ Baseline"
+				}
+			]
+		},
+		{
+			"type": "checkbox",
+			"id": "set_order",
+			"label": "Set order",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "order",
+			"label": "Order",
+			"min": -5,
+			"max": 5,
+			"step": 1,
+			"default": 0,
+			"visible_if": "{{ block.settings.set_order }}"
+		},
+		{
+			"type": "header",
+			"content": "Children"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_layout",
+			"label": "Set layout",
+			"default": false
+		},
+		{
+			"type": "text_alignment",
+			"id": "content_align",
+			"label": "Align children",
+			"default": "center",
+			"visible_if": "{{ block.settings.set_layout }}"
+		},
+		{
+			"type": "select",
+			"id": "gap",
+			"label": "Gap",
+			"default": "md",
+			"visible_if": "{{ block.settings.set_layout }}",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "gap_custom",
+			"label": "Custom gap",
+			"default": 0,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ block.settings.gap == 'custom'  and block.settings.set_layout }}"
+		},
+		{
+			"type": "header",
+			"content": "Screen size",
+			"info": "Add multiple Flex items for breakpoint-specific layouts."
+		},
+		{
+			"type": "select",
+			"label": "Show on",
+			"id": "show_on",
+			"default": "all",
+			"options": [
+				{
+					"value": "all",
+					"label": "All devices"
+				},
+				{
+					"value": "mobile",
+					"label": "Mobile only (< 768px)"
+				},
+				{
+					"value": "tablet",
+					"label": "Tablet only (768–1024px)"
+				},
+				{
+					"value": "desktop",
+					"label": "Desktop only (≥ 1024px)"
+				},
+				{
+					"value": "mobile-tablet",
+					"label": "Mobile and tablet (< 1024px)"
+				},
+				{
+					"value": "tablet-desktop",
+					"label": "Tablet and desktop (≥ 768px)"
+				}
+			]
+		},
+	],
+	"blocks": [
+		{
+			"type": "@theme"
+		},
+		{
+			"type": "_callout"
+		},
+		{
+			"type": "_callout-group"
+		},
+		{
+			"type": "_grid-editorial"
+		},
+		{
+			"type": "_grid-auto"
+		},
+		{
+			"type": "_card-showcase"
+		},
+		{
+			"type": "_form-contact"
+		},
+		{
+			"type": "_marquee"
+		},
+		{
+			"type": "_accordion-group"
+		},
+		{
+			"type": "_tabs"
+		},
+		{
+			"type": "@app"
+		}
+	],
+	"presets": [
+		{
+			"name": "Flex item",
+			"blocks": []
+		}
+	]
+}
+{% endschema %}
+

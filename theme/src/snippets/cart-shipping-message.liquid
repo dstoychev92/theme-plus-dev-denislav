@@ -1,0 +1,117 @@
+{% doc %}
+  - Renders progress to the free shipping threshold
+
+  Prints nothing without a free shipping limit and s.free_shipping_progress_message.
+
+  cart-free-shipping-limit resolves the limit. x-shipping-progress converts it in the
+  browser when the cart and store currencies differ, since Liquid has no exchange rate.
+  A converting bar renders the progress message first, because Liquid compares the cart
+  with an unconverted limit and would otherwise promise free shipping the cart has not
+  earned.
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {object} [s] - settings object
+  @param {boolean} [show_line] - renders the progress bar
+{% enddoc %}
+
+{% capture free_shipping %}{% render 'cart-free-shipping-limit', s: s %}{% endcapture %}
+
+{% liquid
+  assign free_shipping = free_shipping | strip | split: ','
+  assign limit = free_shipping[0] | plus: 0
+
+  assign needs_conversion = false
+  if free_shipping[1] == 'convert'
+    assign needs_conversion = true
+  endif
+
+  assign progress_message = s.free_shipping_progress_message
+  assign success_message = s.free_shipping_success_message
+  assign show_line = show_line | default: false
+%}
+
+{%- if limit > 0 and progress_message != blank -%}
+  {%- liquid
+    assign limit_currency = limit | times: 100
+    assign cart_total_price = cart.total_price
+    assign subtotal_without_currency = cart_total_price | plus: 0 | divided_by: 100
+    assign message_price_difference = limit_currency | minus: cart_total_price | at_least: 0
+    assign amount = message_price_difference | money_without_trailing_zeros
+    assign percent = limit | minus: subtotal_without_currency | times: 100 | divided_by: limit
+    assign percent = 100 | minus: percent | at_most: 100
+
+    assign is_met = false
+    if message_price_difference == 0
+      assign is_met = true
+    endif
+  -%}
+
+  {% capture line %}
+    <div class="relative rounded-sm overflow-clip w-full h-[4px] bg-content-mix-5">
+      <span
+        role="presentation"
+        data-shipping-bar
+        class="absolute top-0 left-0 h-full w-[--limit-percent] bg-gradient-to-l to-primary from-[--to-color] transition-[width,background-color]"
+        style="
+          --limit-percent: {{ percent | at_most: 100 }}%;
+        "
+      ></span>
+    </div>
+  {% endcapture %}
+
+  {% comment %}
+    Trim amount whitespace to match $formatCurrency output
+  {% endcomment %}
+  {% capture styled_amount %}<span class="font-bold" data-shipping-amount>{{- amount -}}</span>{% endcapture %}
+
+  {% comment %}
+    Keep both messages in the HTML so x-shipping-progress can correct the Liquid
+    comparison. A converting bar starts on the progress message, since Liquid measures the
+    cart against an unconverted limit and calls the threshold met far too early.
+  {% endcomment %}
+  {% capture progress_block %}
+    <p class="text-r3" data-shipping-progress-message>
+      {{ progress_message | replace: '||amount||', styled_amount }}
+    </p>
+  {% endcapture %}
+
+  {% capture success_block %}
+    <div
+      class="flex items-center gap-r4 animate-in fade-in duration-800 slide-in-from-bottom-full"
+      data-shipping-success-message
+      {% if needs_conversion %}
+        style="display: none"
+      {% endif %}
+    >
+      {% render 'core-icon', icon: 'fill-circle-check', class: 'size-r6 text-primary', stroke_weight: 'bold' %}
+      <p class="text-r3">
+        {{ success_message }}
+      </p>
+    </div>
+  {% endcapture %}
+
+  <div
+    class="relative flex flex-col gap-r4 {{ class }}"
+    {{ attributes }}
+    {% if needs_conversion %}
+      x-shipping-progress
+      data-limit="{{ limit }}"
+      data-cart-total="{{ cart_total_price }}"
+    {% endif %}
+    style="--to-color: oklch(from var(--primary) calc(l + 0.15) c calc(h - 20))"
+  >
+    {%- if needs_conversion -%}
+      {{ progress_block }}
+      {{ success_block }}
+    {%- elsif is_met -%}
+      {{ success_block }}
+    {%- else -%}
+      {{ progress_block }}
+    {%- endif -%}
+
+    {% if show_line %}
+      {{ line }}
+    {% endif %}
+  </div>
+{%- endif -%}

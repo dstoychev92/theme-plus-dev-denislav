@@ -1,0 +1,189 @@
+{% doc %}
+  - Renders the gift card recipient form
+
+  @param {string} [class] - The classes
+  @param {product} [product]
+  @param {section} [section]
+{% enddoc %}
+
+{%- liquid
+  assign gift_card_recipient_control_flag = 'properties[__shopify_send_gift_card_to_recipient]'
+
+  assign checkbox_id = 'recipient-checkbox-' | append: section.id
+  assign email_id = 'recipient-email-' | append: section.id
+  assign name_id = 'recipient-name-' | append: section.id
+  assign message_id = 'recipient-message-' | append: section.id
+  assign activate_date_id = 'recipient-activate-date-' | append: section.id
+  assign send_on_id = 'recipient-send-on-' | append: section.id
+
+  assign checkbox_label = 'gift_card.form.checkbox' | t
+  assign email_label = 'gift_card.form.email' | t
+  assign name_label = 'gift_card.form.name' | t
+  assign message_label = 'gift_card.form.message' | t
+  assign activate_date_label = 'gift_card.form.send_later' | t
+  assign send_on_label = 'gift_card.form.send_on' | t
+
+  assign max_chars_message = 200
+  assign max_chars_message_rendered = 'gift_card.form.max_characters' | t: max_chars: max_chars_message
+
+  # Date inputs only accept YYYY-MM-DD for min/max; anything else is silently ignored
+  assign current_date = 'now' | date: '%Y-%m-%d'
+  assign days = 90
+  assign days_in_seconds = days | times: 24 | times: 60 | times: 60
+  assign current_date_timestamp = 'now' | date: '%s'
+  assign end_date = current_date_timestamp | plus: days_in_seconds | date: '%Y-%m-%d'
+%}
+
+{% comment %}
+  Errors from /cart/add.js render in the product form's alert above the form
+  (the summary) and again inline next to the offending field. The form tag's
+  own errors object never reaches this snippet — render isolates scope — so
+  only the async path is wired.
+{% endcomment %}
+{% capture email_attributes %}
+  spellcheck="false"
+  autocapitalize="off"
+  autocomplete="email"
+  required
+  {% # type="email" alone accepts "test@test" %}
+  pattern="[^@\s]+@[^@\s]+\.[^@\s]+"
+  title="{{ 'other.form.invalid_email' | t }}"
+  :disabled="!isActive"
+  {% # Some cart errors send the field map only as description %}
+  :aria-invalid="$productForm.state === 'error' && ($productForm.parsedBody?.errors ?? $productForm.parsedBody?.description)?.email ? 'true' : null"
+  :aria-errormessage="$productForm.state === 'error' && ($productForm.parsedBody?.errors ?? $productForm.parsedBody?.description)?.email ? '{{ email_id }}-ajax-error' : null"
+{% endcapture %}
+
+{% capture name_attributes %}
+  autocomplete="name"
+  :disabled="!isActive"
+{% endcapture %}
+
+{% capture message_attributes %}
+  rows="5"
+  maxlength="{{ max_chars_message }}"
+  aria-label="{{ message_label }} {{ max_chars_message_rendered }}"
+  :disabled="!isActive"
+  x-submittable-textarea
+{% endcapture %}
+
+{% capture send_on_attributes %}
+  autocomplete="send_on"
+  pattern="\d{4}-\d{2}-\d{2}"
+  min="{{ current_date }}"
+  max="{{ end_date }}"
+  :aria-invalid="$productForm.state === 'error' && ($productForm.parsedBody?.errors ?? $productForm.parsedBody?.description)?.send_on ? 'true' : null"
+  :aria-errormessage="$productForm.state === 'error' && ($productForm.parsedBody?.errors ?? $productForm.parsedBody?.description)?.send_on ? '{{ send_on_id }}-ajax-error' : null"
+{% endcapture %}
+
+{% comment %} Render Form {% endcomment %}
+{% if product.gift_card? %}
+  <div
+    class="mb-r6 flex flex-col gap-y-r6 {{ class }}"
+    role="group"
+    aria-labelledby="{{ checkbox_id }}"
+    x-data="
+      {
+        isActive: false,
+        includeDate: false,
+      }
+    "
+  >
+    {% render 'field-checkbox',
+      class: 'peer',
+      id: checkbox_id,
+      name: gift_card_recipient_control_flag,
+      label: checkbox_label,
+      input_attributes: 'x-model="isActive"'
+    %}
+
+    <div
+      class="
+        hidden flex-col gap-y-r4
+        peer-has-[:checked]:flex
+      "
+      :class="{ 'animate-in fade-in': isActive }"
+      x-show="isActive"
+      x-cloak
+    >
+      {%- render 'field-input',
+        type: 'email',
+        name: 'properties[Recipient email]',
+        id: email_id,
+        label: email_label,
+        input_attributes: email_attributes
+      -%}
+
+      {% comment %} The same message from the /cart/add.js body, inline at the field {% endcomment %}
+      <p
+        id="{{ email_id }}-ajax-error"
+        class="vars-scheme-error -mt-r2 text-start text-r2 text-content"
+        role="alert"
+        x-cloak
+        x-show="$productForm.state === 'error' && ($productForm.parsedBody?.errors ?? $productForm.parsedBody?.description)?.email"
+      >
+        {{ email_label }}
+        <span
+          x-text="[($productForm.parsedBody?.errors ?? $productForm.parsedBody?.description)?.email ?? []].flat().join(', ')"
+        ></span>
+      </p>
+
+      {%- render 'field-input',
+        type: 'text',
+        name: 'properties[Recipient name]',
+        id: name_id,
+        label: name_label,
+        input_attributes: name_attributes
+      -%}
+
+      {%- render 'field-textarea',
+        name: 'properties[Message]',
+        id: message_id,
+        label: message_label,
+        input_attributes: message_attributes
+      -%}
+
+      <div role="group" aria-label="{{ send_on_label }}" class="flex flex-col gap-y-r6">
+        {%- render 'field-checkbox',
+          id: activate_date_id,
+          label: activate_date_label,
+          input_attributes: 'x-model="includeDate" :disabled="!isActive"'
+        -%}
+
+        <template x-if="includeDate">
+          <div>
+            {%- render 'field-input',
+              type: 'date',
+              name: 'properties[Send on]',
+              id: send_on_id,
+              label: send_on_label,
+              input_attributes: send_on_attributes
+            -%}
+
+            {% comment %}
+              Shopify's send_on messages already lead with the field name
+              ("Send on must be within 90 days from now"), so no label prefix.
+            {% endcomment %}
+            <p
+              id="{{ send_on_id }}-ajax-error"
+              class="vars-scheme-error mt-r2 text-start text-r2 text-content"
+              role="alert"
+              x-cloak
+              x-show="$productForm.state === 'error' && ($productForm.parsedBody?.errors ?? $productForm.parsedBody?.description)?.send_on"
+            >
+              <span
+                x-text="[($productForm.parsedBody?.errors ?? $productForm.parsedBody?.description)?.send_on ?? []].flat().join(', ')"
+              ></span>
+            </p>
+
+            <input
+              type="hidden"
+              name="properties[__shopify_offset]"
+              :value="new Date().getTimezoneOffset();"
+            >
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+{% endif %}

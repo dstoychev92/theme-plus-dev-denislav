@@ -1,0 +1,77 @@
+{% doc %}
+  - Renders a labelled number stepper
+
+  @param {string} [class] - The classes
+  @param {boolean} [disabled]
+  @param {string} [error_message] - error text, which marks the field invalid
+  @param {string} [form] - id of the form it belongs to
+  @param {boolean} [hide_label] - keeps the label for screen readers only
+  @param {string} [id] - element id, defaults to the name handleized
+  @param {string} label
+  @param {string} [label_class] - classes for the label
+  @param {number} [max] - highest value
+  @param {number} [min] - lowest value
+  @param {string} [name]
+  @param {string} [size] - 'sm', 'md' or 'lg'
+  @param {string} [stepper_attributes] - attributes for the stepper
+  @param {string} [stepper_button_attributes] - attributes for both buttons
+  @param {string} [stepper_input_attributes] - attributes for the input
+  @param {string} [style] - inline styles
+  @param {string} [success_message] - message shown after a successful post
+  @param {number} [value]
+{% enddoc %}
+
+{% liquid
+  assign id = id | default: name | handleize
+%}
+
+{% capture field_class %}
+  {{ class }}
+
+  {% comment %} Hide label when option disabled option is checked aka placeholder option {% endcomment %}
+  has-[:checked:disabled]:[--field-active:0]
+{% endcapture %}
+
+{% capture stepper_wrapper_class %}
+  bg-transparent
+{% endcapture %}
+
+{% capture stepper_input_class %}
+  text-[color:var(--input-text-color)] leading-normal text-size-input
+  placeholder-[--input-placeholder-text-color]
+
+  {% comment %} Turn off default keyboard focus style since field should handle that {% endcomment %}
+  keyboard-focus:!outline-none
+{% endcapture %}
+
+{% capture select %}
+  {% render 'stepper',
+    id: id,
+    name: name,
+    form: form,
+    min: min,
+    max: max,
+    value: value,
+    disabled: disabled,
+    aria_label: label,
+    attributes: stepper_attributes,
+    input_attributes: stepper_input_attributes,
+    button_attributes: stepper_button_attributes,
+    input_class: stepper_input_class,
+    class: stepper_wrapper_class,
+    size: size
+  %}
+{% endcapture %}
+
+{% render 'field',
+  label: label,
+  id: id,
+  class: field_class,
+  label_class: label_class,
+  input: select,
+  size: size,
+  style: style,
+  error_message: error_message,
+  success_message: success_message,
+  hide_label: hide_label
+%}

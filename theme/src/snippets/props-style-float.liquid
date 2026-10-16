@@ -1,0 +1,45 @@
+{% doc %}
+  - Prints position variables for a floating element
+
+  @param {string} [left] - percentage from the left
+  @param {string} [left_mobile] - percentage from the left on mobile
+  @param {number} [rotation] - rotation in degrees
+  @param {object} [s] - settings object
+  @param {string} [set_position_mobile] - false ignores the mobile position
+  @param {string} [top] - percentage from the top
+  @param {string} [top_mobile] - percentage from the top on mobile
+  @param {number} [z_index]
+{% enddoc %}
+
+{%- liquid
+  assign z_index = z_index | default: s.z_index
+  assign top = top | default: s.top
+  assign left = left | default: s.left
+  assign top_mobile = top_mobile | default: s.top_mobile
+  assign left_mobile = left_mobile | default: s.left_mobile
+  assign rotation = rotation | default: s.rotation | default: 0
+
+  # Allow passing "false" to disable mobile position from outside this snippet
+  if set_position_mobile == null
+    assign set_position_mobile = s.set_position_mobile | default: true, allow_false: true
+  endif
+-%}
+{% if z_index %}
+  z-index: {{ z_index }};
+{% endif %}
+{% if top %}
+  --float-top: {{ top }}%;
+{% endif %}
+{% if left %}
+  --float-left: {{ left }}%;
+{% endif %}
+{% if set_position_mobile and top_mobile %}
+  --float-top-mobile: {{ top_mobile }}%;
+{% endif %}
+{% if set_position_mobile and left_mobile %}
+  --float-left-mobile: {{ left_mobile }}%;
+{% endif %}
+{% if rotation %}
+  --float-rotation: {{ rotation | times: 1.0 | divided_by: 100 | divided_by: 2 }}turn;
+{% endif %}
+

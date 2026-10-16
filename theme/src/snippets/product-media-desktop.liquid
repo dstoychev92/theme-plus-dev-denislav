@@ -1,0 +1,377 @@
+{% doc %}
+  - Renders the desktop product gallery
+
+  @param {number} [aspect_ratio] - media aspect ratio
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {number} [featured_media_id] - id of the media to open on
+  @param {number} [featured_media_index] - position of the featured media
+  @param {boolean} [has_option_media_list] - the gallery is filtered by the selected option
+  @param {string} [id]
+  @param {string} [media_attributes] - attributes for each media item
+  @param {string} [media_class] - classes for each media item
+  @param {object} product_media - the media to render, already ordered
+  @param {object} [s] - settings object
+  @param {boolean} [scroll_to_variant_image] - scrolls to the variant image when the selection changes
+  @param {section} [section]
+{% enddoc %}
+
+{% liquid
+  assign id = id | default: 'product-media-desktop'
+  assign layout = s.layout_desktop | default: 'showcase'
+  assign product_media_size_count = product_media.size | default: product_media.count
+
+  assign media_spacing = 0
+
+  assign stack_style = s.stack_style
+
+  if product_media_size_count == 1
+    assign layout = 'stack'
+    assign stack_style = 'single'
+  endif
+
+  case layout
+    when 'showcase'
+      assign media_spacing = s.carousel_media_spacing
+      assign thumbnail_spacing = media_spacing
+      assign thumbnail_position = s.carousel_indicator_photo_position
+      assign thumbnail_position_beside_alignment = s.carousel_indicator_photo_position_beside_alignment
+      assign thumbnail_size = s.carousel_indicator_photo_size
+      assign media_attributes = media_attributes | append: ' x-slideshow:viewport'
+    when 'stack'
+      assign media_spacing = s.stack_media_spacing
+      assign class = class | append: ' grid gap-[--media-spacing]'
+      if stack_style == 'mosaic' or stack_style == 'columns'
+        assign class = class | append: ' grid-cols-2 items-start'
+      endif
+  endcase
+
+  case thumbnail_position
+    when 'below'
+      assign thumbnail_orientation = 'horizontal'
+      assign thumbnail_position_class = 'max-w-full'
+    when 'beside'
+      assign thumbnail_orientation = 'vertical'
+      assign main_media_position_class = 'col-start-2 row-start-1 min-h-0'
+      assign thumbnail_position_class = 'col-start-1 row-start-1 h-0 [min-height:100%] max-h-full self-stretch'
+  endcase
+
+  assign layout_all_single = false
+  assign layout_showcase = false
+  assign layout_single = false
+  assign layout_columns = false
+  assign layout_mosaic = false
+
+  if layout == 'showcase'
+    assign layout_showcase = true
+    assign layout_all_single = true
+  endif
+  if layout == 'stack' and stack_style == 'single'
+    assign layout_single = true
+    assign layout_all_single = true
+  endif
+  if layout == 'stack' and stack_style == 'columns'
+    assign layout_columns = true
+  endif
+  if layout == 'stack' and stack_style == 'mosaic'
+    assign layout_mosaic = true
+  endif
+%}
+
+{% liquid
+  assign media_showcase = ''
+  assign media_single = ''
+  assign media_column_left = ''
+  assign media_column_right = ''
+  assign media_column_full = ''
+%}
+
+{% for media in product_media %}
+  {% liquid
+    assign media_item_attributes = ''
+    assign is_featured_media = false
+    if media.id == featured_media_id
+      assign is_featured_media = true
+    endif
+
+    # Prevent jumping on page load for products with option media
+    # The regular media.id == featured_media.id check does not work here, because the "product_media" is a list of strings(URLs) instead of "media objects
+    # For option media list, the first image is always the featured media.
+    if has_option_media_list and forloop.first
+      assign is_featured_media = true
+    endif
+  %}
+
+  {% if layout == 'showcase' %}
+    {% capture media_item_attributes %}
+      x-slideshow:slide
+      x-show="$slide.isCurrentSlide"
+      :data-current="$slide.isCurrentSlide"
+      data-media-type="{{ media.media_type }}"
+      data-featured="{{ is_featured_media }}"
+      @shopify:product:select.window="if ($event.detail.sectionId == '{{ section.id }}' && $event.detail.variantFeaturedMediaId == {{ media.id }}) $slideshow.currentSlideIndex = {{ forloop.index0 }};"
+
+      {% if is_featured_media %}
+        x-intersect="
+          $nextTick(() => {
+            updateSlideshowHeight($el.offsetHeight)
+          })
+        "
+      {% else %}
+        x-cloak
+      {% endif %}
+
+      x-transition:enter="duration-[--slide-transition-duration]"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100 z-10"
+      x-transition:leave="duration-[--slide-transition-duration] delay-[calc(var(--transition-duration)/4)] !absolute top-0 left-0 w-full"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+      aria-label="{{ media.alt | escape_once }}"
+      {% comment %} Keyed on forloop.index (not media.position) so it matches the thumbnails' aria-controls and stays unique for option-media image lists, where position is nil {% endcomment %}
+      :id="$id('{{ id }}') + '_{{ forloop.index }}/{{ product_media_size_count }}'"
+      {% comment %} Prevent not-featured images from loading {% endcomment %}
+      {% if is_featured_media == false %}
+        x-cloak
+      {% endif %}
+    {% endcapture %}
+  {% elsif layout == 'stack' and scroll_to_variant_image %}
+    {% capture media_item_attributes %}
+      {% # Scroll to the variant image on a variant change, stack layout only %}
+      @shopify:product:select.window="if ($event.detail.sectionId == '{{ section.id }}' && $event.detail.variantFeaturedMediaId == {{ media.id }}) $scrollIntoView()"
+    {% endcapture %}
+  {% endif %}
+
+  {% liquid
+    assign use_single_col = layout_all_single
+    if layout_mosaic and is_featured_media
+      assign use_single_col = true
+    endif
+
+    assign media_id = id | append: '-' | append: media.id
+  %}
+
+  {% if use_single_col %}
+    {%- capture item_image_sizes -%}
+      {%- render 'image-grid-sizes',
+        columns_lg: 1,
+        columns_md: 1,
+        columns_sm: 1,
+        section_width: section.settings.content_width
+      %}
+    {%- endcapture -%}
+    {%- capture item_image_widths -%}
+      {%- render 'image-grid-widths',
+        columns_lg: 1,
+        columns_md: 1,
+        columns_sm: 1
+      -%}
+    {%- endcapture -%}
+  {% else %}
+    {%- capture item_image_sizes -%}
+      {%- render 'image-grid-sizes',
+        columns_lg: 2,
+        columns_md: 2,
+        columns_sm: 1,
+        section_width: section.settings.content_width
+      %}
+    {%- endcapture -%}
+    {%- capture item_image_widths -%}
+      {%- render 'image-grid-widths',
+        columns_lg: 2,
+        columns_md: 2,
+        columns_sm: 1
+      -%}
+    {%- endcapture -%}
+  {% endif %}
+
+  {% capture media_item %}
+    {% render 'product-media-item',
+      s: s,
+      product_media: product_media,
+      media: media,
+      layout: layout,
+      stack_style: stack_style,
+      class: media_class,
+      attributes: media_item_attributes,
+      id: media_id,
+      aspect_ratio: aspect_ratio,
+      is_featured_media: is_featured_media,
+      image_sizes: item_image_sizes,
+      image_widths: item_image_widths
+    %}
+  {% endcapture %}
+
+  {% if layout_showcase %}
+    {% capture media_showcase %}
+      {{ media_showcase }}
+      {{ media_item }}
+    {% endcapture %}
+
+  {% elsif layout_single %}
+    {% capture media_single %}
+      {{ media_single }}
+      {{ media_item }}
+    {% endcapture %}
+
+  {% elsif layout_columns %}
+    {% assign remainder = forloop.index0 | modulo: 2 %}
+    {% if remainder == 0 %}
+      {% capture media_column_left %}
+        {{ media_column_left }}
+        {{ media_item }}
+      {% endcapture %}
+    {% else %}
+      {% capture media_column_right %}
+        {{ media_column_right }}
+        {{ media_item }}
+      {% endcapture %}
+    {% endif %}
+
+  {% elsif layout_mosaic %}
+    {% assign remainder = forloop.index0 | modulo: 2 %}
+    {% if forloop.first %}
+      {% capture media_column_full %}
+        {{ media_item }}
+      {% endcapture %}
+    {% elsif remainder == 1 %}
+      {% capture media_column_left %}
+        {{ media_column_left }}
+        {{ media_item }}
+      {% endcapture %}
+    {% else %}
+      {% capture media_column_right %}
+        {{ media_column_right }}
+        {{ media_item }}
+      {% endcapture %}
+    {% endif %}
+  {% endif %}
+{% endfor %}
+
+{% capture media_images %}
+  {% if layout == 'showcase' %}
+    {{ media_showcase }}
+  {% elsif layout_single %}
+    {{ media_single }}
+  {% else %}
+    {% assign media_column_class = 'flex flex-col gap-[--media-spacing]' %}
+
+    {% comment %} Full width column {% endcomment %}
+    {% if layout_mosaic %}
+      <div class="col-span-2">
+        {{ media_column_full }}
+      </div>
+    {% endif %}
+
+    {% comment %} Left column {% endcomment %}
+    <div class="{{ media_column_class }}">
+      {{ media_column_left }}
+    </div>
+
+    {% comment %} Right column {% endcomment %}
+    <div class="{{ media_column_class }}">
+      {{ media_column_right }}
+    </div>
+  {% endif %}
+{% endcapture %}
+
+{% capture main_media %}
+  <div
+    class="
+      group/media
+      relative w-full overflow-hidden
+      transition-[height] duration-400
+      {{ main_media_position_class }}
+      {{ class }}
+    "
+    style="--model-icon-size: var(--r13);"
+    {{ media_attributes }}
+    data-test-id="product-media-desktop"
+  >
+    {{ media_images }}
+  </div>
+{% endcapture %}
+
+<product-media-desktop
+  style="--media-spacing: {{ media_spacing }}px;"
+  data-layout="{{ layout }}"
+  class="
+    relative hidden gap-[--media-spacing]
+    {% if thumbnail_position == 'beside' %}
+      md:grid grid-cols-[auto_minmax(0,1fr)] grid-rows-[auto] items-start overflow-hidden
+    {% else %}
+      md:flex flex-col items-start
+    {% endif %}
+  "
+  x-photoswipe
+  {% if layout == 'showcase' %}
+    x-data="
+      {
+        get currentSlideIndex() {
+          return $slideshow.currentSlideIndex
+        },
+        set currentSlideIndex(value) {
+          $slideshow.currentSlideIndex = value
+        }
+      }
+    "
+    x-slideshow="{ initialSlideIndex: {{ featured_media_index | default: 0 }} }"
+    :data-current-slide="currentSlideIndex"
+    aria-label="{{ 'product.gallery.accessibility.gallery_label' | t }}"
+    role="region"
+    id="{{ id }}"
+    {% comment %} The slides and the thumbnail picker reference this element through $id, so the runtime id must carry the same instance counter {% endcomment %}
+    :id="$id('{{ id }}')"
+    x-id="['{{ id }}']"
+  {% endif %}
+  {{ attributes }}
+>
+  {{ main_media }}
+
+  {% if layout == 'showcase' and s.enable_zoom %}
+    {% liquid
+      assign keyboard_zoom_label = 'product.gallery.zoom_title' | t
+      # Single-quoted since the x-show attribute below is double-quoted
+      assign media_types = product_media | map: 'media_type' | join: "', '"
+    %}
+    {% comment %} The per-slide zoom links are tabindex=-1 (see product-media-zoom-button), so this button is the keyboard path to zoom: it sits outside the slideshow, appears only while focused, and opens the lightbox at the current slide {% endcomment %}
+    {% comment %} Images stamp their photoswipe id on the slide figure; videos register theirs via a json script under the same media id the figure carries as key. A slide with neither (a 3D model) has nothing to zoom {% endcomment %}
+    {% capture keyboard_zoom_attributes %}
+      aria-controls="photoswipe"
+      {% comment %} A 3D model zooms inside its own viewer, so this button leaves the tab order while a model slide is current {% endcomment %}
+      x-cloak
+      x-show="['{{ media_types }}'][$slideshow.currentSlideIndex] != 'model'"
+      @click.stop.prevent="
+        const fig = $el.closest('product-media-desktop')?.querySelector('figure[data-current=true]');
+        const id = fig?.dataset.photoswipeMedia || (fig?.querySelector('[data-photoswipe-json]') ? fig.getAttribute('key') : null);
+        if (id) $photoswipeOpen(id);
+      "
+    {% endcapture %}
+    {% render 'core-button',
+      label: keyboard_zoom_label,
+      appearance: 'fill',
+      color: 'content',
+      class: 'sr-only focus-visible:not-sr-only !absolute top-r3 left-r3 z-40 !px-r3 !py-r2',
+      attributes: keyboard_zoom_attributes
+    %}
+  {% endif %}
+
+  {% if layout == 'showcase' %}
+    {% capture thumbnail_attributes %}
+      @keydown.right="$slideshow.next()"
+      @keydown.left="$slideshow.prev()"
+    {% endcapture %}
+
+    {% render 'product-media-thumbnail-picker',
+      product_media: product_media,
+      featured_media_id: featured_media_id,
+      orientation: thumbnail_orientation,
+      alignment: thumbnail_position_beside_alignment,
+      image_size: thumbnail_size,
+      thumbnail_spacing: thumbnail_spacing,
+      id: id,
+      class: thumbnail_position_class,
+      attributes: thumbnail_attributes
+    %}
+  {% endif %}
+</product-media-desktop>

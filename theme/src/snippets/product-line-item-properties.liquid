@@ -1,0 +1,24 @@
+{% doc %}
+  - Renders a line item property from a product metafield
+
+  Reads settings.metafield_line_item_property, so it prints nothing until that is set.
+
+  @param {product} product
+{% enddoc %}
+
+{% comment %} Adds a custom line item property from a product metafield {% endcomment %}
+{% liquid
+  if settings.metafield_line_item_property != blank
+    assign lip_namespace = settings.metafield_line_item_property | split: '.' | first
+    assign lip_key = settings.metafield_line_item_property | split: '.' | last
+    assign lip_value = product.metafields[lip_namespace][lip_key].value
+  endif
+%}
+
+{%- if lip_value != blank -%}
+  <input
+    type="hidden"
+    name="properties[{{ 'product.line_item_property.label' | t | escape_once }}]"
+    value="{{ lip_value | escape_once }}"
+  >
+{%- endif -%}

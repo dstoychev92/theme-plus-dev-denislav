@@ -1,0 +1,59 @@
+{% doc %}
+  - Renders product card price
+
+  product.price_varies adds "From", even when variant is set.
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {string} [compare_at_class] - classes for compare-at price
+  @param {string} [compare_at_style] - inline styles for compare-at price
+  @param {product} product
+  @param {string} [style] - inline styles
+  @param {variant} [variant] - price source, defaults to selected or first available variant
+{% enddoc %}
+
+{%- liquid
+  assign variant = variant | default: product.selected_or_first_available_variant
+  assign price = variant.price
+  assign compare_at_price = variant.compare_at_price
+  assign price_varies = product.price_varies
+  assign compare_at_class = compare_at_class | default: 'line-through text-muted'
+
+  capture money_price
+    render 'money', price: price
+  endcapture
+
+  if price_varies
+    assign money_price = 'product.from' | t | append: ' ' | append: money_price
+  endif
+-%}
+<span
+  class="whitespace-nowrap {{ class }}"
+  style="{{ style }}"
+  {{ attributes }}
+  data-test-id="product-card-regular-price"
+>
+  {{- money_price | strip -}}
+</span>
+
+{% comment %}
+  Keep the whitespace around this comment since it renders as the text space
+  between the two prices. Trim only the whitespace inside the compare-at span.
+  Safari wraps the compare-at price to a new row when whitespace surrounds the
+  sr-only label.
+{% endcomment %}
+{% if compare_at_price > price -%}
+  <span
+    class="whitespace-nowrap {{ compare_at_class }}"
+    style="{{ compare_at_style }}"
+    data-test-id="product-card-compare-price"
+  >
+    {%- # Keep the trailing space inside the label so screen readers separate it from the price -%}
+    <span class="sr-only">{{ 'product.accessibility.item_on_sale_compare_at' | t }} </span>
+    {%- render 'money', price: compare_at_price, show_currency: false -%}
+  </span>
+{%- endif %}
+
+{% if settings.show_card_unit_price %}
+  {% render 'price-per-unit', variant: variant, class: 'text-r2 text-muted ml-r2' %}
+{% endif %}

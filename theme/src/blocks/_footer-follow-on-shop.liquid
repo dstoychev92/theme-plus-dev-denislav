@@ -1,0 +1,60 @@
+<!-- blocks/_footer-follow-on-shop.liquid -->
+
+{%- if shop.features.follow_on_shop? -%}
+  {% capture style %}
+    {% case block.settings.sizing %}
+    {% when 'xl' %}
+      --scale: 1;
+    {% when 'lg' %}
+      --scale: 0.9;
+    {% when 'md' %}
+      --scale: 0.8;
+    {% when 'sm' %}
+      --scale: 0.7;
+    {% when 'xs' %}
+      --scale: 0.65;
+    {% endcase %}
+  {% endcapture %}
+  <div class="grayscale origin-left" style="{{- style -}} scale: var(--scale);">
+    {{ shop | login_button: action: 'follow' }}
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+	"name": "Follow on shop",
+	"tag": null,
+	"settings": [
+		{
+			"type": "select",
+			"id": "sizing",
+			"label": "Size",
+			"default": "md",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			]
+		},
+	],
+	"presets": [
+		{
+			"name": "Follow on shop",
+			"category": "Content"
+		}
+	]
+}
+{% endschema %}

@@ -1,0 +1,74 @@
+{% doc %}
+  - Renders card for any resource at the requested size
+
+  resource can be anything carrying url, title and featured_image or image, such as the
+  object behind a menu link.
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {string} [icon] - icon shown without image
+  @param {boolean} [loader] - renders loading state
+  @param {boolean} [media]
+  @param {object} [resource]
+  @param {string} [size] - 'xs', 'sm', 'md' or 'lg', selecting the card-layout snippet
+  @param {string} [title]
+  @param {boolean} [url] - card URL, defaults to the resource URL
+{% enddoc %}
+
+{%- liquid
+  assign url = url | default: resource.url, allow_false: true | default: false, allow_false: true
+  assign title = title | default: resource.title
+  assign image = resource.featured_image | default: resource.image
+  assign aspect_ratio = settings.card_aspect_ratio
+
+  if size == 'xs'
+    assign icon = icon | default: 'fill-page'
+  endif
+
+  # Allow media to be hidden when passing 'false', for example, in the predictive search suggestions
+  assign media = media | default: null, allow_false: true
+
+  # Safety measure to only show placeholder when on request.design_mode
+  assign enable_placeholder_product = false
+  if settings.placeholder_mode or request.design_mode
+    assign enable_placeholder_product = true
+  endif
+
+  # Disable placeholder when we need to show the loader - for example, when we are ajaxing the products
+  if loader == true
+    assign placeholder = false
+  endif
+  # Disable placeholder outside of design mode
+  if enable_placeholder_product == false
+    assign placeholder = false
+  endif
+  # Hide filler when not on design mode and image/icon are null
+  if enable_placeholder_product == false and image == null and icon == null
+    assign media = false
+  endif
+
+  if placeholder
+    assign url = null
+    assign image = null
+    assign title = 'homepage.placeholder.generic_card_title' | t
+    # Use SVG placeholder
+    capture media
+      render 'core-image', aspect_ratio: aspect_ratio
+    endcapture
+  endif
+-%}
+
+{%- liquid
+  if title or placeholder
+    case size
+      when 'xs'
+        render 'card-layout-xs', url: url, image: image, icon: icon, title: title, class: class, attributes: attributes, media: media
+      when 'sm'
+        render 'card-layout-sm', url: url, image: image, icon: icon, title: title, class: class, attributes: attributes, media: media
+      when 'md'
+        render 'card-layout-md', url: url, image: image, icon: icon, title: title, class: class, attributes: attributes, media: media
+      when 'lg'
+        render 'card-layout-lg', url: url, image: image, icon: icon, title: title, class: class, attributes: attributes, media: media
+    endcase
+  endif
+-%}

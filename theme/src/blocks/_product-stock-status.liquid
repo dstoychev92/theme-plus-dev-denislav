@@ -1,0 +1,377 @@
+<!-- blocks/_product-stock-status.liquid -->
+
+{% liquid
+  assign product = closest.product
+
+  if product == blank and request.visual_preview_mode
+    assign product = collections.all.products.first
+  endif
+
+  assign current_variant = product.selected_or_first_available_variant
+
+  assign has_variant = false
+  if request.visual_preview_mode
+    assign has_variant = true
+  elsif current_variant != blank
+    assign has_variant = true
+  endif
+
+  assign current_inventory = current_variant.inventory_quantity
+  assign show_count = block.settings.stockout_show_count
+
+  # The inventory at which the "countdown" begins, e.g. "Only 9 products left"
+  assign low_threshold = block.settings.stockout_low_threshold
+
+  assign show_always = false
+  if block.settings.stockout_style == 'always'
+    assign show_always = true
+  endif
+
+  assign is_in_stock = false
+  assign is_low_stock = false
+  assign is_out_of_stock = false
+
+  if current_variant.inventory_quantity > low_threshold
+    assign is_in_stock = true
+  endif
+
+  if current_variant.inventory_quantity > 0 and current_variant.inventory_quantity <= low_threshold
+    assign is_low_stock = true
+  endif
+
+  if current_variant.inventory_quantity < 1
+    assign is_out_of_stock = true
+  endif
+%}
+
+{% capture stock_status_class %}
+  relative flex-row-center gap-x-r4 text-content
+  {% render 'props-class-type-preset', s: block.settings, settings_suffix: 'stockout' %}
+{% endcapture %}
+
+{%- capture dot_pulse_rings -%}
+  <span class="stockout-dot-ring"></span>
+  <span class="stockout-dot-ring stockout-dot-ring--delayed"></span>
+{%- endcapture -%}
+
+{%- capture dot_in -%}
+  {%- if block.settings.show_stockout_dot -%}
+    {%- if block.settings.enable_stockout_pulse -%}
+      <span class="stockout-dot stockout-dot--in" style="--dot-color: {{ block.settings.color_stockout_in }};"><span class="stockout-dot-core"></span>{{ dot_pulse_rings }}</span>
+    {%- else -%}
+      <span class="stockout-dot" style="--dot-color: {{ block.settings.color_stockout_in }};"></span>
+    {%- endif -%}
+  {%- endif -%}
+{%- endcapture -%}
+
+{%- capture dot_low -%}
+  {%- if block.settings.show_stockout_dot -%}
+    {%- if block.settings.enable_stockout_pulse -%}
+      <span class="stockout-dot stockout-dot--low" style="--dot-color: {{ block.settings.color_stockout_low }};"><span class="stockout-dot-core"></span>{{ dot_pulse_rings }}</span>
+    {%- else -%}
+      <span class="stockout-dot" style="--dot-color: {{ block.settings.color_stockout_low }};"></span>
+    {%- endif -%}
+  {%- endif -%}
+{%- endcapture -%}
+
+{%- capture dot_out -%}
+  {%- if block.settings.show_stockout_dot -%}
+    <span class="stockout-dot" style="--dot-color: {{ block.settings.color_stockout_out }};"></span>
+  {%- endif -%}
+{%- endcapture -%}
+
+{% comment %} Stock status {% endcomment %}
+{%- capture stock_status -%}
+  {%- if has_variant -%}
+    {%- if current_variant.inventory_management == 'shopify' and current_variant.inventory_policy == 'deny' -%}
+      {%- if is_in_stock and show_always -%}
+        <div class="{{ stock_status_class }}">
+          {{ dot_in }}
+          {{ 'product.in_stock' | t }}
+        </div>
+      {%- elsif is_low_stock -%}
+        {%- liquid
+          assign variant_label = current_variant.title | replace: ' / ', ' · '
+          if show_count
+            if product.has_only_default_variant
+              assign low_stock_message = 'product.remaining_html' | t: inventory: current_inventory
+            else
+              assign low_stock_message = 'product.remaining_in_variant_html' | t: inventory: current_inventory, variant: variant_label
+            endif
+          else
+            if product.has_only_default_variant
+              assign low_stock_message = 'product.low_stock' | t
+            else
+              assign low_stock_message = 'product.low_stock_in_variant' | t: variant: variant_label
+            endif
+          endif
+        -%}
+        <div class="{{ stock_status_class }}">
+          {{ dot_low }}
+          {{ low_stock_message }}
+        </div>
+      {%- elsif is_out_of_stock -%}
+        <div class="{{ stock_status_class }}">
+          {{ dot_out }}
+          {{ 'product.out_of_stock' | t }}
+        </div>
+      {%- endif -%}
+    {%- elsif show_always -%}
+      {%- if current_variant.available -%}
+        <div class="{{ stock_status_class }}">
+          {{ dot_in }}
+          {{ 'product.in_stock' | t }}
+        </div>
+      {%- else -%}
+        <div class="{{ stock_status_class }}">
+          {{ dot_out }}
+          {{ 'product.out_of_stock' | t }}
+        </div>
+      {%- endif -%}
+    {%- endif -%}
+  {%- endif -%}
+{%- endcapture -%}
+
+{% render 'product-block',
+  s: block.settings,
+  content: stock_status,
+  class: 'flex justify-content-align',
+  attributes: block.shopify_attributes
+%}
+
+{% comment %}
+  Styles for this file live in src/css/product-stock-status.css. Shopify serves stylesheet-tag CSS per page, and a
+  Section API region update drops the inline copy, so the theme bundle must carry these rules.
+{% endcomment %}
+{% schema %}
+{
+	"name": "Product stock status",
+	"tag": null,
+	"settings": [
+		{
+			"type": "select",
+			"id": "stockout_style",
+			"label": "Inventory message",
+			"default": "low",
+			"options": [
+				{
+					"value": "low",
+					"label": "Show when low"
+				},
+				{
+					"value": "always",
+					"label": "Show always"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "stockout_low_threshold",
+			"label": "Low inventory threshold",
+			"min": 1,
+			"max": 50,
+			"step": 1,
+			"default": 10
+		},
+		{
+			"type": "checkbox",
+			"id": "stockout_show_count",
+			"label": "Show inventory count when low",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "type_preset_stockout",
+			"label": "Text style",
+			"default": "p",
+			"options": [
+				{
+					"group": "Headings",
+					"value": "h1",
+					"label": "Heading 1"
+				},
+				{
+					"group": "Headings",
+					"value": "h2",
+					"label": "Heading 2"
+				},
+				{
+					"group": "Headings",
+					"value": "h3",
+					"label": "Heading 3"
+				},
+				{
+					"group": "Headings",
+					"value": "h4",
+					"label": "Heading 4"
+				},
+				{
+					"group": "Headings",
+					"value": "h5",
+					"label": "Heading 5"
+				},
+				{
+					"group": "Headings",
+					"value": "h6",
+					"label": "Heading 6"
+				},
+				{
+					"group": "Content",
+					"value": "section",
+					"label": "Section title"
+				},
+				{
+					"group": "Content",
+					"value": "p",
+					"label": "Paragraph"
+				},
+				{
+					"group": "Content",
+					"value": "kicker",
+					"label": "Kicker"
+				},
+				{
+					"group": "Content",
+					"value": "micro",
+					"label": "Micro"
+				},
+				{
+					"group": "Elements",
+					"value": "btn",
+					"label": "Button"
+				},
+				{
+					"group": "Elements",
+					"value": "accordion",
+					"label": "Accordion"
+				},
+				{
+					"group": "Elements",
+					"value": "tab",
+					"label": "Tab"
+				},
+				{
+					"group": "Custom",
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_resize_stockout",
+			"label": "Text size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset_stockout != 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_font_stockout",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset_stockout == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size_stockout",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 4,
+			"visible_if": "{{ block.settings.type_preset_stockout == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase_stockout",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ block.settings.type_preset_stockout == 'custom' }}"
+		},
+		{
+			"type": "header",
+			"content": "Indicator dot"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_stockout_dot",
+			"label": "Show indicator dot",
+			"default": false
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_stockout_pulse",
+			"label": "Pulse animation",
+			"default": true,
+			"visible_if": "{{ block.settings.show_stockout_dot }}"
+		},
+		{
+			"type": "color",
+			"id": "color_stockout_in",
+			"label": "In-stock color",
+			"default": "#22c55e",
+			"visible_if": "{{ block.settings.show_stockout_dot }}"
+		},
+		{
+			"type": "color",
+			"id": "color_stockout_low",
+			"label": "Low-stock color",
+			"default": "#f59e0b",
+			"visible_if": "{{ block.settings.show_stockout_dot }}"
+		},
+		{
+			"type": "color",
+			"id": "color_stockout_out",
+			"label": "Out-of-stock color",
+			"default": "#ef4444",
+			"visible_if": "{{ block.settings.show_stockout_dot }}"
+		}
+	],
+	"presets": [
+		{
+			"name": "Product stock status",
+			"category": "Additional product info"
+		}
+	]
+}
+{% endschema %}

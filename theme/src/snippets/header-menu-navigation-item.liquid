@@ -1,0 +1,131 @@
+{% doc %}
+  - Renders one header menu link and registers its popup
+
+  element_id_suffix keeps two links with the same title from sharing a popup id, so the same
+  megamenu can be registered to more than one link.
+
+  @param {string} [element_id_suffix] - suffix on the popup id
+  @param {boolean} [first] - marks the first link in the row
+  @param {boolean} [last] - marks the last link in the row
+  @param {link} [link]
+  @param {string} [link_attributes] - attributes for the link
+  @param {string} [link_class] - classes for the link
+  @param {object} [s] - settings object
+  @param {section} [section]
+{% enddoc %}
+
+{%- liquid
+  assign menu_id = link.title | downcase | strip_html | escape_once | handleize
+  assign menu_item_label = link.title | strip_html
+
+  assign menu_label = 'header.accessibility.menu_item' | t: label: menu_item_label
+  assign has_sub_links = false
+
+  # Globally unique identifier for this particular menu for this particular link
+  # This allows the same custom megamenu to be registered to multiple header links
+  assign unique_menu_id = section.id | append: '-' | append: menu_id
+
+  if link.links.size > 0
+    assign has_sub_links = true
+  endif
+-%}
+
+<li
+  class="group/header-menu-nav-item flex flex-none h-full focus-group-item"
+  {% comment %} element_id_suffix keeps element ids unique for same-titled links; the shared data-menu-id is what the JS matches on, so every duplicate stays wired to the shared popup {% endcomment %}
+  id="header-menu-nav-item-{{ unique_menu_id }}{{ element_id_suffix }}"
+  data-header-menu-nav-item
+  data-menu-id="{{ unique_menu_id }}"
+
+  {% if has_sub_links -%}
+    x-header-menu-nav-item.sublinks="{{ unique_menu_id }}"
+  {%- else -%}
+    x-header-menu-nav-item="{{ unique_menu_id }}"
+  {%- endif -%}
+
+  data-link-levels="{{ link.levels }}"
+>
+  {% comment %} Usage of a list here will cause screen readers to read out "2 items" to indicate that there is both a link _and_ a dropdown button they can tab to {% endcomment %}
+  <ul
+    class="relative flex-row-center"
+    :role="!$headerMenuNavItem.hasPopup ? 'none' : null"
+  >
+    {% comment %}
+      When the page initially loads, and for links that have no sub links or custom mega popups associated
+      with them we render a static link. Once the page loads and we find out the link has a custom mega menu
+      we hide
+    {% endcomment %}
+    <li
+      class="
+        flex flex-center h-full
+        {% if first %}
+          pe-[--nav-menu-padding-x]
+        {% elsif last %}
+          ps-[--nav-menu-padding-x]
+        {% else %}
+          px-[--nav-menu-padding-x]
+        {% endif %}
+      "
+      :role="!$headerMenuNavItem.hasPopup ? 'none' : null"
+    >
+      {% capture link_class %}
+        {{ link_class }}
+        z-20 relative
+        keyboard-focus:outline-offset-[-2px]
+
+        {% # Use hit area not padding because header dropdowns need to align flush with link text %}
+        {% if first %}
+          hit-area-e-[--nav-menu-padding-x]
+        {% elsif last %}
+          hit-area-s-[--nav-menu-padding-x]
+        {% else %}
+          hit-area-x-[--nav-menu-padding-x]
+        {% endif %}
+      {% endcapture %}
+
+      {% capture link_attributes %}
+        id="header-menu-link-{{ unique_menu_id }}{{ element_id_suffix }}"
+        data-float-target
+        {% if link.url == '#' %}
+          x-header-menu-nav-item:link="{{ unique_menu_id }}"
+        {% endif %}
+        {{ link_attributes }}
+      {% endcapture %}
+
+      {% render 'header-link',
+        href: link.url,
+        label: menu_item_label,
+        attributes: link_attributes,
+        class: link_class,
+        active: link.active,
+        label_style: 'text',
+        s: s
+      %}
+    </li>
+
+    <li
+      class="absolute right-0 flex items-center z-30 h-full pointer-events-none"
+      x-show="$headerMenuNavItem.hasPopup"
+    >
+      {% comment %}
+        This button is mainly for accessibility. It is hidden by default and only shown when the user
+        focuses by keyboard. It's then used to open the mega menu or dropdown.
+      {% endcomment %}
+      <button
+        class="
+          group flex h-[15px] w-[15px] p-[3px] flex-center bg-canvas
+          keyboard-focus:outline-offset-[-2px]
+          opacity-0 focus-visible:opacity-100
+        "
+        id="header-menu-button-{{ unique_menu_id }}{{ element_id_suffix }}"
+        x-header-menu-nav-item:button="{{ unique_menu_id }}"
+        aria-label="{{ menu_label | escape_once }}"
+      >
+        {% render 'core-icon',
+          icon: 'stroke-chevron-down',
+          class: 'w-[8px] h-[8px] transform transition-transform origin-center group-aria-expanded:rotate-180'
+        %}
+      </button>
+    </li>
+  </ul>
+</li>

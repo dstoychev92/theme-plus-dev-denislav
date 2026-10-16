@@ -1,0 +1,29 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "404_E1Vq9C_anlgv0p0": {
+      "type": "404",
+      "blocks": {
+        "search": {
+          "type": "_search",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "search"
+      ],
+      "settings": {}
+    }
+  },
+  "order": [
+    "404_E1Vq9C_anlgv0p0"
+  ]
+}

@@ -1,0 +1,419 @@
+<!-- blocks/_form-contact.liquid -->
+
+{% liquid
+  assign form_id = 'form-' | append: block.id
+  assign form_class = 'flex flex-col w-full'
+  assign default_success_message = 'page.contact.post_success' | t
+  assign success_message = block.settings.success_message | default: default_success_message
+%}
+
+{%- capture style -%}
+  {% render 'props-style-gap', s: block.settings %}
+{%- endcapture -%}
+
+{% comment %}
+  The blocks must render inside the form tag — the form object (and with it
+  the fields' server-side errors) only exists there.
+{% endcomment %}
+{% form 'contact', id: form_id, class: form_class, attributes: block.shopify_attributes, style: style %}
+  {% render 'core-form-status', form: form, success_message: success_message %}
+
+  {% content_for 'blocks' %}
+  {% render 'core-button', s: block.settings, tag: 'button', type: 'submit' %}
+
+  <div class="text-r1 text-muted link-line-all">
+    {{ 'shopify.online_store.spam_detection.disclaimer_html' | t }}
+  </div>
+{% endform %}
+
+{% schema %}
+{
+	"name": "Contact form",
+	"tag": null,
+	"settings": [
+		{
+			"type": "select",
+			"id": "gap",
+			"label": "Gap",
+			"default": "sm",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "gap_custom",
+			"label": "Custom gap",
+			"default": 10,
+			"min": 2,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ block.settings.gap == 'custom'  }}"
+		},
+		{
+			"type": "textarea",
+			"id": "success_message",
+			"label": "Success message",
+			"info": "Leave blank to use the default message"
+		},
+		{
+			"type": "header",
+			"content": "Submit button"
+		},
+		{
+			"type": "text",
+			"id": "text",
+			"label": "Button text",
+			"default": "Send"
+		},
+		{
+			"type": "select",
+			"id": "appearance",
+			"label": "Style",
+			"default": "fill",
+			"options": [
+				{
+					"value": "fill",
+					"label": "Fill"
+				},
+				{
+					"value": "stroke",
+					"label": "Stroke"
+				},
+				{
+					"value": "soft",
+					"label": "Soft"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "sizing",
+			"label": "Height",
+			"default": "md",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "color",
+			"label": "Color",
+			"default": "content",
+			"options": [
+				{
+					"value": "content",
+					"label": "Text default"
+				},
+				{
+					"value": "primary",
+					"label": "Primary accent"
+				},
+				{
+					"value": "secondary",
+					"label": "Link accent"
+				},
+				{
+					"value": "sale",
+					"label": "Sale"
+				}
+			]
+		},
+		{
+			"type": "header",
+			"content": "Text style",
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_preset",
+			"label": "Text style",
+			"default": "btn",
+			"options": [
+				{
+					"group": "Headings",
+					"value": "h1",
+					"label": "Heading 1"
+				},
+				{
+					"group": "Headings",
+					"value": "h2",
+					"label": "Heading 2"
+				},
+				{
+					"group": "Headings",
+					"value": "h3",
+					"label": "Heading 3"
+				},
+				{
+					"group": "Headings",
+					"value": "h4",
+					"label": "Heading 4"
+				},
+				{
+					"group": "Headings",
+					"value": "h5",
+					"label": "Heading 5"
+				},
+				{
+					"group": "Headings",
+					"value": "h6",
+					"label": "Heading 6"
+				},
+				{
+					"group": "Content",
+					"value": "section",
+					"label": "Section title"
+				},
+				{
+					"group": "Content",
+					"value": "p",
+					"label": "Paragraph"
+				},
+				{
+					"group": "Content",
+					"value": "kicker",
+					"label": "Kicker"
+				},
+				{
+					"group": "Content",
+					"value": "micro",
+					"label": "Micro"
+				},
+				{
+					"group": "Elements",
+					"value": "btn",
+					"label": "Button"
+				},
+				{
+					"group": "Elements",
+					"value": "accordion",
+					"label": "Accordion"
+				},
+				{
+					"group": "Elements",
+					"value": "tab",
+					"label": "Tab"
+				},
+				{
+					"group": "Custom",
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "type_resize",
+			"label": "Text size",
+			"default": "md",
+			"options": [
+				{
+					"value": "xs",
+					"label": "XS"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "xl",
+					"label": "XL"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset != 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "type_font",
+			"label": "Font",
+			"default": "body",
+			"options": [
+				{
+					"value": "heading",
+					"label": "Heading"
+				},
+				{
+					"value": "subheading",
+					"label": "Subheading"
+				},
+				{
+					"value": "accent",
+					"label": "Accent"
+				},
+				{
+					"value": "body",
+					"label": "Body"
+				}
+			],
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "type_size",
+			"label": "Size",
+			"min": 1,
+			"max": 15,
+			"step": 1,
+			"default": 4,
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "type_uppercase",
+			"label": "Uppercase",
+			"default": false,
+			"visible_if": "{{ block.settings.type_preset == 'custom' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_rounding",
+			"label": "Set rounding",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "rounding_style",
+			"label": "Rounding",
+			"default": "none",
+			"options": [
+				{
+					"value": "none",
+					"label": "0"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "pill",
+					"label": "L"
+				}
+			],
+			"visible_if": "{{ block.settings.set_rounding }}"
+		},
+	],
+	"blocks": [
+		{
+			"type": "_form-group"
+		},
+		{
+			"type": "theme-badge"
+		},
+		{
+			"type": "theme-button"
+		},
+		{
+			"type": "theme-decoration"
+		},
+		{
+			"type": "theme-icon"
+		},
+		{
+			"type": "theme-image"
+		},
+		{
+			"type": "theme-link"
+		},
+		{
+			"type": "theme-liquid-code"
+		},
+		{
+			"type": "theme-spacer"
+		},
+		{
+			"type": "theme-text"
+		},
+		{
+			"type": "theme-richtext"
+		},
+		{
+			"type": "theme-group-text"
+		},
+		{
+			"type": "_form-input-email"
+		},
+		{
+			"type": "_form-input-name"
+		},
+		{
+			"type": "_form-input-text"
+		},
+		{
+			"type": "_form-select"
+		},
+		{
+			"type": "_form-radio-group"
+		},
+		{
+			"type": "_form-checkbox"
+		},
+	],
+	"presets": [
+		{
+			"name": "Contact form",
+			"category": "Content",
+			"settings": {},
+			"blocks": [
+				{
+					"type": "_form-input-name",
+					"settings": {
+						"label": "Name"
+					}
+				},
+				{
+					"type": "_form-input-email",
+					"settings": {
+						"label": "Email"
+					}
+				},
+				{
+					"type": "_form-input-text",
+					"settings": {
+						"label": "Message"
+					}
+				}
+			]
+		}
+	]
+}
+{% endschema %}

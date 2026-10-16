@@ -1,0 +1,395 @@
+<title>Splice list</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;700&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one working column. A status strip on top, then the ranked list by priority, then questions, bugs, and decisions. */
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --fg: #16202c;
+  --muted: #5b6878;
+  --line: #dde2e9;
+  --accent: #2f4fd8;
+  --accent-soft: #e6ebfc;
+  --found: #8a94a3;
+  --understood: #b07a10;
+  --rebuilt: #2f4fd8;
+  --verified: #1f8a55;
+  --dropped: #a0a7b1;
+  --danger: #b4342b;
+  --k-s: #b4342b; --k-a: #7a45c2; --k-f: #0f7d86; --k-v: #2f4fd8; --k-c: #b07a10; --k-t: #5b6878;
+  --font-display: "Familjen Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Public Sans", -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --radius: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f141b; --surface: #161d27; --fg: #e4e9f0; --muted: #98a3b3; --line: #273142;
+    --accent: #8ea4ff; --accent-soft: #1d2741;
+    --found: #7d8796; --understood: #e0a838; --rebuilt: #8ea4ff; --verified: #4cc287; --dropped: #6b7380; --danger: #f07a70;
+    --k-s: #f07a70; --k-a: #b996f0; --k-f: #4cc3cc; --k-v: #8ea4ff; --k-c: #e0a838; --k-t: #98a3b3;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f141b; --surface: #161d27; --fg: #e4e9f0; --muted: #98a3b3; --line: #273142;
+  --accent: #8ea4ff; --accent-soft: #1d2741;
+  --found: #7d8796; --understood: #e0a838; --rebuilt: #8ea4ff; --verified: #4cc287; --dropped: #6b7380; --danger: #f07a70;
+  --k-s: #f07a70; --k-a: #b996f0; --k-f: #4cc3cc; --k-v: #8ea4ff; --k-c: #e0a838; --k-t: #98a3b3;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 15px/1.55 var(--font-body); }
+.wrap { max-width: 920px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 64px; display: grid; gap: 28px; }
+h1, h2 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
+h1 { font-size: 30px; line-height: 1.15; font-weight: 700; }
+h2 { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+code, .mono { font-family: var(--font-mono); font-size: 13px; }
+a { color: var(--accent); }
+button, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+header { display: grid; gap: 10px; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 18px; color: var(--muted); font-size: 13px; }
+.meta span b { color: var(--fg); font-weight: 500; }
+.notice { background: var(--accent-soft); border-radius: var(--radius); padding: 10px 14px; font-size: 14px; }
+
+.strip { display: grid; gap: 8px; }
+.bar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: var(--line); }
+.bar i { display: block; height: 100%; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.legend b { color: var(--fg); font-weight: 600; }
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-inline-end: 6px; vertical-align: baseline; }
+
+section { display: grid; gap: 10px; }
+.group-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.count { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+ol.items { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.item { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); display: grid; grid-template-columns: auto minmax(0, 1fr); }
+.item[data-status="verified"], .item[data-status="dropped"] { opacity: .72; }
+.kind { width: 4px; border-radius: var(--radius) 0 0 var(--radius); }
+.body { padding: 12px 14px; display: grid; gap: 6px; min-width: 0; }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+.id { font-family: var(--font-mono); font-weight: 500; font-size: 13px; }
+.title { font-weight: 600; flex: 1 1 260px; min-width: 0; }
+.why { color: var(--muted); font-size: 14px; }
+.pill { font-size: 12px; font-weight: 600; letter-spacing: .02em; padding: 2px 8px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+.controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+select { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 3px 6px; font-size: 13px; }
+.icon-btn { background: none; border: 1px solid var(--line); border-radius: var(--radius); width: 30px; height: 28px; cursor: pointer; color: var(--muted); }
+.icon-btn:hover { color: var(--fg); border-color: var(--muted); }
+details summary { cursor: pointer; color: var(--accent); font-size: 13px; width: fit-content; }
+.detail { display: grid; gap: 8px; padding-top: 8px; font-size: 14px; }
+.detail p, .detail ul { margin: 0; }
+.detail ul { padding-inline-start: 18px; }
+.files { display: flex; flex-wrap: wrap; gap: 4px 6px; }
+.files code { background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; overflow-wrap: anywhere; }
+.facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 2px 12px; font-size: 13px; }
+.facts dt { color: var(--muted); }
+.facts dd { margin: 0; overflow-wrap: anywhere; }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.panel ol, .panel ul { list-style: none; margin: 0; padding: 0; }
+.panel li { padding: 12px 14px; border-top: 1px solid var(--line); display: grid; gap: 6px; min-width: 0; }
+.panel li:first-child { border-top: 0; }
+.panel .empty { color: var(--muted); }
+textarea { width: 100%; min-height: 64px; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px; resize: vertical; }
+.save { justify-self: start; background: var(--accent); color: var(--surface); border: 0; border-radius: var(--radius); padding: 5px 12px; font-weight: 600; cursor: pointer; }
+.save:disabled { opacity: .5; cursor: default; }
+.answered { color: var(--verified); font-size: 13px; font-weight: 600; }
+.small { font-size: 13px; color: var(--muted); }
+.skeleton { color: var(--muted); }
+@media (prefers-reduced-motion: no-preference) { .bar i { transition: width .4s ease; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1 id="title">Splice list</h1>
+    <div class="meta" id="meta"></div>
+    <p class="notice" id="notice">Loading the list. The agent fills it in after the audit. Each item appears here with its status, its files, and its pull request.</p>
+  </header>
+
+  <div class="strip" id="strip" hidden>
+    <div class="bar" id="bar"></div>
+    <div class="legend" id="legend"></div>
+  </div>
+
+  <div id="groups"></div>
+
+  <section id="questions-section">
+    <div class="group-head"><h2>Open questions</h2><span class="count" id="q-count"></span></div>
+    <div class="panel"><ol id="questions"><li class="empty">No questions yet.</li></ol></div>
+  </section>
+
+  <section id="bugs-section">
+    <div class="group-head"><h2>Bugs to check</h2><span class="count" id="b-count"></span></div>
+    <p class="small">Found while reading. They are not items until someone decides to fix them.</p>
+    <div class="panel"><ul id="bugs"><li class="empty">No bugs recorded yet.</li></ul></div>
+  </section>
+
+  <section id="decisions-section">
+    <div class="group-head"><h2>Decisions</h2></div>
+    <div class="panel"><ul id="decisions"><li class="empty">No decisions recorded yet.</li></ul></div>
+  </section>
+</div>
+
+<script>
+(function () {
+  var STATUSES = ['found', 'understood', 'rebuilt', 'verified', 'dropped'];
+  var GROUPS = [['must', 'Must'], ['should', 'Should'], ['later', 'Later'], ['dropped', 'Dropped']];
+  var KINDS = {selling: 's', app: 'a', feature: 'f', visual: 'v', content: 'c', text: 't'};
+  var BUG_STATES = ['open', 'item', 'fixed', 'wontfix'];
+  var state = {meta: {}, items: [], questions: [], bugs: [], decisions: []};
+  var db = null;
+  var canWrite = false;
+
+  function el(tag, attrs, children) {
+    var node = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) {
+      if (k === 'text') node.textContent = attrs[k];
+      else if (k === 'class') node.className = attrs[k];
+      else if (attrs[k] !== undefined && attrs[k] !== null) node.setAttribute(k, attrs[k]);
+    });
+    (children || []).forEach(function (c) { if (c) node.appendChild(c); });
+    return node;
+  }
+
+  // Plain text with `code`, **bold**, paragraphs, and "- " bullets. Builds nodes, never HTML strings.
+  function inline(text, parent) {
+    String(text).split(/(`[^`]+`|\*\*[^*]+\*\*)/).forEach(function (part) {
+      if (!part) return;
+      if (part[0] === '`') parent.appendChild(el('code', {text: part.slice(1, -1)}));
+      else if (part.indexOf('**') === 0) parent.appendChild(el('b', {text: part.slice(2, -2)}));
+      else parent.appendChild(document.createTextNode(part));
+    });
+    return parent;
+  }
+  function rich(text) {
+    var box = el('div', {class: 'detail'});
+    var list = null;
+    String(text || '').split('\n').forEach(function (line) {
+      var bullet = line.match(/^\s*[-*]\s+(.*)$/);
+      if (bullet) {
+        if (!list) { list = el('ul'); box.appendChild(list); }
+        list.appendChild(inline(bullet[1], el('li')));
+      } else if (line.trim()) {
+        list = null;
+        box.appendChild(inline(line, el('p')));
+      } else list = null;
+    });
+    return box;
+  }
+
+  function color(name) { return 'var(--' + name + ')'; }
+  function byRank(a, b) { return (a.rank || 0) - (b.rank || 0) || String(a.id).localeCompare(String(b.id)); }
+
+  async function write(path, data) {
+    if (!db || !canWrite) return;
+    try { await db.doc(path).update(data); }
+    catch (e) {
+      if (e && e.code === 'invalid_argument') { canWrite = false; render(); }
+      else showNotice('That change did not save. Check your connection and try again.');
+    }
+  }
+  function showNotice(text) { var n = document.getElementById('notice'); n.textContent = text; n.hidden = false; }
+
+  function statusControl(item) {
+    if (!canWrite) return el('span', {class: 'pill', style: 'color:' + color(item.status || 'found'), text: item.status || 'found'});
+    var s = el('select', {id: 'status-' + item.id, 'aria-label': 'Status of ' + item.id});
+    STATUSES.forEach(function (v) { var o = el('option', {value: v, text: v}); if ((item.status || 'found') === v) o.selected = true; s.appendChild(o); });
+    s.style.color = color(item.status || 'found');
+    s.addEventListener('change', function () {
+      var patch = {status: s.value};
+      if (s.value === 'dropped') patch.section = 'dropped';
+      write('items/' + item.id, patch);
+    });
+    return s;
+  }
+  function sectionControl(item) {
+    var s = el('select', {id: 'section-' + item.id, 'aria-label': 'Priority of ' + item.id});
+    GROUPS.forEach(function (g) { var o = el('option', {value: g[0], text: g[1]}); if ((item.section || 'later') === g[0]) o.selected = true; s.appendChild(o); });
+    s.addEventListener('change', function () { write('items/' + item.id, {section: s.value}); });
+    return s;
+  }
+  function moveButton(item, list, dir, label) {
+    var b = el('button', {class: 'icon-btn', type: 'button', 'aria-label': label + ' ' + item.id, title: label, text: dir < 0 ? '↑' : '↓'});
+    b.addEventListener('click', async function () {
+      var i = list.indexOf(item), j = i + dir;
+      if (j < 0 || j >= list.length) return;
+      var other = list[j];
+      var a = item.rank || i + 1, c = other.rank || j + 1;
+      if (a === c) c = a + dir;
+      await write('items/' + item.id, {rank: c});
+      await write('items/' + other.id, {rank: a});
+    });
+    return b;
+  }
+
+  function renderItem(item, list) {
+    var kind = KINDS[item.kind] || 't';
+    var head = el('div', {class: 'row'}, [
+      el('span', {class: 'id', style: 'color:' + color('k-' + kind), text: item.id}),
+      el('span', {class: 'title', text: item.title || 'Unnamed item'}),
+      statusControl(item),
+    ]);
+    var body = el('div', {class: 'body'}, [head]);
+    if (item.why) body.appendChild(inline(item.why, el('div', {class: 'why'})));
+
+    var more = el('details', {id: 'details-' + item.id});
+    more.appendChild(el('summary', {text: 'Details'}));
+    var facts = el('dl', {class: 'facts'});
+    [['Kind', item.kind], ['Source', item.source], ['Layer', item.layer], ['Preview theme', item.preview], ['Still unverified', item.unverified]]
+      .forEach(function (f) { if (f[1]) { facts.appendChild(el('dt', {text: f[0]})); facts.appendChild(el('dd', {text: f[1]})); } });
+    if (item.pr) {
+      facts.appendChild(el('dt', {text: 'Pull request'}));
+      var dd = el('dd'); dd.appendChild(el('a', {href: item.pr, target: '_blank', rel: 'noopener', text: item.pr.replace(/^https:\/\/github\.com\//, '')}));
+      facts.appendChild(dd);
+    }
+    if (facts.childNodes.length) more.appendChild(facts);
+    if (item.files && item.files.length) {
+      var files = el('div', {class: 'files'});
+      item.files.forEach(function (f) { files.appendChild(el('code', {text: f})); });
+      more.appendChild(files);
+    }
+    if (item.detail) more.appendChild(rich(item.detail));
+    if (item.notes) more.appendChild(rich(item.notes));
+    body.appendChild(more);
+
+    if (canWrite) body.appendChild(el('div', {class: 'controls'}, [
+      moveButton(item, list, -1, 'Move up'), moveButton(item, list, 1, 'Move down'), sectionControl(item),
+    ]));
+
+    var li = el('li', {class: 'item', 'data-status': item.status || 'found'}, [el('span', {class: 'kind', style: 'background:' + color('k-' + kind)}), body]);
+    return li;
+  }
+
+  function renderStrip() {
+    var items = state.items;
+    var strip = document.getElementById('strip');
+    strip.hidden = !items.length;
+    var bar = document.getElementById('bar'), legend = document.getElementById('legend');
+    bar.textContent = ''; legend.textContent = '';
+    STATUSES.forEach(function (s) {
+      var n = items.filter(function (i) { return (i.status || 'found') === s; }).length;
+      if (!n) return;
+      bar.appendChild(el('i', {style: 'width:' + (100 * n / items.length) + '%;background:' + color(s), title: n + ' ' + s}));
+      var entry = el('span', null, [el('span', {class: 'dot', style: 'background:' + color(s)}), el('b', {text: String(n)})]);
+      entry.appendChild(document.createTextNode(' ' + s));
+      legend.appendChild(entry);
+    });
+  }
+
+  function renderGroups() {
+    var root = document.getElementById('groups');
+    root.textContent = '';
+    GROUPS.forEach(function (g) {
+      var list = state.items.filter(function (i) { return (i.section || 'later') === g[0]; }).sort(byRank);
+      if (!list.length) return;
+      var ol = el('ol', {class: 'items'});
+      list.forEach(function (item) { ol.appendChild(renderItem(item, list)); });
+      root.appendChild(el('section', null, [
+        el('div', {class: 'group-head'}, [el('h2', {text: g[1]}), el('span', {class: 'count', text: list.length + (list.length === 1 ? ' item' : ' items')})]),
+        ol,
+      ]));
+    });
+  }
+
+  function renderQuestions() {
+    var ol = document.getElementById('questions');
+    ol.textContent = '';
+    var open = state.questions.filter(function (q) { return q.status !== 'answered'; }).length;
+    document.getElementById('q-count').textContent = state.questions.length ? open + ' open' : '';
+    if (!state.questions.length) { ol.appendChild(el('li', {class: 'empty', text: 'No questions yet.'})); return; }
+    state.questions.slice().sort(byRank).forEach(function (q) {
+      var li = el('li');
+      li.appendChild(inline(q.text || '', el('div', {class: 'title'})));
+      if (q.why) li.appendChild(inline(q.why, el('div', {class: 'why'})));
+      if (q.item) li.appendChild(el('div', {class: 'small', text: 'For ' + q.item}));
+      if (canWrite) {
+        var ta = el('textarea', {id: 'answer-' + q.id, 'aria-label': 'Answer'});
+        ta.value = q.answer || '';
+        var save = el('button', {class: 'save', type: 'button', text: q.status === 'answered' ? 'Update answer' : 'Save answer'});
+        save.addEventListener('click', async function () {
+          save.disabled = true;
+          await write('questions/' + q.id, {answer: ta.value, status: ta.value.trim() ? 'answered' : 'open'});
+          save.disabled = false;
+        });
+        li.appendChild(ta); li.appendChild(save);
+      } else if (q.answer) li.appendChild(rich(q.answer));
+      if (q.status === 'answered') li.appendChild(el('span', {class: 'answered', text: 'Answered'}));
+      ol.appendChild(li);
+    });
+  }
+
+  function renderBugs() {
+    var ul = document.getElementById('bugs');
+    ul.textContent = '';
+    var open = state.bugs.filter(function (b) { return (b.status || 'open') === 'open'; }).length;
+    document.getElementById('b-count').textContent = state.bugs.length ? open + ' open' : '';
+    if (!state.bugs.length) { ul.appendChild(el('li', {class: 'empty', text: 'No bugs recorded yet.'})); return; }
+    state.bugs.slice().sort(byRank).forEach(function (b) {
+      var row = el('div', {class: 'row'});
+      row.appendChild(inline(b.text || '', el('div', {class: 'title'})));
+      if (canWrite) {
+        var s = el('select', {id: 'bug-' + b.id, 'aria-label': 'Bug status'});
+        BUG_STATES.forEach(function (v) { var o = el('option', {value: v, text: v === 'item' ? 'made an item' : v === 'wontfix' ? "won't fix" : v}); if ((b.status || 'open') === v) o.selected = true; s.appendChild(o); });
+        s.addEventListener('change', function () { write('bugs/' + b.id, {status: s.value}); });
+        row.appendChild(s);
+      } else row.appendChild(el('span', {class: 'pill', text: b.status || 'open'}));
+      var li = el('li', null, [row]);
+      if (b.file) li.appendChild(el('code', {class: 'small', text: b.file}));
+      ul.appendChild(li);
+    });
+  }
+
+  function renderDecisions() {
+    var ul = document.getElementById('decisions');
+    ul.textContent = '';
+    if (!state.decisions.length) { ul.appendChild(el('li', {class: 'empty', text: 'No decisions recorded yet.'})); return; }
+    state.decisions.slice().sort(function (a, b) { return String(a.date || '').localeCompare(String(b.date || '')) || byRank(a, b); }).forEach(function (d) {
+      var li = el('li');
+      li.appendChild(inline(d.text || '', el('div')));
+      var by = [d.date, d.by].filter(Boolean).join(', ');
+      if (by) li.appendChild(el('span', {class: 'small', text: by}));
+      ul.appendChild(li);
+    });
+  }
+
+  function renderMeta() {
+    var m = state.meta;
+    if (m.store) { document.getElementById('title').textContent = 'Splice: ' + m.store; document.title = 'Splice: ' + m.store; }
+    var meta = document.getElementById('meta');
+    meta.textContent = '';
+    [['Changed theme', m.changedTheme], ['Target', m.target], ['Repository', m.repo], ['Mode', m.mode], ['Base branch', m.base], ['Release', m.release], ['Updated', m.updated]]
+      .forEach(function (f) { if (f[1]) { var s = el('span'); s.appendChild(document.createTextNode(f[0] + ': ')); s.appendChild(el('b', {text: f[1]})); meta.appendChild(s); } });
+  }
+
+  function render() {
+    renderMeta(); renderStrip(); renderGroups(); renderQuestions(); renderBugs(); renderDecisions();
+    var n = document.getElementById('notice');
+    if (state.items.length) n.hidden = true;
+    else if (db) { n.textContent = 'No items yet. The agent adds them after the audit.'; n.hidden = false; }
+  }
+
+  function listen(name) {
+    db.collection(name).onSnapshot(function (snap) {
+      state[name] = snap.docs.map(function (d) { var v = Object.assign({}, d.data()); v.id = d.id; return v; });
+      render();
+    }, function () { showNotice('The list stopped updating. Reload the page to reconnect.'); });
+  }
+
+  async function start() {
+    if (!window.claude || !window.claude.use) { showNotice('Open this page in Claude to see the list.'); return; }
+    var user = await window.claude.use('user');
+    db = await window.claude.use('db');
+    if (!db) { showNotice('The list could not load here. Open it in Claude while signed in.'); return; }
+    var may = user ? await user.can('data.write') : null;
+    canWrite = may !== false;
+    db.doc('splice/meta').onSnapshot(function (d) { state.meta = d.exists ? d.data() : {}; render(); },
+      function () { showNotice('The list stopped updating. Reload the page to reconnect.'); });
+    ['items', 'questions', 'bugs', 'decisions'].forEach(listen);
+  }
+  start();
+})();
+</script>

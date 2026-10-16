@@ -1,0 +1,46 @@
+{% doc %}
+  - Prints the free shipping limit and its conversion state
+
+  Prints "<limit>,convert" or "<limit>,exact". Capture the output, then split on the comma.
+  A market metafield replaces s.free_shipping_limit and converts only when
+  s.enable_shipping_limit_conversion is on for the market context. The s.free_shipping_limit
+  fallback always converts. Liquid has no exchange rate, so a limit marked convert is right
+  only after x-shipping-progress multiplies it in the browser.
+
+  @param {object} [s] - settings object
+
+  @example
+  {% capture free_shipping %}{% render 'cart-free-shipping-limit', s: section.settings %}{% endcapture %}
+  {% assign free_shipping = free_shipping | strip | split: ',' %}
+{% enddoc %}
+
+{%- liquid
+  assign market_limit = ''
+  if settings.metafield_free_shipping_limit != blank
+    assign limit_namespace = settings.metafield_free_shipping_limit | split: '.' | first
+    assign limit_key = settings.metafield_free_shipping_limit | split: '.' | last
+    assign market_limit = localization.market.metafields[limit_namespace][limit_key].value
+  endif
+
+  if market_limit != blank
+    # The checkbox says whether this market's value uses the store currency or its own
+    assign limit = market_limit | plus: 0 | round
+    assign needs_conversion = s.enable_shipping_limit_conversion
+  else
+    assign limit = s.free_shipping_limit | remove: ' ' | remove: ',' | remove: '.' | plus: 0
+    assign needs_conversion = true
+  endif
+
+  # The rate is 1 when the buyer already pays in the store currency
+  if cart.currency.iso_code == shop.currency
+    assign needs_conversion = false
+  endif
+
+  assign state = 'exact'
+  if needs_conversion
+    assign state = 'convert'
+  endif
+
+  assign output = limit | append: ',' | append: state
+  echo output
+-%}

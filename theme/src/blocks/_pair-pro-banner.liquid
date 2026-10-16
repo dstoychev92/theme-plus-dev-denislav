@@ -1,0 +1,342 @@
+<!-- blocks/_pair-pro-banner.liquid -->
+
+{% liquid
+  # Can't do parallax if height is set to content
+  if block.settings.set_height and block.settings.height == 'image'
+    assign parallax = false
+  endif
+%}
+
+{% capture attributes %}
+  {{ block.shopify_attributes }}
+{% endcapture %}
+
+{% capture content %}
+  {% content_for 'block', id: 'content', type: '_content' %}
+{% endcapture %}
+
+{% capture background %}
+  {% content_for 'blocks' %}
+{% endcapture %}
+
+{% capture content %}
+  {% render 'core-banner',
+    id: block.id,
+    s: block.settings,
+    set_height: false,
+    set_height_mobile: true,
+    parallax: parallax,
+    content_class: 'pair-padding entrance-container',
+    content: content,
+    background: background
+  %}
+{% endcapture %}
+
+{% render 'pair-column',
+  s: block.settings,
+  content: content,
+  attributes: attributes,
+  class: 'pair-media',
+  is_media_block: true
+%}
+
+{% schema %}
+{
+	"name": "Banner layers",
+	"tag": null,
+	"settings": [
+		{
+			"type": "color_scheme",
+			"id": "color_scheme",
+			"label": "Color scheme",
+			"default": "scheme-opposite"
+		},
+		{
+			"type": "header",
+			"content": "Border"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_border",
+			"label": "Set border",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "border_width",
+			"label": "Thickness",
+			"unit": "px",
+			"min": 0,
+			"max": 10,
+			"step": 1,
+			"default": 1,
+			"visible_if": "{{ block.settings.set_border }}"
+		},
+		{
+			"type": "color",
+			"id": "border_color",
+			"label": "Color",
+			"alpha": true,
+			"default": "#000000",
+			"visible_if": "{{ block.settings.set_border }}"
+		},
+		{
+			"type": "header",
+			"content": "Rounding"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_rounding",
+			"label": "Set rounding",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "rounding_radius",
+			"label": "Radius",
+			"default": "lg",
+			"options": [
+				{
+					"value": "none",
+					"label": "0"
+				},
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			],
+			"visible_if": "{{ block.settings.set_rounding  }}"
+		},
+		{
+			"type": "range",
+			"id": "rounding_radius_custom",
+			"label": "Radius",
+			"unit": "px",
+			"min": 0,
+			"max": 50,
+			"step": 1,
+			"default": 20,
+			"visible_if": "{{ block.settings.set_rounding and block.settings.rounding_radius == 'custom'  }}"
+		},
+		{
+			"type": "header",
+			"content": "Height"
+		},
+		{
+			"type": "select",
+			"id": "height",
+			"label": "Desktop height",
+			"default": "screen-one-half",
+			"visible_if": "{{ section.settings.height_mode == 'column' }}",
+			"options": [
+				{
+					"value": "screen",
+					"label": "Full screen height"
+				},
+				{
+					"value": "screen-five-sixths",
+					"label": "Five sixths screen"
+				},
+				{
+					"value": "screen-three-quarters",
+					"label": "Three quarters screen"
+				},
+				{
+					"value": "screen-one-half",
+					"label": "One half screen"
+				},
+				{
+					"value": "screen-one-third",
+					"label": "One third screen"
+				},
+				{
+					"value": "screen-one-quarter",
+					"label": "One quarter screen"
+				},
+				{
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "custom_height_type",
+			"label": "Height type",
+			"default": "percentage",
+			"options": [
+				{
+					"value": "percentage",
+					"label": "%"
+				},
+				{
+					"value": "px",
+					"label": "px"
+				}
+			],
+			"visible_if": "{{ section.settings.height_mode == 'column' and block.settings.height == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "custom_height_percentage",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"unit": "%",
+			"label": "Custom height",
+			"default": 33,
+			"visible_if": "{{ section.settings.height_mode == 'column' and block.settings.height == 'custom' and block.settings.custom_height_type == 'percentage' }}",
+			"info": "Percentage of screen height"
+		},
+		{
+			"type": "range",
+			"id": "custom_height_px",
+			"min": 0,
+			"max": 1000,
+			"step": 50,
+			"unit": "px",
+			"label": "Custom height",
+			"default": 350,
+			"visible_if": "{{ section.settings.height_mode == 'column' and block.settings.height == 'custom' and block.settings.custom_height_type == 'px' }}"
+		},
+		{
+			"visible_if": "{{ section.settings.height_mode != 'column' }}",
+			"type": "paragraph",
+			"content": "Desktop height setting isn't available when the height is set by the section."
+		},
+		{
+			"type": "select",
+			"id": "height_mobile",
+			"label": "Mobile height",
+			"default": "screen-one-half",
+			"options": [
+				{
+					"value": "screen",
+					"label": "Full screen height"
+				},
+				{
+					"value": "screen-five-sixths",
+					"label": "Five sixths screen"
+				},
+				{
+					"value": "screen-three-quarters",
+					"label": "Three quarters screen"
+				},
+				{
+					"value": "screen-one-half",
+					"label": "One half screen"
+				},
+				{
+					"value": "screen-one-third",
+					"label": "One third screen"
+				},
+				{
+					"value": "screen-one-quarter",
+					"label": "One quarter screen"
+				},
+				{
+					"value": "custom",
+					"label": "Custom"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "custom_height_type_mobile",
+			"label": "Mobile height type",
+			"default": "percentage",
+			"options": [
+				{
+					"value": "percentage",
+					"label": "%"
+				},
+				{
+					"value": "px",
+					"label": "px"
+				}
+			],
+			"visible_if": "{{ block.settings.height_mobile == 'custom' }}"
+		},
+		{
+			"type": "range",
+			"id": "custom_height_percentage_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"unit": "%",
+			"label": "Mobile custom height",
+			"default": 33,
+			"visible_if": "{{ block.settings.height_mobile == 'custom' and block.settings.custom_height_type_mobile == 'percentage' }}"
+		},
+		{
+			"type": "range",
+			"id": "custom_height_px_mobile",
+			"min": 0,
+			"max": 1000,
+			"step": 50,
+			"unit": "px",
+			"label": "Mobile custom height",
+			"default": 350,
+			"visible_if": "{{ block.settings.height_mobile == 'custom' and block.settings.custom_height_type_mobile == 'px' }}"
+		},
+	],
+	"blocks": [
+		{
+			"type": "_content"
+		},
+		{
+			"type": "_background"
+		}
+	],
+	"presets": [
+		{
+			"name": "Banner layers",
+			"category": "Media",
+			"blocks": [
+				{
+					"type": "_content",
+					"id": "content",
+					"static": true,
+					"settings": {
+						"vertical_placement": "middle",
+						"horizontal_placement": "center"
+					},
+					"blocks": [
+						{
+							"type": "theme-button",
+							"settings": {
+								"text": "View products",
+								"href": "shopify://collections/all",
+								"open_in_new_window": false,
+								"appearance": "solid",
+								"sizing": "md",
+								"color": "content"
+							}
+						}
+					]
+				},
+				{
+					"type": "_background",
+					"blocks": [
+						{
+							"type": "_background-image"
+						}
+					]
+				}
+			]
+		}
+	]
+}
+{% endschema %}

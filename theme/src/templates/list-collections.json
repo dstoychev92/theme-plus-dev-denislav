@@ -1,0 +1,64 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "list_collections_WOwg0N_anlgv0p0": {
+      "type": "list-collections",
+      "blocks": {
+        "section-title": {
+          "type": "_section-title",
+          "static": true,
+          "settings": {
+            "text": "All Collections",
+            "type_preset": "h2",
+            "type_resize": "md",
+            "type_font": "heading",
+            "type_size": 8,
+            "type_uppercase": false,
+            "set_color": false,
+            "color": "content",
+            "color_custom": "#000000",
+            "set_spacing": false,
+            "buffer_bottom": 0,
+            "gap": "sm",
+            "gap_custom": 0,
+            "set_heading_tag": false,
+            "heading_tag": "h2"
+          },
+          "blocks": {}
+        },
+        "collection-card": {
+          "type": "_card-collection",
+          "static": true,
+          "settings": {
+            "collection": "{{ closest.collection }}"
+          },
+          "blocks": {}
+        }
+      },
+      "settings": {
+        "columns_lg": 4,
+        "columns_md": 3,
+        "columns_sm": "2",
+        "limit": 24,
+        "title_placement": "center",
+        "content_width": "page",
+        "content_width_custom": 65,
+        "content_width_custom_mobile": 100,
+        "set_rhythm": false,
+        "section_padding_top": 40,
+        "section_padding_bottom": 40
+      }
+    }
+  },
+  "order": [
+    "list_collections_WOwg0N_anlgv0p0"
+  ]
+}

@@ -1,0 +1,111 @@
+<!-- blocks/theme-social-links.liquid -->
+
+{% capture style %}
+  {% render 'props-style-gap', s: block.settings %}
+{% endcapture %}
+
+{% capture class %}
+  justify-content-align entrance-item entrance-standard
+{% endcapture %}
+
+{% render 'social-icons',
+  size: block.settings.sizing,
+  custom_width: block.settings.icon_width_custom,
+  gap_class: 'gap-layout',
+  style: style,
+  class: class,
+  attributes: block.shopify_attributes
+%}
+
+{% schema %}
+{
+	"name": "Social links",
+	"tag": null,
+	"settings": [
+		{
+			"type": "paragraph",
+			"content": "Configure social icons in your global theme settings for [social links](/editor?context=theme&category=Social%20links)"
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "sizing",
+			"label": "Icon size",
+			"default": "md",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "icon_width_custom",
+			"label": "Custom width",
+			"unit": "px",
+			"min": 10,
+			"max": 60,
+			"step": 2,
+			"default": 20,
+			"visible_if": "{{ block.settings.sizing == 'custom' }}"
+		},
+		{
+			"type": "select",
+			"id": "gap",
+			"label": "Gap",
+			"default": "sm",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "gap_custom",
+			"label": "Custom gap",
+			"default": 0,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ block.settings.gap == 'custom'  }}"
+		},
+	],
+	"presets": [
+		{
+			"name": "Social links",
+			"category": "Content"
+		}
+	]
+}
+{% endschema %}

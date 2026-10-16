@@ -1,0 +1,51 @@
+{% doc %}
+  One segment of the "lines" pagination.
+
+  @param {boolean} [active] - marks this segment filled on the first paint, before Alpine takes over
+  @param {string} index - JavaScript expression for this segment's slide index: a literal number when the slides were counted in Liquid, or the `x-for` variable when the count only exists at runtime
+  @param {string} indicator_color - classes for the filled part of the segment
+  @param {string} indicator_track - classes for the segment's track
+  @param {string} [label] - accessible label, when the index is a literal number. Blank binds it from `index`
+{% enddoc %}
+<button
+  class="relative rounded-sm w-r9 h-r1 hit-area-y-r5"
+  @click="$slideshow.currentSlideIndex = {{ index }}"
+  {% if label == blank %}
+    :aria-label="{{ index }} + 1"
+    :key="{{ index }}"
+  {% else %}
+    aria-label="{{ label }}"
+  {% endif %}
+  x-data="
+    {
+      get wasLastSlide() {
+        return $slideshow.lastSlideIndex == {{ index }};
+      },
+      get isCurrentSlide() {
+        return $slideshow.currentSlideIndex == {{ index }};
+      },
+      get goingRight() {
+        return $slideshow.lastSlideIndex < $slideshow.currentSlideIndex;
+      },
+      get goingLeft() {
+        return $slideshow.lastSlideIndex > $slideshow.currentSlideIndex;
+      },
+    }
+  "
+>
+  {% comment %} Background {% endcomment %}
+  <span class="absolute top-0 left-0 block size-full {{ indicator_track }}"></span>
+  {% comment %} Active segment {% endcomment %}
+  <span
+    class="relative block h-full {{ indicator_color }} scale-x-0 transition-none{% if active %} !scale-x-100{% endif %}"
+    :class="
+      {
+        '!scale-x-100': isCurrentSlide,
+        'origin-right !transition !duration-200': wasLastSlide && goingRight,
+        'origin-left !transition !duration-200': wasLastSlide && goingLeft,
+        'origin-right !transition !scale-x-100 !duration-200': isCurrentSlide && goingLeft,
+        'origin-left !transition !scale-x-100 !duration-200': isCurrentSlide && goingRight,
+      }
+    "
+  ></span>
+</button>

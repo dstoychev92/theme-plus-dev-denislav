@@ -1,0 +1,53 @@
+{% doc %}
+  - Renders the megamenu panel for one header link
+
+  @param {string} [attributes]
+  @param {string} content
+  @param {number} [content_width] - content width, defaults to the section setting
+  @param {string} [menu_id] - id linking the panel to its trigger
+  @param {string} [menu_label] - accessible name for the panel
+  @param {section} [section]
+{% enddoc %}
+
+{% liquid
+  assign content_width = content_width | default: section.settings.content_width
+  assign megamenu_width = section.settings.megamenu_width
+
+  case section.settings.megamenu_padding
+    when 'xs'
+      assign megamenu_padding_class = 'p-r6'
+    when 'sm'
+      assign megamenu_padding_class = 'p-r8'
+    when 'lg'
+      assign megamenu_padding_class = 'p-r11'
+    when 'xl'
+      assign megamenu_padding_class = 'p-r12'
+    else
+      assign megamenu_padding_class = 'p-r10'
+  endcase
+%}
+
+<div
+  id="header-menu-popup-{{ menu_id }}"
+  role="region"
+  {% if menu_label %}
+    aria-label="{{ menu_label | escape_once }}"
+  {% endif %}
+  x-megamenu:content="{{ menu_id }}"
+  x-cloak
+  data-layout
+  class="
+    text-content relative z-[1]
+    {% if megamenu_width == 'page' %}
+      {{ megamenu_padding_class }}
+    {% else %}
+      grid py-[--r10] section-grid
+      vars-section-content-width-{{ content_width }}
+    {% endif %}
+  "
+  {{ attributes }}
+>
+  <div class="col-section-content row-section-content cq-width animate-in fade-in animate-duration-300">
+    {{ content }}
+  </div>
+</div>

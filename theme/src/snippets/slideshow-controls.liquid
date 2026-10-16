@@ -1,0 +1,203 @@
+{% doc %}
+  - Renders slideshow arrows and pagination
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {number} [initial_slide] - slide the show opens on
+  @param {string} [pagination_style] - pagination style
+  @param {object} [s] - settings object
+  @param {boolean} [set_pagination_style] - applies the pagination style setting
+  @param {boolean} [show_arrows] - defaults to s.show_arrows, then true. False hides each arrow until it has keyboard focus
+  @param {number} [total_slides] - number of slides
+{% enddoc %}
+
+{% liquid
+  assign icon_class = 'rtl:rotate-180'
+  assign set_pagination_style = set_pagination_style | default: s.set_pagination_style
+  assign show_arrows = show_arrows | default: s.show_arrows, allow_false: true | default: true, allow_false: true
+
+  # A section-level slideshow counts its slides in Liquid, so the pagination renders complete on the
+  # first paint and Alpine only takes over the active state. A slide nested in a pair block cannot see
+  # its siblings and passes total_slides: false — that pagination still fills in on startup, but the
+  # row keeps its height (h-row-sm) either way, so the slide content never moves.
+  assign slides_known = false
+  if total_slides != blank
+    assign slides_known = true
+    assign current_slide_index = initial_slide | default: 1 | minus: 1
+  endif
+
+  # Default to global setting, can be overridden by parameter or section settings
+  if settings.set_overlay_controls_style
+    assign overlay_controls_style = settings.overlay_controls_style
+  else
+    assign overlay_controls_style = 'bare'
+  endif
+  assign pagination_style = pagination_style | default: settings.carousel_pagination_style
+
+  # Section-level override if set_pagination_style is enabled
+  if set_pagination_style
+    assign overlay_controls_style = s.overlay_controls_style
+    assign pagination_style = s.pagination_style
+  endif
+
+  case pagination_style
+    when 'dots'
+      assign icon_size = 'xs'
+    when 'lines'
+      assign icon_size = 'xs'
+    when 'counter'
+      assign icon_size = 'md'
+  endcase
+
+  if overlay_controls_style == 'fill'
+    assign indicator_color = 'bg-canvas'
+    assign indicator_color_active = '!bg-canvas'
+    assign indicator_track = 'bg-canvas-mix-50 opacity-70'
+    assign indicator_separator = 'text-canvas/50'
+  else
+    assign indicator_color = 'bg-content'
+    assign indicator_color_active = '!bg-content'
+    assign indicator_track = 'bg-content-mix-50 opacity-70'
+    assign indicator_separator = 'text-content/70'
+  endif
+%}
+
+{% capture button_class %}
+  transition hover:opacity-50 relative vars-btn-md flex flex-center rounded-pill px-btn
+  touch:hidden
+  {% unless show_arrows %}
+    {% # Hide each arrow visually only, since keyboard and screen-reader users still need prev and next. Focus shows the arrow as an overlay at the pill edge, so the indicators do not move %}
+    [&:not(:focus-visible)]:sr-only
+    focus-visible:absolute first:focus-visible:end-full last:focus-visible:start-full
+  {% endunless %}
+  {% if overlay_controls_style == 'bare' %}
+    hit-area [--hit-area-top:var(--btn-padding)] [--hit-area-bottom:var(--btn-padding)]
+    first:ps-0 first:[--hit-area-left:var(--btn-padding)]
+    last:pe-0 last:[--hit-area-right:var(--btn-padding)]
+  {% else %}
+    h-btn
+  {% endif %}
+{% endcapture %}
+
+{% capture prev_button %}
+  <button
+    aria-label="{{ 'other.accessibility.prev_slide' | t }}"
+    class="{{ button_class }}"
+    x-slideshow:prev
+  >
+    {% render 'core-icon', icon: 'stroke-chevron-left', class: icon_class, size: icon_size %}
+  </button>
+{% endcapture %}
+
+{% capture next_button %}
+  <button
+    aria-label="{{ 'other.accessibility.next_slide' | t }}"
+    class="{{ button_class }}"
+    x-slideshow:next
+  >
+    {% render 'core-icon', icon: 'stroke-chevron-right', class: icon_class, size: icon_size %}
+  </button>
+{% endcapture %}
+
+<div
+  class="flex relative items-center h-row-sm pointer-events-auto scale-100 origin-center transition gap-x-r7 {{ class }}"
+  {% comment %} Disable custom cursor for this element {% endcomment %}
+  data-hide-custom-cursor
+  {% comment %} Prevent changing the slide when clicking on the controls {% endcomment %}
+  @click.stop
+  {{ attributes }}
+>
+  <div
+    class="
+      flex items-center gap-x-r3 relative z-10 touch:px-r6
+      {% unless show_arrows %}
+        {% # The arrow buttons normally supply the pill's end padding %}
+        px-r6
+      {% endunless %}
+      slider-control vars-btn-content vars-btn-{{ overlay_controls_style }}
+      {% if overlay_controls_style == 'bare' %}
+        bg-transparent
+      {% else %}
+        rounded-pill h-row-sm
+      {% endif %}
+
+      {% case pagination_style %}
+        {% when 'dots' %}
+        {% when 'lines' %}
+        {% when 'counter' %}
+          text-r2
+      {% endcase %}
+    "
+  >
+    {{ prev_button }}
+
+    {% case pagination_style %}
+      {% when 'lines' %}
+        {% if slides_known %}
+          {% for slide in (1..total_slides) %}
+            {% liquid
+              assign active = false
+              if forloop.index0 == current_slide_index
+                assign active = true
+              endif
+            %}
+            {% render 'slideshow-controls-line',
+              index: forloop.index0,
+              label: forloop.index,
+              active: active,
+              indicator_track: indicator_track,
+              indicator_color: indicator_color
+            %}
+          {% endfor %}
+        {% else %}
+          <template x-for="(_, index) in $slideshow.totalSlides" :key="index">
+            {% render 'slideshow-controls-line',
+              index: 'index',
+              indicator_track: indicator_track,
+              indicator_color: indicator_color
+            %}
+          </template>
+        {% endif %}
+      {% when 'dots' %}
+        {% if slides_known %}
+          {% for slide in (1..total_slides) %}
+            {% liquid
+              assign active = false
+              if forloop.index0 == current_slide_index
+                assign active = true
+              endif
+            %}
+            {% render 'slideshow-controls-dot',
+              index: forloop.index0,
+              active: active,
+              indicator_track: indicator_track,
+              indicator_color_active: indicator_color_active
+            %}
+          {% endfor %}
+        {% else %}
+          <template x-for="(_, index) in $slideshow.totalSlides">
+            {% render 'slideshow-controls-dot',
+              index: 'index',
+              indicator_track: indicator_track,
+              indicator_color_active: indicator_color_active
+            %}
+          </template>
+        {% endif %}
+      {% when 'counter' %}
+        {% comment %} Can hide this because the slides themselves are labelled as e.g. "1 of 2" {% endcomment %}
+        <div aria-hidden="true" class="flex items-baseline gap-x-r2">
+          <span class="font-family-body font-bold text-r2" x-text="$slideshow.currentSlideIndex + 1">
+            {{- initial_slide | default: 1 -}}
+          </span>
+          <span class="font-family-body italic {{ indicator_separator }}">
+            {{- 'product.gallery.index_indicator_separator' | t -}}
+          </span>
+          <span class="font-family-body font-bold text-r2" x-text="$slideshow.totalSlides">
+            {{- total_slides | default: '…' -}}
+          </span>
+        </div>
+    {% endcase %}
+
+    {{ next_button }}
+  </div>
+</div>

@@ -1,0 +1,261 @@
+{% doc %}
+  - Renders shipping estimate form and its result
+
+  @param {boolean} [accordion] - wraps the form in an accordion
+  @param {string} [attributes]
+  @param {block} [block]
+  @param {string} [class] - The classes
+  @param {string} [id]
+  @param {number} [index] - position among the cart blocks
+{% enddoc %}
+
+{% liquid
+  assign index = index | default: 0
+  assign label = 'cart.shipping.estimate_shipping' | t
+  assign id = id | default: 'shipping'
+  assign accordion = accordion | default: block.settings.accordion | default: false
+%}
+
+{% assign country_label = 'cart.shipping.country' | t %}
+{% assign country_id = id | append: '-estimate_address_country' %}
+{% capture country_options %}
+{% comment %} Placeholder {% endcomment %}
+  <option value="" disabled selected>{{ 'cart.shipping.country' | t }}</option>
+  {{ all_country_option_tags }}
+{% endcapture %}
+{% capture country_attributes %}
+  autocomplete="country"
+  x-model="country"
+  x-ref="country"
+  :class="{ 'text-muted': country == '' }"
+{% endcapture %}
+{% capture country_wrapper_attributes %}
+  :class="{ 'vars-scheme-error': $asyncForm.parsedBody?.country }"
+{% endcapture %}
+{% capture country_error_message_attributes %}
+  x-show="$asyncForm.parsedBody?.country"
+  x-cloak
+{% endcapture %}
+{% comment %} The API message has no field name ("can't be blank"), so prefix the translated label {% endcomment %}
+{% capture country_error_message %}
+  {{ country_label }} <span x-text="[$asyncForm.parsedBody?.country ?? []].flat().join(', ')"></span>
+{% endcapture %}
+
+{% assign province_label = 'cart.shipping.province' | t %}
+{% assign province_id = id | append: '-estimate_address_province' %}
+{% capture province_options %}
+  <option value="" disabled selected>{{ 'cart.shipping.province' | t }}</option>
+  {% comment %} Province data is read from the selected country's dataset and templated into the select options {% endcomment %}
+  <template x-for="province in provinces" :key="province[0]">
+    <option :value="province[0]" x-text="province[1]" :selected="province[0] === selectedProvince"></option>
+  </template>
+{% endcapture %}
+{% capture province_attributes %}
+  x-model="selectedProvince"
+  :class="{ 'text-muted': selectedProvince == '' }"
+{% endcapture %}
+{% capture province_wrapper_attributes %}
+  x-cloak
+  x-show="provinces.length > 0"
+{% endcapture %}
+
+{% assign zip_label = 'cart.shipping.zip' | t %}
+{% assign zip_id = id | append: '-estimate_address_zip' %}
+{% capture zip_attributes %}
+  x-model="selectedZip"
+  autocapitalize="characters"
+{% endcapture %}
+{% capture zip_wrapper_attributes %}
+  :class="{ 'vars-scheme-error': $asyncForm.parsedBody?.zip }"
+{% endcapture %}
+{% capture zip_error_message_attributes %}
+  x-show="$asyncForm.parsedBody?.zip"
+  x-cloak
+{% endcapture %}
+{% capture zip_error_message %}
+  {{ zip_label }} <span x-text="[$asyncForm.parsedBody?.zip ?? []].flat().join(', ')"></span>
+{% endcapture %}
+
+{% capture button_attributes %}
+  :class="{ 'opacity-50 cursor-not-allowed': $asyncForm.state == 'pending' }"
+{% endcapture %}
+
+{% comment %} Content {% endcomment %}
+{% capture content %}
+  <div
+    {% comment %}
+      Alpine.js component to handle dynamic address form updates for country and province. It initializes with Liquid country and province data,
+      updates the province list when the selected country changes, and parses province data from the selected country's dataset.
+    {% endcomment %}
+    {% # Shopify sends an apostrophe in "Cote D'ivoire" and "L'Aquila", which ends the JS string %}
+    {% # That same apostrophe is not valid in a CSS attribute selector, so updateProvinces compares option.value %}
+    data-country="{{ customer.default_address.country | escape_once }}"
+    data-province="{{ customer.default_address.province | escape_once }}"
+    data-zip="{{ customer.default_address.zip | escape_once }}"
+    x-data="
+      {
+        provinces: [],
+        country: $el.dataset.country,
+        selectedProvince: $el.dataset.province,
+        selectedZip: $el.dataset.zip,
+        init() {
+          this.updateProvinces();
+          $watch('country', () => this.updateProvinces());
+        },
+        updateProvinces() {
+          const selectedCountry = [...($refs.country?.options ?? [])].find((option) => option.value === this.country);
+          this.provinces = selectedCountry ? this.getProvinceJSON(selectedCountry) : [];
+
+          this.selectedProvince = this.provinces.length ? this.provinces[0][0] : '';
+        },
+        getProvinceJSON(selectedCountry) {
+          return selectedCountry.dataset && selectedCountry.dataset.provinces ? JSON.parse(selectedCountry.dataset.provinces) : [];
+        },
+      }
+    "
+  >
+    {% comment %} Form errors {% endcomment %}
+    <div class="flex flex-col" role="alert" x-show="$asyncForm.state == 'error'" x-cloak>
+      {% comment %} General failures have no useful body, so show a translated message {% endcomment %}
+      <span
+        class="block pb-r4 text-r2 text-content vars-scheme-error"
+        x-show="$asyncForm.response?.status != 422"
+      >
+        {{- 'cart.shipping.estimate_error' | t -}}
+      </span>
+
+      {% comment %} Show shopify 422 errors {% endcomment %}
+      <span
+        class="block pb-r4 text-r2 text-content vars-scheme-error"
+        x-show="$asyncForm.response?.status == 422 && $asyncForm.parsedBody?.error"
+        x-text="[$asyncForm.parsedBody?.error ?? []].flat().join(', ')"
+      ></span>
+    </div>
+
+    <form
+      action="{{ shop.url | append: routes.cart_url }}/shipping_rates.json"
+      class="flex flex-col gap-y-r6"
+      method="GET"
+      x-async-form:form
+    >
+      {% comment %} Country {% endcomment %}
+      {% render 'field-select',
+        size: 'md',
+        id: country_id,
+        name: 'shipping_address[country]',
+        value: customer.default_address.country,
+        label: country_label,
+        options: country_options,
+        attributes: country_attributes,
+        wrapper_attributes: country_wrapper_attributes,
+        error_message: country_error_message,
+        error_message_attributes: country_error_message_attributes
+      %}
+
+      {% comment %} Province {% endcomment %}
+      {% render 'field-select',
+        size: 'md',
+        id: province_id,
+        name: 'shipping_address[province]',
+        value: customer.default_address.province,
+        label: province_label,
+        options: province_options,
+        attributes: province_attributes,
+        wrapper_attributes: province_wrapper_attributes
+      %}
+
+      {% comment %} Postal Code {% endcomment %}
+      {% render 'field-input',
+        size: 'md',
+        id: zip_id,
+        name: 'shipping_address[zip]',
+        value: customer.default_address.zip,
+        placeholder: zip_label,
+        label: zip_label,
+        input_attributes: zip_attributes,
+        wrapper_attributes: zip_wrapper_attributes,
+        error_message: zip_error_message,
+        error_message_attributes: zip_error_message_attributes
+      %}
+
+      {% comment %} Results {% endcomment %}
+      <template x-if="$asyncForm.parsedBody?.shipping_rates?.length">
+        <table
+          aria-live="polite"
+          class="block px-r3 py-r4 border border-line type-p type-resize-all-sm rounded-sm"
+        >
+          <template x-for="rate in $asyncForm.parsedBody?.shipping_rates">
+            <tr>
+              <td class="px-r3 py-r2 font-bold" x-text="rate.name + ':'"></td>
+              <td class="px-r3 py-r2" x-text="rate.price + ' ' + rate.currency"></td>
+            </tr>
+          </template>
+        </table>
+      </template>
+
+      {% render 'core-button',
+        s: block.settings,
+        label: label,
+        tag: 'button',
+        type: 'submit',
+        class: 'w-full',
+        attributes: button_attributes,
+      %}
+    </form>
+  </div>
+{% endcapture %}
+
+{% if accordion %}
+  <div
+    class="{{ class }}"
+    x-disclosure
+    {% comment %} Scrolls to the bottom of the drawer when either of the accordions gets opened {% endcomment %}
+    x-effect="
+      if ($disclosure.isExpanded) {
+        await $disclosure.waitForAnimations()
+        setTimeout(() => {
+          $el.scrollIntoView({ block: 'end', behavior: 'smooth' });
+        }, 250);
+      }
+    "
+    {% if request.design_mode %}
+      @shopify:block:select="$disclosure.expand()"
+    {% endif %}
+    {{ attributes }}
+  >
+    <button
+      type="button"
+      x-disclosure:button
+      aria-label="{{ label }}"
+      class="relative p-[--drawer-padding] w-full cursor-pointer flex-row-center justify-between gap-r5 text-r4"
+    >
+      {{ label }}
+
+      {% render 'core-icon', icon: 'stroke-bare-plus', attributes: 'x-show="!$disclosure.isExpanded"' %}
+      {% render 'core-icon', icon: 'stroke-bare-minus', attributes: 'x-show="$disclosure.isExpanded"' %}
+    </button>
+
+    <div
+      x-collapse.duration.400ms
+      class="!ease-in-out nojs:!block"
+      x-disclosure:panel
+      x-cloak
+      x-async-form:context.json
+    >
+      <div class="px-[--drawer-padding] pb-[--drawer-padding] pt-r3">
+        {{ content }}
+      </div>
+    </div>
+  </div>
+{% else %}
+  <div class="{{ class }}" {{ attributes }}>
+    <p class="pb-r8 flex-row-center gap-r5 text-r4">
+      {% render 'core-icon', icon: 'fill-globe' %}
+      {{ label }}
+    </p>
+
+    <div x-async-form:context>
+      {{ content }}
+    </div>
+  </div>
+{% endif %}

@@ -1,0 +1,184 @@
+{% doc %}
+  - Renders the import map and the theme script tags
+
+  The import map has to come before every other script import or none of them resolve.
+{% enddoc %}
+
+<!-- Import maps -->
+{% comment %} Note: this must always go above other script imports or it will not work {% endcomment %}
+<script type="importmap">
+  {
+    "imports": {
+      "photoswipe": "{{ 'vendor.photoswipe.js' | asset_url }}",
+      "photoswipe-video-plugin": "{{ 'vendor.photoswipe.video.js' | asset_url }}",
+      "photoswipe/lightbox": "{{ 'vendor.photoswipe.lightbox.js' | asset_url }}",
+      "tabbable": "{{ 'vendor.tabbable.js' | asset_url }}",
+      "motion": "{{ 'vendor.motion.js' | asset_url }}",
+      "motion-plus/animate-layout": "{{ 'vendor.motion-plus.animate-layout.js' | asset_url }}",
+      "alpinejs": "{{ 'vendor.alpinejs.js' | asset_url }}",
+      "@theme/utils": "{{ 'theme.utils.js' | asset_url }}",
+      "@theme/recent": "{{ 'theme.recent.js' | asset_url }}",
+      "@theme/section-related": "{{ 'theme.section-related.js' | asset_url }}",
+      "@theme/megamenu": "{{ 'theme.megamenu.js' | asset_url }}",
+      "@theme/slider-reveal": "{{ 'theme.slider-reveal.js' | asset_url }}",
+      "@theme/scroll-stagger": "{{ 'theme.scroll-stagger.js' | asset_url }}",
+      "@theme/marquee": "{{ 'theme.marquee.js' | asset_url }}",
+      "@theme/custom-cursor": "{{ 'theme.custom-cursor.js' | asset_url }}",
+      "@theme/shopify-media": "{{ 'theme.shopify-media.js' | asset_url }}",
+      "@theme/vimeo-video": "{{ 'theme.vimeo-video.js' | asset_url }}",
+      "@theme/youtube-video": "{{ 'theme.youtube-video.js' | asset_url }}",
+      "@floating-ui/dom": "{{ 'vendor.floating-ui.dom.js' | asset_url }}",
+      "popover-polyfill": "{{ 'vendor.popover-polyfill.js' | asset_url }}",
+      {% comment %} Shopify hosts this one; the repo only vendors its types {% endcomment %}
+      "@shopify/events": "https://cdn.shopify.com/storefront/standard-events.js"
+    }
+  }
+</script>
+
+<!-- Theme JS -->
+<script src="{{ 'theme.critical.js' | asset_url }}" type="module" fetchpriority="high"></script>
+<script src="{{ 'theme.events.js' | asset_url }}" type="module"></script>
+<script src="{{ 'theme.main.js' | asset_url }}" type="module"></script>
+
+<link
+  rel="modulepreload"
+  href="{{ 'vendor.alpinejs.js' | asset_url }}"
+  fetchpriority="low"
+>
+<link
+  rel="modulepreload"
+  href="https://cdn.shopify.com/storefront/standard-events.js"
+  fetchpriority="low"
+>
+<link
+  rel="modulepreload"
+  href="{{ 'vendor.motion.js' | asset_url }}"
+  fetchpriority="low"
+>
+<link
+  rel="modulepreload"
+  href="{{ 'vendor.alpinejs.js' | asset_url }}"
+  fetchpriority="low"
+>
+
+{% if request.design_mode %}
+  <script src="{{ 'theme.editor.js' | asset_url }}" type="module" fetchpriority="low"></script>
+{% endif %}
+
+{% if request.page_type == 'product' %}
+  <script src="{{ 'theme.product.js' | asset_url }}" type="module" fetchpriority="low"></script>
+
+  {% if product.metafields.seo.hidden != true %}
+    <script type="module">
+      import { recordProductView } from '@theme/recent';
+      recordProductView({{ product.id | json }});
+
+      document.addEventListener('theme:sibling:change', ($event) => {
+        const sourceSection = $event.target instanceof Element ? $event.target.closest('.shopify-section') : null;
+
+        if (sourceSection?.classList.contains('main-product')) {
+          recordProductView($event.detail.siblingId);
+        }
+      });
+    </script>
+  {% endif %}
+{% endif %}
+{%- comment -%}
+  In order to use your custom events file at assets/custom.events.js uncomment the line below.
+  <script src="{{ 'custom.events.js' | asset_url }}" defer="defer"></script>
+{%- endcomment -%}
+
+{%- comment -%}
+  In order to use your custom alpine code at assets/custom.alpine.js uncomment the line below.
+  Note: this must be a module script
+  <script src="{{ 'custom.alpine.js' | asset_url }}" type="module" defer="defer"></script>
+{%- endcomment -%}
+
+{% capture close_icon %}
+  {% render 'core-icon', icon: 'stroke-bare-x' %}
+{% endcapture %}
+{% capture arrow_prev_icon %}
+  {% render 'core-icon', icon: 'stroke-chevron-left' %}
+{% endcapture %}
+{% capture arrow_next_icon %}
+  {% render 'core-icon', icon: 'stroke-chevron-right' %}
+{% endcapture %}
+
+<!-- Theme global variables -->
+{% # prettier-ignore %}
+<script>
+  // Remove the data-fonts-loading attribute when the fonts are loaded so we can use it to trigger animations and whatnot
+  document.fonts.ready.then(() => {
+    document.documentElement.removeAttribute('data-fonts-loading');
+  });
+
+  // Remove the data-alpine-loading attribute when alpine is initialized so we can use it to trigger animations and whatnot
+  document.addEventListener('alpine:init', () => {
+    document.documentElement.removeAttribute('data-alpine-loading');
+  });
+
+  let root = '{{ routes.root_url }}';
+  if (root[root.length - 1] !== '/') {
+    root = `${root}/`;
+  }
+
+  window.theme = {
+    shop: {
+      permanentDomain: '{{ shop.permanent_domain }}',
+    },
+    info: {
+      name: 'analog',
+      version: '1.0.0',
+    },
+    routes: {
+      root: root,
+      cart: '{{ routes.cart_url }}',
+      cartAdd: '{{ routes.cart_add_url }}',
+      cartChange: '{{ routes.cart_change_url }}',
+      cartClear: '{{ routes.cart_clear_url }}',
+      cartUpdate: '{{ routes.cart_update_url }}',
+      search: '{{ routes.search_url }}',
+      predictiveSearch: '{{ routes.predictive_search_url }}',
+      productRecommendations: '{{ routes.product_recommendations_url }}',
+    },
+    currency: {
+      {% comment %} theme.currency enables assembly-ui to match liquid formatting in javascript {% endcomment %}
+      locale:  '{{ request.locale.iso_code | append: '-' | append: localization.country.iso_code }}',
+      currencyCode: '{{ cart.currency.iso_code }}',
+      legacyFormat: {{ shop.money_format | json }},
+    },
+    cart: {
+      action: '{{ settings.after_add_to_cart_action }}',
+      buttonAction: '{{ settings.cart_button_action }}',
+    },
+    translations: {
+      other: {
+        free: {{ 'other.free' | t | json }}
+      }
+    },
+    screen: {
+      sm: 640,
+      md: 768,
+      lg: 1024,
+      xl: 1280,
+      '2xl': 1536
+    },
+    photoswipe: {
+      maxZoomLevel: 4,
+      wheelToZoom: true,
+      zoom: false,
+      trapFocus: true,
+      returnFocus: true,
+      closeTitle: {{ 'product.gallery.close_title' | t | json }},
+      zoomTitle: {{ 'product.gallery.zoom_title' | t | json }},
+      arrowPrevTitle: {{ 'product.gallery.arrow_previous_title' | t | json }},
+      arrowNextTitle: {{ 'product.gallery.arrow_next_title' | t | json }},
+      errorMsg: {{ 'product.gallery.error_message' | t | json }},
+      closeSVG: {{ close_icon | strip_newlines | json }},
+      arrowPrevSVG: {{ arrow_prev_icon | strip_newlines | json }},
+      arrowNextSVG: {{ arrow_next_icon | strip_newlines | json }},
+      showHideAnimationType: 'zoom',
+      preloadFirstSlide: true
+    }
+  };
+</script>

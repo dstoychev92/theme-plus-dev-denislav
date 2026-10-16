@@ -1,0 +1,405 @@
+<!-- blocks/_grid-auto.liquid -->
+
+{% liquid
+  assign columns = block.settings.columns
+  assign min_col_width = block.settings.min_col_width
+  assign fill_order = 'row'
+  if block.settings.enable_dense_fill
+    assign fill_order = 'row dense'
+  endif
+  assign enable_equal_rows = block.settings.enable_equal_rows
+  assign justify_items = 'stretch'
+  assign align_items = 'stretch'
+  if block.settings.set_cell_alignment
+    assign justify_items = block.settings.justify_items
+    assign align_items = block.settings.align_items
+  endif
+
+  if columns == 'auto'
+    assign grid_cols_lg = 'repeat(auto-fill, minmax(min(' | append: min_col_width | append: 'px, 100%), 1fr))'
+    assign grid_cols_md = grid_cols_lg
+    assign grid_cols_sm = grid_cols_lg
+  else
+    assign cols_desktop = block.settings.columns_desktop | default: 3
+    assign cols_tablet = block.settings.columns_tablet | default: 3
+    assign cols_mobile = block.settings.columns_mobile | default: 2
+    assign grid_cols_lg = 'repeat(' | append: cols_desktop | append: ', minmax(0, 1fr))'
+    assign grid_cols_md = 'repeat(' | append: cols_tablet | append: ', minmax(0, 1fr))'
+    assign grid_cols_sm = 'repeat(' | append: cols_mobile | append: ', minmax(0, 1fr))'
+  endif
+
+  assign gap = block.settings.gap
+  assign gap_custom = block.settings.gap_custom
+  case gap
+    when 'sm'
+      assign gap_col = 'var(--root-space-sm)'
+      assign gap_row = 'var(--raw-space-sm)'
+    when 'md'
+      assign gap_col = 'var(--root-space-md)'
+      assign gap_row = 'var(--raw-space-md)'
+    when 'lg'
+      assign gap_col = 'var(--root-space-lg)'
+      assign gap_row = 'var(--raw-space-lg)'
+    when 'custom'
+      assign gap_col = 'calc(' | append: gap_custom | append: 'px * var(--r-multiplier))'
+      assign gap_row = 'calc(' | append: gap_custom | append: 'px)'
+  endcase
+
+  if block.settings.set_row_gap
+    assign row_gap = block.settings.gap_row
+    assign row_gap_custom = block.settings.gap_custom_row
+    case row_gap
+      when 'sm'
+        assign gap_row = 'var(--raw-space-sm)'
+      when 'md'
+        assign gap_row = 'var(--raw-space-md)'
+      when 'lg'
+        assign gap_row = 'var(--raw-space-lg)'
+      when 'custom'
+        assign gap_row = 'calc(' | append: row_gap_custom | append: 'px)'
+    endcase
+  endif
+%}
+
+<div
+  class="
+    grid w-full
+    [grid-template-columns:var(--grid-auto-cols-lg)]
+    max-lg:[grid-template-columns:var(--grid-auto-cols-md)]
+    max-md:[grid-template-columns:var(--grid-auto-cols-sm)]
+    {% unless request.visual_preview_mode %}
+      entrance-item entrance-standard no-children-entrance
+    {% endunless %}
+  "
+  style="
+    --grid-auto-cols-lg: {{ grid_cols_lg }};
+    --grid-auto-cols-md: {{ grid_cols_md }};
+    --grid-auto-cols-sm: {{ grid_cols_sm }};
+    grid-auto-flow: {{ fill_order }};
+    {% if enable_equal_rows %}grid-auto-rows: 1fr;{% endif %}
+    justify-items: {{ justify_items }};
+    align-items: {{ align_items }};
+    column-gap: {{ gap_col }};
+    row-gap: {{ gap_row }};
+  "
+  {{ block.shopify_attributes }}
+>
+  {% content_for 'blocks' %}
+</div>
+
+{% schema %}
+{
+	"name": "Grid auto",
+	"tag": null,
+	"settings": [
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "columns",
+			"label": "Columns",
+			"default": "fixed",
+			"options": [
+				{
+					"value": "fixed",
+					"label": "Rigid"
+				},
+				{
+					"value": "auto",
+					"label": "Auto"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "min_col_width",
+			"label": "Min column width",
+			"min": 120,
+			"max": 480,
+			"step": 20,
+			"default": 240,
+			"unit": "px",
+			"visible_if": "{{ block.settings.columns == 'auto' }}"
+		},
+		{
+			"type": "range",
+			"id": "columns_desktop",
+			"label": "Desktop",
+			"min": 1,
+			"max": 6,
+			"step": 1,
+			"default": 3,
+			"visible_if": "{{ block.settings.columns == 'fixed' }}"
+		},
+		{
+			"type": "range",
+			"id": "columns_tablet",
+			"label": "Tablet",
+			"min": 1,
+			"max": 6,
+			"step": 1,
+			"default": 3,
+			"visible_if": "{{ block.settings.columns == 'fixed' }}"
+		},
+		{
+			"type": "range",
+			"id": "columns_mobile",
+			"label": "Mobile",
+			"min": 1,
+			"max": 6,
+			"step": 1,
+			"default": 2,
+			"visible_if": "{{ block.settings.columns == 'fixed' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_equal_rows",
+			"label": "Equal row heights",
+			"default": false
+		},
+		{
+			"type": "header",
+			"content": "Alignment"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_cell_alignment",
+			"label": "Set cell alignment",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "justify_items",
+			"label": "Horizontal",
+			"default": "stretch",
+			"visible_if": "{{ block.settings.set_cell_alignment }}",
+			"options": [
+				{
+					"value": "start",
+					"label": "⇤"
+				},
+				{
+					"value": "center",
+					"label": "|"
+				},
+				{
+					"value": "end",
+					"label": "⇥"
+				},
+				{
+					"value": "stretch",
+					"label": "↔"
+				}
+			]
+		},
+		{
+			"type": "select",
+			"id": "align_items",
+			"label": "Vertical",
+			"default": "stretch",
+			"visible_if": "{{ block.settings.set_cell_alignment }}",
+			"options": [
+				{
+					"value": "start",
+					"label": "⤒"
+				},
+				{
+					"value": "center",
+					"label": "—"
+				},
+				{
+					"value": "end",
+					"label": "⤓"
+				},
+				{
+					"value": "stretch",
+					"label": "↕"
+				}
+			]
+		},
+		{
+			"type": "header",
+			"content": "Gap"
+		},
+		{
+			"type": "select",
+			"id": "gap",
+			"label": "Gap",
+			"default": "md",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "gap_custom",
+			"label": "Custom gap",
+			"default": 0,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ block.settings.gap == 'custom'  }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_row_gap",
+			"label": "Set row gap",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "gap_row",
+			"label": "Row gap",
+			"default": "md",
+			"visible_if": "{{ block.settings.set_row_gap }}",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "gap_custom_row",
+			"label": "Custom row gap",
+			"default": 0,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ block.settings.gap_row == 'custom'  and block.settings.set_row_gap }}"
+		},
+		{
+			"type": "header",
+			"content": "Dense"
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_dense_fill",
+			"label": "Dense rearrangement",
+			"default": false,
+			"info": "Moves small items up to fill empty cells left by wide, tall, or featured slots"
+		}
+	],
+	"blocks": [
+		{
+			"type": "@theme"
+		},
+		{
+			"type": "@app"
+		},
+		{
+			"type": "_grid-auto-item"
+		},
+		{
+			"type": "_card-product"
+		},
+		{
+			"type": "_card-collection"
+		},
+		{
+			"type": "_callout"
+		},
+		{
+			"type": "_callout-group"
+		},
+		{
+			"type": "_grid-editorial"
+		},
+		{
+			"type": "_grid-auto"
+		},
+		{
+			"type": "_card-showcase"
+		},
+		{
+			"type": "_form-contact"
+		},
+		{
+			"type": "_accordion-group"
+		},
+		{
+			"type": "_tabs"
+		},
+		{
+			"type": "_cards-products"
+		},
+		{
+			"type": "_cards-collections"
+		},
+		{
+			"type": "_cards-articles"
+		},
+		{
+			"type": "_tile-image"
+		},
+		{
+			"type": "_card-custom"
+		},
+		{
+			"type": "_tile-frame"
+		},
+	],
+	"presets": [
+		{
+			"name": "Grid auto",
+			"category": "Pro",
+			"blocks": [
+				{
+					"type": "theme-image",
+					"settings": {
+						"image_size_mode": "full",
+						"height": "full"
+					}
+				},
+				{
+					"type": "theme-image",
+					"settings": {
+						"image_size_mode": "full",
+						"height": "full"
+					}
+				},
+				{
+					"type": "theme-image",
+					"settings": {
+						"image_size_mode": "full",
+						"height": "full"
+					}
+				}
+			]
+		}
+	]
+}
+{% endschema %}
+

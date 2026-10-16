@@ -1,0 +1,107 @@
+<!-- blocks/_card-slider.liquid -->
+
+{% liquid
+  assign columns_lg = block.settings.columns_lg
+  assign columns_sm = block.settings.columns_sm
+%}
+
+{% capture attributes %}
+  {{ block.shopify_attributes }}
+{% endcapture %}
+
+{% capture style %}
+
+  --card-list-columns-desktop: {{ columns_lg }};
+  --card-list-columns-mobile: {{ columns_sm }};
+
+  --card-list-max-width: 100%;
+  --card-list-overflow-x: auto;
+  --card-list-auto-flow: column;
+  --card-list-auto-columns: calc(
+    (100% - calc(var(--layout-gutter-x) * (var(--card-list-columns-desktop) - 1))) /
+      var(--card-list-columns-desktop)
+  );
+  --card-list-auto-columns-mobile: calc(
+    (100% - calc(var(--layout-gutter-x) * (var(--card-list-columns-mobile) - 1))) /
+      var(--card-list-columns-mobile)
+  );
+
+  --card-list-template-rows: minmax(0, 1fr);
+  --card-list-scroll-padding: var(--drawer-scroll-padding);
+{% endcapture %}
+
+{% capture class %}
+  max-md:has-[card-list-track>:only-child]:![--card-list-columns-mobile:1]
+  md:has-[card-list-track>:only-child]:![--card-list-columns-desktop:1]
+  w-full
+{% endcapture %}
+
+{% capture list_items %}
+  {% content_for "blocks" %}
+{% endcapture %}
+
+<div class="flex py-layout" {{ attributes }} x-carousel x-overflow.autoregister>
+  {% render 'core-card-slider', items: list_items, class: class, style: style %}
+</div>
+
+{% schema %}
+{
+	"name": "Carousel",
+	"tag": null,
+	"settings": [
+		{
+			"type": "header",
+			"content": "Visible cards"
+		},
+		{
+			"type": "range",
+			"id": "columns_lg",
+			"min": 1,
+			"max": 2.6,
+			"step": 0.1,
+			"label": "Desktop",
+			"default": 1.6
+		},
+		{
+			"type": "range",
+			"id": "columns_sm",
+			"min": 1,
+			"max": 2,
+			"step": 0.1,
+			"label": "Mobile",
+			"default": 1.2
+		}
+	],
+	"blocks": [
+		{
+			"type": "_cards-products"
+		},
+		{
+			"type": "_cards-collections"
+		},
+		{
+			"type": "_cards-articles"
+		},
+		{
+			"type": "_tile-image"
+		},
+		{
+			"type": "_card-custom"
+		},
+		{
+			"type": "_tile-frame"
+		},
+	],
+	"presets": [
+		{
+			"name": "Carousel",
+			"blocks": [
+				{
+					"type": "_cards-products",
+					"settings": {}
+				}
+			]
+		}
+	]
+}
+{% endschema %}

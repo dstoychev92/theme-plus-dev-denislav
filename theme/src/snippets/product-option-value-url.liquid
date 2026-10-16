@@ -1,0 +1,28 @@
+{% doc %}
+  - Builds the destination URL for one product option value
+
+  Keeps combined-listing values and unresolved variants on an option_values URL.
+
+  @param {product_option} option
+  @param {product} product
+  @param {boolean} [selling_plan] - selected plan, or false to omit plans
+  @param {product_option_value} value
+{% enddoc %}
+
+{%- if value.variant == null and value.product_url != null -%}
+  {%- render 'product-url',
+    product: product,
+    base_url: value.product_url,
+    option_position: option.position,
+    value_id: value.id,
+    selling_plan: selling_plan
+  -%}
+{%- else -%}
+  {%- render 'product-url',
+    product: product,
+    variant: value.variant,
+    option_position: option.position,
+    value_id: value.id,
+    selling_plan: selling_plan
+  -%}
+{%- endif -%}

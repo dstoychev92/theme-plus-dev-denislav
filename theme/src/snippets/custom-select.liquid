@@ -1,0 +1,257 @@
+{% doc %}
+  Renders a custom select dropdown component.
+  lazy {boolean|string} - wait to start the select up until someone reaches for it. Pass
+  true for the usual "on interaction", or a `data-lazy-alpine-on` value of your own.
+
+  @param {string} [attributes]
+  @param {string} [button]
+  @param {string} [button_class]
+  @param {string} [button_content]
+  @param {string} [button_content_class]
+  @param {string} [button_style]
+  @param {string} [class]
+  @param {boolean} [disabled]
+  @param {string} [edge_padding]
+  @param {string} [end_icon]
+  @param {string} [error_message]
+  @param {boolean} [flip]
+  @param {string} [form]
+  @param {string} [id]
+  @param {boolean} [initial_display]
+  @param {string} [label]
+  @param {boolean} [lazy]
+  @param {boolean} [match]
+  @param {string} name
+  @param {string} [offset]
+  @param {string} options
+  @param {string} [placement]
+  @param {string} [popup_class]
+  @param {string} [popup_list_class]
+  @param {string} [size]
+  @param {string} [start_icon]
+  @param {number} [value]
+{% enddoc %}
+{% liquid
+  assign placement = placement | default: 'bottom'
+  assign offset = offset | default: '5px'
+  assign edge_padding = edge_padding | default: '10px'
+  assign size = size | default: 'md', allow_false: true
+  assign match = match | default: true, allow_false: true
+
+  assign lazy = lazy | default: false, allow_false: true
+  if lazy == true
+    assign lazy = 'interact'
+  endif
+
+  # initial_display: false keeps the display placeholder empty. The display span is
+  # part of the button's aria-labelledby, so a placeholder that repeats the label
+  # makes screen readers announce the name twice.
+  if initial_display == false
+    assign initial_display_content = ''
+  elsif initial_display
+    assign initial_display_content = initial_display
+  else
+    assign initial_display_content = label
+  endif
+
+  assign modifiers = 'fixed.shift.fit-y'
+  assign modifiers = modifiers | append: '.' | append: placement
+  assign modifiers = modifiers | append: '.offset.' | append: offset
+  assign modifiers = modifiers | append: '.pad.' | append: edge_padding
+
+  if match
+    assign modifiers = modifiers | append: '.match'
+  endif
+
+  if flip != false
+    assign modifiers = modifiers | append: '.flip'
+  endif
+
+  if size != blank
+    case size
+      when 'xs'
+        assign size_class = 'vars-control-xs'
+      when 'sm'
+        assign size_class = 'vars-control-sm'
+      when 'md'
+        assign size_class = 'vars-control-md'
+      when 'lg'
+        assign size_class = 'vars-control-lg'
+      when 'xl'
+        assign size_class = 'vars-control-xl'
+    endcase
+  endif
+%}
+
+{% unless end_icon %}
+  {% capture end_icon %}
+    {% render 'core-icon', icon: 'fill-select', class: " w-[--icon-size] h-[--icon-size] opacity-70 " %}
+  {% endcapture %}
+{% endunless %}
+
+{% if button_content == null %}
+  {% capture button_content %}
+    {{ start_icon }}
+
+    <span class="flex-1 !flex-row-center justify-start flex-nowrap gap-x-r4 leading-[1.5] overflow-hidden {{ button_content_class }}">
+      <span x-select:display class="truncate">{{ initial_display_content }}</span>
+    </span>
+
+    {{ end_icon }}
+  {% endcapture %}
+{% endif %}
+
+<custom-select
+  class="    block group/custom-select {{ size_class }} {{ class }}"
+  x-select
+  x-popup:float-reference
+  {{ attributes }}
+>
+  <span x-select:label class="sr-only">{{ label }}</span>
+  {% comment %} Hidden inputs never reach assistive tech — error attributes live on the button {% endcomment %}
+  <input
+    type="hidden"
+    name="{{ name }}"
+    value="{{ value | escape_once }}"
+    x-select:hidden-input
+    data-morph-form-state="server"
+    {% if form %}
+      form="{{ form }}"
+    {% endif %}
+    {% if disabled %}
+      disabled
+    {% endif %}
+  >
+  <custom-select-popup
+    x-cloak
+    {% comment %}
+      The popup (float panel + every option) is the expensive part. The select root
+      stays live so the button has the right screen-reader wiring from the start.
+      `data-lazy-alpine-trigger="custom-select"` means any hover, focus, or tap
+      inside this select wakes its own popup before that same gesture opens it.
+    {% endcomment %}
+    {% if lazy %}
+      data-lazy-alpine
+      data-lazy-alpine-on="{{ lazy }}"
+      data-lazy-alpine-trigger="custom-select"
+    {% endif %}
+    class="
+      outline outline-[0.5px] outline-line shadow
+      peer fixed left-0 top-0 z-40 flex
+      flex-col bg-canvas/90 backdrop-blur-md text-content
+      rounded-[--popup-radius] min-w-fit transition-none
+
+      origin-top
+      data-[placement=top]:origin-bottom
+      data-[placement=top-start]:origin-bottom-left
+      data-[placement=top-end]:origin-bottom-right
+      data-[placement=bottom-start]:origin-top-left
+      data-[placement=bottom-end]:origin-top-right
+      data-[placement=bottom]:origin-top
+
+      overflow-clip group/popup
+      {{ size_class }}
+
+      {{ popup_class }}
+    "
+    x-effect="
+      if ($float.placement != null) {
+        $el.dataset.placement = $float.placement
+      }
+      if ($float.alignment != null) {
+        $el.dataset.alignment = $float.alignment
+      }
+      if ($float.side != null) {
+        $el.dataset.side = $float.side
+      }
+    "
+    x-overflow.autoregister
+
+    x-transition:enter="ease-in-out-sharp !transition-[opacity,transform] !duration-[calc(var(--custom-select-enter-duration)*0.75),calc(var(--custom-select-enter-duration))]"
+    x-transition:enter-start="opacity-0 scale-x-[--close-scale-x] scale-y-[--close-scale-y] data-[side=bottom]:translate-y-[--close-translate-y-bottom] data-[side=top]:translate-y-[--close-translate-y-top]"
+    x-transition:enter-end="opacity-100 scale-x-100 scale-y-100 translate-y-0"
+    x-transition:leave="ease-in-out-sharp !transition-[opacity] !duration-[--custom-select-exit-duration]"
+    x-transition:leave-start="opacity-100"
+    x-transition:leave-end="opacity-0"
+
+    x-select:panel.{{ modifiers }}
+    style="
+      --close-scale-x: 90%;
+      --close-scale-y: 90%;
+      --close-translate-y-bottom: -4px;
+      --close-translate-y-top: 4px;
+      --max-popup-radius: 16px;
+      --popup-radius: min(var(--custom-select-popup-radius, var(--radius-form-field)), var(--max-popup-radius));
+      --popup-padding: var(--r3, var(--custom-select-popup-padding));
+      --popup-inner-radius: max(0px, calc(var(--popup-radius) - var(--popup-padding)));
+    "
+  >
+    <ul
+      class="
+        flex flex-col edge-mask
+        overflow-y-auto group/options overscroll-y-contain
+        scrollbar-hide p-[--popup-padding]
+        leading-tight gap-y-r3 max-h-[500px]
+        group-data-[side=top]/popup:origin-bottom group-data-[side=bottom]/popup:origin-top
+        {{ popup_list_class }}
+      "
+      :class="
+        {
+          'edge-mask-t': $overflow.start,
+          'edge-mask-b': $overflow.end,
+          'animate-in fade-in group-data-[side=top]/popup:slide-in-from-bottom-[--close-translate-y-bottom] group-data-[side=bottom]/popup:slide-in-from-top-[--close-translate-y-top] animate-duration-[calc(var(--custom-select-enter-duration))]': $popup.isOpen
+        }
+      "
+
+      x-select:options
+      x-overflow:viewport
+      x-overflow:container
+      role="listbox"
+    >
+      {% if label and value == blank %}
+        {% comment %} If select label is passed and there is no initial value, show it as the first option but make it non-selectable {% endcomment %}
+        {% comment %} The plugin copies this option's text into the display span, so it must match initial_display_content — the label here would re-double the button's accessible name {% endcomment %}
+        <li aria-disabled="true" aria-selected="true" role="option" hidden x-select:option value="">
+          {{ initial_display_content }}
+        </li>
+      {% endif %}
+      {{ options }}
+    </ul>
+  </custom-select-popup>
+
+  {% if button != null %}
+    {{ button }}
+  {% else %}
+    <button
+      x-select:button
+      type="button"
+      {% comment %}
+        The button is the focusable control, so it owns the caller's id — a field
+        label's for="" resolves here, and clicking the label opens the select.
+      {% endcomment %}
+      {% if id != blank %}
+        id="{{ id }}"
+      {% endif %}
+      {% comment %} aria-invalid is not allowed on role=button, so the error joins the description instead {% endcomment %}
+      {% if error_message != blank and id != blank %}
+        aria-describedby="{{ id }}-error"
+      {% endif %}
+      class="
+        flex w-full select-none
+        flex-row items-center justify-start gap-x-r4
+        text-size-control text-start
+
+        {% comment %} Placeholder state {% endcomment %}
+        group-has-[[aria-selected='true'][aria-disabled='true']]/custom-select:text-[color:var(--input-placeholder-text-color)]
+
+        {{ button_class }}
+      "
+      style="{{ button_style }}"
+      {% if disabled %}
+        disabled
+      {% endif %}
+    >
+      {{ button_content }}
+    </button>
+  {% endif %}
+</custom-select>

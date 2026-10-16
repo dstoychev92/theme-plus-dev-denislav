@@ -1,0 +1,275 @@
+<!-- blocks/_inline-image.liquid -->
+
+{% liquid
+  assign image_scaling = block.settings.image_scaling | divided_by: 100.0
+  assign aspect_ratio = block.settings.image.aspect_ratio | default: 1
+
+  if block.settings.crop_image
+    assign aspect_ratio = block.settings.aspect_ratio
+  endif
+
+  assign image_max_height = 200
+  assign image_max_width = image_max_height | times: aspect_ratio
+%}
+
+{% capture class %}
+  w-fit h-fit overflow-clip align-middle inline-block wraps-inline-graphics
+{% endcapture %}
+
+{% capture attributes %}
+  data-scroll-stagger-item
+  {{ block.shopify_attributes }}
+{% endcapture %}
+
+{% capture style %}
+  --image-scaling: {{ image_scaling }}em;
+  --image-max-width: {{ image_max_width }}px;
+  --image-aspect-ratio: {{ aspect_ratio }};
+
+  {% render 'props-style-offset', s: block.settings %}
+{% endcapture %}
+
+{% capture image_class %}
+  !h-[--image-scaling] w-auto aspect-[--image-aspect-ratio]
+  transition-transform duration-1000 [--scale:120%] scale-[--scale]
+  intersected:!delay-[--stagger-delay,0ms]
+  intersected:![--scale:100%]
+  group-hover/link:![--scale:120%]
+  group-hover/link:!delay-0
+{% endcapture %}
+
+{% capture content %}
+  {%- if block.settings.href != blank -%}
+    <a
+      class="group/link block"
+      href="{{ block.settings.href }}"
+      {% if block.settings.open_in_new_window %}
+        target="_blank"
+        rel="noopener"
+      {% endif %}
+    >
+  {%- endif -%}
+  {%- render 'core-image',
+    width: image_max_width,
+    image: block.settings.image,
+    class: image_class,
+    aspect_ratio: aspect_ratio,
+    aspect_ratio_mobile: aspect_ratio,
+    cover: true,
+    placeholder: 'product-1'
+  -%}
+  {% if block.settings.open_in_new_window %}
+    <span class="sr-only">, {{ 'other.accessibility.opens_in_new_tab' | t }}</span>
+  {% endif %}
+  {%- if block.settings.href != blank -%}
+    </a>
+  {%- endif -%}
+{% endcapture %}
+
+{% render 'core-clip-mask',
+  attributes: attributes,
+  s: block.settings,
+  content: content,
+  class: class,
+  style: style
+%}
+
+{% schema %}
+{
+	"name": "Image",
+	"tag": null,
+	"settings": [
+		{
+			"type": "image_picker",
+			"id": "image",
+			"label": "Image"
+		},
+		{
+			"type": "range",
+			"id": "image_scaling",
+			"min": 50,
+			"max": 200,
+			"step": 10,
+			"label": "Height",
+			"default": 100,
+			"unit": "%",
+			"info": "Relative to the surrounding text"
+		},
+		{
+			"type": "checkbox",
+			"id": "crop_image",
+			"label": "Crop image",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "shape",
+			"label": "Shape",
+			"default": "none",
+			"options": [
+				{
+					"value": "none",
+					"label": "None"
+				},
+				{
+					"value": "rounded",
+					"label": "Rounded"
+				},
+				{
+					"value": "keyhole",
+					"label": "Keyhole"
+				},
+				{
+					"value": "circle",
+					"label": "Circle"
+				},
+				{
+					"value": "sunburst",
+					"label": "Sunburst"
+				},
+				{
+					"value": "hexagon",
+					"label": "Hexagon"
+				},
+				{
+					"value": "octagon",
+					"label": "Octagon"
+				},
+				{
+					"value": "parallelogram",
+					"label": "Parallelogram"
+				},
+				{
+					"value": "blob-1",
+					"label": "Blob 1"
+				},
+				{
+					"value": "blob-2",
+					"label": "Blob 2"
+				},
+				{
+					"value": "blob-3",
+					"label": "Blob 3"
+				},
+				{
+					"value": "blob-4",
+					"label": "Blob 4"
+				},
+				{
+					"value": "stamp-sharp",
+					"label": "Stamp sharp"
+				},
+				{
+					"value": "stamp-rounded",
+					"label": "Stamp rounded"
+				},
+				{
+					"value": "ticket",
+					"label": "Ticket"
+				}
+			],
+			"visible_if": "{{ block.settings.crop_image == true }}"
+		},
+		{
+			"type": "range",
+			"id": "aspect_ratio",
+			"min": 0.5,
+			"max": 3,
+			"step": 0.1,
+			"unit": ":1",
+			"label": "Aspect ratio",
+			"default": 1,
+			"visible_if": "{{ block.settings.crop_image == true }}"
+		},
+		{
+			"type": "url",
+			"id": "href",
+			"label": "Link"
+		},
+		{
+			"type": "checkbox",
+			"id": "open_in_new_window",
+			"label": "Open link in new window",
+			"default": false
+		},
+		{
+			"type": "header",
+			"content": "Offset"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_offset",
+			"label": "Set offset",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "offset_unit",
+			"label": "Unit",
+			"visible_if": "{{ block.settings.set_offset }}",
+			"default": "pixel",
+			"options": [
+				{
+					"value": "pixel",
+					"label": "Pixel"
+				},
+				{
+					"value": "percent",
+					"label": "Percentage"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "offset_pixels_y",
+			"label": "Y ↕",
+			"default": 0,
+			"min": -100,
+			"max": 100,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ block.settings.set_offset and block.settings.offset_unit == 'pixel' }}"
+		},
+		{
+			"type": "range",
+			"id": "offset_pixels_x",
+			"label": "X ↔",
+			"default": 0,
+			"min": -100,
+			"max": 100,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ block.settings.set_offset and block.settings.offset_unit == 'pixel' }}"
+		},
+		{
+			"type": "range",
+			"id": "offset_percent_y",
+			"label": "Y ↕",
+			"default": 0,
+			"min": -100,
+			"max": 100,
+			"step": 2,
+			"unit": "%",
+			"visible_if": "{{ block.settings.set_offset and block.settings.offset_unit == 'percent' }}"
+		},
+		{
+			"type": "range",
+			"id": "offset_percent_x",
+			"label": "X ↔",
+			"default": 0,
+			"min": -100,
+			"max": 100,
+			"step": 2,
+			"unit": "%",
+			"visible_if": "{{ block.settings.set_offset and block.settings.offset_unit == 'percent' }}"
+		},
+	],
+	"presets": [
+		{
+			"name": "Image",
+			"category": "Basic",
+			"blocks": []
+		}
+	]
+}
+{% endschema %}

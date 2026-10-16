@@ -1,0 +1,149 @@
+<!-- blocks/_accordion-group.liquid -->
+
+{% capture content %}
+  {% content_for 'blocks' %}
+{% endcapture %}
+
+{% capture class %}
+  group/accordions
+  flex flex-col w-full
+  {% if block.settings.show_top_border %}
+    border-t border-t-line-subtle
+  {% endif %}
+{% endcapture %}
+
+{% capture attributes %}
+  {% if section.settings.enable_ensemble %}
+    x-ensemble:disclosure-group
+    x-ensemble:slideshow.duration.{{ section.settings.duration | times: 1000 }}ms
+  {% else %}
+    {% comment %}
+      Use the section- variant so expanded state survives theme editor section
+      morphing — bare x-disclosure-group keeps its state in component-local
+      x-data, which gets destroyed on morph.
+    {% endcomment %}
+    {% if block.settings.multiple %}
+      x-section-disclosure-group.multiple
+    {% else %}
+      x-section-disclosure-group
+    {% endif %}
+  {% endif %}
+  data-test-id="accordion"
+  {% if block.settings.show_number %}
+    style="counter-reset: accordion-group"
+  {% endif %}
+  {{ block.shopify_attributes }}
+  {% if block.settings.enable_muted_title %}
+    data-muted-title
+  {% endif %}
+{% endcapture %}
+
+<div
+  class="{{ class }}"
+  {% if block.settings.show_number %}
+    data-has-counter
+  {% endif %}
+  {% if block.settings.show_open_close_icon %}
+    data-has-icon
+  {% endif %}
+  {% if block.settings.enable_timer_indicator and section.settings.enable_ensemble %}
+    data-enable-timer-indicator
+  {% endif %}
+  {{ attributes }}
+>
+  {{ content }}
+</div>
+
+{% schema %}
+{
+	"name": "Accordions",
+	"tag": null,
+	"settings": [
+		{
+			"type": "checkbox",
+			"id": "multiple",
+			"label": "Allow multiple items to be expanded at once",
+			"visible_if": "{{ section.settings.enable_ensemble != true }}",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "show_top_border",
+			"label": "Show top border",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "show_number",
+			"label": "Show number",
+			"default": false,
+			"info": "Show a number before the title"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_open_close_icon",
+			"label": "Show open/close icon",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_muted_title",
+			"label": "Enable muted title",
+			"default": true,
+			"info": "Greys out the title when collapsed"
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_timer_indicator",
+			"label": "Enable timer indicator",
+			"default": true,
+			"visible_if": "{{ section.settings.enable_ensemble == true and section.settings.autoplay == true }}",
+			"info": "Enabling this will animate the line to represent the time elapsed since the accordion was opened."
+		},
+	],
+	"blocks": [
+		{
+			"type": "_accordion"
+		},
+	],
+	"presets": [
+		{
+			"name": "Accordions",
+			"category": "Layout",
+			"blocks": [
+				{
+					"type": "_accordion",
+					"settings": {
+						"title": "How long will my order take to ship?",
+						"expand": true
+					},
+					"blocks": [
+						{
+							"type": "theme-richtext",
+							"settings": {
+								"text": "<p>Share where you ship and estimated delivery times. Link to your shipping policy for the full details.</p>"
+							}
+						}
+					]
+				},
+				{
+					"type": "_accordion",
+					"settings": {
+						"title": "What is your return policy?"
+					},
+					"blocks": [
+						{
+							"type": "theme-text",
+							"settings": {
+								"text": "Explain how returns or exchanges work and how customers can start one. Link to your return policy for the full details.",
+								"type_preset": "p"
+							}
+						}
+					]
+				}
+			]
+		},
+	]
+}
+{% endschema %}
+

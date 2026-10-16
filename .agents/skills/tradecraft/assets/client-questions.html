@@ -1,0 +1,160 @@
+<title>__TITLE__</title>
+<style>
+/* Plain on purpose: a client reads this page as a sample of the agency's work, so it carries no decoration */
+:root {
+  --bg: #ffffff;
+  --text: #1f1f1f;
+  --muted: #646464;
+  --line: #e2e2e2;
+  --field: #ffffff;
+  --button: #1f1f1f;
+  --button-text: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #161616; --text: #ececec; --muted: #a0a0a0; --line: #333333; --field: #1e1e1e; --button: #ececec; --button-text: #161616; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #161616; --text: #ececec; --muted: #a0a0a0; --line: #333333; --field: #1e1e1e; --button: #ececec; --button-text: #161616; color-scheme: dark; }
+body { background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+main { max-width: 36rem; margin: 0 auto; padding: 2.5rem 16px 4rem; }
+h1 { font-size: 1.5rem; font-weight: 600; line-height: 1.3; margin: 0 0 0.5rem; }
+.intro { color: var(--muted); margin: 0 0 2rem; }
+fieldset { border: 0; border-top: 1px solid var(--line); margin: 0; padding: 1.5rem 0; min-width: 0; }
+legend { float: left; width: 100%; padding: 0; margin-bottom: 0.75rem; font-weight: 600; }
+legend + * { clear: left; }
+.detail { margin: 0 0 0.75rem; color: var(--muted); }
+.detail ul { margin: 0; padding-left: 1.25rem; }
+.option { display: flex; gap: 0.5rem; align-items: baseline; padding: 0.25rem 0; cursor: pointer; }
+.option input { margin: 0; flex: none; }
+.suggested { color: var(--muted); font-size: 0.875rem; }
+textarea[hidden] { display: none; }
+textarea { display: block; width: 100%; box-sizing: border-box; min-height: 4.5rem; margin: 0.5rem 0 0; padding: 0.5rem; font: inherit; color: var(--text); background: var(--field); border: 1px solid var(--line); border-radius: 6px; }
+details { margin-top: 0.75rem; color: var(--muted); }
+summary { cursor: pointer; width: fit-content; }
+details p { margin: 0.5rem 0 0; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; border-top: 1px solid var(--line); padding-top: 1.5rem; }
+button { font: inherit; font-weight: 500; padding: 0.5rem 1rem; border: 0; border-radius: 6px; background: var(--button); color: var(--button-text); cursor: pointer; }
+button:disabled { opacity: 0.5; cursor: default; }
+.status { color: var(--muted); }
+</style>
+
+<main>
+  <h1 id="title"></h1>
+  <p class="intro" id="intro"></p>
+  <form id="form"></form>
+  <div class="actions">
+    <button type="button" id="save" disabled>Save answers</button>
+    <span class="status" id="status"></span>
+  </div>
+</main>
+
+<script type="application/json" id="data">__DATA__</script>
+<script>
+(function () {
+  const data = JSON.parse(document.getElementById('data').textContent);
+  const OTHER = '__other';
+  const form = document.getElementById('form');
+  const save = document.getElementById('save');
+  const status = document.getElementById('status');
+  let dirty = false;
+
+  document.getElementById('title').textContent = data.title;
+  document.getElementById('intro').textContent = data.intro;
+
+  const el = (tag, props = {}, children = []) => {
+    const node = Object.assign(document.createElement(tag), props);
+    for (const child of children) node.append(child);
+    return node;
+  };
+
+  data.questions.forEach((q, index) => {
+    const name = 'q-' + q.id;
+    const other = el('textarea', {name: name + '-other', hidden: true, placeholder: 'Your answer'});
+    other.setAttribute('aria-label', 'Your answer');
+    const options = q.options.map((label, i) => {
+      const input = el('input', {type: 'radio', name, value: label, checked: i === (q.default ?? 0)});
+      const text = [label];
+      if (i === (q.default ?? 0)) text.push(' ', el('span', {className: 'suggested', textContent: '(suggested)'}));
+      return el('label', {className: 'option'}, [input, el('span', {}, text)]);
+    });
+    options.push(el('label', {className: 'option'}, [el('input', {type: 'radio', name, value: OTHER}), el('span', {textContent: 'Something else'})]));
+    const parts = [el('legend', {textContent: (index + 1) + '. ' + q.question})];
+    if (q.detail) {
+      const lines = Array.isArray(q.detail) ? q.detail : [q.detail];
+      parts.push(el('div', {className: 'detail'}, [lines.length > 1 ? el('ul', {}, lines.map((line) => el('li', {textContent: line}))) : el('p', {textContent: lines[0], style: 'margin:0'})]));
+    }
+    parts.push(...options, other);
+    if (q.more) parts.push(el('details', {}, [el('summary', {textContent: 'More info'}), el('p', {textContent: q.more})]));
+    form.append(el('fieldset', {}, parts));
+  });
+
+  const field = (q) => ({choice: form.elements['q-' + q.id], other: form.elements['q-' + q.id + '-other']});
+  const showOther = (q) => {
+    const {choice, other} = field(q);
+    other.hidden = choice.value !== OTHER;
+  };
+  form.addEventListener('change', () => {
+    data.questions.forEach(showOther);
+    dirty = true;
+    status.textContent = 'Not saved';
+  });
+  form.addEventListener('input', () => { dirty = true; status.textContent = 'Not saved'; });
+
+  const answers = () => data.questions.map((q) => {
+    const {choice, other} = field(q);
+    const isOther = choice.value === OTHER;
+    return {id: q.id, question: q.question, answer: isOther ? other.value.trim() : choice.value, other: isOther};
+  });
+
+  // Without stored answers, the client copies the answers and sends them
+  const copyFallback = () => {
+    save.textContent = 'Copy answers';
+    save.disabled = false;
+    status.textContent = 'Copy your answers, then send them to ' + (data.contact || 'your web team') + '.';
+    save.addEventListener('click', async () => {
+      const text = answers().map((a, i) => (i + 1) + '. ' + a.question + '\n' + (a.answer || '(no answer)')).join('\n\n');
+      try {
+        await navigator.clipboard.writeText(text);
+        status.textContent = 'Copied. Send it to ' + (data.contact || 'your web team') + '.';
+      } catch (e) {
+        status.textContent = 'Select and copy this text: ' + text;
+      }
+    });
+  };
+
+  async function start() {
+    const db = window.claude ? await window.claude.use('db') : null;
+    if (!db) return copyFallback();
+    save.disabled = false;
+    save.addEventListener('click', async () => {
+      save.disabled = true;
+      status.textContent = 'Saving';
+      try {
+        const at = new Date().toISOString();
+        for (const a of answers()) await db.doc('answers/' + a.id).set({answer: a.answer, other: a.other, savedAt: at});
+        dirty = false;
+        status.textContent = 'Saved. Thank you.';
+      } catch (e) {
+        status.textContent = e && (e.code === 'not_granted' || e.code === 'permission_denied') ? 'This page cannot save your answers. Ask ' + (data.contact || 'your web team') + ' for access.' : 'Your answers did not save. Try again.';
+      } finally {
+        save.disabled = false;
+      }
+    });
+    db.collection('answers').onSnapshot((snap) => {
+      if (dirty) return;
+      for (const doc of snap.docs) {
+        const q = data.questions.find((item) => item.id === doc.id);
+        const saved = doc.data();
+        if (!q || !saved || typeof saved.answer !== 'string') continue;
+        const {choice, other} = field(q);
+        if (saved.other) {
+          choice.value = OTHER;
+          other.value = saved.answer;
+        } else if (q.options.includes(saved.answer)) choice.value = saved.answer;
+        showOther(q);
+      }
+      if (snap.docs.length) status.textContent = 'Saved. You can change an answer and save again.';
+    });
+  }
+  start();
+})();
+</script>

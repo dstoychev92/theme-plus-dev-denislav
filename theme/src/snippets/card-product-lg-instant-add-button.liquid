@@ -1,0 +1,149 @@
+{% doc %}
+  - Renders the add-to-cart button on a product card
+
+  Adds the variant straight to the cart, with no quick view and no inline size buttons.
+
+  @param {string} [appearance] - button appearance
+  @param {string} [aria_label] - accessible name for the button
+  @param {string} [class] - The classes
+  @param {string} [color] - button color
+  @param {string} [form_id] - id of the form the button submits
+  @param {boolean} [icon_swap] - swaps the label for an icon
+  @param {string} [label_class] - classes for the label
+  @param {product} [product]
+  @param {string} [size] - defaults to 'lg'
+  @param {string} [type_resize] - type resize step
+  @param {variant} [variant] - variant added, defaults to the selected or first available one
+{% enddoc %}
+
+{% liquid
+  assign variant = variant | default: product.selected_or_first_available_variant
+  assign size = size | default: 'lg'
+  assign color = color | default: 'content'
+  assign appearance = appearance | default: 'blur'
+  assign button_text = 'product.add_to_cart' | t
+  assign button_tag = 'button'
+
+  assign is_out_of_stock = false
+  if product.available == false
+    assign is_out_of_stock = true
+  endif
+
+  if is_out_of_stock
+    assign button_text = 'product.sold_out' | t
+    assign button_href = product.url
+    assign button_tag = 'a'
+  endif
+
+  assign aria_label = aria_label | default: button_text
+
+  # Pre-order button text
+  if settings.metafield_preorder != blank
+    assign preorder_metafield_namespace = settings.metafield_preorder | split: '.' | first
+    assign preorder_metafield_key = settings.metafield_preorder | split: '.' | last
+    assign preorder_metafield = product.metafields[preorder_metafield_namespace][preorder_metafield_key]
+    if preorder_metafield.value == true
+      assign button_text = 'product.pre_order.add_button' | t
+    endif
+  endif
+
+  if icon_swap == true
+    assign swap_touch_content_class = 'mouse:hidden'
+    assign swap_pointer_content_class = 'touch:hidden'
+  else
+    assign swap_touch_content_class = 'hidden'
+    assign swap_pointer_content_class = ''
+  endif
+%}
+
+{%- capture cart_icon -%}
+  fill-add-{{- settings.cart_icon -}}
+{%- endcapture -%}
+
+{% comment %} Idle label only — glow highlight must not wrap pending/success/error states {% endcomment %}
+{%- capture idle_label -%}
+  {% render 'core-icon', icon: cart_icon, size: 'lg', class: swap_touch_content_class %}
+
+  <span class="{{ swap_pointer_content_class }}">
+    {{ button_text }}
+  </span>
+{%- endcapture -%}
+
+{%- capture content -%}
+  <span class="
+    z-10 relative flex flex-center h-[--btn-height] pointer-events-none ty-type-center
+    leading-[--leading-block] text-center overflow-hidden text-ellipsis whitespace-nowrap
+    flex-row-center justify-center {{ label_class }}
+  ">
+    <span
+      class="relative flex flex-center transition-opacity delay-300"
+      :class="{ 'opacity-0 !delay-0': $productForm.state !== 'idle' }"
+    >
+      <span aria-hidden="true" class="absolute inset-0 flex flex-center h-full pointer-events-none hover-effect-text-highlight">
+        {{ idle_label }}
+      </span>
+      {{ idle_label }}
+    </span>
+    <span
+      class="absolute"
+      x-show="$productForm.state === 'pending'"
+      x-cloak
+      x-transition.opacity.duration.500ms
+    >
+      {% render 'spinner' %}
+
+      <span class="sr-only">
+        {{ "product.adding_to_cart" | t }}
+      </span>
+    </span>
+    <span class="absolute flex-row-center justify-center gap-x-r3" x-cloak x-show="$productForm.state === 'success'" x-cloak x-transition.opacity.duration.500ms>
+      {% render 'core-icon', icon: 'stroke-bare-check' %}
+      <span class="sr-only">
+        {{ "product.added_to_cart" | t }}
+      </span>
+    </span>
+    <span class="absolute flex-row-center justify-center gap-x-r3" x-cloak x-show="$productForm.state === 'error'" x-cloak x-transition.opacity.duration.500ms>
+      {% render 'core-icon', icon: 'stroke-bare-x' %}
+      <span class="sr-only">
+        {{ "product.error_adding_to_cart" | t }}
+      </span>
+    </span>
+  </span>
+{%- endcapture -%}
+
+{% capture class %}
+  relative !overflow-visible max-md:hit-area-[--card-lg-media-padding]
+  {{ class }}
+{% endcapture %}
+
+{% unless is_out_of_stock %}
+  {% capture attributes %}
+    :class="
+      {
+        'vars-scheme-error': $productForm.state === 'error',
+        {% comment %} Don't fade out the button when pending {% endcomment %}
+        'disabled:!opacity-100': $productForm.state === 'pending',
+      }
+    "
+    data-available="true"
+    :disabled="$productForm.state == 'pending' || $sectionApi.state === 'loading'"
+  {% endcapture %}
+{% endunless %}
+
+{% render 'core-button',
+  tag: button_tag,
+  type: 'submit',
+  href: button_href,
+  content: content,
+  aria_label: aria_label,
+  appearance: appearance,
+  sizing: size,
+  type_resize: type_resize,
+  color: color,
+  name: 'id',
+  form: form_id,
+  value: variant.id,
+  class: class,
+  attributes: attributes,
+  wrap: true
+%}

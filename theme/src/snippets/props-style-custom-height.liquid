@@ -1,0 +1,66 @@
+{% doc %}
+  - Prints the custom height variables
+
+  @param {string} [custom_height_percentage] - height as a percentage of the viewport
+  @param {string} [custom_height_percentage_mobile] - height as a percentage of the viewport on mobile
+  @param {number} [custom_height_px] - height in pixels
+  @param {string} [custom_height_px_mobile] - height in pixels on mobile
+  @param {string} [custom_height_type] - 'percentage' or 'px'
+  @param {string} [custom_height_type_mobile] - 'percentage' or 'px'
+  @param {string} [height] - 'custom', 'image' or 'content'
+  @param {string} [height_mobile] - 'custom', 'image' or 'content'
+  @param {object} [s] - settings object
+  @param {boolean} [set_height] - false prints nothing, defaults to true
+  @param {boolean} [set_height_mobile] - false ignores the mobile height
+{% enddoc %}
+
+{%- liquid
+  assign set_height = set_height | default: s.set_height, allow_false: true | default: true, allow_false: true
+  assign height = height | default: s.height
+  assign custom_height_type = custom_height_type | default: s.custom_height_type
+  assign custom_height_percentage = custom_height_percentage | default: s.custom_height_percentage
+  assign custom_height_px = custom_height_px | default: s.custom_height_px
+
+  assign set_height_mobile = set_height_mobile | default: s.set_height_mobile, allow_false: true
+  assign height_mobile = height_mobile | default: s.height_mobile
+  assign custom_height_type_mobile = custom_height_type_mobile | default: s.custom_height_type_mobile
+  assign custom_height_percentage_mobile = custom_height_percentage_mobile | default: s.custom_height_percentage_mobile
+  assign custom_height_px_mobile = custom_height_px_mobile | default: s.custom_height_px_mobile
+-%}
+{% if set_height %}
+  {%- if height == 'custom' -%}
+    {% case custom_height_type %}
+      {% when 'percentage' %}
+        {% comment %} 'svh' is handled by the .vars-custom-height-svh-support class {% endcomment %}
+        --custom-height-unit: 1vh; --custom-height-value: {{ custom_height_percentage }};
+      {% when 'px' %}
+        --custom-height-unit: 1px; --custom-height-value: {{ custom_height_px }};
+    {% endcase %}
+    --custom-height: calc(var(--custom-height-value) * var(--custom-height-unit));
+
+  {%- elsif height == 'image' or height == 'content' -%}
+    --custom-height: fit-content;
+
+  {%- elsif height != blank -%}
+    --custom-height: var(--height-{{ height }});
+  {%- endif -%}
+{% endif %}
+
+{% if set_height_mobile %}
+  {%- if height_mobile == 'custom' -%}
+    {% case custom_height_type_mobile %}
+      {% when 'percentage' %}
+        {% comment %} 'svh' is handled by the .vars-custom-height-svh-support class {% endcomment %}
+        --mobile-custom-height-unit: 1vh; --mobile-custom-height-value: {{ custom_height_percentage_mobile }};
+      {% when 'px' %}
+        --mobile-custom-height-unit: 1px; --mobile-custom-height-value: {{ custom_height_px_mobile }};
+    {% endcase %}
+    --mobile-custom-height: calc(var(--mobile-custom-height-value) * var(--mobile-custom-height-unit));
+
+  {%- elsif height_mobile == 'image' or height_mobile == 'content' -%}
+    --mobile-custom-height: fit-content;
+
+  {%- elsif height_mobile != blank -%}
+    --mobile-custom-height: var(--height-{{ height_mobile }});
+  {%- endif -%}
+{%- endif -%}

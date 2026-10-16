@@ -1,0 +1,58 @@
+<!-- blocks/_section-content.liquid -->
+
+{% capture blocks %}
+  {% content_for "blocks" %}
+{% endcapture %}
+
+{% capture placement %}
+  {% render 'core-placement-grid',
+    s: section.settings,
+    content: blocks,
+    attributes: block.shopify_attributes
+  %}
+{% endcapture %}
+
+{% render 'core-section-content', content: placement, s: section.settings %}
+
+{% schema %}
+{
+	"name": "Content",
+	"tag": null,
+	"settings": [],
+	"blocks": [
+		{
+			"type": "@theme"
+		},
+		{
+			"type": "@app"
+		},
+		{
+			"type": "_callout"
+		},
+		{
+			"type": "_callout-group"
+		},
+		{
+			"type": "_grid-editorial"
+		},
+		{
+			"type": "_grid-auto"
+		},
+		{
+			"type": "_card-showcase"
+		},
+		{
+			"type": "_form-contact"
+		},
+		{
+			"type": "_marquee"
+		},
+		{
+			"type": "_accordion-group"
+		},
+		{
+			"type": "_tabs"
+		},
+	]
+}
+{% endschema %}

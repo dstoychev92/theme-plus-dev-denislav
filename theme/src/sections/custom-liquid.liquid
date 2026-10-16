@@ -1,0 +1,195 @@
+<!-- sections/custom-liquid.liquid -->
+
+{% comment %}
+  Section: Custom liquid
+  Section-level insertion point for merchant HTML/Liquid and certain app embeds.
+  Same settings surface as the "Custom liquid" block (theme-liquid-code), scoped
+  to section settings. Raw output skips the core-section wrapper entirely so the
+  code lands unwrapped in the page flow.
+{% endcomment %}
+
+{% if section.settings.output == 'wrapped' %}
+  {% capture content %}
+    <div
+      class="w-full"
+      {% if section.settings.prevent_dynamic_updates %}
+        data-morph-update="none"
+      {% endif %}
+    >
+      {{ section.settings.code }}
+    </div>
+  {% endcapture %}
+  {% render 'core-section', s: section.settings, content: content %}
+{% else %}
+  {{ section.settings.code }}
+{% endif %}
+
+{% schema %}
+{
+	"name": "Custom liquid",
+	"class": "section-custom-liquid",
+	"tag": "section",
+	"settings": [
+		{
+			"type": "liquid",
+			"id": "code",
+			"label": "Code",
+			"default": "<div class='prose' style='text-align: center; padding: 90px 0;'><h2>Custom HTML for {{ shop.name }}</h2><p>Add your custom HTML here.</p></div>",
+			"info": "Accepts HTML and Liquid code"
+		},
+		{
+			"type": "select",
+			"id": "output",
+			"label": "Output",
+			"default": "wrapped",
+			"options": [
+				{
+					"value": "raw",
+					"label": "Raw"
+				},
+				{
+					"value": "wrapped",
+					"label": "Wrapped"
+				}
+			]
+		},
+		{
+			"type": "paragraph",
+			"content": "Theme editor will not highlight or scroll to selected section when output is set to raw",
+			"visible_if": "{{ section.settings.output == 'raw' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "prevent_dynamic_updates",
+			"label": "Prevent dynamic updates",
+			"default": false,
+			"info": "Prevent this section from updating dynamically with cart and product form changes.",
+			"visible_if": "{{ section.settings.output == 'wrapped' }}"
+		},
+		{
+			"type": "header",
+			"content": "Section layout"
+		},
+		{
+			"type": "select",
+			"id": "content_width",
+			"label": "Content width",
+			"default": "page",
+			"options": [
+				{
+					"value": "full",
+					"label": "Full"
+				},
+				{
+					"value": "page",
+					"label": "Page"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "content_width_custom",
+			"label": "Desktop width",
+			"visible_if": "{{ section.settings.content_width == 'custom'  }}",
+			"min": 25,
+			"max": 100,
+			"step": 5,
+			"default": 65,
+			"unit": "%"
+		},
+		{
+			"type": "range",
+			"id": "content_width_custom_mobile",
+			"label": "Mobile width",
+			"visible_if": "{{ section.settings.content_width == 'custom'   }}",
+			"min": 25,
+			"max": 100,
+			"step": 5,
+			"default": 100,
+			"unit": "%"
+		},
+		{
+			"type": "checkbox",
+			"id": "set_rhythm",
+			"label": "Custom rhythm",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "section_padding_top",
+			"label": "Spacing top",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 40,
+			"visible_if": "{{ section.settings.set_rhythm == true  }}"
+		},
+		{
+			"type": "range",
+			"id": "section_padding_bottom",
+			"label": "Spacing bottom",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"unit": "px",
+			"default": 40,
+			"visible_if": "{{ section.settings.set_rhythm == true  }}"
+		},
+		{
+			"type": "header",
+			"content": "Appearance"
+		},
+		{
+			"type": "color_scheme",
+			"id": "color_scheme",
+			"label": "Color scheme"
+		},
+		{
+			"type": "select",
+			"id": "background",
+			"label": "Background",
+			"default": "canvas",
+			"options": [
+				{
+					"value": "canvas",
+					"label": "Default"
+				},
+				{
+					"value": "tint",
+					"label": "Tint"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background color",
+			"default": "#f2f2f2",
+			"alpha": false,
+			"visible_if": "{{ section.settings.background == 'custom' }}"
+		},
+	],
+	"presets": [
+		{
+			"name": "Custom liquid",
+			"category": "Utility"
+		}
+	],
+	"disabled_on": {
+		"groups": [
+			"header",
+			"custom.overlays",
+			"custom.drawers"
+		]
+	}
+}
+{% endschema %}

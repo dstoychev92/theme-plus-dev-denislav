@@ -1,0 +1,145 @@
+<!doctype html>
+{%- liquid
+  assign rtl_codes = ',ar,arc,ckb,dv,fa,ha,he,khw,ks,ps,sd,ur,uz_AF,yi,'
+  assign current_lang = request.locale.iso_code | append: ',' | prepend: ','
+  assign direction_attr = 'dir="ltr"'
+  if rtl_codes contains current_lang
+    assign direction_attr = 'dir="rtl"'
+  endif
+-%}
+
+<html
+  lang="{{ request.locale.iso_code }}"
+  {{ direction_attr }}
+  class="
+    vars-{{ settings.color_scheme_default.id }} relative
+    {% comment %} Remove bg color when in theme editor to exclude it from visual theme previews {% endcomment %}
+    {% comment %} Bg color is set on <html> element otherwise so that iOS properly colors above and below page content  {% endcomment %}
+    {% if request.design_mode == false %}bg-canvas{% endif %}
+  "
+  {% # This will be removed when the fonts are loaded. Is used to delay showing certain text until the fonts are loaded -%}
+  data-fonts-loading="true"
+  {% # This will be removed when alpine loads. Is used to add temporary styles to some elements until alpine loads -%}
+  data-alpine-loading="true"
+  {% if request.design_mode %}
+    data-theme-editor
+  {% endif %}
+  {% if request.visual_preview_mode %}
+    data-shopify-visual-preview
+  {% endif %}
+>
+  <head>
+    {% render 'head' %}
+    {{ content_for_header }}
+
+    {%- # This schema tag helps Google show a "sitelinks search box" in search results. -%}
+    {% assign potential_action_target = shop.url | append: '/search?q={search_term_string}' %}
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "url": {{ shop.url | json }},
+        "name": {{ shop.name | json }},
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {{ potential_action_target | json }},
+          "query-input": "required name=search_term_string"
+        }
+      }
+    </script>
+
+    {% comment %} Addresses unwanted right-side whitespace in Theme Editor's mobile preview when scroll-locking elements(drawers/dialogs) are open {% endcomment %}
+    {% if request.design_mode %}
+      <style
+        x-init="document.documentElement.style.setProperty('--page-scrollbar-width', window.innerWidth - document.documentElement.clientWidth + 'px');"
+      >
+        @media not all and (min-width: 768px) {
+          html[style*='scrollbar-gutter: stable'] {
+            scrollbar-gutter: auto !important;
+            padding-right: var(--page-scrollbar-width);
+          }
+        }
+      </style>
+    {% endif %}
+  </head>
+  <body
+    class="group/body relative bg-canvas text-content font-family-body"
+
+    x-data
+    x-scroll-lock="$store.drawer.isOpen"
+
+    :data-keyboard-active="$isKeyboardActive"
+    :data-scroll-direction="$store.page.scrollDirection"
+    :data-drawer-open="$store.drawer.isOpen"
+  >
+    {% render 'skip-to-content-link' %}
+
+    {% comment %}
+      Keep these captures together to control their order in the theme editor.
+      Keep them below the head so section rendering does not delay the streamed head.
+    {% endcomment %}
+    {%- capture group_headers %}
+      {% sections 'group-header' %}
+    {% endcapture -%}
+
+    {%- capture group_drawers %}
+      {% sections 'group-drawers' %}
+    {%- endcapture -%}
+
+    {%- capture main_content -%}
+      {{ content_for_layout }}
+    {%- endcapture -%}
+
+    {%- capture group_footers %}
+      {% sections 'group-footer' %}
+    {%- endcapture -%}
+
+    {%- capture group_overlays %}
+      {% sections 'group-overlays' %}
+    {%- endcapture -%}
+
+    {% comment %} Render drawers and overlays at top of page so that theme editor doesn't scroll when they're selected {% endcomment %}
+    {% unless template.name == 'password' %}
+      <div id="drawers" class="[view-transition-name:none] fixed z-50">
+        {{ group_drawers }}
+        {% render 'product-pickup-drawer' %}
+      </div>
+
+      <div id="overlays" class="[view-transition-name:none] fixed z-50">
+        {{ group_overlays }}
+      </div>
+    {% endunless %}
+
+    {% render 'add-to-cart-notification' %}
+
+    <div class="relative page-grid [view-transition-name:none]">
+      {% unless template.name == 'password' %}
+        <header
+          data-test-id="header"
+          x-header-stack
+          @pointerenter="if ($event.pointerType != 'touch') $el.setAttribute('data-header-hover', '')"
+          @pointerleave="$el.removeAttribute('data-header-hover')"
+          class="contents reverse-z-stack z-50"
+          :data-popup-active="$store.headerMenu.activePopupId != null"
+          :data-megamenu-active="$store.headerMenu.activePopupType == 'flyout'"
+        >
+          {{ group_headers }}
+        </header>
+      {% endunless %}
+
+      <main id="main" class="[view-transition-name:content] relative z-30" data-template="{{ template }}">
+        {{ main_content }}
+      </main>
+
+      {% unless template.name == 'password' %}
+        <footer>
+          {{ group_footers }}
+        </footer>
+      {% endunless %}
+    </div>
+
+    <div data-photoswipe-container x-ignore id="photoswipe"></div>
+
+    {% render 'svg-masks' %}
+  </body>
+</html>

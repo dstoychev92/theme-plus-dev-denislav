@@ -1,0 +1,82 @@
+{% doc %}
+  - Renders the header menu as a row of links
+
+  Prints nothing when s.linklist names an empty menu.
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {string} [link_attributes] - attributes for every link
+  @param {object} [s] - settings object
+  @param {string} [target_device] - 'mobile' or 'desktop', defaults to s.target_device
+{% enddoc %}
+
+{% liquid
+  assign link_list = s.linklist
+  assign target_device = target_device | default: s.target_device
+%}
+
+{% if link_list != blank and linklists[link_list].links.size > 0 %}
+  <ul
+    x-overflow.autoregister
+    {% comment %} Prevent morphing from messing with the state of any open megamenus or dropdowns {% endcomment %}
+    data-morph-update="none"
+    class="
+      flex-row-center overflow-x-auto scrollbar-hide
+      [--nav-menu-padding-x:calc(var(--header-row-gap-x)/2)]
+      h-full
+
+      {% comment %} Edge mask is safe now that menus render outside the nav list {% endcomment %}
+      edge-mask
+
+      {% comment %} Ensure that the edge mask spans the gap between elements and then overlaps some {% endcomment %}
+      [--edge-mask-distance:calc(var(--nav-menu-padding-x)+50px)]
+
+      {% comment %} Start and end padding so the edge-less link padding acts like a gap {% endcomment %}
+
+      {% render 'props-class-target-device', target_device: target_device %}
+      {{ class }}
+    "
+    :class="
+      {
+        'edge-mask-r-[--edge-mask-distance]': $overflow.end,
+        'edge-mask-l-[--edge-mask-distance]': $overflow.start,
+      }
+    "
+    data-header-menu-overflow-scroll
+    data-test-id="header-menu-navigation"
+    {% comment %}
+      This navigation is only ever shown from the md breakpoint up (max-md:hidden, via
+      props-class-target-device), so a phone should never pay to start it up. On desktop it
+      is above the fold and immediately usable, hence "immediate" rather than waiting to be
+      seen or reached for.
+    {% endcomment %}
+    data-lazy-alpine="desktop"
+    data-lazy-alpine-on="immediate"
+
+    {{ attributes }}
+  >
+    {% assign seen_menu_ids = '' %}
+    {% for link in linklists[link_list].links %}
+      {% liquid
+        # Same-titled links intentionally share a menu id (and popup) — see header-menu-popups.
+        # Only their element ids need to differ, so repeats get an index suffix for those.
+        assign link_menu_id = link.title | downcase | strip_html | escape_once | handleize
+        assign seen_marker = '|' | append: link_menu_id | append: '|'
+        assign element_id_suffix = ''
+        if seen_menu_ids contains seen_marker
+          assign element_id_suffix = '-' | append: forloop.index
+        else
+          assign seen_menu_ids = seen_menu_ids | append: seen_marker
+        endif
+      %}
+      {% render 'header-menu-navigation-item',
+        s: s,
+        link: link,
+        link_attributes: link_attributes,
+        first: forloop.first,
+        last: forloop.last,
+        element_id_suffix: element_id_suffix
+      %}
+    {% endfor %}
+  </ul>
+{% endif %}

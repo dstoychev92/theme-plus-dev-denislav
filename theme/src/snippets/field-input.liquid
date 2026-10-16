@@ -1,0 +1,121 @@
+{% doc %}
+  - Renders a labelled text input
+
+  @param {string} [autocomplete]
+  @param {string} [button] - content after the input
+  @param {string} [class] - The classes
+  @param {boolean} [disabled]
+  @param {string} [end_accessory] - content after the input
+  @param {string} [end_icon] - icon after the input
+  @param {string} [error_message] - error text, which marks the field invalid
+  @param {string} [error_message_attributes] - attributes for the error message
+  @param {string} [form] - id of the form it belongs to
+  @param {boolean} [hide_label] - keeps the label for screen readers only
+  @param {string} [icon] - icon before the input
+  @param {string} [id] - element id, defaults to the name handleized
+  @param {string} [input_attributes] - attributes for the input
+  @param {string} [input_class] - classes for the input
+  @param {string} label
+  @param {string} [label_class] - classes for the label
+  @param {string} [name]
+  @param {string} [placeholder]
+  @param {string} [size] - 'sm', 'md' or 'lg'
+  @param {string} [start_accessory] - content before the input
+  @param {string} [start_icon] - icon before the input
+  @param {string} [style] - inline styles
+  @param {string} [success_message] - message shown after a successful post
+  @param {string} [type] - input type, defaults to 'text'
+  @param {string} [value]
+  @param {string} [wrapper_attributes] - attributes for the field wrapper
+{% enddoc %}
+
+{% liquid
+  assign id = id | default: name | handleize
+  assign type = type | default: 'text'
+%}
+
+{% capture field_class %}
+  {{ class }}
+  cursor-text
+  {% comment %} Hide label when input has placeholder shown {% endcomment %}
+  has-[:placeholder-shown]:[--field-active:0]
+{% endcapture %}
+
+{% capture wrapper_attributes %}
+  {{ wrapper_attributes }}
+  @click="$focus.first()"
+{% endcapture %}
+
+{% capture input %}
+  <input
+    type="{{ type }}"
+    name="{{ name }}"
+    {% if id %}
+      id="{{ id }}"
+    {% endif %}
+    {% if placeholder and placeholder != "" %}
+      placeholder="{{ placeholder }}"
+    {% else %}
+      {% comment %}We always need a placeholder value (even if it's empty) so that :placeholder-shown works{% endcomment %}
+      placeholder=" "
+    {% endif %}
+    {% if value %}
+      value="{{ value }}"
+    {% endif %}
+    {% if disabled %}
+      disabled
+    {% endif %}
+    {% if autocomplete %}
+      autocomplete="{{ autocomplete }}"
+    {% endif %}
+    {% if error_message != '' and error_message != null %}
+      aria-invalid="true"
+      {% if id != '' %}
+        aria-errormessage="{{ id }}-error"
+      {% endif %}
+    {% endif %}
+    {% if form %}
+      form="{{ form }}"
+    {% endif %}
+    {% if style %}
+      style="{{ style }}"
+    {% endif %}
+    class="
+      peer w-full block flex-1 ps-[--input-padding-s] pe-[--input-padding-e] py-[--input-padding-y] min-h-[--input-height]
+
+      text-[color:var(--input-text-color)] text-size-input leading-control
+      bg-transparent
+
+      {% comment %} Turn off default keyboard focus style since field should handle that {% endcomment %}
+      keyboard-focus:!outline-none
+
+      {% comment %} Only show the input placeholder once user has focused and the label has animate to top of field {% endcomment %}
+      placeholder-transparent
+      focus:placeholder-[--input-placeholder-text-color]
+
+      {{ input_class }}
+    "
+    {{ input_attributes }}
+  >
+{% endcapture %}
+
+{% render 'field',
+  label: label,
+  id: id,
+  class: field_class,
+  label_class: label_class,
+  placeholder_class: 'min-h-[--input-height]',
+  wrapper_attributes: wrapper_attributes,
+  input: input,
+  size: size,
+  error_message: error_message,
+  error_message_attributes: error_message_attributes,
+  success_message: success_message,
+  icon: icon,
+  start_icon: start_icon,
+  end_icon: end_icon,
+  start_accessory: start_accessory,
+  end_accessory: end_accessory,
+  button: button,
+  hide_label: hide_label
+%}

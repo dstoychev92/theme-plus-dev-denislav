@@ -1,0 +1,69 @@
+{% doc %}
+  - Renders a Vimeo player or Shopify placeholder
+
+  @param {number} [aspect_ratio] - CSS ratio, defaults to 16 / 9
+  @param {string} [attributes]
+  @param {boolean} [autoplay]
+  @param {string} [class] - The classes
+  @param {boolean} [lazy] - waits for loadPlayer()
+  @param {boolean} [loop]
+  @param {string} [on_init] - Alpine expression for x-init
+  @param {string} [on_load_video] - Alpine expression run once the player loads
+  @param {boolean} [placeholder] - Shopify placeholder name, or false for none
+  @param {string} [style] - inline styles
+  @param {string} [video_id] - Vimeo video ID, not the URL
+{% enddoc %}
+
+{% liquid
+  assign placeholder = placeholder | default: 'image', allow_false: true
+  assign autoplay = autoplay | default: false
+  assign loop = loop | default: false
+  assign aspect_ratio = aspect_ratio | default: '16 / 9'
+
+  if autoplay
+    assign autoplay_modifier = '.autoplay'
+  endif
+
+  if loop
+    assign loop_modifier = '.loop'
+  endif
+%}
+
+{% if video_id != blank %}
+  <div
+    class="aspect-[--aspect-ratio] {{ class }}"
+    style="--aspect-ratio: {{ aspect_ratio }};"
+
+    data-lazy-alpine
+    data-lazy-alpine-module="@theme/vimeo-video"
+
+    {% if lazy %}
+      x-vimeo-video.lazy{{ autoplay_modifier }}{{ loop_modifier }}="{{ video_id }}"
+    {% else %}
+      x-vimeo-video{{ autoplay_modifier }}{{ loop_modifier }}="{{ video_id }}"
+    {% endif %}
+
+    {% if on_init %}
+      x-init="{{ on_init }}"
+    {% endif %}
+
+    {% if on_load_video %}
+      x-on:theme:vimeo:loaded="{{ on_load_video }}"
+    {% endif %}
+
+    {{ attributes }}
+  >
+    <div
+      class="h-full *:size-full"
+      data-vimeo-player
+    ></div>
+  </div>
+{% elsif placeholder %}
+  {% assign class = class | append: ' h-auto max-w-full' %}
+  {% render 'image-placeholder',
+    placeholder: placeholder,
+    class: class,
+    style: style,
+    attributes: attributes
+  %}
+{% endif %}

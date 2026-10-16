@@ -1,0 +1,48 @@
+{% doc %}
+  - Renders Shopify placeholder artwork
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {boolean} [cover] - crops artwork to fill
+  @param {string} placeholder - placeholder_svg_tag name, such as 'image' or 'product-1'
+  @param {string} [style] - inline styles
+  @param {number} [width] - pixel width, defaults to full box
+{% enddoc %}
+
+{% capture svg_class %}
+  h-full grayscale
+  {% if width != blank %}
+    {% assign width_style = '--width:' | append: width | append: 'px;' %}
+    w-[--width] max-w-full
+  {% else %}
+    w-full
+  {% endif %}
+{% endcapture %}
+
+{% capture style %}
+  {{ width_style }}
+  {{ style }}
+{% endcapture %}
+
+{% capture svg_tag %}
+  {{ placeholder | placeholder_svg_tag: svg_class }}
+{% endcapture %}
+
+<image-placeholder
+  class="
+    flex flex-center bg-[--placeholder-bg] fill-[--placeholder-fill] aspect-[--aspect-ratio]
+    {{ class }}
+  "
+  style="{{ style }}"
+  aria-hidden="true"
+  {{ attributes }}
+>
+  {% if cover == true %}
+    {% comment %} Manually splice in attributes neccesary for an SVG to mimic `object-fit: cover` {% endcomment %}
+    {% assign parts = svg_tag | split: '<svg' %}
+    {{ parts[0] | prepend: '<svg preserveAspectRatio="xMinYMin slice" ' }}
+    {{ parts[1] }}
+  {% else %}
+    {{ svg_tag }}
+  {% endif %}
+</image-placeholder>

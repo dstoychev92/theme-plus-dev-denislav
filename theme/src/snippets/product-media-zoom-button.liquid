@@ -1,0 +1,50 @@
+{% doc %}
+  - Renders product media zoom link and touch button
+
+  @param {boolean} [enable_zoom] - defaults to s.enable_zoom
+  @param {media} media
+  @param {object} [s] - settings object
+  @param {string} [zoom_attributes] - attributes for both zoom links
+  @param {boolean} [zoom_focusable] - keeps desktop link in tab order without slideshow
+{% enddoc %}
+
+{% liquid
+  assign enable_zoom = enable_zoom | default: s.enable_zoom, allow_false: true
+  assign image_url = media.preview_image.src | image_url
+%}
+
+{% if enable_zoom %}
+  {% comment %} tabindex=-1 in slideshow contexts: keyboard users drive the gallery from the thumbnails — focusing the zoom link (in product-media) breaks arrow-key navigation, since pressing left/right bubbles to the slideshow component and changes the slides, which hides the focused element and drops focus to <body>. Keyboard zoom is the focus-revealed button in product-media-desktop instead. Static desktop layouts pass zoom_focusable since they have no slideshow and no keyboard button {% endcomment %}
+  <a
+    href="{{ image_url }}"
+    aria-label="{{ 'product.gallery.zoom_title' | t }}"
+    class="absolute inset-0 z-10 touch:hidden"
+    target="_blank"
+    {% unless zoom_focusable %}
+      tabindex="-1"
+    {% endunless %}
+    x-photoswipe:button="{{ media.id }}"
+    :role="'button'"
+    aria-controls="photoswipe"
+    {{ zoom_attributes }}
+  >
+  </a>
+
+  <a
+    href="{{ image_url }}"
+    aria-label="{{ 'product.gallery.zoom_title' | t }}"
+    class="
+      absolute top-auto bottom-[--media-overlay-inset] start-[--media-overlay-inset] end-[--media-overlay-inset] z-10 vars-control-md
+      hidden touch:flex
+      flex-center aspect-square rounded-full w-row-sm h-row-sm
+      vars-scheme-light bg-canvas outline outline-1 outline-black/5 shadow
+    "
+    target="_blank"
+    x-photoswipe:button="{{ media.id }}"
+    :role="'button'"
+    aria-controls="photoswipe"
+    {{ zoom_attributes }}
+  >
+    {% render 'core-icon', icon: 'fill-corners-out', size: 'md' %}
+  </a>
+{% endif %}

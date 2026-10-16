@@ -1,0 +1,105 @@
+{% doc %}
+  - Renders the pickup availability drawer
+
+  Opens on the theme:pickup:open event with a product URL, and loads its content through the
+  section rendering API, so the content only renders when the API calls it. A
+  theme:pickup:preload event warms the cache first. Until the load finishes it renders a
+  loading state, keeping the drawer structure so screen readers still have something to hold.
+{% enddoc %}
+
+{% capture pickup_overlay_content %}
+  <div
+    x-data="
+      {
+        shouldShowLoading: false,
+        get pickupUrl() {
+          if ($store.drawer.type === 'pickup') {
+            return $store.drawer.data?.url
+          }
+          return null
+        },
+        loadPickupAvailabilityContent() {
+          return $sectionApi.update({
+            baseUrl: this.pickupUrl,
+            cachePolicy: 'cache-first',
+            abortPending: false
+          })
+        },
+        clearPickupContent() {
+          const contentEl = $el.querySelector('[data-content]')
+          if (contentEl) contentEl.innerHTML = ''
+        }
+      }
+    "
+    x-init="
+      $watch('isDrawerOpen', async (isOpen, wasOpen) => {
+        if (isOpen && !wasOpen) {
+          clearPickupContent()
+          shouldShowLoading = true
+          await loadPickupAvailabilityContent()
+          shouldShowLoading = false
+        }
+      })
+      $watch('pickupUrl', async (url, prevUrl) => {
+        if (isDrawerOpen && url !== null && prevUrl !== null) {
+          clearPickupContent()
+          shouldShowLoading = true
+          await loadPickupAvailabilityContent()
+          shouldShowLoading = false
+        }
+      })
+    "
+
+    id="product-pickup-drawer"
+    @theme:pickup:preload.window="
+      $sectionApi.load({
+        baseUrl: $event.detail.url,
+        abortPending: false
+      })
+    "
+    @theme:pickup:open.window="loadPickupAvailabilityContent()"
+
+    data-morph-update="children"
+    data-test-id="product-pickup-drawer"
+
+    x-section-api="api-product-pickup-drawer"
+  >
+    {% comment %} Spinner {% endcomment %}
+    <div
+      class="absolute inset-0 z-20 flex flex-col flex-center"
+      x-cloak
+      x-show="shouldShowLoading"
+      {% comment %} Don't delete the spinner when adding new content {% endcomment %}
+      data-morph-update="none"
+    >
+      {% render 'spinner' %}
+    </div>
+  </div>
+{% endcapture %}
+
+<div
+  x-data="
+    {
+      get isDrawerOpen() {
+        return $store.drawer.isOpen && $store.drawer.type === 'pickup'
+      }
+    }
+  "
+  x-dialog.modal="
+    {
+      get isOpen() {
+        return isDrawerOpen
+      },
+      set isOpen(value) {
+        if (value) {
+          $dispatch('theme:pickup:open');
+        } else {
+          $dispatch('theme:pickup:close');
+        }
+      }
+    }
+  "
+>
+  {% assign title = 'product.pickup_availability.pickup_options' | t %}
+  {% render 'drawer', side: 'right', content: pickup_overlay_content, title: title %}
+</div>

@@ -1,0 +1,285 @@
+{% doc %}
+  - Renders a decorative shape, line or image behind content
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {string} [decoration_color] - shape color
+  @param {string} [decoration_color_custom] - CSS color for a custom shape color
+  @param {boolean} [decoration_dash_rounded] - rounds the dash ends
+  @param {number} [decoration_dash_weight] - dash thickness in pixels
+  @param {string} [decoration_image] - image used as the decoration
+  @param {number} [decoration_opacity] - shape opacity
+  @param {string} [decoration_outline_color] - outline color
+  @param {string} [decoration_position] - where the decoration sits
+  @param {string} [decoration_shape] - shape name
+  @param {string} [decoration_type] - 'shape', 'line' or 'image'
+  @param {number} [decoration_width] - shape width
+  @param {string} [line_color] - line color
+  @param {string} [line_color_custom] - CSS color for a custom line color
+  @param {string} [line_direction] - line direction
+  @param {number} [line_opacity] - line opacity
+  @param {number} [line_percent] - line length as a percentage
+  @param {number} [line_px] - line length in pixels
+  @param {string} [line_thickness] - line thickness
+  @param {string} [line_unit] - 'percent' or 'px'
+  @param {object} [s] - settings object
+  @param {string} [set_decoration_outline] - draws the outline
+  @param {string} [style] - inline styles
+{% enddoc %}
+
+{% liquid
+  assign s = s | default: settings
+  assign decoration_type = decoration_type | default: s.decoration_type | default: 'none'
+  assign decoration_shape = decoration_shape | default: s.decoration_shape | default: 'line-dash'
+  assign decoration_color = decoration_color | default: s.decoration_color | default: 'content'
+  assign decoration_color_custom = decoration_color_custom | default: s.decoration_color_custom | default: '#00000036'
+  assign decoration_image = decoration_image | default: s.decoration_image
+  assign decoration_dash_weight = decoration_dash_weight | default: s.decoration_dash_weight | default: 3
+  assign decoration_dash_rounded = decoration_dash_rounded | default: s.decoration_dash_rounded | default: false
+  assign set_decoration_outline = set_decoration_outline | default: s.set_decoration_outline | default: false
+  assign decoration_outline_color = decoration_outline_color | default: s.decoration_outline_color | default: '#00000080'
+  assign decoration_width = decoration_width | default: s.decoration_width | default: 6
+  assign decoration_opacity = decoration_opacity | default: s.decoration_opacity | default: 50
+  assign decoration_position = decoration_position | default: s.decoration_position | default: 'below'
+%}
+
+{% if decoration_type != 'none' %}
+  {% case decoration_type %}
+    {% when 'shape' %}
+      {% liquid
+        assign is_stroke_line = false
+        if decoration_shape == 'line-squiggle' or decoration_shape == 'line-slash'
+          assign is_stroke_line = true
+        endif
+
+        assign is_fill_outline = false
+        if set_decoration_outline and decoration_shape contains 'fill-'
+          assign is_fill_outline = true
+        endif
+
+        assign stroke_w = decoration_dash_weight
+        if decoration_width > 0
+          assign stroke_w = decoration_dash_weight | times: 100 | divided_by: decoration_width
+        endif
+
+        assign cap = 'butt'
+        if decoration_dash_rounded
+          assign cap = 'round'
+        endif
+      %}
+      {%- comment -%}
+        The mask-{shape} rules use `mask: url(#id)` referencing SVG defs in svg-masks.liquid.
+        That reference breaks when the element is promoted to its own compositor layer
+        (will-change: transform from entrance-standard, active transform animation, etc).
+        Wrapping separates the concerns: animations/positioning live on the outer, the
+        inner only carries the mask — so the mask isn't applied to a promoted layer.
+      {%- endcomment -%}
+      <div
+        class="inline-block {{ class }}"
+        style="
+          {% if decoration_color == 'custom' %}
+            --decoration-color-custom: {{ decoration_color_custom }};
+          {% else %}
+            --decoration-opacity: {{ decoration_opacity }}%;
+          {% endif %}
+          --decoration-width: {{ decoration_width }}px;
+          --decoration-dash-weight: {{ decoration_dash_weight }}px;
+          {{ style }}
+        "
+        {{ attributes }}
+      >
+        {% if is_stroke_line %}
+          <svg
+            class="
+              block
+              w-[--decoration-width]
+              h-[--decoration-width]
+              {% if decoration_color == 'custom' %}
+                text-[color:--decoration-color-custom]
+              {% else %}
+                text-{{ decoration_color }}
+                opacity-[--decoration-opacity]
+              {% endif %}
+            "
+            viewBox="0 0 100 100"
+            fill="none"
+            stroke="currentColor"
+            style="overflow: visible"
+            aria-hidden="true"
+          >
+            {% case decoration_shape %}
+              {% when 'line-squiggle' %}
+                <path d="M7.5,50 C20,15 40,15 50,50 C60,85 80,85 92.5,50" stroke-width="{{ stroke_w }}" stroke-linecap="{{ cap }}"/>
+              {% when 'line-slash' %}
+                <line x1="85" y1="15" x2="15" y2="85" stroke-width="{{ stroke_w }}" stroke-linecap="{{ cap }}"/>
+            {% endcase %}
+          </svg>
+        {% elsif is_fill_outline %}
+          <svg
+            class="
+              block
+              w-[--decoration-width]
+              h-[--decoration-width]
+              {% if decoration_color == 'custom' %}
+                text-[color:--decoration-color-custom]
+              {% else %}
+                text-{{ decoration_color }}
+                opacity-[--decoration-opacity]
+              {% endif %}
+            "
+            viewBox="0 0 1 1"
+            style="overflow: visible"
+            aria-hidden="true"
+          >
+            {% comment %}
+              Outline trick: draw a doubled (2px) stroke centered on the shape edge,
+              then clip to the shape's interior — to leaves a clean 1px stroke
+              Uses clip-path (not mask) because mask's objectBoundingBox
+              scales to the shape's tight bbox, which breaks for shapes like fill-dot
+              where the geometry doesn't fill the SVG viewBox.
+              Note: vector-effect="non-scaling-stroke" must be set per-element, doesn't inherit.
+            {% endcomment %}
+            <g fill="currentColor" stroke="{{ decoration_outline_color }}" stroke-width="2" stroke-linejoin="round" clip-path="url(#clip-{{ decoration_shape }})">
+              {% case decoration_shape %}
+                {% when 'fill-circle' %}<circle cx="0.5" cy="0.5" r="0.5" vector-effect="non-scaling-stroke"/>
+                {% when 'fill-square' %}<rect x="0" y="0" width="1" height="1" vector-effect="non-scaling-stroke"/>
+                {% when 'fill-triangle' %}<polygon points="0.5,0 1,1 0,1" vector-effect="non-scaling-stroke"/>
+                {% when 'fill-diamond' %}<polygon points="0.5,0 1,0.5 0.5,1 0,0.5" vector-effect="non-scaling-stroke"/>
+                {% when 'fill-dot' %}<circle cx="0.5" cy="0.5" r="0.2" vector-effect="non-scaling-stroke"/>
+                {% when 'fill-plus' %}<polygon points="0.425,0 0.575,0 0.575,0.425 1,0.425 1,0.575 0.575,0.575 0.575,1 0.425,1 0.425,0.575 0,0.575 0,0.425 0.425,0.425" vector-effect="non-scaling-stroke"/>
+                {% when 'fill-sparkle' %}<path d="M0.5,0 C0.55,0.4 0.6,0.45 1,0.5 C0.6,0.55 0.55,0.6 0.5,1 C0.45,0.6 0.4,0.55 0,0.5 C0.4,0.45 0.45,0.4 0.5,0 Z" vector-effect="non-scaling-stroke"/>
+              {% endcase %}
+            </g>
+          </svg>
+        {% else %}
+          <div
+            class="
+              block
+              w-[--decoration-width]
+
+              {% case decoration_shape %}
+                {% when 'line-dash' %}
+                  h-[--decoration-dash-weight]
+                  {% if decoration_dash_rounded %}rounded-full{% endif %}
+                {% when 'fill-circle', 'fill-triangle', 'fill-diamond', 'fill-square', 'fill-dot', 'fill-plus', 'fill-sparkle', 'mark-cross', 'mark-asterisk' %}
+                  h-[--decoration-width]
+                  mask-{{ decoration_shape }}
+              {% endcase %}
+
+              {% if decoration_color == 'custom' %}
+                bg-[--decoration-color-custom]
+              {% else %}
+                bg-{{ decoration_color }}
+                opacity-[--decoration-opacity]
+              {% endif %}
+            "
+          ></div>
+        {% endif %}
+      </div>
+    {% when 'image' %}
+      {% if decoration_image != blank %}
+        <div
+          class="
+            inline-block
+            w-[--decoration-width]
+            {{ class }}
+          "
+          style="
+            --decoration-width: {{ decoration_width }}px;
+            {{ style }}
+          "
+          {{ attributes }}
+        >
+          {% render 'core-image', image: decoration_image, width: decoration_width, class: 'size-full object-contain' %}
+        </div>
+      {% endif %}
+    {% when 'line' %}
+      {% liquid
+        assign line_direction = line_direction | default: s.line_direction | default: 'horizontal'
+        assign line_unit = line_unit | default: s.line_unit | default: 'percent'
+        assign line_px = line_px | default: s.line_px | default: 100
+        assign line_percent = line_percent | default: s.line_percent | default: 100
+        assign line_color = line_color | default: s.line_color | default: 'content'
+        assign line_color_custom = line_color_custom | default: s.line_color_custom | default: '#00000036'
+        assign line_opacity = line_opacity | default: s.line_opacity | default: 30
+        assign line_thickness = line_thickness | default: s.line_thickness | default: 1
+
+        assign line_thickness = line_thickness | append: 'px'
+        case line_unit
+          when 'pixel'
+            assign line_size = line_px | append: 'px'
+          when 'percent'
+            assign line_size = line_percent | append: '%'
+        endcase
+
+        assign line_scale_y = line_percent | divided_by: 100.0
+      %}
+
+      {% capture line_color_styles %}
+        {% if line_color == 'custom' %}
+          background-color: {{ line_color_custom }};
+        {% else %}
+          background-color: var(--{{ line_color }});
+          opacity: {{ line_opacity }}%;
+        {% endif %}
+      {% endcapture %}
+
+      {% if line_direction == 'horizontal' %}
+        {% capture line_styles %}
+          {% render 'props-style-offset', s: s %}
+          width: {{ line_size }};
+          height: {{ line_thickness }};
+          {{ line_color_styles }}
+          {{ style }}
+        {% endcapture %}
+        <hr
+          class="inline-block {{ class }}"
+          style="
+            border: none;
+            margin: 0;
+            {{ line_styles }}
+          "
+          role="presentation"
+          {{ attributes }}
+        >
+      {% else %}
+        {% if line_unit == 'percent' %}
+          <span
+            class="relative inline-flex items-center justify-center self-stretch {{ class }}"
+            style="
+              {% render 'props-style-offset', s: s %}
+              min-height: max(1lh,100%);
+            "
+            role="presentation"
+            aria-hidden="true"
+            {{ attributes }}
+          >
+            <span
+              class="absolute top-0 bottom-0 block"
+              style="
+                transform: scaleY({{ line_scale_y }});
+                transform-origin: center;
+                width: {{ line_thickness }};
+                {{ line_color_styles }}
+                {{ style }}
+              "
+            ></span>
+          </span>
+        {% else %}
+          <span
+            class="inline-flex items-center self-center {{ class }}"
+            style="
+              {% render 'props-style-offset', s: s %}
+              width: {{ line_thickness }};
+              height: {{ line_size }};
+              {{ line_color_styles }}
+              {{ style }}
+            "
+            role="presentation"
+            aria-hidden="true"
+            {{ attributes }}
+          ></span>
+        {% endif %}
+      {% endif %}
+  {% endcase %}
+{% endif %}

@@ -1,0 +1,134 @@
+{% doc %}
+  - Renders a card list section: header, cards and footer
+
+  @param {string} [attributes]
+  @param {string} [class] - The classes
+  @param {string} [columns_lg] - column count
+  @param {string} [columns_md] - column count
+  @param {string} [columns_sm] - column count
+  @param {string} [content_align] - horizontal alignment
+  @param {string} [footer] - content below the cards
+  @param {string} header - content above the cards
+  @param {string} [layout_desktop] - layout at that breakpoint
+  @param {string} [layout_mobile] - layout at that breakpoint
+  @param {string} [layout_tablet] - layout at that breakpoint
+  @param {string} [list_attributes] - attributes for the list
+  @param {string} list_items - rendered card markup
+  @param {string} [progress_bar_visibility] - when the slider progress bar shows
+  @param {object} [s] - settings object
+  @param {string} [style] - inline styles
+{% enddoc %}
+
+{%- liquid
+  assign layout_desktop = layout_desktop | default: s.layout_desktop | default: 'grid'
+
+  #
+  # Desktop
+  #
+
+  assign columns_lg = columns_lg | default: s.columns_lg
+
+  #
+  # Tablet
+  #
+
+  # Tablet should just default to desktop if not set.
+  assign layout_tablet = layout_tablet | default: s.layout_tablet | default: layout_desktop
+
+  assign columns_md = columns_md | default: s.columns_md
+
+  #
+  # Mobile
+  #
+
+  # If desktop layout is grid we check the desktop-dependent mobile layout setting
+  assign layout_mobile = layout_mobile | default: s.layout_mobile | default: 'slider'
+
+  if layout_mobile == 'grid'
+    assign columns_sm = columns_sm | default: s.columns_sm_grid
+  else
+    assign columns_sm = columns_sm | default: s.columns_sm
+    if columns_sm == 'custom'
+      assign columns_sm = s.columns_sm_custom
+    endif
+    assign columns_sm = columns_sm | default: settings.slider_columns_mobile
+  endif
+
+  assign set_gap_tab_y = s.set_gap_tab_y
+  assign gap_tab_y = s.gap_tab_y
+  assign gap_custom_tab_y = s.gap_custom_tab_y
+
+  # Slider progress-bar
+  assign progress_bar_visibility = progress_bar_visibility | default: s.progress_bar_visibility | default: 'desktop'
+%}
+
+{% comment %} Grid layout {% endcomment %}
+{% capture grid_layout_class %}
+  {% if footer == null %}
+    vars-section-grid-layout-card-list-rows
+  {% else %}
+    vars-section-grid-layout-card-list-rows-footer
+  {% endif %}
+
+  vars-section-grid-layout-card-list-title-{{ s.title_placement }}
+{% endcapture %}
+
+{% capture section_card_list_elements %}
+  {% render 'core-section-card-list-elements',
+    s: s,
+    header: header,
+    list_items: list_items,
+    list_attributes: list_attributes,
+    footer: footer,
+    layout_desktop: layout_desktop,
+    layout_tablet: layout_tablet,
+    layout_mobile: layout_mobile,
+    columns_lg: columns_lg,
+    columns_md: columns_md,
+    columns_sm: columns_sm
+  %}
+{% endcapture %}
+
+{% capture class %}
+  {{ class }} grid-flow-col gap-y-layout
+
+  {% comment %} Ensure overflow buttons don't ... cause overflow {% endcomment %}
+  overflow-x-clip
+
+  {{ grid_layout_class }}
+{% endcapture %}
+
+{% capture style %}
+  {{ style }}
+  {% if set_gap_tab_y %}
+    {% render 'props-style-gap', gap: gap_tab_y, gap_custom: gap_custom_tab_y, vars: false, apply: false %}
+    --layout-gutter-y: var(--custom-gutter-y);
+  {% endif %}
+{% endcapture %}
+
+{% capture attributes %}
+  x-carousel
+  x-overflow.autoregister
+  role="group"
+  aria-label="{{ 'other.accessibility.card_carousel' | t | escape_once }}"
+  aria-live="off"
+  x-data="
+    {
+      sidePrevInView: false,
+      sideNextInView: false,
+      get overflowButtonPlacement() {
+        return (this.sidePrevInView && this.sideNextInView) ? 'side' : 'top'
+      }
+    }
+  "
+  {{ attributes }}
+{% endcapture %}
+
+{% render 'core-section-wrapper',
+  s: s,
+  content: section_card_list_elements,
+  class: class,
+  attributes: attributes,
+  style: style,
+  content_align: content_align
+%}

@@ -1,0 +1,319 @@
+{% doc %}
+  - Renders the outer section element, its width and its background
+
+  contain_controls_rhythm hands the contain setting control of spacing: uncontained drops the
+  padding, contained turns the rhythm on.
+
+  @param {string} [attributes]
+  @param {string} [background] - rendered background markup
+  @param {string} [background_color] - CSS background color
+  @param {string} [class] - The classes
+  @param {color_scheme} [color_scheme]
+  @param {boolean} [contain_controls_background] - uncontaining the section drops the background
+  @param {boolean} [contain_controls_rhythm] - the contain setting drives padding and rhythm
+  @param {boolean} [contain_disables_transparent_header] - containing the section turns off header transparency
+  @param {boolean} [contain_section] - keeps the section inside the page width
+  @param {string} content
+  @param {string} [content_align] - horizontal alignment
+  @param {string} [content_padding] - content padding step
+  @param {number} [content_padding_custom] - content padding in pixels
+  @param {string} [content_width] - content width
+  @param {number} [content_width_custom] - custom content width as a percentage
+  @param {number} [content_width_custom_mobile] - custom content width on mobile
+  @param {boolean} [lazy_alpine] - starts Alpine only when the section reaches the viewport
+  @param {boolean} [padding] - false removes the section padding
+  @param {boolean} [photoswipe] - false leaves the section out of the lightbox
+  @param {object} [s] - settings object
+  @param {section} [section]
+  @param {number} [section_width] - section width in pixels
+  @param {boolean} [set_rhythm] - adds the section rhythm spacing
+  @param {string} [style] - inline styles
+  @param {string} [tag] - defaults to 'div'
+  @param {string} [target_device] - limits the section to one device
+  @param {string} [text_class] - classes for the text colour
+{% enddoc %}
+
+{% liquid
+  assign tag = tag | default: 'section-wrapper'
+  assign set_rhythm = set_rhythm | default: s.set_rhythm | default: false, allow_false: true
+  assign contain_section = contain_section | default: s.contain_section
+  assign section_width = section_width | default: s.section_width
+
+  # A section defers its own start-up unless it is on screen from the start: the page's
+  # first section, which carries the LCP, or anything in the header. The theme editor keeps
+  # everything eager so a merchant sees edits at once.
+  #
+  # section.index0 restarts inside each section group, so the footer group's first section
+  # looks exactly like the page's — being first only means the LCP inside the template.
+  # A blank location (no section.location) falls back to the index alone.
+  assign starts_on_screen = false
+
+  if section.location == 'header'
+    assign starts_on_screen = true
+  endif
+
+  if section.index0 == 0
+    if section.location == 'template' or section.location == blank
+      assign starts_on_screen = true
+    endif
+  endif
+
+  assign should_be_lazy = true
+
+  if starts_on_screen or request.design_mode
+    assign should_be_lazy = false
+  endif
+
+  # An explicit lazy_alpine: false always wins — a section that needs Alpine from the start.
+  if lazy_alpine == false
+    assign should_be_lazy = false
+  endif
+
+  # Colors
+  assign color_scheme = color_scheme | default: s.color_scheme, allow_false: true
+
+  assign background = background | default: s.background
+  assign background_color = background_color | default: s.background_color
+
+  if contain_controls_background == true and contain_section == false
+    assign background = null
+    assign background_color = null
+  endif
+
+  # Banners hide tranparency and rhythmm settings when contained,
+  # Product hides transparency when contained
+  # Pair never allows transparency and always shows rhythm
+  assign transparent_possible = true
+  if contain_disables_transparent_header == true and contain_section == true
+    assign transparent_possible = false
+  endif
+  if contain_controls_rhythm == true and contain_section == false
+    assign padding = false
+  elsif contain_controls_rhythm == true and contain_section == true
+    assign set_rhythm = true
+  endif
+
+  if contain_section == false
+    assign section_width = 'bleed'
+  endif
+
+  assign content_padding = content_padding | default: s.content_padding, allow_false: true
+  assign content_padding_custom = content_padding_custom | default: s.content_padding_custom, allow_false: true
+  assign content_width = content_width | default: s.content_width, allow_false: true
+
+  unless padding == false
+    assign custom_padding_top = s.section_padding_top
+    assign custom_padding_bottom = s.section_padding_bottom
+  endunless
+
+  # Device targetting
+  if section.settings.set_target_device != null
+    if settings.show_target_device_settings == true and section.settings.set_target_device == true
+      assign target_device = section.settings.target_device
+    endif
+  else
+    assign target_device = target_device | default: s.target_device
+  endif
+
+  # The horizontal_placement in a banner will set --content-align if content_align is not set
+  assign content_align = content_align | default: s.content_align | default: s.horizontal_placement, allow_false: true
+
+  # Transparent header
+  if transparent_possible and s.enable_transparent
+    if s.transparent_style == 'auto'
+      if s.color_scheme.settings.color_canvas.lightness < 50
+        assign transparent_style = 'dark'
+      else
+        assign transparent_style = 'light'
+      endif
+    else
+      assign transparent_style = s.transparent_style
+    endif
+  endif
+
+  if text_class == null
+    assign text_class = 'text-content'
+  endif
+%}
+
+{% capture style %}
+  {%- if background == 'custom' -%}
+    --section-custom-bg: {{ background_color | default: 'transparent' }};
+  {%- endif -%}
+
+  {% if padding != false %}
+    {% if set_rhythm == true %}
+      --section-pt: calc({{- custom_padding_top | default: 0 -}}px * var(--r-multiplier));
+      --section-pb: calc({{- custom_padding_bottom | default: 0 -}}px * var(--r-multiplier));
+    {% else %}
+      --section-pt: var(--section-rhythm);
+      --section-pb: var(--section-rhythm);
+    {% endif %}
+  {% else %}
+    --section-pt: 0px;
+    --section-pb: 0px;
+  {% endif %}
+
+  {% if content_width == 'custom' %}
+    {% assign content_width_custom = content_width_custom | default: s.content_width_custom | default: 100 %}
+    {% assign content_width_custom_mobile = content_width_custom_mobile | default: s.content_width_custom_mobile | default: 100 %}
+    {% # tablet width is calculated from mobile and desktop %}
+    {% assign content_width_custom_tablet = content_width_custom_mobile | plus: content_width_custom | divided_by: 2 | at_least: content_width_custom %}
+
+    --raw-custom-width-desktop-px: {{ content_width_custom | divided_by: 100.0 | times: settings.layout_site_width | round }}px;
+    --raw-custom-width-tablet-percent: {{ content_width_custom_tablet }}%;
+    --raw-custom-width-mobile-percent: {{ content_width_custom_mobile }}%;
+  {% endif %}
+
+  {% if content_padding != blank %}
+    {%- case content_padding -%}
+      {%- when 'sm' -%}
+        --section-setting-space: var(--root-space-sm);
+      {%- when 'md' -%}
+        --section-setting-space: var(--root-space-md);
+      {%- when 'lg' -%}
+        --section-setting-space: var(--root-space-lg);
+      {%- when 'custom' -%}
+        --section-setting-space: calc({{ content_padding_custom }}px * var(--r-multiplier));
+    {%- endcase -%}
+  {% else %}
+    --section-setting-space: 0px;
+  {% endif %}
+
+  {{ style }}
+{% endcapture %}
+
+{% capture class %}
+  col-span-full row-span-full section-grid
+  pt-[--section-pt] pb-[--section-pb]
+  group/section reverse-z-stack overflow-x-clip overflow-y-visible
+
+  {% if color_scheme -%}vars-{{ color_scheme.id }}{%- endif %}
+  {% if content_width -%}vars-section-content-width-{{ content_width }}{%- endif %}
+  {% if section_width -%}vars-section-width-{{ section_width }} section-width-{{ section_width }}{%- endif %}
+  {% if content_align -%}vars-content-align-{{ content_align }}{%- endif %}
+
+  {% if contain_section %}
+    section-contain
+  {% endif %}
+
+  {% case target_device -%}
+    {%- when 'mobile' -%}
+      md:hidden
+    {%- when 'desktop' -%}
+      max-md:hidden
+  {% endcase %}
+  {% if text_class -%}{{- text_class -}}{%- endif %}
+  {% case background -%}
+    {%- when 'transparent' -%}
+      bg-transparent
+    {%- when 'canvas' -%}
+      bg-canvas
+    {%- when 'tint' -%}
+      bg-content-mix-5
+    {%- when 'custom' -%}
+      bg-[--section-custom-bg]
+    {%- else -%}
+      bg-canvas
+  {%- endcase %}
+
+  {% # Allow contained elements to hide the section (e.g. for countdown) %}
+  has-[[data-hide-section]]:hidden
+
+  {{ class }}
+{% endcapture %}
+
+{% capture attributes %}
+  {% if should_be_lazy %}
+    data-lazy-alpine
+  {% endif %}
+
+  x-parallax
+  {% unless photoswipe == false %}
+    x-photoswipe
+  {% endunless %}
+
+  {% if transparent_possible and s.enable_transparent %}
+    {% if transparent_style == "dark" %}
+      data-allows-overlay-header="dark"
+    {% else %}
+      data-allows-overlay-header="light"
+    {% endif %}
+  {% endif %}
+
+  {{ attributes }}
+{% endcapture %}
+
+<{{ tag }} class="{{ class }}" style="{{ style }}" {{ attributes }}>
+  {% if transparent_possible and s.enable_transparent %}
+    {% style %}
+      /* Header will be transparent and overlap the content part of this section when:
+      * 1. Header has a section with [data-overlay-header] attribute (theme setting enabled)
+      * 2. The current section allows an overlay header
+      * 2. The current section is the first section in the main content area
+      */
+
+      /* Change the page grid to allow the header background to underlap the header while the content is below it */
+      .page-grid:has(header > .shopify-section > [data-overlay-header]):has(main > .shopify-section#shopify-section-{{ section.id }}:first-of-type) {
+        /* When the first section of the page allows an overlay header, we modify the grid to allow the header background to underlap the header while the content is below it */
+        grid-template-rows:
+          [header-start banner-start]
+          repeat(2, [header-section-start] minmax(0, min-content) [header-section-end])
+          [header-end banner-content-start]
+          minmax(0, 1fr)
+          [banner-content-end banner-end main-start]
+          repeat(var(--max-sections), [section-start] minmax(0, auto) [section-end])
+          [main-end footer-start]
+          minmax(0, min-content)
+          [footer-end];
+      }
+
+      {% # Translation: if the header has a section with [data-overlay-header] attribute (theme setting enabled) and this section is the first section in the main content area AND allows an overlay header then... %}
+      {% capture transparent_banner_section_selector %}
+        .page-grid:has(header > .shopify-section > [data-overlay-header]) > main > .shopify-section#shopify-section-{{ section.id }}:first-of-type
+      {% endcapture %}
+
+      /* Change the grid row for this section to allow the header background to underlap the header while the content is below it */
+      {{ transparent_banner_section_selector }} {
+        grid-row: banner-start/banner-end;
+      }
+
+      @supports (grid-template-rows: subgrid) {
+        {{ transparent_banner_section_selector }} > {{ tag }} {
+          /* Change the background so that it starts allow the way up behind the header */
+          --section-background-row-start: banner-start;
+          /* Change the content so that it starts below the header */
+          --section-content-row-start: banner-content-start;
+          /* The section's inner wrapper needs to use subgrid so that the content and background can use the same grid-template-rows */
+          grid-template-rows: subgrid;
+        }
+      }
+
+      /* Fallback implementation to add spacing between banner section content and header. Can have CLS, but works on all browsers */
+      @supports not (grid-template-rows: subgrid) {
+        {{ transparent_banner_section_selector }} {
+          --section-content-pt: var(--header-height);
+        }
+      }
+    {% endstyle %}
+
+    {{ 'theme.transparent-header.css' | asset_url | stylesheet_tag }}
+  {% endif %}
+
+  {{ content }}
+
+  {% unless photoswipe == false %}
+    {% comment %} Lazily load CSS that is never needed in the critical path {% endcomment %}
+    <link rel="stylesheet" href="{{ 'theme.photoswipe.css' | asset_url }}" media="print" onload="this.media='all'">
+
+    <template x-photoswipe:counter>
+      <div class="flex items-center gap-x-r2 text-content text-r2">
+        <span class="font-family-body font-bold leading-[1em]" x-text="currentIndex + 1"></span>
+        <em class="font-family-body italic text-muted leading-[1em]">
+          {{- 'product.gallery.index_indicator_separator' | t -}}
+        </em>
+        <span class="font-family-body font-bold leading-[1em]" x-text="totalSlides"></span>
+      </div>
+    </template>
+  {% endunless %}
+</{{ tag }}>

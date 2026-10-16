@@ -1,0 +1,268 @@
+{% doc %}
+  - Renders the active filters as removable tags
+
+  @param {string} [class] - The classes
+  @param {string} [default_sort_by] - collection's default sort key
+  @param {number} [filter_count] - number of active filters
+  @param {object} filters
+  @param {string} [sort_by] - current sort key
+  @param {string} [tag_button_appearance] - button appearance, defaults to 'outline'
+  @param {string} [tag_button_size] - button size
+  @param {string} [tag_button_type_preset] - type preset for the label
+  @param {string} [tag_button_type_resize] - type resize step for the label
+  @param {string} url - URL the tags link back to
+  @param {boolean} [wrap] - false keeps the tags on one line
+{% enddoc %}
+
+{% liquid
+  assign active_filter_values_count = 0
+  assign collection_sort = sort_by | default: default_sort_by
+  assign url_parts = url | split: '?'
+  assign wrap = wrap | default: true, allow_false: true
+
+  assign tag_button_appearance = tag_button_appearance | default: 'outline'
+  assign tag_button_size = tag_button_size | default: 'sm'
+  assign tag_button_type_resize = tag_button_type_resize | default: 'xs'
+  assign tag_button_type_preset = tag_button_type_preset | default: 'p'
+
+  # If the url contains a query string, append the sort_by parameter with an ampersand
+  if url_parts.size > 1
+    assign base_url = url | append: '&sort_by='
+  else
+    assign base_url = url | append: '?sort_by='
+  endif
+
+  assign clear_all_url = base_url | append: collection_sort
+  assign clear_all_label = 'collection.filters.clear_all' | t
+
+  assign tag_button_class = 'flex-none truncate max-w-full'
+%}
+
+{%- capture filter_clear_tags -%}
+  {% liquid
+    assign active_tag_count = 0
+    assign total_active_tags = 0
+  %}
+
+  {% comment %} First pass: count total active tags {% endcomment %}
+  {% for filter in filters %}
+    {% assign is_active_filter = false %}
+    {% case filter.type %}
+      {% when 'price_range' %}
+        {% if filter.max_value.value < filter.range_max or filter.min_value.value > 0 %}
+          {% assign is_active_filter = true %}
+          {% assign total_active_tags = total_active_tags | plus: 1 %}
+        {% endif %}
+      {% else %}
+        {% if filter.active_values.size > 0 %}
+          {% assign is_active_filter = true %}
+          {% assign total_active_tags = total_active_tags | plus: filter.active_values.size %}
+        {% endif %}
+    {% endcase %}
+  {% endfor %}
+
+  {% comment %} Second pass: render tags {% endcomment %}
+  {% for filter in filters %}
+    {% assign is_active_filter = false %}
+
+    {% comment %} Check if we have any active filters {% endcomment %}
+    {% case filter.type %}
+      {% when 'price_range' %}
+        {% if filter.max_value.value < filter.range_max or filter.min_value.value > 0 %}
+          {% assign is_active_filter = true %}
+        {% endif %}
+      {% else %}
+        {% if filter.active_values.size > 0 %}
+          {% assign is_active_filter = true %}
+        {% endif %}
+    {% endcase %}
+
+    {% comment %} Build tags {% endcomment %}
+    {% if is_active_filter %}
+      {% assign new_active_filter_values_count = filter.active_values.size | at_least: 1 %}
+      {% assign active_filter_values_count = active_filter_values_count | plus: new_active_filter_values_count %}
+
+      {% case filter.type %}
+        {% when 'price_range' %}
+          {%- liquid
+            assign filter_count = filter_count | plus: 1
+            assign active_tag_count = active_tag_count | plus: 1
+            assign min_value = filter.min_value.value | default: 0 | money_without_trailing_zeros
+            assign max_value = filter.max_value.value | default: filter.range_max | money_without_trailing_zeros
+            assign price_range_text = min_value | append: ' - ' | append: max_value
+            assign aria_label = 'collection.filters.clear_filter' | t: filter: price_range_text
+          %}
+
+          {% capture tag_button_attributes %}
+            x-section-api:link.replace
+            :data-state="$asyncLink.state"
+            x-show="$asyncLink.state != 'pending' && !isClearAllPending"
+            key="filter-tag-{{ filter.param_name }}-{{ filter.min_value.value }}-{{ filter.max_value.value }}"
+          {% endcapture %}
+
+          {%- capture label -%}
+            <span class="truncate">{{ price_range_text }}</span>
+          {%- endcapture -%}
+
+          {%- render 'core-button',
+            tag: 'a',
+            label: label,
+            aria_label: aria_label,
+            href: filter.url_to_remove,
+            class: tag_button_class,
+            end_icon: 'stroke-bare-x',
+            attributes: tag_button_attributes,
+            appearance: tag_button_appearance,
+            color: 'content',
+            type_resize: tag_button_type_resize,
+            type_preset: tag_button_type_preset,
+            sizing: tag_button_size
+          -%}
+        {% else %}
+          {%- for filter_value in filter.active_values -%}
+            {% liquid
+              assign active_tag_count = active_tag_count | plus: 1
+            %}
+
+            {% capture tag_button_attributes %}
+              x-section-api:link.replace
+              :data-state="$asyncLink.state"
+              x-show="$asyncLink.state != 'pending' && !isClearAllPending"
+              key="filter-tag-{{ filter.param_name }}-{{ filter_value.label }}"
+            {% endcapture %}
+
+            {%- capture label -%}
+              {% liquid
+                assign swatch_image = filter_value.swatch.image
+                assign swatch_color = filter_value.swatch.color
+                assign label = filter_value.label
+                assign aria_label = 'collection.filters.clear_filter' | t: filter: label
+              %}
+              <div
+                class="
+                  flex-row-center gap-r4 overflow-hidden
+                "
+                style="--swatch-size: 16px"
+              >
+                {% if filter.presentation == 'swatch' %}
+                  {% render 'swatch', color: swatch_color, image: swatch_image, size: false, class: 'shrink-0' %}
+                {% endif %}
+
+                <span class="truncate">
+                  {% if filter.type == 'boolean' %}
+                    {{ filter.label }}:
+                  {% endif %}
+
+                  {{ filter_value.label }}
+                </span>
+              </div>
+            {%- endcapture -%}
+
+            {% assign aria_label = 'collection.filters.clear_filter' | t: filter: filter_value.label %}
+            {%- render 'core-button',
+              tag: 'a',
+              aria_label: aria_label,
+              label: label,
+              href: filter_value.url_to_remove,
+              class: tag_button_class,
+              end_icon: 'stroke-bare-x',
+              attributes: tag_button_attributes,
+              appearance: tag_button_appearance,
+              color: 'content',
+              type_resize: tag_button_type_resize,
+              type_preset: tag_button_type_preset,
+              sizing: tag_button_size
+            -%}
+          {%- endfor -%}
+      {% endcase %}
+    {% endif %}
+  {% endfor %}
+{%- endcapture -%}
+
+{% comment %} Clear All Button {% endcomment %}
+{%- capture clear_all_button -%}
+  {% capture clear_all_button_attributes %}
+    x-section-api:link.replace
+    @link:pending="isClearAllPending = true"
+    @link:idle="isClearAllPending = false"
+    aria-busy="$asyncLink.state == 'pending'"
+  {% endcapture %}
+
+  {%- if active_filter_values_count > 1 -%}
+    {%- render 'core-button',
+      tag: 'a',
+      label: clear_all_label,
+      href: clear_all_url,
+      class: tag_button_class,
+      end_icon: 'fill-reset',
+      attributes: clear_all_button_attributes,
+      appearance: 'none',
+      color: 'content',
+      type_resize: tag_button_type_resize,
+      type_preset: tag_button_type_preset,
+      sizing: tag_button_size
+    -%}
+  {%- endif -%}
+{%- endcapture -%}
+
+<div
+  class="
+    flex-row-center gap-r4 justify-between {{ class }}
+    {% if active_filter_values_count == 0 %}
+      !hidden
+    {% endif %}
+    {% if wrap == false %}
+      min-w-0
+    {% endif %}
+  "
+  key="filter-tags"
+  x-data="{ isClearAllPending: false }"
+  data-filter-count="{{ filters.size }}"
+  data-active-filter-values-count="{{ active_filter_values_count }}"
+  {% comment %}
+    Prevent the user from interacting with filter tags while theme section
+    is loading to avoid weird behaviour if they click a filter tag with an out of date href
+  {% endcomment %}
+  :class="
+    {
+      'opacity-50 pointer-events-none': $sectionApi.state == 'loading'
+    }
+  "
+>
+  {% if filter_clear_tags != blank %}
+    <div
+      class="
+        flex items-center gap-r4
+        {% if wrap %}
+          flex-wrap
+        {% else %}
+          flex-nowrap overflow-x-auto whitespace-nowrap edge-mask edge-mask-duration-200 scrollbar-hide
+        {% endif %}
+      "
+      role="toolbar"
+      x-roving-tab
+      x-roving-tab:list
+      aria-label="{{ 'collection.filters.active_filters' | t }}"
+      {% if wrap == false %}
+        x-overflow.autoregister
+        x-overflow:viewport
+        :data-overflow-start="$overflow.start"
+        :data-overflow-end="$overflow.end"
+        :class="
+          {
+            'edge-mask-r': $overflow.end,
+            'edge-mask-l': $overflow.start,
+          }
+        "
+      {% endif %}
+    >
+      {{ filter_clear_tags }}
+      {% if wrap == true %}
+        {{ clear_all_button }}
+      {% endif %}
+    </div>
+    {% if wrap == false %}
+      {{ clear_all_button }}
+    {% endif %}
+  {% endif %}
+</div>

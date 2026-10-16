@@ -1,0 +1,357 @@
+<!-- blocks/_product-layout-details.liquid -->
+
+{% doc %}
+  - Renders the product details column
+
+  @param {string} [class_static] - classes that stay on the element in every layout
+{% enddoc %}
+
+<div
+  role="region"
+  id="{{ section.id }}-product-details"
+  style="--details-top-buffer: {{ block.settings.padding_top }}px;"
+  class="
+    [--product-form-sticky-offset-top:var(--details-top-buffer)]
+    md:scroll-pt-[--product-form-sticky-offset-top] md:pt-[--product-form-sticky-offset-top]
+    md:row-start-[header-end]
+
+    {% comment %} When no subgrid we manually offset the content by the header height {% endcomment %}
+    no-subgrid:md:[--product-form-sticky-offset-top:calc(var(--header-height)+var(--details-top-buffer))]
+    no-subgrid:md:row-start-auto
+
+    {% # Product form yields to media column so alignment can match pair columns %}
+    {% if section.settings.contain_section == false %}
+      md:px-root-buffer
+    {% elsif section.settings.media_col_order == 'first' %}
+      md:ps-root-buffer
+    {% else %}
+      md:pe-root-buffer
+    {% endif %}
+
+    {% # Always buffer content when single-column %}
+    max-md:px-root-buffer
+
+    {% # Grid class from product section %}
+    {{ class_static }}
+  "
+  aria-label="{{ 'product.accessibility.details_label' | t }}"
+>
+  <div
+    style="align-items: {{ block.settings.placement }};"
+    class="
+      flex flex-col
+      [--sticky-padding:--desktop-pt]
+      sticky-column
+      md:pb-[--sticky-padding]
+      duration-300 ease-in-out
+    "
+    x-sticky-columns:column
+  >
+    <div
+      style="
+        {% render 'props-style-gap', s: block.settings %}
+        --details-placement-width: {{ block.settings.placement_width | append: 'px' }};
+        {% if block.settings.content_align == 'left' %}
+          --title-flex: row;
+          --title-justify: space-between;
+          --title-align: start;
+          --share-direction: row;
+          --pickup-direction: row;
+          --pickup-align: start;
+        {% elsif block.settings.content_align == 'center' %}
+          --title-flex: column;
+          --title-justify: center;
+          --title-align: center;
+          --share-direction: row;
+          --pickup-align: start;
+        {% elsif block.settings.content_align == 'right' %}
+          --title-flex: column;
+          --title-justify: center;
+          --title-align: center;
+          --share-direction: row-reverse;
+          --pickup-direction: row-reverse;
+          --pickup-align: end;
+        {% endif %}
+      "
+      class="
+        flex flex-col
+        vars-content-align-{{ block.settings.content_align }}
+        text-content-align items-content-align
+        w-full
+        {% if block.settings.placement != 'stretch' %}
+          md:max-w-[--details-placement-width]
+        {% endif %}
+      "
+      x-product-form
+      x-data="{ quantity: 1 }"
+      x-id="['input']"
+      data-morph-update="children"
+      data-test-id="product-form"
+      {{ block.shopify_attributes }}
+    >
+      {% if section.settings.enable_breadcrumbs and section.settings.breadcrumbs_position == 'content' %}
+        {% comment %} Own render region, since the breadcrumbs render before the block regions and would keep the old product after a sibling or combined-listing switch {% endcomment %}
+        {% render 'product-breadcrumbs', class: 'max-md:hidden', attributes: 'data-render-region="breadcrumbs"' %}
+      {% endif %}
+
+      {% comment %}
+        Each direct theme block is a render region so variant changes update its entire rendered subtree,
+        including nested blocks inside containers such as frames. Keep this boundary here instead of in
+        product-block, which is not rendered by every block. App blocks stay outside our render regions so
+        their injected DOM and client-side state are left untouched.
+      {% endcomment %}
+      {% for block in block.blocks %}
+        {% if block.type == '@theme' %}
+          <div class="contents" data-render-region="{{ block.id }}">
+            {% render block %}
+          </div>
+        {% else %}
+          {% render block %}
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+	"name": "Details",
+	"tag": null,
+	"settings": [
+		{
+			"type": "text_alignment",
+			"id": "content_align",
+			"label": "Alignment",
+			"default": "left"
+		},
+		{
+			"type": "header",
+			"content": "Desktop"
+		},
+		{
+			"type": "range",
+			"id": "padding_top",
+			"label": "Padding top",
+			"unit": "px",
+			"min": 0,
+			"max": 200,
+			"step": 2,
+			"default": 40
+		},
+		{
+			"type": "select",
+			"id": "placement",
+			"label": "Placement",
+			"default": "center",
+			"options": [
+				{
+					"value": "stretch",
+					"label": "↔"
+				},
+				{
+					"value": "start",
+					"label": "⇤"
+				},
+				{
+					"value": "center",
+					"label": "|"
+				},
+				{
+					"value": "end",
+					"label": "⇥"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "placement_width",
+			"label": "Width",
+			"unit": "px",
+			"min": 300,
+			"max": 1000,
+			"step": 50,
+			"default": 450,
+			"visible_if": "{{ block.settings.placement != 'stretch' }}"
+		},
+		{
+			"type": "header",
+			"content": "Block spacing"
+		},
+		{
+			"type": "select",
+			"id": "gap",
+			"label": "Gap",
+			"default": "lg",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "gap_custom",
+			"label": "Custom gap",
+			"default": 0,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ block.settings.gap == 'custom'  }}"
+		},
+	],
+	"blocks": [
+		{
+			"type": "_product-title"
+		},
+		{
+			"type": "_product-price"
+		},
+		{
+			"type": "_product-description"
+		},
+		{
+			"type": "_product-disclosures"
+		},
+		{
+			"type": "_product-pickup"
+		},
+		{
+			"type": "_product-rating"
+		},
+		{
+			"type": "_product-sku"
+		},
+		{
+			"type": "_product-stock-status"
+		},
+		{
+			"type": "_product-option-selectors"
+		},
+		{
+			"type": "_product-option-siblings"
+		},
+		{
+			"type": "_product-subscription"
+		},
+		{
+			"type": "_product-quantity"
+		},
+		{
+			"type": "_product-add-buttons"
+		},
+		{
+			"type": "_product-upsell"
+		},
+		{
+			"type": "_product-complementary"
+		},
+		{
+			"type": "_product-sharing"
+		},
+		{
+			"type": "theme-badge"
+		},
+		{
+			"type": "theme-button"
+		},
+		{
+			"type": "theme-countdown"
+		},
+		{
+			"type": "theme-decoration"
+		},
+		{
+			"type": "theme-form-newsletter"
+		},
+		{
+			"type": "theme-text"
+		},
+		{
+			"type": "theme-image"
+		},
+		{
+			"type": "theme-video"
+		},
+		{
+			"type": "theme-icon"
+		},
+		{
+			"type": "theme-link"
+		},
+		{
+			"type": "theme-liquid-code"
+		},
+		{
+			"type": "theme-social-links"
+		},
+		{
+			"type": "theme-spacer"
+		},
+		{
+			"type": "theme-richtext"
+		},
+		{
+			"type": "theme-scale-bar"
+		},
+		{
+			"type": "theme-video-button"
+		},
+		{
+			"type": "_product-group-frame"
+		},
+		{
+			"type": "_product-group-flex"
+		},
+		{
+			"type": "_product-group-row"
+		},
+		{
+			"type": "_product-group-inline"
+		},
+		{
+			"type": "_product-group-target"
+		},
+		{
+			"type": "_callout"
+		},
+		{
+			"type": "_callout-group"
+		},
+		{
+			"type": "_card-showcase"
+		},
+		{
+			"type": "_form-contact"
+		},
+		{
+			"type": "_product-grid-editorial"
+		},
+		{
+			"type": "_product-grid-auto"
+		},
+		{
+			"type": "_product-group-accordion-group"
+		},
+		{
+			"type": "_product-group-tabs"
+		},
+		{
+			"type": "@app"
+		},
+	]
+}
+{% endschema %}

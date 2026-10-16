@@ -1,0 +1,66 @@
+{% doc %}
+  Automatically highlight any text wrapped in <em><strong> tags using the `text-highlight` snippet. Handles nested tags and everything.
+
+  @param {boolean} [animate]
+  @param {string} [appearance]
+  @param {string} [class]
+  @param {string} [color]
+  @param {object} [s] - settings object
+  @param {string} [style]
+  @param {string} text
+{% enddoc %}
+{% liquid
+  assign start_delimiter = '<em><strong>'
+  assign end_delimiter = '</strong></em>'
+
+  assign parts = text | split: start_delimiter
+  assign auto_highlighted_text = parts[0]
+
+  assign trailing_punctuation_chars = '.,;:!?'
+
+  for part in parts offset: 1
+    assign inner_parts = part | split: end_delimiter
+    assign replaced_text = inner_parts.first
+
+    # Check for leading space and remove it
+    assign leading_space = ''
+    if replaced_text != blank and replaced_text[0] == ' '
+      assign leading_space = ' '
+      assign replaced_text = replaced_text | slice: 1, replaced_text.size
+    endif
+
+    # Check for trailing space and remove it
+    assign trailing_space = ''
+    assign last_char_index = replaced_text.size | minus: 1
+    if replaced_text != blank and replaced_text.size > 0 and replaced_text[last_char_index] == ' '
+      assign trailing_space = ' '
+      assign replaced_text = replaced_text | slice: 0, last_char_index
+      assign last_char_index = replaced_text.size | minus: 1
+    endif
+
+    # Check for trailing punctuation and remove it
+    assign trailing_punctuation = ''
+    if replaced_text != blank and replaced_text.size > 0
+      assign last_char = replaced_text[last_char_index]
+      if trailing_punctuation_chars contains last_char
+        assign trailing_punctuation = last_char
+        assign replaced_text = replaced_text | slice: 0, last_char_index
+      endif
+    endif
+
+    capture replacement
+      render 'text-highlight', text: replaced_text, appearance: appearance, color: color, animate: animate, class: class, style: style, s: s
+    endcapture
+
+    # Make sure no leading/trailing white space snuck in from the snippet
+    assign replacement = replacement | strip
+
+    # If the inner part has two parts (i.e. there is text after the closing tag), append the trailing space and the last part of the inner part
+    if inner_parts.size == 2
+      assign auto_highlighted_text = auto_highlighted_text | append: leading_space | append: replacement | append: trailing_punctuation | append: trailing_space | append: inner_parts.last
+    else
+      assign auto_highlighted_text = auto_highlighted_text | append: replacement | append: trailing_punctuation | append: trailing_space
+    endif
+  endfor
+-%}
+{{- auto_highlighted_text -}}

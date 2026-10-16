@@ -1,0 +1,157 @@
+{% doc %}
+  - Prints the spacing and layout custom properties from the theme settings
+{% enddoc %}
+
+<!-- Layout -->
+
+{% style %}
+  {% liquid
+    # Vertical spacing scaling - one scales with 15 values per screen size
+    # Horizontal spacing scaling - the same values but with double jumps for each screen size
+    # Modify these values to change spacing across the whole theme
+    assign mobile = '2, 4, 6, 8, 10, 12, 14, 16, 20, 24, 32, 42, 60, 80, 120' | split: ', '
+    assign tablet = '2, 4, 6, 8, 12, 15, 18, 22, 27, 35, 45, 56, 75, 105, 150' | split: ', '
+    assign desktop = '2, 4, 6, 8, 12, 16, 20, 24, 32, 38, 50, 68, 96, 128, 192' | split: ', '
+    assign spacing_sizes = "0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15" | split: ', '
+  %}
+
+  :root {
+    /* Mobile first system */
+    {% for size in spacing_sizes %}
+      --r{{ size }}: {{ mobile[forloop.index0] }}px;
+    {% endfor %}
+    /* Tablet */
+    @media screen and (min-width: 640px) {
+      {% for size in spacing_sizes %}
+        --r{{ size }}: {{ tablet[forloop.index0] }}px;
+      {% endfor %}
+    }
+    /* Desktop */
+    @media screen and (min-width: 1024px) {
+      {% for size in spacing_sizes %}
+        --r{{ size }}: {{ desktop[forloop.index0] }}px;
+      {% endfor %}
+    }
+  }
+
+  :root {
+    /* Breakpoints */
+    --screen-sm: 640px;
+    --screen-md: 768px;
+    --screen-lg: 1024px;
+    --screen-xl: 1280px;
+
+    /* Page layout */
+    --root-page-width: {{ settings.layout_site_width }}px;
+    {% case settings.grid_spacing_margin %}
+      {% when 'sm' %}
+        --raw-page-buffer: {{ settings.grid_spacing_small }}px;
+      {% when 'md' %}
+        --raw-page-buffer: {{ settings.grid_spacing_medium }}px;
+      {% else %}
+        --raw-page-buffer: {{ settings.grid_spacing_large }}px;
+    {% endcase %}
+
+    /* Grid */
+    --raw-space-sm: {{ settings.grid_spacing_small }}px;
+    --raw-space-md: {{ settings.grid_spacing_medium }}px;
+    --raw-space-lg: {{ settings.grid_spacing_large }}px;
+
+    {%- case settings.grid_spacing_gutter -%}
+      {%- when 'sm' -%}
+        --raw-gutter: {{ settings.grid_spacing_small }}px;
+      {%- when 'md' -%}
+        --raw-gutter: {{ settings.grid_spacing_medium }}px;
+      {%- when 'lg' -%}
+        --raw-gutter: {{ settings.grid_spacing_large }}px;
+    {%- endcase -%}
+
+    {%- case settings.grid_spacing_card -%}
+      {%- when 'sm' -%}
+        --raw-gutter-card: {{ settings.grid_spacing_small }}px;
+      {%- when 'md' -%}
+        --raw-gutter-card: {{ settings.grid_spacing_medium }}px;
+      {%- when 'lg' -%}
+        --raw-gutter-card: {{ settings.grid_spacing_large }}px;
+      {%- when 'custom' -%}
+        --raw-gutter-card: {{ settings.grid_spacing_card_custom }}px;
+    {%- endcase -%}
+
+    /* Default spacing between sections */
+    --raw-section-rhythm: {{ settings.section_rhythm_default }}px;
+
+    /* Photo correction */
+    {% assign photo_correction = 100 %}
+    {% if settings.product_background_grey %}
+      {% assign photo_correction = 98 %}
+    {% endif %}
+    --photo-correction: {{ photo_correction }}%;
+
+    /* Photo background - when product-card image fit style is set to "scale down" */
+    {% assign photo_background = 'transparent' %}
+    {% if settings.product_card_image_fit == 'scale' %}
+      {% assign photo_background = settings.product_card_image_fit_scale_color %}
+    {% endif %}
+    --photo-background: {{ photo_background }};
+
+    /* Rounding - small elements */
+    --radius-none: 0px;
+    --radius-pill: 9999px;
+
+    /* Rounding - large elements */
+    --radius-sm: {{ settings.rounding_sm }}px;
+    --radius-md: {{ settings.rounding_md }}px;
+    --radius-lg: {{ settings.rounding_lg }}px;
+
+    /* Button Element Rounding */
+    --radius-btn: var(--radius-{{ settings.button_rounding }});
+
+    /* Button Style: Stroke */
+    --btn-stroke-border-width: {{ settings.btn_stroke_border_thickness }}px;
+    --btn-stroke-border-opacity: {{ settings.btn_stroke_border_opacity }}%;
+    {% if settings.btn_stroke_show_background %}
+      --btn-stroke-bg-opacity: {{ settings.btn_stroke_bg_opacity }}%;
+    {% else %}
+      --btn-stroke-bg-opacity: 0%;
+    {% endif %}
+    --btn-stroke-blur: {% if settings.btn_stroke_blur %}6px{% else %}0px{% endif %};
+
+    /* Button Style: Soft */
+    --btn-soft-bg-opacity: {{ settings.btn_soft_bg_opacity }}%;
+    --btn-soft-blur: {% if settings.btn_soft_blur %}6px{% else %}0px{% endif %};
+    {% if settings.btn_soft_show_border %}
+      --btn-soft-border-width: {{ settings.btn_soft_border_thickness }}px;
+      --btn-soft-border-opacity: {{ settings.btn_soft_border_opacity }}%;
+    {% else %}
+      --btn-soft-border-width: 0px;
+      --btn-soft-border-opacity: 0%;
+    {% endif %}
+
+    /* Tab Element Rounding */
+    --radius-tab: var(--radius-{{ settings.tab_rounding }});
+
+    /* Default form field element rounding. Max out for textareas and other large elements */
+    --radius-form-field: var(--radius-{{ settings.form_field_rounding }});
+
+    /* Default small-element rounding */
+    --radius-element-default: var(--radius-{{ settings.element_default_rounding }});
+
+    /* Card Element Rounding */
+    --radius-card: var(--radius-{{ settings.card_rounding }});
+
+    /* Default large element/banner rounding */
+    --radius-banner-default:  var(--radius-{{ settings.banner_default_rounding }});
+
+    /* Cards */
+    --card-aspect-ratio: {{ settings.card_aspect_ratio }};
+
+
+    /* Product card badge element rounding */
+    {% if settings.set_card_badge_rounding == true %}
+      --radius-card-badge:   var(--radius-{{ settings.card_badge_rounding }});
+    {% else %}
+      --radius-card-badge: var(--radius-element-default);
+    {% endif %}
+
+  }
+{% endstyle %}

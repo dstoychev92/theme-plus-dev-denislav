@@ -1,0 +1,112 @@
+{% doc %}
+  - Renders a collection menu as filter links
+
+  A Show all link that would reveal a single item is dropped, and that item shows instead.
+
+  @param {string} [expanded] - opens the list on load
+  @param {string} [filter_menu] - menu of collections to link
+  @param {string} [label] - list heading
+  @param {number} [visible_limit] - items shown before the Show all button, defaults to 6
+{% enddoc %}
+
+{% liquid
+  assign collection_list = filter_menu | default: false
+
+  # All filters default to 6 visible items
+  assign visible_limit = visible_limit | default: 6
+  assign overflow_count = collection_list.count | minus: visible_limit
+
+  # A 'Show all' link that reveals a single item isn't worth it — just show that item instead
+  if overflow_count == 1
+    assign visible_limit = visible_limit | plus: 1
+    assign overflow_count = 0
+  endif
+
+  assign active_collection = collection_list | find: 'url', collection.url
+%}
+
+{% capture content %}
+  <ul
+    class="flex flex-col gap-y-[--filter-row-gap] text-size-control"
+    x-data="{
+      showAllFilterItems: false,
+      {% if active_collection %}
+        activeCollectionId: {{ active_collection.id | json }}
+      {% else %}
+        activeCollectionId: null
+      {% endif %}
+    }"
+    x-roving-tab.vertical
+    x-roving-tab:list
+  >
+    {% for collection_item in collection_list, limit: 50 %}
+      {% liquid
+        assign is_active = false
+        if collection_item.url == collection.url
+          assign is_active = true
+        endif
+
+        # Set overflow_item here because syntax highlighter chokes on > symbol inside HTML tags
+        assign overflow_item = false
+        assign overflow_index = forloop.index0 | minus: visible_limit
+        if overflow_index >= 0
+          assign overflow_item = true
+        endif
+      %}
+      <li
+        class="
+          flex-row-center *:flex-1 h-[--filter-row-height]
+          {% if overflow_item %}
+            stagger-animation-25 animate-in fade-in animate-duration-500
+          {% endif %}
+        "
+        {% if overflow_item %}
+          x-show="showAllFilterItems"
+          x-cloak
+          style="--stagger-order:{{ overflow_index }};"
+        {% endif %}
+        {% if overflow_index == 0 %}
+          x-ref="firstOverflowFilterItem"
+        {% endif %}
+      >
+        <a
+          x-data="{
+            get isActive() {
+              return activeCollectionId === {{ collection_item.id }}
+            }
+          }"
+          {% if is_active %}
+            aria-current="page"
+          {% endif %}
+          :aria-current="isActive ? 'page' : null"
+          href="{{ collection_item.url }}"
+          class="group/link flex items-center justify-between gap-x-r4 w-full py-r2 text-r3 group/link"
+          x-section-api:link
+          @link:pending="activeCollectionId = {{ collection_item.id }}; $dispatch('change')"
+        >
+          <span class="truncate">{{ collection_item.title }}</span>
+          <span
+            class="
+              relative checkbox block
+              {% if is_active %}checkbox-checked{% endif %}
+            "
+            :class="{ 'checkbox-checked': isActive }"
+            role="presentation"
+          ></span>
+        </a>
+      </li>
+    {% endfor %}
+
+    {% # This would normally be > 0 but we do not want the 'Show all' link to render when there is only one item left to show %}
+    {% if overflow_count > 1 %}
+      <li
+        x-show="!showAllFilterItems"
+        class="flex-row-center *:flex-1 justify-between h-[--filter-row-height]"
+      >
+        {% render 'filter-show-all-button' %}
+      </li>
+    {% endif %}
+  </ul>
+{% endcapture %}
+
+{% render 'filter', label: label, content: content, expanded: expanded, visible: true %}

@@ -1,0 +1,202 @@
+<!-- blocks/_pair-slide.liquid -->
+
+{% liquid
+  assign total_slides = false
+
+  capture blocks
+    content_for 'blocks'
+  endcapture
+%}
+
+{% render 'pair-slide',
+  s: block.settings,
+  attributes: block.shopify_attributes,
+  content: blocks,
+  total_slides: total_slides
+%}
+
+{% schema %}
+{
+	"name": "Image slide",
+	"tag": null,
+	"settings": [
+		{
+			"type": "select",
+			"id": "media_type",
+			"label": "Type",
+			"options": [
+				{
+					"value": "image",
+					"label": "Image"
+				},
+				{
+					"value": "video",
+					"label": "Video"
+				}
+			],
+			"default": "image"
+		},
+		{
+			"type": "image_picker",
+			"id": "image",
+			"label": "Image",
+			"visible_if": "{{ block.settings.media_type == 'image' }}"
+		},
+		{
+			"type": "video",
+			"id": "video_bg",
+			"label": "Video",
+			"visible_if": "{{ block.settings.media_type == 'video' }}"
+		},
+		{
+			"type": "paragraph",
+			"content": "Background videos autoplay and are muted",
+			"visible_if": "{{ block.settings.media_type == 'video' }}"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_image_on_mobile",
+			"label": "Show image on mobile",
+			"default": false,
+			"visible_if": "{{ block.settings.media_type == 'video' }}"
+		},
+		{
+			"type": "image_picker",
+			"id": "image_mobile",
+			"label": "Image mobile",
+			"visible_if": "{{ block.settings.media_type == 'image' or block.settings.media_type == 'video' and block.settings.show_image_on_mobile == true }}"
+		},
+		{
+			"type": "header",
+			"content": "Overlay"
+		},
+		{
+			"type": "range",
+			"id": "overlay_opacity",
+			"label": "Opacity",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 8
+		},
+		{
+			"type": "color",
+			"id": "overlay_color",
+			"label": "Color",
+			"default": "#000000"
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "vertical_placement",
+			"label": "Placement",
+			"default": "middle",
+			"options": [
+				{
+					"value": "full",
+					"label": "↕"
+				},
+				{
+					"value": "top",
+					"label": "⤒"
+				},
+				{
+					"value": "middle",
+					"label": "—"
+				},
+				{
+					"value": "bottom",
+					"label": "⤓"
+				}
+			]
+		},
+		{
+			"type": "text_alignment",
+			"id": "horizontal_placement",
+			"label": "Alignment",
+			"default": "center"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color_scheme",
+			"id": "color_scheme",
+			"label": "Color scheme",
+			"default": "scheme-opposite"
+		},
+	],
+	"blocks": [
+		{
+			"type": "@theme"
+		},
+		{
+			"type": "@app"
+		},
+		{
+			"type": "_callout"
+		},
+		{
+			"type": "_callout-group"
+		},
+		{
+			"type": "_grid-editorial"
+		},
+		{
+			"type": "_grid-auto"
+		},
+		{
+			"type": "_card-showcase"
+		},
+		{
+			"type": "_form-contact"
+		},
+		{
+			"type": "_marquee"
+		},
+		{
+			"type": "_accordion-group"
+		},
+		{
+			"type": "_tabs"
+		},
+	],
+	"presets": [
+		{
+			"name": "Image slide",
+			"settings": {
+				"vertical_placement": "full",
+				"horizontal_placement": "center"
+			},
+			"blocks": []
+		},
+		{
+			"name": "Slide",
+			"settings": {
+				"vertical_placement": "full",
+				"horizontal_placement": "center"
+			},
+			"blocks": [
+				{
+					"type": "theme-text",
+					"settings": {
+						"text": "Introducing",
+						"type_preset": "h5"
+					}
+				},
+				{
+					"type": "theme-text",
+					"settings": {
+						"text": "The new collection",
+						"type_preset": "h5"
+					}
+				}
+			]
+		}
+	]
+}
+{% endschema %}

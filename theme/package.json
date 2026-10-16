@@ -1,0 +1,16 @@
+{
+  "name": "analog",
+  "version": "1.1.0-beta.1",
+  "private": true,
+  "tradecraft": {
+    "build": "copy"
+  },
+  "scripts": {
+    "build": "tradecraft-build build",
+    "dev": "tradecraft-build watch",
+    "pull": "tradecraft-build pull"
+  },
+  "devDependencies": {
+    "@groupthought/tradecraft-build": "3.5.0"
+  }
+}

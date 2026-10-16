@@ -1,0 +1,18 @@
+{% doc %}
+  - Renders estimated reading time for content
+
+  Counts 250 words a minute, and reports between 1 and 60 minutes.
+
+  @param {string} [class] - The classes
+  @param {string} content - HTML the estimate is counted from
+{% enddoc %}
+
+{% liquid
+  assign reading_speed = 250
+  assign word_count = content | strip_html | split: ' ' | size | times: 1.0
+  assign reading_time = word_count | divided_by: reading_speed | ceil | at_most: 60 | at_least: 1
+%}
+
+<p class="text-r3 text-muted {{ class }}">
+  {{- 'blog.article.reading_time' | t: count: reading_time -}}
+</p>

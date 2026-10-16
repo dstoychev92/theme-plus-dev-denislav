@@ -1,0 +1,84 @@
+<!-- blocks/_form-select.liquid -->
+
+{% liquid
+  # A cleared label must not produce contact[]
+  assign label = block.settings.label
+  assign label_handle = label | handleize
+  if label_handle == blank
+    assign label_handle = 'field-' | append: block.id
+  endif
+  assign id = label_handle | append: '-' | append: block.id
+  assign name = 'contact[' | append: label_handle | append: ']'
+%}
+
+{% capture blocks %}
+  {% content_for 'blocks' %}
+{% endcapture %}
+
+{% render 'field-custom-select',
+  name: name,
+  id: id,
+  label: label,
+  size: block.settings.sizing,
+  options: blocks,
+  class: 'min-w-[150px]'
+%}
+
+{% schema %}
+{
+	"name": "Select group",
+	"tag": null,
+	"settings": [
+		{
+			"type": "text",
+			"id": "label",
+			"label": "Label",
+			"default": "Select"
+		},
+		{
+			"type": "select",
+			"id": "sizing",
+			"label": "Size",
+			"default": "md",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				}
+			]
+		},
+	],
+	"blocks": [
+		{
+			"type": "_form-select-item"
+		}
+	],
+	"presets": [
+		{
+			"name": "Select group",
+			"blocks": [
+				{
+					"type": "_form-select-item",
+					"settings": {
+						"label": "Select item 1"
+					}
+				},
+				{
+					"type": "_form-select-item",
+					"settings": {
+						"label": "Select item 2"
+					}
+				}
+			]
+		}
+	]
+}
+{% endschema %}

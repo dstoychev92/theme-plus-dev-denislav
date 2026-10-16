@@ -1,0 +1,116 @@
+<!-- blocks/_content.liquid -->
+
+{% capture blocks %}
+  {% content_for "blocks" %}
+{% endcapture %}
+
+{% render 'core-placement-grid', s: block.settings, content: blocks, attributes: block.shopify_attributes %}
+
+{% schema %}
+{
+	"name": "Content",
+	"tag": null,
+	"settings": [
+		{
+			"type": "select",
+			"id": "vertical_placement",
+			"label": "Placement",
+			"default": "middle",
+			"options": [
+				{
+					"value": "full",
+					"label": "↕"
+				},
+				{
+					"value": "top",
+					"label": "⤒"
+				},
+				{
+					"value": "middle",
+					"label": "—"
+				},
+				{
+					"value": "bottom",
+					"label": "⤓"
+				}
+			]
+		},
+		{
+			"type": "text_alignment",
+			"id": "horizontal_placement",
+			"label": "Alignment",
+			"default": "left"
+		},
+		{
+			"type": "select",
+			"id": "padding",
+			"label": "Padding",
+			"default": "lg",
+			"options": [
+				{
+					"value": "sm",
+					"label": "S"
+				},
+				{
+					"value": "md",
+					"label": "M"
+				},
+				{
+					"value": "lg",
+					"label": "L"
+				},
+				{
+					"value": "custom",
+					"label": "⋯"
+				}
+			]
+		},
+		{
+			"type": "range",
+			"id": "padding_custom",
+			"label": "Custom padding",
+			"default": 0,
+			"min": 0,
+			"max": 80,
+			"step": 2,
+			"unit": "px",
+			"visible_if": "{{ block.settings.padding == 'custom'  }}"
+		},
+	],
+	"blocks": [
+		{
+			"type": "@theme"
+		},
+		{
+			"type": "@app"
+		},
+		{
+			"type": "_callout"
+		},
+		{
+			"type": "_callout-group"
+		},
+		{
+			"type": "_grid-editorial"
+		},
+		{
+			"type": "_grid-auto"
+		},
+		{
+			"type": "_card-showcase"
+		},
+		{
+			"type": "_form-contact"
+		},
+		{
+			"type": "_marquee"
+		},
+		{
+			"type": "_accordion-group"
+		},
+		{
+			"type": "_tabs"
+		},
+	]
+}
+{% endschema %}

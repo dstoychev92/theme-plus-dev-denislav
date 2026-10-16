@@ -1,0 +1,42 @@
+{% doc %}
+  - Renders one colour swatch in the styleguide
+
+  @param {string} name - name of the scheme colour
+{% enddoc %}
+
+{% assign mix_names = '5,10,20,30,40,50,60,70,80,90,95' | split: ',' %}
+
+<div class="flex flex-col gap-x-r2 p-r2">
+  <span class="text-r3 font-bold font-family-accent">{{ name }}-mix-x</span>
+  <div class="mt-r4 flex flex-row gap-x-r2">
+    {% for mix in mix_names %}
+      {%- capture swatch -%}
+        <div style="
+          {% assign mix_value = mix | times: 1 %}
+          {% if mix_value < 50 %}
+            --swatch-bg-color: color-mix(
+              in oklch,
+              oklch(var(--{{ name }}-oklch)) var(--mix-{{ mix }}, {{ mix }}%),
+              oklch(var(--{{ name }}-contrast-oklch))
+            );
+          {% else %}
+            --swatch-bg-color: color-mix(
+              in oklch,
+              oklch(var(--{{ name }}-contrast-oklch)) var(--mix-{{ 100 | minus: mix_value }}, {{ 100 | minus: mix_value }}%),
+              oklch(var(--{{ name }}-oklch))
+            );
+          {% endif %}
+        " class="flex flex-center size-r6 rounded-sm bg-[--swatch-bg-color]">
+        </div>
+        <span class="text-r1 font-bold text-content">{{ mix }}</span>
+      {%- endcapture -%}
+      {%- capture tooltip -%}
+        <div class="text-r4">
+            <div >Background: bg-{{ name }}-mix-{{ mix }}</div>
+            <div class="text-r4">Text: text-{{ name }}</div>
+        </div>
+      {%- endcapture -%}
+      {% render 'core-tooltip', trigger: swatch, content: tooltip %}
+    {% endfor %}
+  </div>
+</div>

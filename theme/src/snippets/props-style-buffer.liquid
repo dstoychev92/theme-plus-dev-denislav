@@ -1,0 +1,53 @@
+{% doc %}
+  - Prints buffer variables from the spacing settings
+
+  @param {string} [namespace] - prefix on the variable names, so --buffer-y becomes --<namespace>-buffer-y
+  @param {object} [s] - settings object
+{% enddoc %}
+
+{%- if namespace and namespace != '' -%}
+  {%- assign namespace = namespace | append: '-' -%}
+{%- else -%}
+  {%- assign namespace = '' -%}
+{%- endif -%}
+
+{%- if s.spacing_control_level == 'basic' -%}
+
+  {%- if s.padding_y -%}
+    {%- case s.padding_y -%}
+      {%- when 'sm' -%}
+        --{{- namespace -}}buffer-y: var(--root-space-sm);
+      {%- when 'md' -%}
+        --{{- namespace -}}buffer-y: var(--root-space-md);
+      {%- when 'lg' -%}
+        --{{- namespace -}}buffer-y: var(--root-space-lg);
+      {%- when 'custom' -%}
+        --{{- namespace -}}buffer-y: calc({{- s.padding_custom_y | default: 0 -}}px * var(--r-multiplier));
+    {%- endcase -%}
+  {%- endif -%}
+
+  {%- if s.padding_x -%}
+    {%- case s.padding_x -%}
+      {%- when 'sm' -%}
+        --{{- namespace -}}buffer-x: var(--root-space-sm);
+      {%- when 'md' -%}
+        --{{- namespace -}}buffer-x: var(--root-space-md);
+      {%- when 'lg' -%}
+        --{{- namespace -}}buffer-x: var(--root-space-lg);
+      {%- when 'custom' -%}
+        --{{- namespace -}}buffer-x: calc({{- s.padding_custom_x | default: 0 -}}px * var(--r-multiplier));
+    {%- endcase -%}
+  {%- endif -%}
+{%- elsif s.spacing_control_level == 'pro' -%}
+
+  {%# Desktop vars need to scale slightly for tablet/md query, mobile vars do not need additional scaling %}
+  --{{- namespace -}}buffer-t-lg: calc({{- s.buffer_lg_top | default: 0 -}}px * var(--r-multiplier));
+  --{{- namespace -}}buffer-b-lg: calc({{- s.buffer_lg_bottom | default: 0 -}}px * var(--r-multiplier));
+  --{{- namespace -}}buffer-s-lg: calc({{- s.buffer_lg_left | default: 0 -}}px * var(--r-multiplier));
+  --{{- namespace -}}buffer-e-lg: calc({{- s.buffer_lg_right | default: 0 -}}px * var(--r-multiplier));
+
+  --{{- namespace -}}buffer-t-sm: {{- s.buffer_sm_top | default: 0 -}}px;
+  --{{- namespace -}}buffer-b-sm: {{- s.buffer_sm_bottom | default: 0 -}}px;
+  --{{- namespace -}}buffer-s-sm: {{- s.buffer_sm_left | default: 0 -}}px;
+  --{{- namespace -}}buffer-e-sm: {{- s.buffer_sm_right | default: 0 -}}px;
+{%- endif -%}

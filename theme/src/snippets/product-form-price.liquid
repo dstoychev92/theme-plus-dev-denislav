@@ -1,0 +1,133 @@
+{% doc %}
+  - Renders the product form price, with compare-at and discount
+
+  @param {product} product
+  @param {object} [s] - settings object
+  @param {variant} [variant] - price source, defaults to the selected or first available variant
+{% enddoc %}
+
+{%- liquid
+  assign variant = variant | default: product.selected_or_first_available_variant
+  assign show_compare_at_price = s.show_compare_at_price | default: true, allow_false: true
+  assign show_discount_amount = s.show_discount_amount | default: true, allow_false: true
+  assign discount_amount_style = s.discount_amount_style | default: 'percentage'
+  assign show_sale_label = s.show_sale_label | default: false, allow_false: true
+  assign sale_label = s.sale_label
+
+  # Initialize prices from variant
+  if variant
+    assign price = variant.price
+    assign compare_at_price = variant.compare_at_price
+    assign unit_price = variant.unit_price
+  else
+    assign price = null
+    assign compare_at_price = null
+    assign unit_price = null
+  endif
+
+  assign on_sale = false
+  if compare_at_price != blank and compare_at_price > price
+    assign on_sale = true
+  endif
+
+  if on_sale
+    assign price_style = 'color: var(--sale-color);'
+  endif
+-%}
+
+{% if variant != blank %}
+  {% comment %} Price {% endcomment %}
+  <span data-test-id="product-price">
+    {% if price == 0 %}
+      {% comment %} Note: Using "Free" instead of $0 only makes sense for gift with purchase and sample products. Not intended for full cards in a collection {% endcomment %}
+      {% capture price_content %}
+        {{ 'other.free' | t }}
+      {% endcapture %}
+    {% elsif price %}
+      {% capture price_content %}
+        {% render 'money', price: price, style: price_style %}
+      {% endcapture %}
+    {% endif %}
+
+    {% render 'core-text-preset', s: s, tag: 'div', text: price_content %}
+  </span>
+
+  {% comment %} Sale pricing {% endcomment %}
+  {% if on_sale %}
+    {% comment %} Strike through compare-at price {% endcomment %}
+    {% if show_compare_at_price %}
+      <span
+        class="line-through text-muted font-normal"
+        data-test-id="product-compare-price"
+      >
+        <span class="sr-only">{{ 'product.accessibility.item_on_sale_compare_at' | t }}</span>
+        {% capture compare_at_price_content %}
+          {% render 'money', price: compare_at_price, show_currency: false %}
+        {% endcapture %}
+        {% render 'core-text-preset', s: s, tag: 'div', text: compare_at_price_content %}
+      </span>
+    {% endif %}
+
+    {% if show_discount_amount %}
+      {% assign discount_text = null %}
+
+      {% if discount_amount_style == 'percentage' %}
+        {% assign difference = compare_at_price | minus: price %}
+        {% assign percent_off = difference | times: 100 | divided_by: compare_at_price | floor %}
+        {% if percent_off > 0 %}
+          {% assign discount_text = percent_off | append: '%' %}
+        {% endif %}
+      {% endif %}
+
+      {% if discount_amount_style == 'dollar' %}
+        {% assign difference = compare_at_price | minus: price %}
+        {%- capture discount_text -%}
+          {% render 'money', price: difference, show_currency: false %}
+        {%- endcapture -%}
+      {% endif %}
+
+      {% if discount_text %}
+        {% assign translation = 'product.discount_amount_html' | t: amount: discount_text %}
+        {% render 'core-text-preset',
+          s: s,
+          tag: 'div',
+          text: translation,
+          type_resize: 'xs',
+          class: 'text-[color:var(--sale-color)]'
+        %}
+      {% endif %}
+    {% endif %}
+
+    {% if show_sale_label and sale_label %}
+      {% render 'core-text-preset',
+        s: s,
+        tag: 'div',
+        text: sale_label,
+        type_resize: 'xs',
+        class: 'text-[color:var(--sale-color)]'
+      %}
+    {% endif %}
+  {% endif %}
+
+  {% if unit_price != blank %}
+    {% capture unit_price_content %}
+      {%- render 'price-per-unit', product: product, variant: variant, ignore_selling_plan: true -%}
+    {% endcapture %}
+    {% assign unit_price_size = s.type_size | minus: 3 | at_least: 1 %}
+    {% render 'core-text-preset',
+      s: s,
+      tag: 'div',
+      text: unit_price_content,
+      class: 'flex items-center text-muted',
+      type_font: 'badge',
+      type_resize: 'xs',
+      type_size: unit_price_size
+    %}
+  {% endif %}
+{% else %}
+  <span data-test-id="product-price">
+    {% comment %} Even though this content is not visible, it needs type settings so the page height doesn't jump. {% endcomment %}
+    {% capture unavailable_content %}{{ 'product.unavailable' | t }}{% endcapture %}
+    {% render 'core-text-preset', s: s, tag: 'div', text: unavailable_content %}
+  </span>
+{% endif %}
