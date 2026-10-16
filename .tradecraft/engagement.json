@@ -1,0 +1,322 @@
+{
+  "schemaVersion": 1,
+  "store": "theme-plus-dev-denislav.myshopify.com",
+  "stage": "build",
+  "reviewPage": null,
+  "decisions": {
+    "E1": {
+      "value": "keep",
+      "by": "developer",
+      "at": "2026-10-16T11:23:04.661Z",
+      "evidence": "keep the live theme"
+    },
+    "E2": {
+      "value": "denislav-analog (Analog, newest release)",
+      "by": "developer",
+      "at": "2026-10-16T11:23:04.685Z",
+      "evidence": "keep the live theme"
+    },
+    "E3": {
+      "value": "agent runs local commands; developer commits and pushes",
+      "by": "default",
+      "at": "2026-10-16T11:23:04.709Z",
+      "evidence": "No instruction from the developer"
+    },
+    "P1": {
+      "value": "Buy Combined listing 1: product page, choose Color and Size, add to cart, checkout",
+      "by": "guess",
+      "at": "2026-10-16T12:27:16.177Z",
+      "evidence": "Combined listing 1 has the most stock (176); the store sells products and has no service pages"
+    },
+    "P2": {
+      "value": "Theme test store for Analog development; no real audience",
+      "by": "guess",
+      "at": "2026-10-16T12:27:16.201Z",
+      "evidence": "Development plan, 6 test products such as 'Complex Variants' and 'Combined listing 1', one 'Home page' collection, one contact page"
+    },
+    "P3": {
+      "value": "No apps to keep or drop",
+      "by": "guess",
+      "at": "2026-10-16T12:27:16.225Z",
+      "evidence": "No app blocks or app embeds in the live theme, no script tags"
+    },
+    "B1": {
+      "value": "extract",
+      "by": "guess",
+      "at": "2026-10-16T12:27:16.250Z",
+      "evidence": "Project keeps the live theme; not a redesign"
+    },
+    "R1": {
+      "value": "ship",
+      "by": "default",
+      "at": "2026-10-16T12:27:16.274Z",
+      "evidence": "Live theme has no GitHub connection and the project has no remote"
+    },
+    "R2": {
+      "value": "main",
+      "by": "default",
+      "at": "2026-10-16T12:27:16.299Z",
+      "evidence": "No instruction from the developer"
+    },
+    "B3": {
+      "value": "Keep the extracted look: Analog stock settings on denislav-analog; no new directions",
+      "by": "guess",
+      "at": "2026-10-16T12:28:46.044Z",
+      "evidence": "Test store, no audience; no Analog release has the brand page, so no sandbox or export"
+    }
+  },
+  "questions": {
+    "q1": {
+      "decision": "E1",
+      "to": "developer",
+      "text": "What should this project do with the store? I recommend that we keep the live theme, \"denislav-analog\". It runs Analog 1.1.0-beta.1, and I update it to the newest release. The other answer is a move to a different theme, such as Horizon. Then I carry the custom work across.",
+      "askedAt": "2026-10-16T11:21:53.919Z",
+      "answeredAt": "2026-10-16T11:23:04.662Z"
+    }
+  },
+  "facts": {
+    "readAt": "2026-10-16T12:26:29.396Z",
+    "store": "theme-plus-dev-denislav.myshopify.com",
+    "missing": [],
+    "themeCount": 5,
+    "themes": [
+      {
+        "id": 186841071899,
+        "name": "denislav-analog",
+        "role": "live",
+        "connected": false
+      },
+      {
+        "id": 183363698971,
+        "name": "Horizon",
+        "role": "unpublished",
+        "connected": false
+      },
+      {
+        "id": 183365107995,
+        "name": "pipeline-9-0-0",
+        "role": "unpublished",
+        "connected": false
+      },
+      {
+        "id": 196270063899,
+        "name": "analog-1-1-0-beta-1",
+        "role": "unpublished",
+        "connected": false
+      },
+      {
+        "id": 196945379611,
+        "name": "analog-1-1-0-beta-3",
+        "role": "unpublished",
+        "connected": false
+      }
+    ],
+    "forms": [],
+    "liveTheme": {
+      "id": 186841071899,
+      "name": "denislav-analog",
+      "theme": "Analog",
+      "version": "1.1.0-beta.1",
+      "connected": false
+    },
+    "apps": [],
+    "templates": [
+      "404.json",
+      "article.json",
+      "blog.json",
+      "cart.json",
+      "collection.json",
+      "index.json",
+      "list-collections.json",
+      "page.about.json",
+      "page.contact.json",
+      "page.json",
+      "page.lookbook.json",
+      "password.json",
+      "product.advanced.json",
+      "product.json",
+      "search.json"
+    ],
+    "homepage": [
+      {
+        "id": "section_banner_hVPfmt_anlgv0p0",
+        "type": "section-banner",
+        "disabled": false
+      },
+      {
+        "id": "section_pro_banner_gcZC0k_anlgv0p0",
+        "type": "section-pro-banner",
+        "disabled": true
+      },
+      {
+        "id": "section_card_slider_tabs_uQif6T_anlgv0p0",
+        "type": "section-card-slider-tabs",
+        "disabled": false
+      },
+      {
+        "id": "section_pair_6UnkY8_anlgv0p0",
+        "type": "section-pair",
+        "disabled": false
+      },
+      {
+        "id": "section_pair_CaJit1_anlgv0p0",
+        "type": "section-pair",
+        "disabled": false
+      },
+      {
+        "id": "section_pair_i9EobB_anlgv0p0",
+        "type": "section-pair",
+        "disabled": false
+      },
+      {
+        "id": "section_card_grid_XVZpXc_anlgv0p0",
+        "type": "section-card-grid",
+        "disabled": false
+      },
+      {
+        "id": "section_text_spotlight_ry5tbw_anlgv0p0",
+        "type": "section-text-spotlight",
+        "disabled": false
+      },
+      {
+        "id": "section_pair_pVdemU_anlgv0p0",
+        "type": "section-pair",
+        "disabled": false
+      },
+      {
+        "id": "section_pair_1nwS05_anlgv0p0",
+        "type": "section-pair",
+        "disabled": false
+      },
+      {
+        "id": "section_pair_iBKgac_anlgv0p0",
+        "type": "section-pair",
+        "disabled": false
+      },
+      {
+        "id": "section_slideshow_UvOW23_anlgv0p0",
+        "type": "section-slideshow",
+        "disabled": false
+      },
+      {
+        "id": "section_custom_nSBBth_anlgv0p0",
+        "type": "section-custom",
+        "disabled": false
+      },
+      {
+        "id": "section_text_spotlight_qJAZho_anlgv0p0",
+        "type": "section-text-spotlight",
+        "disabled": false
+      },
+      {
+        "id": "section_pair_xmFHZR_anlgv0p0",
+        "type": "section-pair",
+        "disabled": false
+      },
+      {
+        "id": "section_custom_eYkU1z_anlgv0p0",
+        "type": "section-custom",
+        "disabled": false
+      },
+      {
+        "id": "section_banner_Yt0nnR_anlgv0p0",
+        "type": "section-banner",
+        "disabled": false
+      },
+      {
+        "id": "section_custom_7NdpL4_anlgv0p0",
+        "type": "section-custom",
+        "disabled": false
+      }
+    ],
+    "design": {},
+    "passwordProtected": true,
+    "shop": {
+      "name": "theme-plus-dev-denislav",
+      "myshopifyDomain": "theme-plus-dev-denislav.myshopify.com",
+      "primaryDomain": {
+        "host": "theme-plus-dev-denislav.myshopify.com",
+        "url": "https://theme-plus-dev-denislav.myshopify.com"
+      },
+      "plan": {
+        "publicDisplayName": "Development",
+        "shopifyPlus": false,
+        "partnerDevelopment": true
+      },
+      "currencyCode": "CAD",
+      "ianaTimezone": "America/New_York",
+      "customerAccountsV2": {
+        "customerAccountsVersion": "NEW_CUSTOMER_ACCOUNTS"
+      },
+      "shopPolicies": [
+        {
+          "type": "PRIVACY_POLICY",
+          "title": "Privacy policy"
+        }
+      ]
+    },
+    "locales": [
+      "en (primary)"
+    ],
+    "markets": [
+      "ca"
+    ],
+    "counts": {
+      "products": 6,
+      "collections": 1,
+      "pages": 1,
+      "redirects": 0
+    },
+    "menus": [
+      "main-menu",
+      "footer",
+      "customer-account-main-menu"
+    ],
+    "productOptions": [
+      "Color",
+      "Size",
+      "Packaging",
+      "Combined listing option name",
+      "Material"
+    ],
+    "templateSuffixes": [
+      "contact"
+    ],
+    "metafields": [],
+    "metaobjects": [],
+    "pages": [
+      "contact"
+    ],
+    "scriptTagHosts": []
+  },
+  "plan": {
+    "file": "PLAN.md",
+    "approvedAt": null
+  },
+  "history": [
+    {
+      "at": "2026-10-16T11:21:32.079Z",
+      "event": "init"
+    },
+    {
+      "at": "2026-10-16T11:23:08.210Z",
+      "event": "stage setup"
+    },
+    {
+      "at": "2026-10-16T12:19:16.987Z",
+      "event": "stage discover"
+    },
+    {
+      "at": "2026-10-16T12:26:51.400Z",
+      "event": "stage plan"
+    },
+    {
+      "at": "2026-10-16T12:27:28.717Z",
+      "event": "stage brand"
+    },
+    {
+      "at": "2026-10-16T12:28:46.069Z",
+      "event": "stage build"
+    }
+  ]
+}
