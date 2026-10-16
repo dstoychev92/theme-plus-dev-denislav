@@ -122,6 +122,21 @@
       "empty": "Choisissez au moins un produit",
       "empty_error": "Choisissez au moins un produit avant d'ajouter le lot au panier"
     },
+    "volume": {
+      "gift_hint": "· choisissez plus et débloquez des cadeaux",
+      "units": {
+        "one": "{{ count }} unité",
+        "other": "{{ count }} unités"
+      },
+      "per_dose": "par portion",
+      "gifts": {
+        "one": "+ {{ count }} cadeau",
+        "other": "+ {{ count }} cadeaux"
+      },
+      "total_doses_label": "Total de votre commande :",
+      "doses": "portions",
+      "gifts_heading": "Avec votre commande, vous recevez"
+    },
     "subscription": "Abonnement",
     "one_time": "Achat unique",
     "quick_add": "Ajout rapide",

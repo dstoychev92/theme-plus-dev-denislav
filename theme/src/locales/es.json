@@ -122,6 +122,21 @@
       "empty": "Elige al menos un producto",
       "empty_error": "Elige al menos un producto antes de añadir el pack al carrito"
     },
+    "volume": {
+      "gift_hint": "· elige más y desbloquea regalos",
+      "units": {
+        "one": "{{ count }} unidad",
+        "other": "{{ count }} unidades"
+      },
+      "per_dose": "por ración",
+      "gifts": {
+        "one": "+ {{ count }} regalo",
+        "other": "+ {{ count }} regalos"
+      },
+      "total_doses_label": "Total en tu pedido:",
+      "doses": "raciones",
+      "gifts_heading": "Con tu pedido recibes"
+    },
     "subscription": "Suscripción",
     "one_time": "Compra única",
     "quick_add": "Añadir rápido",

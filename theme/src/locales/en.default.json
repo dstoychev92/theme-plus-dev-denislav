@@ -122,6 +122,21 @@
       "empty": "Pick at least one product",
       "empty_error": "Pick at least one product before you add the bundle to the cart"
     },
+    "volume": {
+      "gift_hint": "· pick more and unlock gifts",
+      "units": {
+        "one": "{{ count }} unit",
+        "other": "{{ count }} units"
+      },
+      "per_dose": "per serving",
+      "gifts": {
+        "one": "+ {{ count }} gift",
+        "other": "+ {{ count }} gifts"
+      },
+      "total_doses_label": "Total in your order:",
+      "doses": "servings",
+      "gifts_heading": "With your order you get"
+    },
     "subscription": "Subscription",
     "one_time": "One-time",
     "quick_add": "Quick add",

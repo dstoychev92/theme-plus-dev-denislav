@@ -122,6 +122,21 @@
       "empty": "Escolha pelo menos um produto",
       "empty_error": "Escolha pelo menos um produto antes de adicionar o pacote ao carrinho"
     },
+    "volume": {
+      "gift_hint": "· escolha mais e desbloqueie brindes",
+      "units": {
+        "one": "{{ count }} unidade",
+        "other": "{{ count }} unidades"
+      },
+      "per_dose": "por dose",
+      "gifts": {
+        "one": "+ {{ count }} brinde",
+        "other": "+ {{ count }} brindes"
+      },
+      "total_doses_label": "Total no seu pedido:",
+      "doses": "doses",
+      "gifts_heading": "Com o seu pedido recebe"
+    },
     "subscription": "Assinatura",
     "one_time": "Compra única",
     "quick_add": "Adicionar rápido",

@@ -122,6 +122,21 @@
       "empty": "Wähle mindestens ein Produkt",
       "empty_error": "Wähle mindestens ein Produkt, bevor du das Bundle in den Warenkorb legst"
     },
+    "volume": {
+      "gift_hint": "· mehr wählen und Geschenke sichern",
+      "units": {
+        "one": "{{ count }} Stück",
+        "other": "{{ count }} Stück"
+      },
+      "per_dose": "pro Portion",
+      "gifts": {
+        "one": "+ {{ count }} Geschenk",
+        "other": "+ {{ count }} Geschenke"
+      },
+      "total_doses_label": "Insgesamt in deiner Bestellung:",
+      "doses": "Portionen",
+      "gifts_heading": "Mit deiner Bestellung erhältst du"
+    },
     "subscription": "Abonnement",
     "one_time": "Einmalig",
     "quick_add": "Schnell hinzufügen",

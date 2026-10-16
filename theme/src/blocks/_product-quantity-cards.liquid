@@ -1,0 +1,329 @@
+{% doc %}
+  - Renders the form quantity as cards for 1 to 4 units, with a volume discount, a price per serving, and gifts at 3 and 4 units
+
+  Reads closest.product. The cards are `quantity` radios that join the form buttons block through product_form_id, so the
+  form works without JavaScript. Use it instead of the form quantity block, not beside it. Volume discounts here are only
+  displayed: the store's automatic discounts apply them. From 3 units, the form also sends the selected variant and each
+  gift as `items[n]` fields, and a gift line carries the gift property, so the cart and discounts can find it.
+{% enddoc %}
+
+{% liquid
+  assign product = closest.product
+
+  if product == blank and request.visual_preview_mode
+    assign product = collections.all.products.first
+  endif
+
+  assign current_variant = product.selected_or_first_available_variant
+  assign selected_selling_plan = product.selected_selling_plan
+  assign unit_price = product.selected_selling_plan_allocation.price | default: current_variant.price
+  assign full_unit_price = current_variant.compare_at_price | default: current_variant.price
+  if full_unit_price < current_variant.price
+    assign full_unit_price = current_variant.price
+  endif
+  assign doses_per_unit = product.metafields.custom.doses_per_bag.value | default: block.settings.doses_per_unit
+
+  assign gift_3 = block.settings.gift_products_3.first.selected_or_first_available_variant
+  assign gift_4 = block.settings.gift_products_4.first.selected_or_first_available_variant
+  if gift_3.available != true
+    assign gift_3 = null
+  endif
+  if gift_4.available != true
+    assign gift_4 = null
+  endif
+%}
+
+[% render 'props/assign-product-form-id' %]
+
+{% capture content %}
+  <div class="flex flex-col gap-y-r3" x-data="{ get gifts() { return quantity >= 4 ? 2 : quantity >= 3 ? 1 : 0 } }">
+    <fieldset class="flex flex-col gap-y-r3">
+      <legend class="flex flex-wrap gap-x-r2 type-h6">
+        {{ 'product.quantity' | t }}
+        {% if gift_3 or gift_4 %}
+          <span class="type-micro text-sale">{{ 'product.volume.gift_hint' | t }}</span>
+        {% endif %}
+      </legend>
+
+      <div class="grid grid-cols-2 md:flex gap-x-r2 gap-y-r2">
+        {% for units in (1..4) %}
+          {% liquid
+            assign pct_key = 'discount_pct_' | append: units
+            assign pct = block.settings[pct_key]
+            assign ribbon_key = 'ribbon_' | append: units
+            assign ribbon = block.settings[ribbon_key]
+            assign card_id = block.id | append: '-' | append: units
+
+            assign base_total = unit_price | times: units
+            assign pct_amount = base_total | times: pct | divided_by: 100
+            assign card_total = base_total | minus: pct_amount
+            assign card_full_total = full_unit_price | times: units
+
+            assign card_gifts = 0
+            if units >= 3 and gift_3
+              assign card_gifts = card_gifts | plus: 1
+            endif
+            if units >= 4 and gift_4
+              assign card_gifts = card_gifts | plus: 1
+            endif
+          %}
+          <label
+            for="{{ card_id }}"
+            class="relative flex flex-col gap-y-r1 flex-1 min-w-0 p-r3 border rounded-md transition-colors"
+            :class="quantity == {{ units }} ? 'border-content' : 'border-line'"
+          >
+            <input
+              type="radio"
+              class="sr-only"
+              id="{{ card_id }}"
+              name="quantity"
+              value="{{ units }}"
+              form="{{ product_form_id }}"
+              {% if forloop.first %}checked{% endif %}
+              x-model.number="quantity"
+            >
+            {% if ribbon != blank %}
+              <span class="type-micro text-sale">{{ ribbon }}</span>
+            {% endif %}
+            <span class="flex items-center justify-between gap-x-r2">
+              <span class="type-h6">{{ 'product.volume.units' | t: count: units }}</span>
+              {% if card_full_total > card_total %}
+                {% liquid
+                  assign saved = card_full_total | minus: card_total
+                  assign saved_pct = saved | times: 100.0 | divided_by: card_full_total | round
+                %}
+                <span class="type-micro px-r2 py-r1 rounded-full bg-primary text-primary-contrast">−{{ saved_pct }}%</span>
+              {% endif %}
+            </span>
+            <span class="flex flex-wrap gap-x-r2 type-p">
+              {% if card_full_total > card_total %}
+                {% render 'money', price: card_full_total, class: 'line-through text-muted' %}
+              {% endif %}
+              {% render 'money', price: card_total, class: 'font-bold' %}
+            </span>
+            {% if doses_per_unit > 0 and block.settings.show_price_per_dose %}
+              {% liquid
+                assign card_doses = doses_per_unit | times: units
+                assign per_dose = card_total | divided_by: card_doses
+              %}
+              <span class="type-micro text-muted">
+                {% render 'money', price: per_dose %}
+                {{ 'product.volume.per_dose' | t }}
+              </span>
+            {% endif %}
+            {% if card_gifts > 0 %}
+              <span class="flex items-center gap-x-r1 type-micro text-sale">
+                {% render 'core-icon',
+                  paths: '<path d="M4 11h16v9H4zM3 7h18v4H3zM12 7v13M12 7c-1.5-3-5-3.5-5-1.25C7 7 12 7 12 7zm0 0c1.5-3 5-3.5 5-1.25C17 7 12 7 12 7z"/>',
+                  size: 'sm'
+                %}
+                {{ 'product.volume.gifts' | t: count: card_gifts }}
+              </span>
+            {% endif %}
+          </label>
+        {% endfor %}
+      </div>
+    </fieldset>
+
+    {% if doses_per_unit > 0 and block.settings.show_total_doses %}
+      <p class="type-p" aria-live="polite">
+        {{ 'product.volume.total_doses_label' | t }}
+        <span class="font-bold"><span x-text="quantity * {{ doses_per_unit }}">{{ doses_per_unit }}</span> {{ 'product.volume.doses' | t }}</span>
+      </p>
+    {% endif %}
+
+    {% if gift_3 or gift_4 %}
+      <div class="flex flex-col gap-y-r2 p-r3 rounded-md bg-content-mix-5" x-cloak x-show="gifts > 0">
+        <p class="type-micro">{{ 'product.volume.gifts_heading' | t }}</p>
+        <ul class="flex flex-col gap-y-r2">
+          {% for gift in (3..4) %}
+            {% liquid
+              if gift == 3
+                assign gift_variant = gift_3
+              else
+                assign gift_variant = gift_4
+              endif
+            %}
+            {% if gift_variant %}
+              <li class="flex items-center justify-between gap-x-r3" x-show="quantity >= {{ gift }}">
+                <span class="type-p">{{ gift_variant.product.title }}</span>
+                <span class="type-micro text-sale">{{ 'other.free' | t }}</span>
+              </li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+
+      {% comment %}
+        From 3 units the form sends cart lines: the selected variant first, then each gift with the gift property.
+        Shopify reads `items` instead of `id` and `quantity` when both are present.
+      {% endcomment %}
+      <input type="hidden" form="{{ product_form_id }}" name="items[0][id]" value="{{ current_variant.id }}" disabled :disabled="gifts === 0">
+      <input type="hidden" form="{{ product_form_id }}" name="items[0][quantity]" value="3" disabled :value="quantity" :disabled="gifts === 0">
+      {% if selected_selling_plan %}
+        <input type="hidden" form="{{ product_form_id }}" name="items[0][selling_plan]" value="{{ selected_selling_plan.id }}" disabled :disabled="gifts === 0">
+      {% endif %}
+      {% assign gift_line = 0 %}
+      {% for gift in (3..4) %}
+        {% liquid
+          if gift == 3
+            assign gift_variant = gift_3
+          else
+            assign gift_variant = gift_4
+          endif
+        %}
+        {% if gift_variant %}
+          {% assign gift_line = gift_line | plus: 1 %}
+          <input type="hidden" form="{{ product_form_id }}" name="items[{{ gift_line }}][id]" value="{{ gift_variant.id }}" disabled :disabled="quantity < {{ gift }}">
+          <input type="hidden" form="{{ product_form_id }}" name="items[{{ gift_line }}][quantity]" value="1" disabled :disabled="quantity < {{ gift }}">
+          {% if block.settings.gift_property != blank %}
+            <input type="hidden" form="{{ product_form_id }}" name="items[{{ gift_line }}][properties][{{ block.settings.gift_property | escape }}]" value="true" disabled :disabled="quantity < {{ gift }}">
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  </div>
+{% endcapture %}
+
+{% render 'product-block',
+  s: block.settings,
+  content: content,
+  attributes: block.shopify_attributes,
+  class: 'flex flex-col'
+%}
+
+{% schema %}
+{
+  "name": "Form quantity cards",
+  "tag": null,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Use instead of Form quantity. Discounts here are only shown: create matching automatic discounts in Shopify."
+    },
+    {
+      "type": "header",
+      "content": "Volume discounts"
+    },
+    {
+      "type": "range",
+      "id": "discount_pct_1",
+      "label": "Discount at 1 unit",
+      "unit": "%",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "discount_pct_2",
+      "label": "Discount at 2 units",
+      "unit": "%",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "discount_pct_3",
+      "label": "Discount at 3 units",
+      "unit": "%",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "discount_pct_4",
+      "label": "Discount at 4 units",
+      "unit": "%",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Ribbons"
+    },
+    {
+      "type": "text",
+      "id": "ribbon_1",
+      "label": "Ribbon on 1 unit"
+    },
+    {
+      "type": "text",
+      "id": "ribbon_2",
+      "label": "Ribbon on 2 units"
+    },
+    {
+      "type": "text",
+      "id": "ribbon_3",
+      "label": "Ribbon on 3 units"
+    },
+    {
+      "type": "text",
+      "id": "ribbon_4",
+      "label": "Ribbon on 4 units"
+    },
+    {
+      "type": "header",
+      "content": "Servings"
+    },
+    {
+      "type": "range",
+      "id": "doses_per_unit",
+      "label": "Servings per unit",
+      "info": "The product's custom.doses_per_bag metafield wins. 0 hides servings.",
+      "min": 0,
+      "max": 60,
+      "step": 1,
+      "default": 0
+    },
+    {
+      "type": "checkbox",
+      "id": "show_price_per_dose",
+      "label": "Show price per serving",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_total_doses",
+      "label": "Show total servings",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Gifts"
+    },
+    {
+      "type": "product_list",
+      "id": "gift_products_3",
+      "label": "Gift from 3 units",
+      "limit": 1
+    },
+    {
+      "type": "product_list",
+      "id": "gift_products_4",
+      "label": "Extra gift at 4 units",
+      "limit": 1
+    },
+    {
+      "type": "text",
+      "id": "gift_property",
+      "label": "Gift line property",
+      "info": "Added to each gift line in the cart, so a discount or the cart can find it",
+      "default": "_gift"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Form quantity cards",
+      "category": "Add to cart"
+    }
+  ]
+}
+{% endschema %}
